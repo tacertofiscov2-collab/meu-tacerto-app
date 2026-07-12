@@ -422,30 +422,33 @@ export default function Onboarding() {
             })}
           </div>
 
-          {meiEsseAno === true && (
-            <>
-              <p className="text-xs font-medium text-gray-700 mb-1.5">Qual mês você abriu?</p>
-              <MonthPicker value={mesMei} onChange={setMesMei} />
-              {mesMei && (
-                <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 mb-3">
-                  <p className="text-xs text-green-700 font-medium inline-flex items-center gap-1.5">
-                    <Info size={14} strokeWidth={2} />
-                    Limite: R$ {limiteFinal.toLocaleString("pt-BR")},00
-                  </p>
-                </div>
-              )}
-            </>
-          )}
+          <div className="min-h-[132px]">
+            {meiEsseAno === true && (
+              <>
+                <p className="text-xs font-medium text-gray-700 mb-1.5">Qual mês você abriu?</p>
+                <MonthPicker value={mesMei} onChange={setMesMei} />
+                {mesMei && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-2.5">
+                    <p className="text-xs text-green-700 font-medium inline-flex items-center gap-1.5">
+                      <Info size={14} strokeWidth={2} />
+                      Limite: R$ {limiteFinal.toLocaleString("pt-BR")},00
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
 
+            {meiEsseAno === false && (
+              <div className="bg-green-50 border border-green-200 rounded-xl p-2.5">
+                <p className="text-xs text-green-700 font-medium inline-flex items-center gap-1.5">
+                  <CheckCircle2 size={14} strokeWidth={2} />
+                  Limite cheio: R$ {limiteCheio.toLocaleString("pt-BR")},00 / ano
+                </p>
+              </div>
+            )}
+          </div>
 
-          {meiEsseAno === false && (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 mb-3">
-              <p className="text-xs text-green-700 font-medium inline-flex items-center gap-1.5">
-                <CheckCircle2 size={14} strokeWidth={2} />
-                Limite cheio: R$ {limiteCheio.toLocaleString("pt-BR")},00 / ano
-              </p>
-            </div>
-          )}
+          <div className="mt-3">
 
           <button
             onClick={handleFinalizar}
