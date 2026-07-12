@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Welcome from "./pages/Welcome.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
 import Login from "./pages/Login.jsx";
+import Cadastro from "./pages/Cadastro.jsx";
 import EsqueciSenha from "./pages/EsqueciSenha.jsx";
 import CadastroObrigatorio from "./pages/CadastroObrigatorio.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
