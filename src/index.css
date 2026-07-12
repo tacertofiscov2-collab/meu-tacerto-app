@@ -2,14 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Tema ESCURO (ativo) */
+  --bg: #0f0f11;
+  --surface: #18181b;
+  --field: #27272a;
+  --primary: #22c55e;
+  --primary-contrast: #0a0a0a;
+  --text: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #71717a;
+  --border: #3f3f46;
+  --danger: #f87171;
+}
+
+.theme-light {
+  --bg: #f9fafb;
+  --surface: #ffffff;
+  --field: #f3f4f6;
+  --primary: #16a34a;
+  --primary-contrast: #ffffff;
+  --text: #111827;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --border: #e5e7eb;
+  --danger: #dc2626;
+}
+
+html, body, #root {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
 body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-.snap-y::-webkit-scrollbar {
-  display: none;
-}
-
+.snap-y::-webkit-scrollbar { display: none; }
 .hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
