@@ -4,13 +4,11 @@ import { Eye, EyeOff, CloudUpload } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getPerfilLocal } from "@/lib/localData";
 import { AuthLayout } from "@/components/AuthLayout";
-import EmailPhoneTabs from "@/components/EmailPhoneTabs";
+import SmartContactInput, { detectMode } from "@/components/SmartContactInput";
 
 export default function CadastroObrigatorio() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState("email");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [contato, setContato] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [showSenha, setShowSenha] = useState(false);
@@ -20,17 +18,18 @@ export default function CadastroObrigatorio() {
 
   async function handleCadastrar() {
     setErro("");
+    const mode = detectMode(contato);
     if (mode === "phone") return setErro("Cadastro por celular em breve. Use e-mail.");
-    if (!email || !senha) return setErro("Preencha email e senha.");
+    if (!contato || !senha) return setErro("Preencha email e senha.");
     if (senha.length < 8) return setErro("A senha precisa ter pelo menos 8 caracteres.");
     if (senha !== confirmarSenha) return setErro("As senhas não coincidem.");
     setLoading(true);
-    const { error } = await supabase.auth.signUp({ email, password: senha });
+    const { error } = await supabase.auth.signUp({ email: contato, password: senha });
     if (error && !error.message.toLowerCase().includes("already")) {
       setLoading(false);
       return setErro("Erro ao cadastrar: " + error.message);
     }
-    const { error: err2 } = await supabase.auth.signInWithPassword({ email, password: senha });
+    const { error: err2 } = await supabase.auth.signInWithPassword({ email: contato, password: senha });
     if (err2) {
       setLoading(false);
       return setErro("Esse email já tem conta. Verifique a senha.");
@@ -56,6 +55,7 @@ export default function CadastroObrigatorio() {
         <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2">
           <CloudUpload size={28} strokeWidth={2} className="text-green-600" />
         </div>
+
         <h2 className="text-lg font-bold text-gray-800">Salve seu progresso</h2>
         <p className="text-xs text-gray-500 mt-1">
           Crie seu cadastro grátis e nunca perca seus lançamentos.

@@ -3,13 +3,11 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { AuthLayout } from "@/components/AuthLayout";
-import EmailPhoneTabs from "@/components/EmailPhoneTabs";
+import SmartContactInput, { detectMode } from "@/components/SmartContactInput";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState("email");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [contato, setContato] = useState("");
   const [senha, setSenha] = useState("");
   const [showSenha, setShowSenha] = useState(false);
   const [erro, setErro] = useState("");
@@ -17,12 +15,13 @@ export default function Login() {
 
   async function handleEntrar() {
     setErro("");
+    const mode = detectMode(contato);
     if (mode === "phone") {
       setErro("Login por celular em breve. Use e-mail por enquanto.");
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+    const { error } = await supabase.auth.signInWithPassword({ email: contato, password: senha });
     setLoading(false);
     if (error) return setErro("Email ou senha incorretos");
     navigate("/dashboard");
@@ -36,15 +35,9 @@ export default function Login() {
       {erro && <p className="text-red-500 text-xs text-center mb-3">{erro}</p>}
 
       <div className="mb-3">
-        <EmailPhoneTabs
-          mode={mode}
-          onModeChange={setMode}
-          email={email}
-          onEmailChange={setEmail}
-          phone={phone}
-          onPhoneChange={setPhone}
-        />
+        <SmartContactInput value={contato} onChange={setContato} />
       </div>
+
 
       <label className="block text-sm text-gray-600 mb-1">Senha</label>
       <div className="relative mb-4">
