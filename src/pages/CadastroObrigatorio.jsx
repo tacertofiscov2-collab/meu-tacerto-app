@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, CloudUpload } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getPerfilLocal } from "@/lib/localData";
 import { TaCertoLogo } from "@/components/TaCertoLogo";
