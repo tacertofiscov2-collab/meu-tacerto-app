@@ -273,6 +273,9 @@ export default function Onboarding() {
       {step === 1 && (
         <div className="space-y-4">
           <div className="text-center">
+            <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2">
+              <Hand size={28} strokeWidth={2} className="text-green-600" />
+            </div>
             <h2 className="text-xl font-semibold text-gray-800">Como posso te chamar?</h2>
             <p className="text-sm text-gray-500 mt-1">Seu nome ou apelido</p>
           </div>
