@@ -238,9 +238,8 @@ export default function Onboarding() {
           )}
 
           {step === 1 && (
-            <>
-              <div className="text-center mb-6">
-                <div className="text-6xl mb-3">👋</div>
+            <div className="space-y-4">
+              <div className="text-center">
                 <h2 className="text-xl font-semibold text-gray-800">Como posso te chamar?</h2>
                 <p className="text-sm text-gray-500 mt-1">Seu nome ou apelido</p>
               </div>
@@ -266,7 +265,7 @@ export default function Onboarding() {
                     }
                   }
                 }}
-                className={inputCls + " mb-4"}
+                className={inputCls}
               />
 
               <button
@@ -281,13 +280,15 @@ export default function Onboarding() {
               >
                 Continuar
               </button>
-            </>
+            </div>
           )}
 
           {step === 2 && (
             <>
               <div className="text-center mb-6">
-                <div className="text-6xl mb-3">📋</div>
+                <div className="flex justify-center mb-3">
+                  <ClipboardList size={48} strokeWidth={2} className="text-green-600" />
+                </div>
                 <h2 className="text-xl font-semibold text-gray-800">Qual é o seu MEI?</h2>
               </div>
 
@@ -295,18 +296,19 @@ export default function Onboarding() {
                 {[
                   {
                     v: "MEI",
-                    icon: "💼",
+                    Icon: Briefcase,
                     titulo: "MEI (outras atividades)",
                     desc: "Comércio, serviços e outras áreas · limite R$ 81.000/ano",
                   },
                   {
                     v: "MEI_CAMINHONEIRO",
-                    icon: "🚚",
+                    Icon: Truck,
                     titulo: "MEI Caminhoneiro",
                     desc: "Transportador autônomo de cargas · limite R$ 251.600/ano",
                   },
                 ].map((o) => {
                   const sel = tipoMei === o.v;
+                  const Ico = o.Icon;
                   return (
                     <button
                       key={o.v}
@@ -317,7 +319,9 @@ export default function Onboarding() {
                           : "border-2 border-gray-200 hover:border-green-300"
                       }`}
                     >
-                      <span className="text-2xl">{o.icon}</span>
+                      <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
+                        <Ico size={22} strokeWidth={2} className="text-green-600" />
+                      </div>
                       <div className="flex-1">
                         <div
                           className={`text-sm font-medium ${
@@ -346,8 +350,8 @@ export default function Onboarding() {
           {step === 3 && (
             <>
               <div className="text-center mb-6">
-                <div className="text-6xl mb-3">
-                  {tipoMei === "MEI_CAMINHONEIRO" ? "🚛" : "📅"}
+                <div className="flex justify-center mb-3">
+                  <CalendarDays size={48} strokeWidth={2} className="text-green-600" />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-800">Sobre seu MEI</h2>
                 <p className="text-sm text-gray-500 mt-1">Você abriu seu MEI em {anoAtual}?</p>
@@ -358,10 +362,11 @@ export default function Onboarding() {
 
               <div className="grid grid-cols-2 gap-3 mb-4">
                 {[
-                  { v: true, l: "✅ Sim, esse ano" },
-                  { v: false, l: "🕐 Não, já faz tempo" },
+                  { v: true, Icon: CheckCircle2, l: "Sim, esse ano" },
+                  { v: false, Icon: Clock, l: "Não, já faz tempo" },
                 ].map((o) => {
                   const sel = meiEsseAno === o.v;
+                  const Ico = o.Icon;
                   return (
                     <button
                       key={String(o.v)}
@@ -369,12 +374,13 @@ export default function Onboarding() {
                         setMeiEsseAno(o.v);
                         if (!o.v) setMesMei("");
                       }}
-                      className={`py-3 rounded-xl text-sm font-medium transition ${
+                      className={`py-3 rounded-xl text-sm font-medium transition inline-flex items-center justify-center gap-2 ${
                         sel
                           ? "border-2 border-green-600 bg-green-50 text-green-700"
                           : "border-2 border-gray-200 text-gray-600 hover:border-green-300"
                       }`}
                     >
+                      <Ico size={16} strokeWidth={2} />
                       {o.l}
                     </button>
                   );
@@ -383,35 +389,42 @@ export default function Onboarding() {
 
               {meiEsseAno === true && (
                 <>
-                  <p className="text-sm text-gray-600 mb-2">Qual mês você abriu?</p>
-                  <div className="h-[220px] overflow-y-auto snap-y snap-mandatory rounded-xl border border-gray-200 mb-4" style={{ scrollbarWidth: "none" }}>
-                    <div className="py-[88px]">
-                      {MESES.map((mes, i) => {
-                        const val = String(i + 1);
-                        const sel = mesMei === val;
-                        const isLast = i === MESES.length - 1;
-                        return (
-                          <button
-                            key={mes}
-                            onClick={() => setMesMei(val)}
-                            className={`w-full h-[55px] flex items-center justify-center snap-center transition-all ${
-                              !isLast ? "border-b border-gray-100" : ""
-                            } ${
-                              sel
-                                ? "bg-green-50 border-2 border-green-600 text-green-700 font-semibold"
-                                : "text-gray-600 text-base"
-                            }`}
-                          >
-                            {mes}
-                          </button>
-                        );
-                      })}
+                  <p className="text-sm font-medium text-gray-700 mb-2">Qual mês você abriu?</p>
+                  <div className="relative mb-4">
+                    <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-white to-transparent z-10 rounded-t-xl" />
+                    <div className="h-[240px] overflow-y-auto rounded-xl border border-gray-200 hide-scrollbar">
+                      <div>
+                        {MESES.map((mes, i) => {
+                          const num = String(i + 1).padStart(2, "0");
+                          const val = String(i + 1);
+                          const sel = mesMei === val;
+                          return (
+                            <button
+                              key={mes}
+                              onClick={() => setMesMei(val)}
+                              className={`w-full h-[60px] px-5 flex items-center gap-3 border-b border-gray-100 border-l-4 transition-all text-left ${
+                                sel
+                                  ? "bg-green-50 border-l-green-600 text-green-700"
+                                  : "border-l-transparent text-gray-700 hover:bg-gray-50"
+                              }`}
+                            >
+                              <span className={`text-sm ${sel ? "font-semibold" : "font-medium"}`}>
+                                Mês {num}
+                              </span>
+                              <span className="text-gray-300">·</span>
+                              <span className={`text-sm ${sel ? "font-semibold" : ""}`}>{mes}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
+                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent z-10 rounded-b-xl" />
                   </div>
                   {mesMei && (
                     <div className="bg-green-50 border border-green-200 rounded-xl p-3 mb-4">
-                      <p className="text-sm text-green-700 font-medium">
-                        📌 Seu limite proporcional: R$ {limiteFinal.toLocaleString("pt-BR")},00
+                      <p className="text-sm text-green-700 font-medium inline-flex items-center gap-2">
+                        <Info size={16} strokeWidth={2} />
+                        Seu limite proporcional: R$ {limiteFinal.toLocaleString("pt-BR")},00
                       </p>
                       <p className="text-xs text-green-600 mt-1">
                         Calculado a partir do mês selecionado até Dezembro
@@ -423,8 +436,9 @@ export default function Onboarding() {
 
               {meiEsseAno === false && (
                 <div className="bg-green-50 border border-green-200 rounded-xl p-3 mb-4">
-                  <p className="text-sm text-green-700 font-medium">
-                    ✓ Limite cheio: R$ {limiteCheio.toLocaleString("pt-BR")},00 / ano
+                  <p className="text-sm text-green-700 font-medium inline-flex items-center gap-2">
+                    <CheckCircle2 size={16} strokeWidth={2} />
+                    Limite cheio: R$ {limiteCheio.toLocaleString("pt-BR")},00 / ano
                   </p>
                 </div>
               )}
