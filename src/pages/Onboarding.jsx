@@ -55,6 +55,59 @@ const MESES = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
 
+function MonthPicker({ value, onChange }) {
+  const ref = useRef(null);
+  const [atTop, setAtTop] = useState(true);
+  const [atBottom, setAtBottom] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => {
+      setAtTop(el.scrollTop <= 1);
+      setAtBottom(el.scrollTop + el.clientHeight >= el.scrollHeight - 1);
+    };
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    return () => el.removeEventListener("scroll", update);
+  }, []);
+
+  return (
+    <div className="relative mb-3">
+      {!atTop && (
+        <div className="pointer-events-none absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-white via-white/80 to-transparent z-10 rounded-t-xl" />
+      )}
+      {!atBottom && (
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white via-white/80 to-transparent z-10 rounded-b-xl" />
+      )}
+      <div
+        ref={ref}
+        className="h-[160px] overflow-y-auto rounded-xl border border-gray-200 hide-scrollbar"
+      >
+        {MESES.map((mes, i) => {
+          const val = String(i + 1);
+          const sel = value === val;
+          const label = `Mês ${String(i + 1).padStart(2, "0")} · ${mes}`;
+          return (
+            <button
+              key={mes}
+              type="button"
+              onClick={() => onChange(val)}
+              className={`w-full h-[44px] px-4 flex items-center gap-3 border-b border-gray-100 border-l-4 transition-all text-left ${
+                sel ? "bg-green-50 border-l-green-600 text-green-700"
+                    : "border-l-transparent text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <span className={`text-sm ${sel ? "font-semibold" : "font-medium"}`}>{label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+
 export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
