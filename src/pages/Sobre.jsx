@@ -52,6 +52,10 @@ export default function Sobre() {
       <p className="text-center text-xs text-gray-400">
         <Brand /> · Educação fiscal para seu MEI
       </p>
+      <p className="text-center text-xs text-gray-400 mt-4">
+        <span className="text-gray-800">Ta</span>
+        <span className="text-green-600">Certo!</span> v0.1
+      </p>
     </AuthLayout>
   );
 }
