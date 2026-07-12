@@ -144,15 +144,9 @@ export default function Onboarding() {
           {erro && <ErrorBox msg={erro} />}
 
           <div className="mb-3">
-            <EmailPhoneTabs
-              mode={authMode}
-              onModeChange={setAuthMode}
-              email={email}
-              onEmailChange={setEmail}
-              phone={phone}
-              onPhoneChange={setPhone}
-            />
+            <SmartContactInput value={contato} onChange={setContato} />
           </div>
+
 
           <div className="relative mb-2">
             <input
