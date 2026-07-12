@@ -59,9 +59,7 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
 
-  const [authMode, setAuthMode] = useState("email");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [contato, setContato] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [showSenha, setShowSenha] = useState(false);
