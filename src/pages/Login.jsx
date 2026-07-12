@@ -52,13 +52,8 @@ export default function Login() {
       {/* Meio */}
       <div className="flex-1 flex flex-col justify-center px-6 pb-6">
         <div className="max-w-sm w-full mx-auto">
-          <div className="flex justify-center mb-5">
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center"
-              style={{ backgroundColor: "var(--primary)" }}
-            >
-              <Gauge size={32} strokeWidth={2.5} style={{ color: "var(--primary-contrast)" }} />
-            </div>
+          <div className="flex justify-center mb-4">
+            <Gauge size={52} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
           </div>
 
           <h1 className="text-2xl font-bold text-center" style={{ color: "var(--text)" }}>
