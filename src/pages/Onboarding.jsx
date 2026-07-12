@@ -221,10 +221,10 @@ export default function Onboarding() {
         <>
           <div className="text-center mb-6">
             <h2 className="text-xl font-bold text-gray-800">
-              Cuidar do seu MEI nunca foi tão simples
+              Bem-vindo ao <Brand className="text-gray-800 text-xl" />
             </h2>
             <p className="text-sm text-gray-400 mt-1">
-              Feito para MEI e MEI Caminhoneiro
+              Crie sua conta ou continue como visitante
             </p>
           </div>
 
