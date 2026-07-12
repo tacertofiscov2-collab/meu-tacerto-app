@@ -3,28 +3,28 @@ import { useState } from "react";
 import { KeyRound } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { AuthLayout } from "@/components/AuthLayout";
-import EmailPhoneTabs from "@/components/EmailPhoneTabs";
+import SmartContactInput, { detectMode } from "@/components/SmartContactInput";
 
 export default function EsqueciSenha() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState("email");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [contato, setContato] = useState("");
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
   const [sucesso, setSucesso] = useState(false);
 
   async function handleEnviar() {
     setErro("");
+    const mode = detectMode(contato);
     if (mode === "email") {
-      if (!email.trim() || !email.includes("@")) return setErro("Digite um e-mail válido.");
+      if (!contato.trim() || !contato.includes("@")) return setErro("Digite um e-mail válido.");
       setLoading(true);
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(contato);
       setLoading(false);
       if (error) return setErro("Não foi possível enviar. Verifique o e-mail digitado.");
       setSucesso(true);
     } else {
-      if (phone.replace(/\D/g, "").length < 10) return setErro("Digite um celular válido com DDD.");
+      if ((contato || "").replace(/\D/g, "").length < 10)
+        return setErro("Digite um celular válido com DDD.");
       setErro("Recuperação por celular em desenvolvimento. Use e-mail por enquanto.");
     }
   }
@@ -54,7 +54,7 @@ export default function EsqueciSenha() {
               <KeyRound size={28} strokeWidth={2} className="text-green-600" />
             </div>
             <h2 className="text-lg font-semibold text-gray-800">Recuperar acesso</h2>
-            <p className="text-xs text-gray-500 mt-1">Escolha como quer receber o código</p>
+            <p className="text-xs text-gray-500 mt-1">Informe seu e-mail ou celular cadastrado</p>
           </div>
 
           {erro && (
@@ -64,14 +64,7 @@ export default function EsqueciSenha() {
           )}
 
           <div className="mb-4">
-            <EmailPhoneTabs
-              mode={mode}
-              onModeChange={setMode}
-              email={email}
-              onEmailChange={setEmail}
-              phone={phone}
-              onPhoneChange={setPhone}
-            />
+            <SmartContactInput value={contato} onChange={setContato} />
           </div>
 
           <button
@@ -86,3 +79,4 @@ export default function EsqueciSenha() {
     </AuthLayout>
   );
 }
+

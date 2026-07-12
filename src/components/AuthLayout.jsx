@@ -36,12 +36,12 @@ export function BackArrow({ onClick }) {
  */
 export function AuthLayout({ onBack, children, topSlot }) {
   return (
-    <div className="h-screen w-full overflow-hidden bg-gradient-to-br from-green-50 to-white flex flex-col items-center px-4 pt-14 pb-6">
+    <div className="min-h-screen w-full bg-gradient-to-br from-green-50 to-white flex flex-col items-center px-4 pt-14 pb-6">
       <BackArrow onClick={onBack} />
       <AuthHeader />
       {topSlot && <div className="w-full max-w-md mt-4">{topSlot}</div>}
-      <div className="w-full max-w-md mt-6 flex-1 min-h-0 flex items-start justify-center">
-        <div className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-6 max-h-full overflow-hidden">
+      <div className="w-full max-w-md mt-6 flex items-start justify-center">
+        <div className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           {children}
         </div>
       </div>

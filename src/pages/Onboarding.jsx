@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Eye, EyeOff, Briefcase, Truck, ClipboardList, CalendarDays,
-  CheckCircle2, Clock, Info, ChevronDown,
+  CheckCircle2, Clock, Info,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
 import { AuthLayout } from "@/components/AuthLayout";
-import EmailPhoneTabs from "@/components/EmailPhoneTabs";
+import SmartContactInput, { detectMode } from "@/components/SmartContactInput";
 
 function calcularForcaSenha(s) {
   if (!s) return 0;
@@ -55,13 +55,64 @@ const MESES = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
 
+function MonthPicker({ value, onChange }) {
+  const ref = useRef(null);
+  const [atTop, setAtTop] = useState(true);
+  const [atBottom, setAtBottom] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => {
+      setAtTop(el.scrollTop <= 1);
+      setAtBottom(el.scrollTop + el.clientHeight >= el.scrollHeight - 1);
+    };
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    return () => el.removeEventListener("scroll", update);
+  }, []);
+
+  return (
+    <div className="relative mb-3">
+      {!atTop && (
+        <div className="pointer-events-none absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-white via-white/80 to-transparent z-10 rounded-t-xl" />
+      )}
+      {!atBottom && (
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white via-white/80 to-transparent z-10 rounded-b-xl" />
+      )}
+      <div
+        ref={ref}
+        className="h-[160px] overflow-y-auto rounded-xl border border-gray-200 hide-scrollbar"
+      >
+        {MESES.map((mes, i) => {
+          const val = String(i + 1);
+          const sel = value === val;
+          const label = `Mês ${String(i + 1).padStart(2, "0")} · ${mes}`;
+          return (
+            <button
+              key={mes}
+              type="button"
+              onClick={() => onChange(val)}
+              className={`w-full h-[44px] px-4 flex items-center gap-3 border-b border-gray-100 border-l-4 transition-all text-left ${
+                sel ? "bg-green-50 border-l-green-600 text-green-700"
+                    : "border-l-transparent text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <span className={`text-sm ${sel ? "font-semibold" : "font-medium"}`}>{label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+
 export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
 
-  const [authMode, setAuthMode] = useState("email");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [contato, setContato] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [showSenha, setShowSenha] = useState(false);
@@ -87,21 +138,23 @@ export default function Onboarding() {
 
   async function handleCadastro() {
     setErro("");
-    if (authMode === "phone") return setErro("Cadastro por celular em breve. Use e-mail por enquanto.");
-    if (!email || !senha) return setErro("Preencha email e senha.");
+    const mode = detectMode(contato);
+    if (mode === "phone") return setErro("Cadastro por celular em breve. Use e-mail por enquanto.");
+    if (!contato || !senha) return setErro("Preencha email e senha.");
     if (senha.length < 8) return setErro("A senha precisa ter pelo menos 8 caracteres.");
     if (senha !== confirmarSenha) return setErro("As senhas não coincidem.");
     setLoading(true);
-    const { error } = await supabase.auth.signUp({ email, password: senha });
+    const { error } = await supabase.auth.signUp({ email: contato, password: senha });
     if (error && !error.message.toLowerCase().includes("already")) {
       setLoading(false);
       return setErro("Erro ao cadastrar: " + error.message);
     }
-    const { error: err2 } = await supabase.auth.signInWithPassword({ email, password: senha });
+    const { error: err2 } = await supabase.auth.signInWithPassword({ email: contato, password: senha });
     setLoading(false);
     if (err2) return setErro("Erro ao entrar. Tente novamente.");
     setStep(1);
   }
+
 
   async function handleFinalizar() {
     salvarPerfilLocal({
@@ -144,15 +197,9 @@ export default function Onboarding() {
           {erro && <ErrorBox msg={erro} />}
 
           <div className="mb-3">
-            <EmailPhoneTabs
-              mode={authMode}
-              onModeChange={setAuthMode}
-              email={email}
-              onEmailChange={setEmail}
-              phone={phone}
-              onPhoneChange={setPhone}
-            />
+            <SmartContactInput value={contato} onChange={setContato} />
           </div>
+
 
           <div className="relative mb-2">
             <input
@@ -347,31 +394,7 @@ export default function Onboarding() {
           {meiEsseAno === true && (
             <>
               <p className="text-xs font-medium text-gray-700 mb-1.5">Qual mês você abriu?</p>
-              <div className="relative mb-3">
-                <div className="pointer-events-none absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-white via-white/80 to-transparent z-10 rounded-t-xl" />
-                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white via-white/80 to-transparent z-10 rounded-b-xl" />
-                <div className="pointer-events-none absolute bottom-1 right-2 z-20 text-gray-400 animate-bounce">
-                  <ChevronDown size={16} strokeWidth={2} />
-                </div>
-                <div className="h-[160px] overflow-y-auto rounded-xl border border-gray-200 hide-scrollbar">
-                  {MESES.map((mes, i) => {
-                    const val = String(i + 1);
-                    const sel = mesMei === val;
-                    return (
-                      <button
-                        key={mes}
-                        onClick={() => setMesMei(val)}
-                        className={`w-full h-[44px] px-4 flex items-center gap-3 border-b border-gray-100 border-l-4 transition-all text-left ${
-                          sel ? "bg-green-50 border-l-green-600 text-green-700"
-                              : "border-l-transparent text-gray-700 hover:bg-gray-50"
-                        }`}
-                      >
-                        <span className={`text-sm ${sel ? "font-semibold" : "font-medium"}`}>{mes}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              <MonthPicker value={mesMei} onChange={setMesMei} />
               {mesMei && (
                 <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 mb-3">
                   <p className="text-xs text-green-700 font-medium inline-flex items-center gap-1.5">
@@ -382,6 +405,7 @@ export default function Onboarding() {
               )}
             </>
           )}
+
 
           {meiEsseAno === false && (
             <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 mb-3">
