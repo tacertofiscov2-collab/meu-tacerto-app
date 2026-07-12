@@ -58,7 +58,7 @@ export default function CadastroObrigatorio() {
 
         <h2 className="text-lg font-bold text-gray-800">Salve seu progresso</h2>
         <p className="text-xs text-gray-500 mt-1">
-          Crie seu cadastro grátis e nunca perca seus lançamentos.
+          Crie seu cadastro e nunca perca seus lançamentos.
         </p>
       </div>
 
