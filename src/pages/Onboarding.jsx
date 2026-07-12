@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import {
   Eye, EyeOff, Briefcase, Truck, ClipboardList, CalendarDays,
-  CheckCircle2, Clock, Info, IdCard, ChevronDown,
+  CheckCircle2, Clock, Info, IdCard, ChevronDown, Gauge,
 } from "lucide-react";
 import GoogleButton from "@/components/GoogleButton";
 import { supabase } from "@/lib/supabase";
@@ -214,119 +214,131 @@ export default function Onboarding() {
         : 2
       : step;
 
-  return (
-    <AuthLayout onBack={onBack}>
-      {step > 0 && <Progress step={progressStep} />}
-      {step === 0 && (
-        <>
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-bold text-gray-800">
-              Bem-vindo ao <Brand className="text-gray-800 text-xl" />
-            </h2>
-            <p className="text-sm text-gray-400 mt-1">
-              Crie sua conta ou continue como visitante
+  if (step === 0) {
+    return (
+      <div className="min-h-screen min-h-[100dvh] w-full bg-gradient-to-br from-green-50 to-white flex items-center justify-center px-4 py-6">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+          {/* Faixa superior verde clara */}
+          <div className="bg-green-50 border-b border-gray-100 py-8 px-6 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <Gauge size={30} strokeWidth={2.5} className="text-green-600" />
+              <span className="text-3xl font-bold text-gray-800">
+                Ta<span className="text-green-600">Certo!</span>
+              </span>
+            </div>
+            <p className="text-lg font-medium text-gray-800 mt-3">
+              Bem-vindo ao <Brand />
             </p>
           </div>
 
-          {erro && <ErrorBox msg={erro} />}
+          {/* Corpo do card */}
+          <div className="px-6 py-6">
+            {erro && <ErrorBox msg={erro} />}
 
-          <div className="mb-3">
-            <SmartContactInput value={contato} onChange={setContato} />
-          </div>
-
-
-          <div className="relative mb-2">
-            <input
-              type={showSenha ? "text" : "password"}
-              placeholder="Crie uma senha (mín. 8 caracteres)"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              className={inputCls + " pr-10"}
-            />
-            <button
-              type="button"
-              onClick={() => setShowSenha(!showSenha)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-            >
-              {showSenha ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-
-          {senha.length > 0 && (
-            <div className="flex gap-1 mb-2">
-              {[0, 1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className={`h-1 flex-1 rounded ${
-                    i < forca
-                      ? forca <= 1 ? "bg-red-400" : forca === 2 ? "bg-amber-400" : "bg-green-500"
-                      : "bg-gray-200"
-                  }`}
-                />
-              ))}
+            <div className="mb-3">
+              <SmartContactInput value={contato} onChange={setContato} />
             </div>
-          )}
 
-          {senha.length >= 8 && (
-            <div className="relative mb-3">
+            <div className="relative mb-2">
               <input
                 type={showSenha ? "text" : "password"}
-                placeholder="Confirme sua senha"
-                value={confirmarSenha}
-                onChange={(e) => setConfirmarSenha(e.target.value)}
-                className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-green-300 transition pr-10 ${
-                  confirmarSenha && confirmarSenha !== senha ? "border-red-300" : "border-gray-200"
-                }`}
+                placeholder="Crie uma senha (mín. 8 caracteres)"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                className={inputCls + " pr-10"}
               />
-              {confirmarSenha && confirmarSenha === senha && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-green-600">✓</span>
+              <button
+                type="button"
+                onClick={() => setShowSenha(!showSenha)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+              >
+                {showSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
+            {senha.length > 0 && (
+              <div className="flex gap-1 mb-2">
+                {[0, 1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className={`h-1 flex-1 rounded ${
+                      i < forca
+                        ? forca <= 1 ? "bg-red-400" : forca === 2 ? "bg-amber-400" : "bg-green-500"
+                        : "bg-gray-200"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+
+            {senha.length >= 8 && (
+              <div className="relative mb-3">
+                <input
+                  type={showSenha ? "text" : "password"}
+                  placeholder="Confirme sua senha"
+                  value={confirmarSenha}
+                  onChange={(e) => setConfirmarSenha(e.target.value)}
+                  className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-green-300 transition pr-10 ${
+                    confirmarSenha && confirmarSenha !== senha ? "border-red-300" : "border-gray-200"
+                  }`}
+                />
+                {confirmarSenha && confirmarSenha === senha && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-green-600">✓</span>
+                )}
+              </div>
+            )}
+
+            <button onClick={handleCadastro} disabled={loading} className={btnPrimary}>
+              {loading ? "Aguarde..." : "Criar minha conta"}
+            </button>
+
+            {/* Divisor "ou" */}
+            <div className="flex items-center gap-3 my-3.5">
+              <div className="flex-1 h-px bg-gray-200" />
+              <span className="text-xs text-gray-400">ou</span>
+              <div className="flex-1 h-px bg-gray-200" />
+            </div>
+
+            <button onClick={() => setStep(1)} className={btnSecondary}>
+              Continuar como visitante
+            </button>
+
+            <div className="mt-2">
+              {/* TODO: configurar Google OAuth no Supabase depois */}
+              <GoogleButton onClick={() => setGoogleMsg("Login com Google em breve")} />
+              {googleMsg && (
+                <p className="text-center text-xs text-gray-500 mt-1.5">{googleMsg}</p>
               )}
             </div>
-          )}
 
-          <button onClick={handleCadastro} disabled={loading} className={btnPrimary}>
-            {loading ? "Aguarde..." : "Criar minha conta"}
-          </button>
+            <p className="text-center text-xs text-gray-500 mt-3">
+              Já tem conta?{" "}
+              <button
+                onClick={() => navigate("/login")}
+                className="text-green-600 hover:text-green-700 font-medium"
+              >
+                Fazer login
+              </button>
+            </p>
 
-          <button onClick={() => setStep(1)} className={btnSecondary + " mt-2"}>
-            Continuar como visitante
-          </button>
-
-          <div className="mt-2">
-            {/* TODO: configurar Google OAuth no Supabase depois */}
-            <GoogleButton onClick={() => setGoogleMsg("Login com Google em breve")} />
-            {googleMsg && (
-              <p className="text-center text-xs text-gray-500 mt-1.5">{googleMsg}</p>
-            )}
+            <p className="text-center text-xs text-gray-400 mt-4">
+              Ao criar sua conta, você concorda com nossos{" "}
+              <button
+                onClick={() => navigate("/termos")}
+                className="text-green-600 hover:text-green-700"
+              >
+                Termos de Uso e Política de Privacidade
+              </button>
+            </p>
           </div>
+        </div>
+      </div>
+    );
+  }
 
-          <p className="text-center text-xs text-gray-500 mt-3">
-            Já tem conta?{" "}
-            <button
-              onClick={() => navigate("/login")}
-              className="text-green-600 hover:text-green-700 font-medium"
-            >
-              Fazer login
-            </button>
-          </p>
-
-          <p className="text-center text-xs text-gray-400 mt-2">
-            <button
-              onClick={() => navigate("/sobre")}
-              className="hover:text-gray-600"
-            >
-              Sobre o Ta<span className="text-green-600">Certo!</span>
-            </button>
-            <span className="mx-1.5">·</span>
-            <button
-              onClick={() => navigate("/termos")}
-              className="hover:text-gray-600"
-            >
-              Termos de uso
-            </button>
-          </p>
-        </>
-      )}
+  return (
+    <AuthLayout onBack={onBack}>
+      {step > 0 && <Progress step={progressStep} />}
 
       {step === 1 && (
         <div className="space-y-4">
