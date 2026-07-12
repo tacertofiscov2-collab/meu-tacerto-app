@@ -218,15 +218,12 @@ export default function Onboarding() {
       {step > 0 && <Progress step={progressStep} />}
       {step === 0 && (
         <>
-          <div className="text-center mb-3">
+          <div className="text-center mb-6">
             <h2 className="text-xl font-bold text-gray-800">
-              Bem-vindo ao Ta<span className="text-green-600">Certo!</span>
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Crie sua conta ou continue como visitante
-            </p>
-            <p className="text-sm text-gray-500 font-medium mt-2 mb-2">
               Cuidar do seu MEI nunca foi tão simples
+            </h2>
+            <p className="text-sm text-gray-400 mt-1">
+              Feito para MEI e MEI Caminhoneiro
             </p>
           </div>
 
