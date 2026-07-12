@@ -279,6 +279,10 @@ export default function Onboarding() {
             Continuar como visitante
           </button>
 
+          <div className="mt-2">
+            <GoogleButton />
+          </div>
+
           <p className="text-center text-xs text-gray-500 mt-3">
             Já tem conta?{" "}
             <button
