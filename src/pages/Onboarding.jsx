@@ -4,10 +4,16 @@ import {
   Eye, EyeOff, Briefcase, Truck, ClipboardList, CalendarDays,
   CheckCircle2, Clock, Info, ChevronDown,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import {
+  Eye, EyeOff, Briefcase, Truck, ClipboardList, CalendarDays,
+  CheckCircle2, Clock, Info,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
 import { AuthLayout } from "@/components/AuthLayout";
-import EmailPhoneTabs from "@/components/EmailPhoneTabs";
+import SmartContactInput, { detectMode } from "@/components/SmartContactInput";
 
 function calcularForcaSenha(s) {
   if (!s) return 0;
