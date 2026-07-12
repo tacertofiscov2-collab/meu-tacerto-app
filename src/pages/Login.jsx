@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Hand } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { AuthLayout } from "@/components/AuthLayout";
 import SmartContactInput, { detectMode } from "@/components/SmartContactInput";
