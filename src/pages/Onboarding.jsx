@@ -341,31 +341,10 @@ export default function Onboarding() {
           {meiEsseAno === true && (
             <>
               <p className="text-xs font-medium text-gray-700 mb-1.5">Qual mês você abriu?</p>
-              <div className="relative mb-3">
-                <div className="pointer-events-none absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-white via-white/80 to-transparent z-10 rounded-t-xl" />
-                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white via-white/80 to-transparent z-10 rounded-b-xl" />
-                <div className="pointer-events-none absolute bottom-1 right-2 z-20 text-gray-400 animate-bounce">
-                  <ChevronDown size={16} strokeWidth={2} />
-                </div>
-                <div className="h-[160px] overflow-y-auto rounded-xl border border-gray-200 hide-scrollbar">
-                  {MESES.map((mes, i) => {
-                    const val = String(i + 1);
-                    const sel = mesMei === val;
-                    return (
-                      <button
-                        key={mes}
-                        onClick={() => setMesMei(val)}
-                        className={`w-full h-[44px] px-4 flex items-center gap-3 border-b border-gray-100 border-l-4 transition-all text-left ${
-                          sel ? "bg-green-50 border-l-green-600 text-green-700"
-                              : "border-l-transparent text-gray-700 hover:bg-gray-50"
-                        }`}
-                      >
-                        <span className={`text-sm ${sel ? "font-semibold" : "font-medium"}`}>{mes}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              <MonthPicker value={mesMei} onChange={setMesMei} />
+            </>
+          )}
+
               {mesMei && (
                 <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 mb-3">
                   <p className="text-xs text-green-700 font-medium inline-flex items-center gap-1.5">
