@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Welcome from "./pages/Welcome.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
 import Login from "./pages/Login.jsx";
+import Cadastro from "./pages/Cadastro.jsx";
 import EsqueciSenha from "./pages/EsqueciSenha.jsx";
 import CadastroObrigatorio from "./pages/CadastroObrigatorio.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/" element={<Welcome />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/esqueci-senha" element={<EsqueciSenha />} />
         <Route path="/cadastro-obrigatorio" element={<CadastroObrigatorio />} />
         <Route path="/dashboard" element={<Dashboard />} />
