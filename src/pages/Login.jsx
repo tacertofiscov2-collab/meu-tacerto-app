@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Eye, EyeOff, Hand } from "lucide-react";
+import { Eye, EyeOff, LogIn } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { AuthLayout } from "@/components/AuthLayout";
 import SmartContactInput, { detectMode } from "@/components/SmartContactInput";
+import GoogleButton from "@/components/GoogleButton";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -29,29 +30,26 @@ export default function Login() {
 
   return (
     <AuthLayout onBack={() => navigate(-1)}>
-      <div className="text-center mb-4">
-        <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2">
-          <Hand size={28} strokeWidth={2} className="text-green-600" />
+      <div className="text-center mb-3">
+        <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2">
+          <LogIn size={24} strokeWidth={2} className="text-green-600" />
         </div>
-        <h2 className="text-xl font-semibold text-gray-800">Entre na sua conta</h2>
-        <p className="text-sm text-gray-500 mt-1">Acesse para continuar</p>
+        <h2 className="text-lg font-semibold text-gray-800">Entre na sua conta</h2>
       </div>
 
-      {erro && <p className="text-red-500 text-xs text-center mb-3">{erro}</p>}
+      {erro && <p className="text-red-500 text-xs text-center mb-2">{erro}</p>}
 
-      <div className="mb-3">
+      <div className="mb-2">
         <SmartContactInput value={contato} onChange={setContato} />
       </div>
 
-
-      <label className="block text-sm text-gray-600 mb-1">Senha</label>
-      <div className="relative mb-4">
+      <div className="relative mb-3">
         <input
           type={showSenha ? "text" : "password"}
-          placeholder="********"
+          placeholder="Senha"
           value={senha}
           onChange={(e) => setSenha(e.target.value)}
-          className="w-full px-4 py-3 pr-10 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-300 transition"
+          className="w-full px-4 py-2.5 pr-10 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-300 transition"
         />
         <button
           type="button"
@@ -65,17 +63,21 @@ export default function Login() {
       <button
         onClick={handleEntrar}
         disabled={loading}
-        className="w-full py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium text-sm transition-colors disabled:opacity-50"
+        className="w-full py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium text-sm transition-colors disabled:opacity-50"
       >
         {loading ? "Aguarde..." : "Entrar"}
       </button>
 
       <button
         onClick={() => navigate("/esqueci-senha")}
-        className="w-full mt-2 py-3 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 hover:text-gray-800 font-medium text-sm transition-colors"
+        className="w-full mt-2 py-2.5 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 hover:text-gray-800 font-medium text-sm transition-colors"
       >
         Esqueci minha senha
       </button>
+
+      <div className="mt-2">
+        <GoogleButton />
+      </div>
     </AuthLayout>
   );
 }
