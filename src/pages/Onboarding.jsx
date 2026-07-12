@@ -186,10 +186,8 @@ export default function Onboarding() {
   const onBack = step > 0 ? () => setStep(step - 1) : undefined;
 
   return (
-    <AuthLayout
-      onBack={onBack}
-      topSlot={step > 0 ? <Progress step={step} /> : null}
-    >
+    <AuthLayout onBack={onBack}>
+      {step > 0 && <Progress step={step} />}
       {step === 0 && (
         <>
           <p className="text-sm text-gray-500 text-center mb-4">
