@@ -133,7 +133,7 @@ export default function Login() {
         <p className="text-center text-xs" style={{ color: "var(--text-secondary)" }}>
           Não tem conta?{" "}
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/cadastro")}
             className="font-medium"
             style={{ color: "var(--primary)" }}
           >
