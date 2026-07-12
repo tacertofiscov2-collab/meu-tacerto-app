@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Briefcase, Truck, ClipboardList, CalendarDays, CheckCircle2, Clock, Info } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
 import { TaCertoLogo, BackButton } from "@/components/TaCertoLogo";
