@@ -2,8 +2,9 @@ import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import {
   Eye, EyeOff, Briefcase, Truck, ClipboardList, CalendarDays,
-  CheckCircle2, Clock, Info, Hand,
+  CheckCircle2, Clock, Info, Hand, ChevronDown,
 } from "lucide-react";
+import GoogleButton from "@/components/GoogleButton";
 import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
 import { AuthLayout } from "@/components/AuthLayout";
