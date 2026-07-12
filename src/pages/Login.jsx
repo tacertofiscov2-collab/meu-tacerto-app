@@ -1,13 +1,10 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { TaCertoLogo, BackButton } from "@/components/TaCertoLogo";
 
-export const Route = createFileRoute("/login")({
-  component: LoginPage,
-});
-
-function LoginPage() {
+export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -21,23 +18,24 @@ function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
     setLoading(false);
     if (error) return setErro("Email ou senha incorretos");
-    navigate({ to: "/dashboard" });
+    navigate("/dashboard");
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
       <div className="w-full max-w-md">
         <div className="mb-2">
-          <BackButton onClick={() => history.back()} />
+          <BackButton onClick={() => navigate(-1)} />
         </div>
-        <TaCertoLogo subtitle="Sua vida fiscal organizada de forma simples" />
+        <div className="text-center mb-8">
+          <TaCertoLogo size="default" />
+          <p className="text-xs text-gray-500 mt-1">Sua vida fiscal organizada de forma simples</p>
+        </div>
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
           <h2 className="text-xl font-semibold text-gray-800 text-center">Entre na sua conta</h2>
           <p className="text-sm text-gray-500 text-center mt-1 mb-6">Acesse para continuar</p>
 
-          {erro && (
-            <p className="text-red-500 text-xs text-center mb-3">{erro}</p>
-          )}
+          {erro && <p className="text-red-500 text-xs text-center mb-3">{erro}</p>}
 
           <label className="block text-sm text-gray-600 mb-1">E-mail</label>
           <input
@@ -60,9 +58,9 @@ function LoginPage() {
             <button
               type="button"
               onClick={() => setShowSenha(!showSenha)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
             >
-              {showSenha ? "🙈" : "👁"}
+              {showSenha ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
 
@@ -75,8 +73,8 @@ function LoginPage() {
           </button>
 
           <button
-            onClick={() => navigate({ to: "/esqueci-senha" })}
-            className="w-full mt-3 text-xs text-gray-500 hover:text-green-600 transition-colors"
+            onClick={() => navigate("/esqueci-senha")}
+            className="w-full mt-3 py-3 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 hover:text-gray-800 font-medium text-sm transition-colors"
           >
             Esqueci minha senha
           </button>

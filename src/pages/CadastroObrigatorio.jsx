@@ -1,13 +1,11 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getPerfilLocal } from "@/lib/localData";
+import { TaCertoLogo } from "@/components/TaCertoLogo";
 
-export const Route = createFileRoute("/cadastro-obrigatorio")({
-  component: CadastroObrigatorioPage,
-});
-
-function CadastroObrigatorioPage() {
+export default function CadastroObrigatorio() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -45,14 +43,14 @@ function CadastroObrigatorioPage() {
       });
     }
     setLoading(false);
-    navigate({ to: "/dashboard" });
+    navigate("/dashboard");
   }
 
   async function copiarSenha() {
     try {
       await navigator.clipboard.writeText(senha);
     } catch {
-      // ignore
+      /* ignore */
     }
   }
 
@@ -61,7 +59,7 @@ function CadastroObrigatorioPage() {
       <div className="w-full max-w-md">
         <div className="flex items-center gap-3 mb-6">
           <button
-            onClick={() => history.back()}
+            onClick={() => navigate(-1)}
             className="text-green-600 hover:text-green-700"
             aria-label="Voltar"
           >
@@ -70,9 +68,9 @@ function CadastroObrigatorioPage() {
             </svg>
           </button>
           <span className="text-sm text-gray-600">Voltar</span>
-          <span className="ml-auto text-2xl font-bold text-gray-800">
-            Ta<span className="text-green-600">Certo!</span>
-          </span>
+          <div className="ml-auto">
+            <TaCertoLogo size="small" />
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
@@ -110,9 +108,9 @@ function CadastroObrigatorioPage() {
               <button
                 type="button"
                 onClick={() => setShowSenha(!showSenha)}
-                className="text-gray-400 text-sm px-1"
+                className="text-gray-400 px-1"
               >
-                {showSenha ? "🙈" : "👁"}
+                {showSenha ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
               {senha.length >= 8 && (
                 <button
@@ -144,9 +142,9 @@ function CadastroObrigatorioPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirm(!showConfirm)}
-                  className="text-gray-400 text-sm px-1"
+                  className="text-gray-400 px-1"
                 >
-                  {showConfirm ? "🙈" : "👁"}
+                  {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
                 {confirmarSenha && confirmarSenha === senha && (
                   <span className="text-green-600 px-1">✓</span>

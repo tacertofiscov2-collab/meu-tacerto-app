@@ -1,14 +1,11 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
 import { TaCertoLogo, BackButton } from "@/components/TaCertoLogo";
 
-export const Route = createFileRoute("/")({
-  component: OnboardingPage,
-});
-
-function calcularForcaSenha(s: string) {
+function calcularForcaSenha(s) {
   if (!s) return 0;
   let pontos = 0;
   if (s.length >= 8) pontos++;
@@ -23,11 +20,13 @@ const inputCls =
   "w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-300 transition";
 const btnPrimary =
   "w-full py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium text-sm transition-colors disabled:opacity-50";
+const btnSecondary =
+  "w-full py-3 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 hover:text-gray-800 font-medium text-sm transition-colors";
 const cardCls = "bg-white rounded-2xl shadow-sm border border-gray-100 p-8";
 const screenCls =
   "min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-green-50 to-white";
 
-function ErrorBox({ msg }: { msg: string }) {
+function ErrorBox({ msg }) {
   return (
     <div className="mb-4 bg-red-50 border border-red-200 text-red-500 text-xs px-3 py-2 rounded-lg">
       ⚠ {msg}
@@ -35,7 +34,7 @@ function ErrorBox({ msg }: { msg: string }) {
   );
 }
 
-function Progress({ step }: { step: number }) {
+function Progress({ step }) {
   return (
     <div className="flex justify-center gap-2 mb-6">
       {[1, 2, 3].map((s) => (
@@ -50,11 +49,15 @@ function Progress({ step }: { step: number }) {
   );
 }
 
-function OnboardingPage() {
+const MESES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
+export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
 
-  // step 0
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
@@ -62,14 +65,9 @@ function OnboardingPage() {
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // step 1
   const [nome, setNome] = useState("");
-
-  // step 2
-  const [tipoMei, setTipoMei] = useState<"" | "MEI" | "MEI_CAMINHONEIRO">("");
-
-  // step 3
-  const [meiEsseAno, setMeiEsseAno] = useState<null | boolean>(null);
+  const [tipoMei, setTipoMei] = useState("");
+  const [meiEsseAno, setMeiEsseAno] = useState(null);
   const [mesMei, setMesMei] = useState("");
 
   const anoAtual = new Date().getFullYear();
@@ -122,15 +120,22 @@ function OnboardingPage() {
         });
       }
     } catch {
-      // segue mesmo sem sessão (visitante)
+      /* visitante */
     }
-    navigate({ to: "/dashboard" });
+    navigate("/dashboard");
   }
 
   return (
     <div className={screenCls}>
       <div className="w-full max-w-md">
-        <TaCertoLogo />
+        {step > 0 && (
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-gray-800">
+              Ta<span className="text-green-600">Certo!</span>
+            </h1>
+            <p className="text-xs text-gray-500 mt-1">Educação fiscal para seu MEI</p>
+          </div>
+        )}
         {step > 0 && <Progress step={step} />}
         <div className={cardCls}>
           {step > 0 && <BackButton onClick={() => setStep(step - 1)} />}
@@ -138,9 +143,9 @@ function OnboardingPage() {
           {step === 0 && (
             <>
               <div className="text-center mb-6">
-                <div className="text-6xl mb-3">👋</div>
-                <h2 className="text-xl font-semibold text-gray-800">Bem-vindo ao TaCerto!</h2>
-                <p className="text-sm text-gray-500 mt-1">
+                <TaCertoLogo size="default" />
+                <p className="text-sm text-gray-400 mt-2">Educação fiscal para seu MEI</p>
+                <p className="text-sm text-gray-500 mt-4">
                   Crie sua conta ou continue como visitante
                 </p>
               </div>
@@ -166,9 +171,9 @@ function OnboardingPage() {
                 <button
                   type="button"
                   onClick={() => setShowSenha(!showSenha)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
                 >
-                  {showSenha ? "🙈" : "👁"}
+                  {showSenha ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
 
@@ -216,17 +221,14 @@ function OnboardingPage() {
                 {loading ? "Aguarde..." : "Criar minha conta"}
               </button>
 
-              <button
-                onClick={() => setStep(1)}
-                className="w-full mt-3 py-2 text-gray-500 hover:text-gray-700 text-sm transition-colors"
-              >
+              <button onClick={() => setStep(1)} className={btnSecondary + " mt-3"}>
                 Continuar como visitante
               </button>
 
               <p className="text-center text-xs text-gray-500 mt-4">
                 Já tem conta?{" "}
                 <button
-                  onClick={() => navigate({ to: "/login" })}
+                  onClick={() => navigate("/login")}
                   className="text-green-600 hover:text-green-700 font-medium"
                 >
                   Fazer login
@@ -292,13 +294,13 @@ function OnboardingPage() {
               <div className="space-y-3 mb-6">
                 {[
                   {
-                    v: "MEI" as const,
+                    v: "MEI",
                     icon: "💼",
                     titulo: "MEI (outras atividades)",
                     desc: "Comércio, serviços e outras áreas · limite R$ 81.000/ano",
                   },
                   {
-                    v: "MEI_CAMINHONEIRO" as const,
+                    v: "MEI_CAMINHONEIRO",
                     icon: "🚚",
                     titulo: "MEI Caminhoneiro",
                     desc: "Transportador autônomo de cargas · limite R$ 251.600/ano",
@@ -382,31 +384,30 @@ function OnboardingPage() {
               {meiEsseAno === true && (
                 <>
                   <p className="text-sm text-gray-600 mb-2">Qual mês você abriu?</p>
-                  <select
-                    value={mesMei}
-                    onChange={(e) => setMesMei(e.target.value)}
-                    className={inputCls + " mb-4"}
-                  >
-                    <option value="">Selecione o mês...</option>
-                    {[
-                      "Janeiro",
-                      "Fevereiro",
-                      "Março",
-                      "Abril",
-                      "Maio",
-                      "Junho",
-                      "Julho",
-                      "Agosto",
-                      "Setembro",
-                      "Outubro",
-                      "Novembro",
-                      "Dezembro",
-                    ].map((m, i) => (
-                      <option key={m} value={i + 1}>
-                        {m}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="h-[220px] overflow-y-auto snap-y snap-mandatory rounded-xl border border-gray-200 mb-4" style={{ scrollbarWidth: "none" }}>
+                    <div className="py-[88px]">
+                      {MESES.map((mes, i) => {
+                        const val = String(i + 1);
+                        const sel = mesMei === val;
+                        const isLast = i === MESES.length - 1;
+                        return (
+                          <button
+                            key={mes}
+                            onClick={() => setMesMei(val)}
+                            className={`w-full h-[55px] flex items-center justify-center snap-center transition-all ${
+                              !isLast ? "border-b border-gray-100" : ""
+                            } ${
+                              sel
+                                ? "bg-green-50 border-2 border-green-600 text-green-700 font-semibold"
+                                : "text-gray-600 text-base"
+                            }`}
+                          >
+                            {mes}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                   {mesMei && (
                     <div className="bg-green-50 border border-green-200 rounded-xl p-3 mb-4">
                       <p className="text-sm text-green-700 font-medium">

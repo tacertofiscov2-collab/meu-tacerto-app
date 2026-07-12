@@ -7,15 +7,7 @@ export function getPerfilLocal() {
   };
 }
 
-export function salvarPerfilLocal({
-  nome,
-  perfil,
-  limite,
-}: {
-  nome?: string;
-  perfil?: string;
-  limite?: number;
-}) {
+export function salvarPerfilLocal({ nome, perfil, limite }) {
   if (typeof window === "undefined") return;
   if (nome) localStorage.setItem("tacerto_nome", nome);
   if (perfil) localStorage.setItem("tacerto_perfil", perfil);
