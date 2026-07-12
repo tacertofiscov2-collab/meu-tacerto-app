@@ -211,9 +211,12 @@ export default function Onboarding() {
       {step > 0 && <Progress step={step} />}
       {step === 0 && (
         <>
-          <p className="text-sm text-gray-500 text-center mb-4">
-            Crie sua conta ou continue como visitante
-          </p>
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-bold text-gray-800">Bem-vindo ao TaCerto!</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Crie sua conta ou continue como visitante
+            </p>
+          </div>
 
           {erro && <ErrorBox msg={erro} />}
 
