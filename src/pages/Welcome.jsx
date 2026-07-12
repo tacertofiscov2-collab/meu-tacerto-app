@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-import { Gauge, Image as ImageIcon } from "lucide-react";
+import { Image as ImageIcon } from "lucide-react";
 
 // TODO: substituir placeholders por prints reais do app + frases de vantagem
 const SLIDES = [
@@ -36,13 +36,8 @@ export default function Welcome() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      {/* Topo */}
-      <div className="pt-6 pb-4 flex justify-center shrink-0">
-        <Gauge size={28} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
-      </div>
-
       {/* Carrossel */}
-      <div className="flex-1 min-h-0 flex flex-col">
+      <div className="flex-1 min-h-0 flex flex-col pt-6">
         <div
           ref={scrollerRef}
           className="flex-1 flex overflow-x-auto snap-x snap-mandatory hide-scrollbar"
@@ -53,11 +48,12 @@ export default function Welcome() {
               key={i}
               className="min-w-full snap-center flex flex-col items-center justify-center px-6"
             >
+              {/* TODO: substituir por print real do app, que deve ocupar essa área integrado ao fundo (sem moldura) */}
               <div
-                className="w-full rounded-2xl flex flex-col items-center justify-center mb-6"
-                style={{ backgroundColor: "var(--surface)", height: 220 }}
+                className="w-full flex flex-col items-center justify-center mb-6"
+                style={{ backgroundColor: "var(--bg)", height: 220 }}
               >
-                <ImageIcon size={40} style={{ color: "var(--text-tertiary)" }} strokeWidth={1.5} />
+                <ImageIcon size={40} style={{ color: "var(--text-secondary)" }} strokeWidth={1.5} />
                 <p className="text-xs mt-2" style={{ color: "var(--text-secondary)" }}>
                   Imagem em breve
                 </p>
@@ -92,7 +88,7 @@ export default function Welcome() {
       {/* Rodapé fixo de ações */}
       <div className="px-6 pb-6 pt-2 shrink-0 space-y-3">
         <button
-          onClick={() => navigate("/login")}
+          onClick={() => navigate("/cadastro")}
           className="w-full py-3.5 rounded-xl font-medium text-sm transition-opacity hover:opacity-90"
           style={{ backgroundColor: "var(--primary)", color: "var(--primary-contrast)" }}
         >
@@ -106,7 +102,7 @@ export default function Welcome() {
         </div>
 
         <button
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/onboarding")}
           className="w-full py-3.5 rounded-xl font-medium text-sm transition-opacity hover:opacity-90"
           style={{ backgroundColor: "var(--field)", color: "var(--text-secondary)" }}
         >
