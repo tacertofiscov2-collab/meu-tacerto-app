@@ -69,15 +69,9 @@ export default function CadastroObrigatorio() {
       )}
 
       <div className="mb-3">
-        <EmailPhoneTabs
-          mode={mode}
-          onModeChange={setMode}
-          email={email}
-          onEmailChange={setEmail}
-          phone={phone}
-          onPhoneChange={setPhone}
-        />
+        <SmartContactInput value={contato} onChange={setContato} />
       </div>
+
 
       <div className="relative mb-3">
         <input
