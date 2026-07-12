@@ -82,7 +82,7 @@ function MonthPicker({ value, onChange }) {
       )}
       <div
         ref={ref}
-        className="h-[160px] overflow-y-auto rounded-xl border border-gray-200 hide-scrollbar"
+        className="h-[160px] overflow-y-auto rounded-xl border border-gray-200 hide-scrollbar overscroll-contain"
       >
         {MESES.map((mes, i) => {
           const val = String(i + 1);
@@ -92,8 +92,10 @@ function MonthPicker({ value, onChange }) {
             <button
               key={mes}
               type="button"
+              tabIndex={-1}
+              onMouseDown={(e) => e.preventDefault()}
               onClick={() => onChange(val)}
-              className={`w-full h-[44px] px-4 flex items-center gap-3 border-b border-gray-100 border-l-4 transition-all text-left ${
+              className={`w-full h-[44px] px-4 flex items-center gap-3 border-b border-gray-100 border-l-4 transition-all text-left focus:outline-none ${
                 sel ? "bg-green-50 border-l-green-600 text-green-700"
                     : "border-l-transparent text-gray-700 hover:bg-gray-50"
               }`}
