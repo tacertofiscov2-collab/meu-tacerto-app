@@ -116,7 +116,7 @@ export default function CadastroObrigatorio() {
         disabled={loading}
         className="w-full py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium text-sm transition-colors disabled:opacity-50"
       >
-        {loading ? "Criando cadastro..." : "Criar cadastro grátis"}
+        {loading ? "Criando cadastro..." : "Criar cadastro"}
       </button>
     </AuthLayout>
   );
