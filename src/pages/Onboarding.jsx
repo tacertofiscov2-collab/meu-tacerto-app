@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
 import { AuthLayout } from "@/components/AuthLayout";
 import SmartContactInput, { detectMode } from "@/components/SmartContactInput";
+import Brand from "@/components/Brand";
 
 function calcularForcaSenha(s) {
   if (!s) return 0;
