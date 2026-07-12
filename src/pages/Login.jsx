@@ -1,10 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Eye, EyeOff, LogIn } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Mail, Gauge } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { AuthLayout } from "@/components/AuthLayout";
-import SmartContactInput, { detectMode } from "@/components/SmartContactInput";
-import GoogleButton from "@/components/GoogleButton";
+import { detectMode } from "@/components/SmartContactInput";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -18,66 +16,136 @@ export default function Login() {
     setErro("");
     const mode = detectMode(contato);
     if (mode === "phone") {
-      setErro("Login por celular em breve. Use e-mail por enquanto.");
+      setErro("Login por telefone em breve. Use e-mail por enquanto.");
       return;
     }
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email: contato, password: senha });
     setLoading(false);
-    if (error) return setErro("Email ou senha incorretos");
+    if (error) return setErro("E-mail ou senha incorretos");
     navigate("/dashboard");
   }
 
+  const fieldStyle = {
+    backgroundColor: "var(--field)",
+    border: "1px solid var(--border)",
+    color: "var(--text)",
+  };
+
   return (
-    <AuthLayout onBack={() => navigate(-1)}>
-      <div className="text-center mb-3">
-        <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2">
-          <LogIn size={24} strokeWidth={2} className="text-green-600" />
-        </div>
-        <h2 className="text-lg font-semibold text-gray-800">Entre na sua conta</h2>
-      </div>
-
-      {erro && <p className="text-red-500 text-xs text-center mb-2">{erro}</p>}
-
-      <div className="mb-2">
-        <SmartContactInput value={contato} onChange={setContato} />
-      </div>
-
-      <div className="relative mb-3">
-        <input
-          type={showSenha ? "text" : "password"}
-          placeholder="Senha"
-          value={senha}
-          onChange={(e) => setSenha(e.target.value)}
-          className="w-full px-4 py-2.5 pr-10 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-300 transition"
-        />
+    <div
+      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
+      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
+    >
+      {/* Topo */}
+      <div className="px-4 pt-5 shrink-0">
         <button
-          type="button"
-          onClick={() => setShowSenha(!showSenha)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+          onClick={() => navigate(-1)}
+          aria-label="Voltar"
+          className="w-10 h-10 flex items-center justify-center rounded-lg transition-opacity hover:opacity-80"
+          style={{ color: "var(--text)" }}
         >
-          {showSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+          <ArrowLeft size={22} strokeWidth={2} />
         </button>
       </div>
 
-      <button
-        onClick={handleEntrar}
-        disabled={loading}
-        className="w-full py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium text-sm transition-colors disabled:opacity-50"
-      >
-        {loading ? "Aguarde..." : "Entrar"}
-      </button>
+      {/* Meio */}
+      <div className="flex-1 flex flex-col justify-center px-6 pb-6">
+        <div className="max-w-sm w-full mx-auto">
+          <div className="flex justify-center mb-5">
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center"
+              style={{ backgroundColor: "var(--primary)" }}
+            >
+              <Gauge size={32} strokeWidth={2.5} style={{ color: "var(--primary-contrast)" }} />
+            </div>
+          </div>
 
-      <button
-        onClick={() => navigate("/esqueci-senha")}
-        className="w-full mt-2 py-2.5 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 hover:text-gray-800 font-medium text-sm transition-colors"
-      >
-        Esqueci minha senha
-      </button>
+          <h1 className="text-2xl font-bold text-center" style={{ color: "var(--text)" }}>
+            Bem-vindo de volta!
+          </h1>
+          <p className="text-sm text-center mt-1.5" style={{ color: "var(--text-secondary)" }}>
+            Entre para continuar
+          </p>
 
-      <div className="mt-2">
-        <GoogleButton />
+          {erro && (
+            <p
+              className="text-xs text-center mt-4"
+              style={{ color: "var(--danger)" }}
+            >
+              {erro}
+            </p>
+          )}
+
+          <div className="mt-6 space-y-3">
+            <div className="relative">
+              <Mail
+                size={18}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2"
+                style={{ color: "var(--text-secondary)" }}
+              />
+              <input
+                type="text"
+                placeholder="Digite seu e-mail ou telefone"
+                value={contato}
+                onChange={(e) => setContato(e.target.value)}
+                className="w-full pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 transition placeholder:opacity-70"
+                style={fieldStyle}
+              />
+            </div>
+
+            <div className="relative">
+              <input
+                type={showSenha ? "text" : "password"}
+                placeholder="Sua senha"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                className="w-full px-4 py-3 pr-11 rounded-xl text-sm focus:outline-none focus:ring-2 transition placeholder:opacity-70"
+                style={fieldStyle}
+              />
+              <button
+                type="button"
+                onClick={() => setShowSenha(!showSenha)}
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                {showSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
+            <button
+              onClick={handleEntrar}
+              disabled={loading}
+              className="w-full py-3.5 rounded-xl font-medium text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+              style={{ backgroundColor: "var(--primary)", color: "var(--primary-contrast)" }}
+            >
+              {loading ? "Aguarde..." : "Entrar"}
+            </button>
+
+            <button
+              onClick={() => navigate("/esqueci-senha")}
+              className="w-full text-center text-xs pt-1"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Esqueci minha senha
+            </button>
+          </div>
+        </div>
       </div>
-    </AuthLayout>
+
+      {/* Rodapé */}
+      <div className="px-6 pb-6 shrink-0">
+        <p className="text-center text-xs" style={{ color: "var(--text-secondary)" }}>
+          Não tem conta?{" "}
+          <button
+            onClick={() => navigate("/")}
+            className="font-medium"
+            style={{ color: "var(--primary)" }}
+          >
+            Cadastrar
+          </button>
+        </p>
+      </div>
+    </div>
   );
 }

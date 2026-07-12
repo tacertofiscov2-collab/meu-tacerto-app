@@ -2,17 +2,17 @@ import { Gauge } from "lucide-react";
 
 export function TaCertoLogo({ size = "default", showText = true }) {
   const dims = {
-    small: { icon: 24, text: "text-2xl" },
-    default: { icon: 32, text: "text-4xl" },
-    large: { icon: 64, text: "text-5xl" },
+    small: { icon: 22, text: "text-xl" },
+    default: { icon: 30, text: "text-3xl" },
+    large: { icon: 56, text: "text-5xl" },
   };
   const d = dims[size];
   return (
     <div className="flex items-center justify-center gap-2">
-      <Gauge size={d.icon} className="text-green-600" strokeWidth={2.5} />
+      <Gauge size={d.icon} style={{ color: "var(--primary)" }} strokeWidth={2.5} />
       {showText && (
-        <span className={`${d.text} font-bold text-gray-800`}>
-          Ta<span className="text-green-600">Certo!</span>
+        <span className={`${d.text} font-bold`} style={{ color: "var(--text)" }}>
+          Ta<span style={{ color: "var(--primary)" }}>Certo!</span>
         </span>
       )}
     </div>
@@ -23,7 +23,8 @@ export function BackButton({ onClick }) {
   return (
     <button
       onClick={onClick}
-      className="mb-4 text-green-600 hover:text-green-700 transition-colors"
+      className="mb-4 transition-colors"
+      style={{ color: "var(--primary)" }}
       aria-label="Voltar"
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
