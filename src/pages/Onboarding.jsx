@@ -460,6 +460,7 @@ export default function Onboarding() {
           >
             Começar a usar!
           </button>
+          </div>
         </>
       )}
     </AuthLayout>
