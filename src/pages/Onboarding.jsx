@@ -1,10 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import {
-  Eye, EyeOff, Briefcase, Truck, ClipboardList, CalendarDays,
-  CheckCircle2, Clock, Info, ChevronDown,
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import {
   Eye, EyeOff, Briefcase, Truck, ClipboardList, CalendarDays,
