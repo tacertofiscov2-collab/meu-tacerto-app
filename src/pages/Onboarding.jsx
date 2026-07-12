@@ -364,8 +364,8 @@ export default function Onboarding() {
       {step === 3 && (
         <>
           <div className="text-center mb-3">
-            <div className="flex justify-center mb-1">
-              <CalendarDays size={32} strokeWidth={2} className="text-green-600" />
+            <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2">
+              <CalendarDays size={28} strokeWidth={2} className="text-green-600" />
             </div>
             <h2 className="text-lg font-semibold text-gray-800">Sobre seu MEI</h2>
             <p className="text-xs text-gray-500 mt-1">Você abriu seu MEI em {anoAtual}?</p>
