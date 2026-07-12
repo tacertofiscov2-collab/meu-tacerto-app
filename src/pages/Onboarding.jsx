@@ -205,10 +205,16 @@ export default function Onboarding() {
   }
 
   const onBack = step > 0 ? () => setStep(step - 1) : undefined;
+  const progressStep =
+    step === 3
+      ? meiEsseAno === false || (meiEsseAno === true && mesMei)
+        ? 3
+        : 2
+      : step;
 
   return (
     <AuthLayout onBack={onBack}>
-      {step > 0 && <Progress step={step} />}
+      {step > 0 && <Progress step={progressStep} />}
       {step === 0 && (
         <>
           <div className="text-center mb-4">
