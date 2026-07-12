@@ -2,8 +2,9 @@ import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import {
   Eye, EyeOff, Briefcase, Truck, ClipboardList, CalendarDays,
-  CheckCircle2, Clock, Info, Hand,
+  CheckCircle2, Clock, Info, Hand, ChevronDown,
 } from "lucide-react";
+import GoogleButton from "@/components/GoogleButton";
 import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
 import { AuthLayout } from "@/components/AuthLayout";
@@ -56,55 +57,75 @@ const MESES = [
 ];
 
 function MonthPicker({ value, onChange }) {
-  const ref = useRef(null);
-  const [atTop, setAtTop] = useState(true);
-  const [atBottom, setAtBottom] = useState(false);
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+  const listRef = useRef(null);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const update = () => {
-      setAtTop(el.scrollTop <= 1);
-      setAtBottom(el.scrollTop + el.clientHeight >= el.scrollHeight - 1);
+    if (!open) return;
+    const onDoc = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
     };
-    update();
-    el.addEventListener("scroll", update, { passive: true });
-    return () => el.removeEventListener("scroll", update);
-  }, []);
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  useEffect(() => {
+    if (open && listRef.current && value) {
+      const idx = parseInt(value) - 1;
+      listRef.current.scrollTop = Math.max(0, idx * 44 - 44);
+    }
+  }, [open, value]);
+
+  const label = value
+    ? `Mês ${String(value).padStart(2, "0")} · ${MESES[parseInt(value) - 1]}`
+    : "Selecione o mês";
 
   return (
-    <div className="relative mb-3">
-      {!atTop && (
-        <div className="pointer-events-none absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-white via-white/80 to-transparent z-10 rounded-t-xl" />
-      )}
-      {!atBottom && (
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white via-white/80 to-transparent z-10 rounded-b-xl" />
-      )}
-      <div
-        ref={ref}
-        className="h-[160px] overflow-y-auto rounded-xl border border-gray-200 hide-scrollbar overscroll-contain"
+    <div className="relative mb-3" ref={wrapRef}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={`w-full h-[44px] px-4 flex items-center justify-between rounded-xl border text-sm transition ${
+          value ? "border-green-600 bg-green-50 text-green-700 font-semibold" : "border-gray-200 text-gray-600"
+        }`}
       >
-        {MESES.map((mes, i) => {
-          const val = String(i + 1);
-          const sel = value === val;
-          const label = `Mês ${String(i + 1).padStart(2, "0")} · ${mes}`;
-          return (
-            <button
-              key={mes}
-              type="button"
-              tabIndex={-1}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => onChange(val)}
-              className={`w-full h-[44px] px-4 flex items-center gap-3 border-b border-gray-100 border-l-4 transition-all text-left focus:outline-none ${
-                sel ? "bg-green-50 border-l-green-600 text-green-700"
-                    : "border-l-transparent text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <span className={`text-sm ${sel ? "font-semibold" : "font-medium"}`}>{label}</span>
-            </button>
-          );
-        })}
-      </div>
+        <span>{label}</span>
+        <ChevronDown
+          size={18}
+          strokeWidth={2}
+          className={`transition-transform ${open ? "rotate-180" : ""} ${value ? "text-green-600" : "text-gray-400"}`}
+        />
+      </button>
+      {open && (
+        <div className="absolute left-0 right-0 top-full mt-1 z-20 bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden">
+          <div
+            ref={listRef}
+            className="max-h-[176px] overflow-y-auto overscroll-contain hide-scrollbar"
+          >
+            {MESES.map((mes, i) => {
+              const val = String(i + 1);
+              const sel = value === val;
+              const item = `Mês ${String(i + 1).padStart(2, "0")} · ${mes}`;
+              return (
+                <button
+                  key={mes}
+                  type="button"
+                  tabIndex={-1}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => { onChange(val); setOpen(false); }}
+                  className={`w-full h-[44px] px-4 flex items-center border-b border-gray-100 border-l-4 text-left focus:outline-none ${
+                    sel ? "bg-green-50 border-l-green-600 text-green-700 font-semibold"
+                        : "border-l-transparent text-gray-700 hover:bg-gray-50 font-medium"
+                  }`}
+                >
+                  <span className="text-sm">{item}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -257,6 +278,10 @@ export default function Onboarding() {
           <button onClick={() => setStep(1)} className={btnSecondary + " mt-2"}>
             Continuar como visitante
           </button>
+
+          <div className="mt-2">
+            <GoogleButton />
+          </div>
 
           <p className="text-center text-xs text-gray-500 mt-3">
             Já tem conta?{" "}
