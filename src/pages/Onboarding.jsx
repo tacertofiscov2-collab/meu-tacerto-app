@@ -141,6 +141,7 @@ export default function Onboarding() {
   const [showSenha, setShowSenha] = useState(false);
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleMsg, setGoogleMsg] = useState("");
 
   const [nome, setNome] = useState("");
   const [tipoMei, setTipoMei] = useState("");
@@ -217,10 +218,15 @@ export default function Onboarding() {
       {step > 0 && <Progress step={progressStep} />}
       {step === 0 && (
         <>
-          <div className="text-center mb-4">
-            <h2 className="text-xl font-bold text-gray-800">Bem-vindo ao TaCerto!</h2>
+          <div className="text-center mb-3">
+            <h2 className="text-xl font-bold text-gray-800">
+              Bem-vindo ao Ta<span className="text-green-600">Certo!</span>
+            </h2>
             <p className="text-sm text-gray-500 mt-1">
               Crie sua conta ou continue como visitante
+            </p>
+            <p className="text-sm text-gray-500 font-medium mt-2 mb-2">
+              Cuidar do seu MEI nunca foi tão simples
             </p>
           </div>
 
@@ -289,7 +295,11 @@ export default function Onboarding() {
           </button>
 
           <div className="mt-2">
-            <GoogleButton />
+            {/* TODO: configurar Google OAuth no Supabase depois */}
+            <GoogleButton onClick={() => setGoogleMsg("Login com Google em breve")} />
+            {googleMsg && (
+              <p className="text-center text-xs text-gray-500 mt-1.5">{googleMsg}</p>
+            )}
           </div>
 
           <p className="text-center text-xs text-gray-500 mt-3">
@@ -299,6 +309,22 @@ export default function Onboarding() {
               className="text-green-600 hover:text-green-700 font-medium"
             >
               Fazer login
+            </button>
+          </p>
+
+          <p className="text-center text-xs text-gray-400 mt-2">
+            <button
+              onClick={() => navigate("/sobre")}
+              className="hover:text-gray-600"
+            >
+              Sobre o Ta<span className="text-green-600">Certo!</span>
+            </button>
+            <span className="mx-1.5">·</span>
+            <button
+              onClick={() => navigate("/termos")}
+              className="hover:text-gray-600"
+            >
+              Termos de uso
             </button>
           </p>
         </>

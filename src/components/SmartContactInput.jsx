@@ -16,7 +16,7 @@ export function detectMode(v) {
 export default function SmartContactInput({
   value,
   onChange,
-  placeholder = "Digite seu e-mail ou celular",
+  placeholder = "Digite seu e-mail ou telefone",
 }) {
   const mode = detectMode(value);
 

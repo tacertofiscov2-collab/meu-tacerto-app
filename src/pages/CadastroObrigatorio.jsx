@@ -60,6 +60,7 @@ export default function CadastroObrigatorio() {
         <p className="text-xs text-gray-500 mt-1">
           Crie seu cadastro e nunca perca seus lançamentos.
         </p>
+        <p className="text-xs text-gray-400 mt-1">Leva menos de 1 minuto</p>
       </div>
 
       {erro && (

@@ -54,7 +54,7 @@ export default function EsqueciSenha() {
               <KeyRound size={28} strokeWidth={2} className="text-green-600" />
             </div>
             <h2 className="text-lg font-semibold text-gray-800">Recuperar acesso</h2>
-            <p className="text-xs text-gray-500 mt-1">Informe seu e-mail ou celular cadastrado</p>
+            <p className="text-xs text-gray-500 mt-1">Informe seu e-mail ou telefone cadastrado</p>
           </div>
 
           {erro && (
