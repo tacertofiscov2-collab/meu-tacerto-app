@@ -16,6 +16,7 @@ export default function App() {
         <Route path="/" element={<Welcome />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/esqueci-senha" element={<EsqueciSenha />} />
         <Route path="/cadastro-obrigatorio" element={<CadastroObrigatorio />} />
         <Route path="/dashboard" element={<Dashboard />} />
