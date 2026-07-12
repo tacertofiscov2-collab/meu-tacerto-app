@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { KeyRound } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { TaCertoLogo, BackButton } from "@/components/TaCertoLogo";
 
