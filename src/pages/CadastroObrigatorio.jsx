@@ -74,11 +74,11 @@ export default function CadastroObrigatorio() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-2xl mb-4">
-            💾
+          <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+            <CloudUpload size={32} strokeWidth={2} className="text-green-600" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800">Salve seu progresso</h2>
-          <p className="text-sm text-gray-500 mt-1 mb-6">
+          <h2 className="text-xl font-bold text-gray-800 text-center">Salve seu progresso</h2>
+          <p className="text-sm text-gray-500 text-center mt-2 mb-6">
             Crie seu cadastro grátis e nunca perca seus lançamentos.
           </p>
 
