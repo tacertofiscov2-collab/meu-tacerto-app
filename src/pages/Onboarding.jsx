@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import {
   Eye, EyeOff, Briefcase, Truck, ClipboardList, CalendarDays,
-  CheckCircle2, Clock, Info, Hand, ChevronDown,
+  CheckCircle2, Clock, Info, IdCard, ChevronDown,
 } from "lucide-react";
 import GoogleButton from "@/components/GoogleButton";
 import { supabase } from "@/lib/supabase";
@@ -211,9 +211,12 @@ export default function Onboarding() {
       {step > 0 && <Progress step={step} />}
       {step === 0 && (
         <>
-          <p className="text-sm text-gray-500 text-center mb-4">
-            Crie sua conta ou continue como visitante
-          </p>
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-bold text-gray-800">Bem-vindo ao TaCerto!</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Crie sua conta ou continue como visitante
+            </p>
+          </div>
 
           {erro && <ErrorBox msg={erro} />}
 
@@ -299,7 +302,7 @@ export default function Onboarding() {
         <div className="space-y-4">
           <div className="text-center">
             <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2">
-              <Hand size={28} strokeWidth={2} className="text-green-600" />
+              <IdCard size={28} strokeWidth={2} className="text-green-600" />
             </div>
             <h2 className="text-xl font-semibold text-gray-800">Como posso te chamar?</h2>
             <p className="text-sm text-gray-500 mt-1">Seu nome ou apelido</p>
@@ -419,30 +422,33 @@ export default function Onboarding() {
             })}
           </div>
 
-          {meiEsseAno === true && (
-            <>
-              <p className="text-xs font-medium text-gray-700 mb-1.5">Qual mês você abriu?</p>
-              <MonthPicker value={mesMei} onChange={setMesMei} />
-              {mesMei && (
-                <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 mb-3">
-                  <p className="text-xs text-green-700 font-medium inline-flex items-center gap-1.5">
-                    <Info size={14} strokeWidth={2} />
-                    Limite: R$ {limiteFinal.toLocaleString("pt-BR")},00
-                  </p>
-                </div>
-              )}
-            </>
-          )}
+          <div className="min-h-[132px]">
+            {meiEsseAno === true && (
+              <>
+                <p className="text-xs font-medium text-gray-700 mb-1.5">Qual mês você abriu?</p>
+                <MonthPicker value={mesMei} onChange={setMesMei} />
+                {mesMei && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-2.5">
+                    <p className="text-xs text-green-700 font-medium inline-flex items-center gap-1.5">
+                      <Info size={14} strokeWidth={2} />
+                      Limite: R$ {limiteFinal.toLocaleString("pt-BR")},00
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
 
+            {meiEsseAno === false && (
+              <div className="bg-green-50 border border-green-200 rounded-xl p-2.5">
+                <p className="text-xs text-green-700 font-medium inline-flex items-center gap-1.5">
+                  <CheckCircle2 size={14} strokeWidth={2} />
+                  Limite cheio: R$ {limiteCheio.toLocaleString("pt-BR")},00 / ano
+                </p>
+              </div>
+            )}
+          </div>
 
-          {meiEsseAno === false && (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 mb-3">
-              <p className="text-xs text-green-700 font-medium inline-flex items-center gap-1.5">
-                <CheckCircle2 size={14} strokeWidth={2} />
-                Limite cheio: R$ {limiteCheio.toLocaleString("pt-BR")},00 / ano
-              </p>
-            </div>
-          )}
+          <div className="mt-3">
 
           <button
             onClick={handleFinalizar}
@@ -454,6 +460,7 @@ export default function Onboarding() {
           >
             Começar a usar!
           </button>
+          </div>
         </>
       )}
     </AuthLayout>
