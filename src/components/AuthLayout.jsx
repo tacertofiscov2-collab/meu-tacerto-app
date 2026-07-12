@@ -36,7 +36,7 @@ export function BackArrow({ onClick }) {
  */
 export function AuthLayout({ onBack, children, topSlot }) {
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-green-50 to-white flex flex-col items-center px-4 pt-10 pb-4">
+    <div className="min-h-screen min-h-[100dvh] w-full bg-gradient-to-br from-green-50 to-white flex flex-col items-center px-4 pt-10 pb-4">
       <BackArrow onClick={onBack} />
       <AuthHeader />
       {topSlot && <div className="w-full max-w-md mt-3">{topSlot}</div>}
