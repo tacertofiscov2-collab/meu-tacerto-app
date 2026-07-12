@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import {
   Eye, EyeOff, Briefcase, Truck, ClipboardList, CalendarDays,
-  CheckCircle2, Clock, Info,
+  CheckCircle2, Clock, Info, Hand,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
@@ -82,7 +82,7 @@ function MonthPicker({ value, onChange }) {
       )}
       <div
         ref={ref}
-        className="h-[160px] overflow-y-auto rounded-xl border border-gray-200 hide-scrollbar"
+        className="h-[160px] overflow-y-auto rounded-xl border border-gray-200 hide-scrollbar overscroll-contain"
       >
         {MESES.map((mes, i) => {
           const val = String(i + 1);
@@ -92,8 +92,10 @@ function MonthPicker({ value, onChange }) {
             <button
               key={mes}
               type="button"
+              tabIndex={-1}
+              onMouseDown={(e) => e.preventDefault()}
               onClick={() => onChange(val)}
-              className={`w-full h-[44px] px-4 flex items-center gap-3 border-b border-gray-100 border-l-4 transition-all text-left ${
+              className={`w-full h-[44px] px-4 flex items-center gap-3 border-b border-gray-100 border-l-4 transition-all text-left focus:outline-none ${
                 sel ? "bg-green-50 border-l-green-600 text-green-700"
                     : "border-l-transparent text-gray-700 hover:bg-gray-50"
               }`}
@@ -184,10 +186,8 @@ export default function Onboarding() {
   const onBack = step > 0 ? () => setStep(step - 1) : undefined;
 
   return (
-    <AuthLayout
-      onBack={onBack}
-      topSlot={step > 0 ? <Progress step={step} /> : null}
-    >
+    <AuthLayout onBack={onBack}>
+      {step > 0 && <Progress step={step} />}
       {step === 0 && (
         <>
           <p className="text-sm text-gray-500 text-center mb-4">
@@ -273,6 +273,9 @@ export default function Onboarding() {
       {step === 1 && (
         <div className="space-y-4">
           <div className="text-center">
+            <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2">
+              <Hand size={28} strokeWidth={2} className="text-green-600" />
+            </div>
             <h2 className="text-xl font-semibold text-gray-800">Como posso te chamar?</h2>
             <p className="text-sm text-gray-500 mt-1">Seu nome ou apelido</p>
           </div>
@@ -310,8 +313,8 @@ export default function Onboarding() {
       {step === 2 && (
         <>
           <div className="text-center mb-4">
-            <div className="flex justify-center mb-2">
-              <ClipboardList size={36} strokeWidth={2} className="text-green-600" />
+            <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2">
+              <ClipboardList size={28} strokeWidth={2} className="text-green-600" />
             </div>
             <h2 className="text-lg font-semibold text-gray-800">Qual é o seu MEI?</h2>
           </div>
@@ -361,8 +364,8 @@ export default function Onboarding() {
       {step === 3 && (
         <>
           <div className="text-center mb-3">
-            <div className="flex justify-center mb-1">
-              <CalendarDays size={32} strokeWidth={2} className="text-green-600" />
+            <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2">
+              <CalendarDays size={28} strokeWidth={2} className="text-green-600" />
             </div>
             <h2 className="text-lg font-semibold text-gray-800">Sobre seu MEI</h2>
             <p className="text-xs text-gray-500 mt-1">Você abriu seu MEI em {anoAtual}?</p>

@@ -58,7 +58,7 @@ export default function CadastroObrigatorio() {
 
         <h2 className="text-lg font-bold text-gray-800">Salve seu progresso</h2>
         <p className="text-xs text-gray-500 mt-1">
-          Crie seu cadastro grátis e nunca perca seus lançamentos.
+          Crie seu cadastro e nunca perca seus lançamentos.
         </p>
       </div>
 
@@ -116,7 +116,7 @@ export default function CadastroObrigatorio() {
         disabled={loading}
         className="w-full py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium text-sm transition-colors disabled:opacity-50"
       >
-        {loading ? "Criando cadastro..." : "Criar cadastro grátis"}
+        {loading ? "Criando cadastro..." : "Criar cadastro"}
       </button>
     </AuthLayout>
   );
