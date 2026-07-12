@@ -29,7 +29,7 @@ export default function Login() {
         </div>
         <div className="text-center mb-8">
           <TaCertoLogo size="default" />
-          <p className="text-xs text-gray-500 mt-1">Sua vida fiscal organizada de forma simples</p>
+          <p className="text-xs text-gray-500 mt-1">Educação fiscal para seu MEI</p>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
           <h2 className="text-xl font-semibold text-gray-800 text-center">Entre na sua conta</h2>

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { KeyRound } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { TaCertoLogo, BackButton } from "@/components/TaCertoLogo";
 
@@ -65,10 +66,12 @@ export default function EsqueciSenha() {
           ) : (
             <>
               <div className="text-center mb-6">
-                <div className="text-5xl mb-3">🔑</div>
+                <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-3">
+                  <KeyRound size={32} strokeWidth={2} className="text-green-600" />
+                </div>
                 <h2 className="text-xl font-semibold text-gray-800">Recuperar acesso</h2>
                 <p className="text-sm text-gray-500 mt-1">
-                  Informe seu e-mail ou celular cadastrado
+                  Informe seu e-mail ou número cadastrado
                 </p>
               </div>
 
@@ -82,7 +85,7 @@ export default function EsqueciSenha() {
                 type="text"
                 value={contato}
                 onChange={(e) => setContato(e.target.value)}
-                placeholder="Digite seu e-mail ou número de telefone"
+                placeholder="Digite seu e-mail ou número cadastrado"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-300 transition mb-4"
               />
 
