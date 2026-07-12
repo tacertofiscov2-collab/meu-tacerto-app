@@ -85,21 +85,23 @@ export default function Onboarding() {
 
   async function handleCadastro() {
     setErro("");
-    if (authMode === "phone") return setErro("Cadastro por celular em breve. Use e-mail por enquanto.");
-    if (!email || !senha) return setErro("Preencha email e senha.");
+    const mode = detectMode(contato);
+    if (mode === "phone") return setErro("Cadastro por celular em breve. Use e-mail por enquanto.");
+    if (!contato || !senha) return setErro("Preencha email e senha.");
     if (senha.length < 8) return setErro("A senha precisa ter pelo menos 8 caracteres.");
     if (senha !== confirmarSenha) return setErro("As senhas não coincidem.");
     setLoading(true);
-    const { error } = await supabase.auth.signUp({ email, password: senha });
+    const { error } = await supabase.auth.signUp({ email: contato, password: senha });
     if (error && !error.message.toLowerCase().includes("already")) {
       setLoading(false);
       return setErro("Erro ao cadastrar: " + error.message);
     }
-    const { error: err2 } = await supabase.auth.signInWithPassword({ email, password: senha });
+    const { error: err2 } = await supabase.auth.signInWithPassword({ email: contato, password: senha });
     setLoading(false);
     if (err2) return setErro("Erro ao entrar. Tente novamente.");
     setStep(1);
   }
+
 
   async function handleFinalizar() {
     salvarPerfilLocal({
