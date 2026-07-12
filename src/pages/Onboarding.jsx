@@ -395,9 +395,6 @@ export default function Onboarding() {
             <>
               <p className="text-xs font-medium text-gray-700 mb-1.5">Qual mês você abriu?</p>
               <MonthPicker value={mesMei} onChange={setMesMei} />
-            </>
-          )}
-
               {mesMei && (
                 <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 mb-3">
                   <p className="text-xs text-green-700 font-medium inline-flex items-center gap-1.5">
@@ -408,6 +405,7 @@ export default function Onboarding() {
               )}
             </>
           )}
+
 
           {meiEsseAno === false && (
             <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 mb-3">
