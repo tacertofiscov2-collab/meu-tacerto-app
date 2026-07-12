@@ -313,8 +313,8 @@ export default function Onboarding() {
       {step === 2 && (
         <>
           <div className="text-center mb-4">
-            <div className="flex justify-center mb-2">
-              <ClipboardList size={36} strokeWidth={2} className="text-green-600" />
+            <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2">
+              <ClipboardList size={28} strokeWidth={2} className="text-green-600" />
             </div>
             <h2 className="text-lg font-semibold text-gray-800">Qual é o seu MEI?</h2>
           </div>
