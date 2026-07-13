@@ -207,14 +207,11 @@ export default function Onboarding() {
         >
           <ArrowLeft size={22} strokeWidth={2} />
         </button>
-        <div className="flex items-center gap-1.5">
-          <Gauge size={18} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
-          <span className="text-sm font-bold">
-            <span style={{ color: "var(--text)" }}>Ta</span>
-            <span style={{ color: "var(--primary)" }}>Certo!</span>
-          </span>
+        <div className="flex items-center justify-center">
+          <Gauge size={40} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
         </div>
       </div>
+
 
       <div className="flex-1 flex flex-col justify-center px-6 pb-6">
         <div className="max-w-sm w-full mx-auto">
