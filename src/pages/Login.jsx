@@ -64,14 +64,8 @@ export default function Login() {
             Acesse sua conta
           </p>
 
-          {erro && (
-            <p
-              className="text-xs text-center mt-4"
-              style={{ color: "var(--danger)" }}
-            >
-              {erro}
-            </p>
-          )}
+
+
 
           <div className="mt-6 space-y-5">
             <div className="relative">
