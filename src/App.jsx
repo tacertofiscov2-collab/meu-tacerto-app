@@ -40,6 +40,7 @@ export default function App() {
         <Route path="/preferencias" element={<Preferencias />} />
         <Route path="/faq" element={<Faq />} />
         <Route path="/contas" element={<Contas />} />
+        <Route path="/velocimetro" element={<Velocimetro />} />
       </Routes>
     </BrowserRouter>
   );
