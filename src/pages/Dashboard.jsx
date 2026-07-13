@@ -182,7 +182,7 @@ export default function Dashboard() {
       {/* Conteúdo com padding inferior para não ficar sob a navbar */}
       <div
         className="flex-1 overflow-y-auto"
-        style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(110px + env(safe-area-inset-bottom))" }}
       >
         {/* 1. Header */}
         <header className="px-5 pt-6 pb-4 flex items-start justify-between">
