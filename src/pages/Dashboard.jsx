@@ -181,8 +181,8 @@ export default function Dashboard() {
     >
       {/* Conteúdo com padding inferior para não ficar sob a navbar */}
       <div
-        className="min-h-[100dvh] overflow-y-auto"
-        style={{ paddingBottom: "calc(80px + env(safe-area-inset-bottom))" }}
+        className="overflow-y-auto"
+        style={{ paddingBottom: "calc(70px + env(safe-area-inset-bottom))" }}
       >
         {/* 1. Header */}
         <header className="px-5 pt-4 pb-2 flex items-start justify-between">
