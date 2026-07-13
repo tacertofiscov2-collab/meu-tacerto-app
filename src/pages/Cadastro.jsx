@@ -105,6 +105,10 @@ export default function Cadastro() {
               </button>
             </div>
 
+            {erro && <AuthError>{erro}</AuthError>}
+
+
+
             <button
               onClick={handleCadastrar}
               disabled={loading}
