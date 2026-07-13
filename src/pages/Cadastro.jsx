@@ -1,41 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { ArrowLeft, Eye, EyeOff, Mail, Gauge, Check } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Mail, Gauge } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { detectMode } from "@/components/SmartContactInput";
-
-function passwordScore(pw) {
-  let s = 0;
-  if (pw.length >= 8) s++;
-  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
-  if (/\d/.test(pw)) s++;
-  if (/[^A-Za-z0-9]/.test(pw)) s++;
-  return s;
-}
-
-function StrengthBars({ pw }) {
-  const score = passwordScore(pw);
-  const colors = ["var(--danger)", "var(--danger)", "#f59e0b", "var(--primary)"];
-  return (
-    <div className="flex gap-1.5 mt-2">
-      {[0, 1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className="flex-1 h-1 rounded-full transition-colors"
-          style={{ backgroundColor: i < score ? colors[Math.min(score - 1, 3)] : "var(--border)" }}
-        />
-      ))}
-    </div>
-  );
-}
 
 export default function Cadastro() {
   const navigate = useNavigate();
   const [contato, setContato] = useState("");
   const [senha, setSenha] = useState("");
-  const [senha2, setSenha2] = useState("");
   const [showSenha, setShowSenha] = useState(false);
-  const [showSenha2, setShowSenha2] = useState(false);
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -51,7 +24,6 @@ export default function Cadastro() {
     const mode = detectMode(contato);
     if (mode === "phone") return setErro("Cadastro por telefone em breve. Use e-mail.");
     if (senha.length < 8) return setErro("A senha precisa ter pelo menos 8 caracteres.");
-    if (senha !== senha2) return setErro("As senhas não coincidem.");
     setLoading(true);
     const { error } = await supabase.auth.signUp({ email: contato, password: senha });
     if (error) {
@@ -94,7 +66,7 @@ export default function Cadastro() {
             Crie sua conta
           </h1>
           <p className="text-sm text-center mt-1.5" style={{ color: "var(--text-secondary)" }}>
-            É rápido e leva menos de 1 minuto
+            Crie em 1 minuto e tenha a experiência completa do app.
           </p>
 
           {erro && (
@@ -103,7 +75,7 @@ export default function Cadastro() {
             </p>
           )}
 
-          <div className="mt-6 space-y-3">
+          <div className="mt-6 space-y-5">
             <div className="relative">
               <Mail
                 size={18}
@@ -115,60 +87,29 @@ export default function Cadastro() {
                 placeholder="Digite seu e-mail ou telefone"
                 value={contato}
                 onChange={(e) => setContato(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
+                className="w-full pl-11 pr-4 py-4 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
                 style={fieldStyle}
               />
             </div>
 
-            <div>
-              <div className="relative">
-                <input
-                  type={showSenha ? "text" : "password"}
-                  placeholder="Crie uma senha (mín. 8 caracteres)"
-                  value={senha}
-                  onChange={(e) => setSenha(e.target.value)}
-                  className="w-full px-4 py-3 pr-11 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
-                  style={fieldStyle}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowSenha(!showSenha)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  {showSenha ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-              {senha && <StrengthBars pw={senha} />}
+            <div className="relative">
+              <input
+                type={showSenha ? "text" : "password"}
+                placeholder="Crie uma senha (mín. 8 caracteres)"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                className="w-full px-4 py-4 pr-11 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
+                style={fieldStyle}
+              />
+              <button
+                type="button"
+                onClick={() => setShowSenha(!showSenha)}
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                {showSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
-
-            {senha.length >= 8 && (
-              <div className="relative">
-                <input
-                  type={showSenha2 ? "text" : "password"}
-                  placeholder="Confirme sua senha"
-                  value={senha2}
-                  onChange={(e) => setSenha2(e.target.value)}
-                  className="w-full px-4 py-3 pr-16 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
-                  style={fieldStyle}
-                />
-                {senha2 && senha === senha2 && (
-                  <Check
-                    size={18}
-                    className="absolute right-10 top-1/2 -translate-y-1/2"
-                    style={{ color: "var(--primary)" }}
-                  />
-                )}
-                <button
-                  type="button"
-                  onClick={() => setShowSenha2(!showSenha2)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  {showSenha2 ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            )}
 
             <button
               onClick={handleCadastrar}
