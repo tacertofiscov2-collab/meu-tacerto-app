@@ -26,106 +26,96 @@ const COR_LARANJA = "#f59e0b";
 const COR_VERMELHO = "#ef4444";
 
 function faixaDoPercentual(p) {
-  if (p < 60) return { cor: COR_VERDE, label: "Tranquilo" };
+  if (p < 60) return { cor: COR_VERDE, label: "Tudo certo" };
   if (p < 80) return { cor: COR_LARANJA, label: "Atenção" };
-  return { cor: COR_VERMELHO, label: "Alerta" };
+  if (p <= 100) return { cor: COR_VERMELHO, label: "Cuidado" };
+  return { cor: "#991b1b", label: "Limite ultrapassado" };
 }
 
 /**
  * Velocímetro semicircular (arco 180°, abrindo para cima).
- * Faixas: 0-60% verde, 60-80% laranja, 80-100% vermelho.
+ * Especificação matemática:
+ * - viewBox="0 0 200 120", centro (100,100), raio 80, stroke-width 18
+ * - Verde 0-60%, Laranja 60-80%, Vermelho 80-100%
+ * - Ponteiro recalculado automaticamente pelo percentual.
  */
 function Velocimetro({ percentual }) {
   const p = Math.max(0, Math.min(100, percentual));
-  const W = 280;
-  const H = 170;
-  const CX = W / 2;
-  const CY = H - 20;
-  const R = 110;
-  const STROKE = 20;
 
-  // Ponto no arco: 0% => esquerda (180°), 100% => direita (0°)
-  const pointOnArc = (pct) => {
-    const angleDeg = 180 - (pct / 100) * 180;
-    const rad = (angleDeg * Math.PI) / 180;
-    return { x: CX + R * Math.cos(rad), y: CY - R * Math.sin(rad) };
-  };
+  // Pontos fixos dos segmentos coloridos (arco contínuo)
+  const P0 = { x: 20, y: 100 };
+  const P60 = { x: 124.7, y: 23.9 };
+  const P80 = { x: 164.7, y: 52.98 };
+  const P100 = { x: 180, y: 100 };
 
-  const arcPath = (startPct, endPct) => {
-    const s = pointOnArc(startPct);
-    const e = pointOnArc(endPct);
-    const largeArc = endPct - startPct > 50 ? 1 : 0;
-    return `M ${s.x} ${s.y} A ${R} ${R} 0 ${largeArc} 1 ${e.x} ${e.y}`;
-  };
-
-  // Ponteiro
+  // Ponteiro: raio 62, recalculado pelo percentual atual
   const angleDeg = 180 - (p / 100) * 180;
   const rad = (angleDeg * Math.PI) / 180;
-  const needleLen = R - 6;
-  const nx = CX + needleLen * Math.cos(rad);
-  const ny = CY - needleLen * Math.sin(rad);
+  const needleR = 62;
+  const nx = 100 + needleR * Math.cos(rad);
+  const ny = 100 - needleR * Math.sin(rad);
 
-  const faixa = faixaDoPercentual(p);
+  const faixa = faixaDoPercentual(percentual);
 
   return (
     <div className="flex flex-col items-center">
       <svg
-        viewBox={`0 0 ${W} ${H}`}
-        className="w-full max-w-[300px]"
+        viewBox="0 0 200 120"
+        className="w-full max-w-[260px]"
         role="img"
         aria-label={`Velocímetro fiscal: ${Math.round(p)} por cento`}
       >
         {/* trilha de fundo */}
         <path
-          d={arcPath(0, 100)}
+          d={`M ${P0.x} ${P0.y} A 80 80 0 0 1 ${P100.x} ${P100.y}`}
           fill="none"
           stroke="var(--field)"
-          strokeWidth={STROKE}
+          strokeWidth={18}
           strokeLinecap="round"
         />
         {/* verde 0-60 */}
         <path
-          d={arcPath(0, 60)}
+          d={`M ${P0.x} ${P0.y} A 80 80 0 0 1 ${P60.x} ${P60.y}`}
           fill="none"
           stroke={COR_VERDE}
-          strokeWidth={STROKE}
+          strokeWidth={18}
           strokeLinecap="round"
         />
         {/* laranja 60-80 */}
         <path
-          d={arcPath(60, 80)}
+          d={`M ${P60.x} ${P60.y} A 80 80 0 0 1 ${P80.x} ${P80.y}`}
           fill="none"
           stroke={COR_LARANJA}
-          strokeWidth={STROKE}
-          strokeLinecap="butt"
+          strokeWidth={18}
+          strokeLinecap="round"
         />
         {/* vermelho 80-100 */}
         <path
-          d={arcPath(80, 100)}
+          d={`M ${P80.x} ${P80.y} A 80 80 0 0 1 ${P100.x} ${P100.y}`}
           fill="none"
           stroke={COR_VERMELHO}
-          strokeWidth={STROKE}
+          strokeWidth={18}
           strokeLinecap="round"
         />
 
         {/* ponteiro */}
         <line
-          x1={CX}
-          y1={CY}
+          x1={100}
+          y1={100}
           x2={nx}
           y2={ny}
           stroke="var(--text)"
           strokeWidth={3}
           strokeLinecap="round"
         />
-        {/* pivô */}
-        <circle cx={CX} cy={CY} r={9} fill="var(--surface)" stroke="var(--text)" strokeWidth={2} />
-        <circle cx={CX} cy={CY} r={3} fill="var(--text)" />
+        {/* pivô: círculo branco com centro escuro */}
+        <circle cx={100} cy={100} r={7} fill="var(--text)" />
+        <circle cx={100} cy={100} r={3.5} fill="var(--bg)" />
       </svg>
 
       <div className="mt-1 flex flex-col items-center">
         <span className="text-4xl font-bold" style={{ color: "var(--text)" }}>
-          {Math.round(p)}%
+          {Math.round(percentual)}%
         </span>
         <span className="text-sm font-semibold mt-0.5" style={{ color: faixa.cor }}>
           {faixa.label}
