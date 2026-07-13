@@ -228,7 +228,7 @@ export default function Onboarding() {
               <div className="mt-6 space-y-5">
                 <input
                   type="text"
-                  placeholder="Ex: João Silva"
+                  placeholder="Digite seu nome ou apelido"
                   value={nome}
                   maxLength={30}
                   autoFocus
