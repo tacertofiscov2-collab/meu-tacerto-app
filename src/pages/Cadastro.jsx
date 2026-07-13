@@ -66,15 +66,8 @@ export default function Cadastro() {
           <h1 className="text-2xl font-bold text-center" style={{ color: "var(--text)" }}>
             Crie sua conta
           </h1>
-          <p className="text-sm text-center mt-1.5" style={{ color: "var(--text-secondary)" }}>
-            Crie em 1 minuto e tenha a experiência completa do app.
-          </p>
 
-          {erro && (
-            <p className="text-xs text-center mt-4" style={{ color: "var(--danger)" }}>
-              {erro}
-            </p>
-          )}
+
 
           <div className="mt-6 space-y-5">
             <div className="relative">
