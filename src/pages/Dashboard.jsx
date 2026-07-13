@@ -217,7 +217,7 @@ export default function Dashboard() {
         </header>
 
 
-        <div className="px-5 space-y-2">
+        <div className="px-5 space-y-2 flex-1 flex flex-col">
           {/* Banner de visitante */}
           {isVisitante && banner && (
             <div
