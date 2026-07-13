@@ -73,29 +73,29 @@ export default function Welcome() {
               className="min-w-full snap-center flex flex-col items-center px-6"
             >
               {/* Logo topo — igual em todos os slides */}
-              <div className="flex items-center justify-center gap-2 shrink-0">
-                <Gauge size={26} className="text-green-500" strokeWidth={2.5} />
-                <span className="text-2xl font-bold text-white">
+              <div className="flex items-center justify-center gap-1.5 shrink-0">
+                <Gauge size={22} className="text-green-500" strokeWidth={2.5} />
+                <span className="text-xl font-bold text-white">
                   Ta<span className="text-green-500">Certo!</span>
                 </span>
               </div>
 
               {/* Ilustração */}
-              <div className="flex-1 min-h-0 w-full flex items-center justify-center my-3">
+              <div className="flex-1 min-h-0 w-full flex items-center justify-center my-1">
                 <img
                   src={s.img}
                   alt={s.alt}
                   width={1024}
                   height={1024}
                   loading={i === 0 ? "eager" : "lazy"}
-                  className="max-h-full max-w-full object-contain"
+                  className="max-h-[44vh] max-w-full object-contain"
                   style={{ mixBlendMode: "screen" }}
                 />
               </div>
 
               {/* Título manuscrito */}
               <h2
-                className="text-3xl leading-tight text-center text-white px-2"
+                className="text-2xl leading-tight text-center text-white px-2"
                 style={handwritten}
               >
                 {s.titulo}
@@ -103,10 +103,10 @@ export default function Welcome() {
 
               {/* Linha decorativa curva */}
               <svg
-                width="90"
-                height="12"
+                width="80"
+                height="10"
                 viewBox="0 0 90 12"
-                className="mt-1 mb-2 shrink-0"
+                className="mt-0.5 mb-1 shrink-0"
                 aria-hidden="true"
               >
                 <path
@@ -120,7 +120,7 @@ export default function Welcome() {
 
               {/* Subtítulo manuscrito mais fino */}
               <p
-                className="text-xl text-center text-white/80 leading-snug px-2 pb-1"
+                className="text-lg text-center text-white/80 leading-snug px-2 pb-0.5"
                 style={{ ...handwritten, fontWeight: 500 }}
               >
                 {s.subtitulo}
