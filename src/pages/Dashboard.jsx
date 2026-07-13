@@ -99,7 +99,7 @@ function Velocimetro({ percentual }) {
     <div className="flex flex-col items-center">
       <svg
         viewBox="0 0 200 120"
-        className="w-full max-w-[170px]"
+        className="w-full max-w-[150px]"
         role="img"
         aria-label={`Velocímetro fiscal: ${Math.round(p)} por cento`}
       >
@@ -185,7 +185,7 @@ export default function Dashboard() {
         style={{ paddingBottom: "calc(160px + env(safe-area-inset-bottom))" }}
       >
         {/* 1. Header */}
-        <header className="px-5 pt-5 pb-2 flex items-start justify-between">
+        <header className="px-5 pt-4 pb-2 flex items-start justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2.5">
               <Gauge size={34} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
@@ -221,7 +221,7 @@ export default function Dashboard() {
           {/* Banner de visitante */}
           {isVisitante && banner && (
             <div
-              className="rounded-xl p-1.5 flex items-start gap-2"
+              className="rounded-xl p-1 flex items-start gap-1.5"
               style={{
                 backgroundColor: "rgba(245,158,11,0.12)",
                 border: "1px solid rgba(245,158,11,0.35)",
@@ -255,7 +255,7 @@ export default function Dashboard() {
           )}
 
           {/* Card Velocímetro */}
-          <div className={cardBase + " px-5 pt-1 pb-2"} style={cardStyle}>
+          <div className={cardBase + " px-5 pt-0.5 pb-1.5"} style={cardStyle}>
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
                 Velocímetro Fiscal
@@ -279,7 +279,7 @@ export default function Dashboard() {
           </div>
 
           {/* Card Faturado / Limite / Faltam */}
-          <div className={cardBase + " py-2 px-4"} style={cardStyle}>
+          <div className={cardBase + " py-1.5 px-4"} style={cardStyle}>
             <div className="grid grid-cols-3">
               {[
                 { valor: fmtBRL(faturado), label: "Faturado" },
@@ -311,15 +311,15 @@ export default function Dashboard() {
           {/* Card onboarding do faturamento OU Último lançamento */}
           {!jaLancouFaturamento && mostrarOnboarding ? (
             <div
-              className={cardBase + " py-2 px-4"}
+              className={cardBase + " py-1.5 px-4"}
               style={{ ...cardStyle, borderLeft: "4px solid var(--primary)" }}
             >
               <div className="flex items-start gap-3">
                 <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                  className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
                   style={{ backgroundColor: "var(--field)" }}
                 >
-                  <BarChart3 size={16} style={{ color: "var(--primary)" }} />
+                  <BarChart3 size={14} style={{ color: "var(--primary)" }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold" style={{ color: "var(--text)" }}>
@@ -331,7 +331,7 @@ export default function Dashboard() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 mt-3">
+              <div className="flex items-center gap-2 mt-2">
                 <button
                   // TODO: abrir modal de faturamento inicial
                   onClick={() => setModalFaturamento(true)}
