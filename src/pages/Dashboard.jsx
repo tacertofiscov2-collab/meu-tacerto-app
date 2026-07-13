@@ -34,6 +34,22 @@ function faixaDoPercentual(p) {
   return { cor: "#991b1b", label: "Limite ultrapassado" };
 }
 
+function saudacaoPorHora() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return "Bom dia,";
+  if (h >= 12 && h < 18) return "Boa tarde,";
+  return "Boa noite,";
+}
+
+function dataPorExtenso() {
+  const raw = new Date().toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+
 /**
  * Velocímetro: arco de fundo cinza + arco preenchido com degradê
  * verde → amarelo → vermelho, e ponteiro em forma de seta grossa.
@@ -145,6 +161,8 @@ export default function Dashboard() {
   const percentual = (faturado / limite) * 100;
 
   const inicial = (USUARIO.nome || "?").trim().charAt(0).toUpperCase();
+  const saudacao = saudacaoPorHora();
+  const dataHoje = dataPorExtenso();
 
   const cardBase =
     "w-full rounded-2xl transition-transform active:scale-[0.99]";
@@ -158,33 +176,45 @@ export default function Dashboard() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      {/* Conteúdo com padding inferior para não ficar sob a navbar/FAB */}
-      <div className="flex-1 overflow-y-auto pb-[170px]">
+      {/* Conteúdo com padding inferior para não ficar sob a navbar */}
+      <div className="flex-1 overflow-y-auto pb-[150px]">
         {/* 1. Header */}
         <header className="px-5 pt-6 pb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
-              className="w-11 h-11 rounded-full flex items-center justify-center"
+              className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
               style={{ backgroundColor: "var(--field)" }}
               aria-hidden
             >
               {inicial ? (
                 <span
-                  className="text-base font-bold"
+                  className="text-lg font-bold"
                   style={{ color: "var(--primary)" }}
                 >
                   {inicial}
                 </span>
               ) : (
-                <User size={20} style={{ color: "var(--primary)" }} />
+                <User size={22} style={{ color: "var(--primary)" }} />
               )}
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                Olá,
+              <span
+                className="text-sm"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                {saudacao}
               </span>
-              <span className="font-bold" style={{ color: "var(--text)" }}>
+              <span
+                className="font-bold text-lg"
+                style={{ color: "var(--text)" }}
+              >
                 {USUARIO.nome}
+              </span>
+              <span
+                className="text-xs mt-0.5"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                {dataHoje}
               </span>
             </div>
           </div>
@@ -192,8 +222,8 @@ export default function Dashboard() {
           <button
             onClick={() => navigate("/alertas")}
             aria-label="Notificações"
-            className="relative w-11 h-11 rounded-full flex items-center justify-center hover:opacity-80"
-            style={{ backgroundColor: "var(--field)" }}
+            className="relative w-11 h-11 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
           >
             <Bell size={20} style={{ color: "var(--text)" }} />
             <span
@@ -413,48 +443,74 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 5. FAB */}
-      <button
-        onClick={() => navigate("/lancar")}
-        aria-label="Adicionar lançamento"
-        className="fixed right-5 bottom-[80px] w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:opacity-90 active:scale-95 transition z-20"
-        style={{
-          backgroundColor: "var(--primary)",
-          color: "var(--primary-contrast)",
-          boxShadow: "0 8px 24px rgba(34,197,94,0.35)",
-        }}
-      >
-        <Plus size={26} strokeWidth={2.5} />
-      </button>
-
-      {/* 6. NavBar inferior */}
+      {/* Navbar inferior com vidro fosco e botão + central elevado */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-10"
+        className="fixed bottom-0 left-0 right-0 z-30"
         style={{
-          backgroundColor: "var(--surface)",
-          borderTop: "1px solid var(--border)",
+          backgroundColor: "rgba(24,24,27,0.72)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderTop: "1px solid rgba(63,63,70,0.5)",
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        <div className="max-w-xl mx-auto grid grid-cols-4">
-          {[
-            { Icon: Home, label: "Início", route: "/dashboard", ativo: true },
-            { Icon: Receipt, label: "Histórico", route: "/historico" },
-            { Icon: LayoutGrid, label: "Menu", route: "/menu" },
-            { Icon: User, label: "Perfil", route: "/perfil" },
-          ].map(({ Icon, label, route, ativo }) => (
-            <button
-              key={label}
-              onClick={() => navigate(route)}
-              className="flex flex-col items-center justify-center gap-1 py-3 hover:opacity-90"
-              style={{
-                color: ativo ? "var(--primary)" : "var(--text-secondary)",
-              }}
-            >
-              <Icon size={22} strokeWidth={ativo ? 2.5 : 2} />
-              <span className="text-[11px] font-medium">{label}</span>
-            </button>
-          ))}
+        <div className="relative max-w-xl mx-auto h-[72px] flex items-center justify-between px-2">
+          {/* Botão + central elevado */}
+          <button
+            onClick={() => navigate("/lancar")}
+            aria-label="Adicionar lançamento"
+            className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 w-[58px] h-[58px] rounded-full flex items-center justify-center active:scale-95 transition z-40"
+            style={{
+              backgroundColor: "var(--primary)",
+              color: "var(--primary-contrast)",
+              boxShadow: "0 8px 24px rgba(34,197,94,0.45)",
+            }}
+          >
+            <Plus size={28} strokeWidth={2.5} />
+          </button>
+
+          {/* Início */}
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="flex flex-col items-center justify-center gap-1 w-16 py-2"
+            style={{ color: "var(--primary)" }}
+          >
+            <Home size={22} strokeWidth={2.5} />
+            <span className="text-[11px] font-medium">Início</span>
+          </button>
+
+          {/* Histórico */}
+          <button
+            onClick={() => navigate("/historico")}
+            className="flex flex-col items-center justify-center gap-1 w-16 py-2"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            <Receipt size={22} strokeWidth={2} />
+            <span className="text-[11px] font-medium">Histórico</span>
+          </button>
+
+          {/* Espaço reservado para o botão central */}
+          <div className="w-16" aria-hidden="true" />
+
+          {/* Menu */}
+          <button
+            onClick={() => navigate("/menu")}
+            className="flex flex-col items-center justify-center gap-1 w-16 py-2"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            <LayoutGrid size={22} strokeWidth={2} />
+            <span className="text-[11px] font-medium">Menu</span>
+          </button>
+
+          {/* Perfil */}
+          <button
+            onClick={() => navigate("/perfil")}
+            className="flex flex-col items-center justify-center gap-1 w-16 py-2"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            <User size={22} strokeWidth={2} />
+            <span className="text-[11px] font-medium">Perfil</span>
+          </button>
         </div>
       </nav>
     </div>
