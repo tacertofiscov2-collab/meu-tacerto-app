@@ -392,8 +392,8 @@ export default function Dashboard() {
       {/* Navegação flutuante — bolhas soltas, sem barra */}
       <nav
         aria-label="Navegação principal"
-        className="fixed left-0 right-0 z-30 pointer-events-none"
-        style={{ bottom: "calc(12px + env(safe-area-inset-bottom))" }}
+        className="fixed left-0 right-0 bottom-0 z-30 pointer-events-none"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="relative max-w-xl mx-auto px-5">
           {/* Botão + central flutuante, elevado acima das bolhas */}
