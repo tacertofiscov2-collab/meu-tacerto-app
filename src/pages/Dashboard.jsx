@@ -14,7 +14,7 @@ const LIMITES = { MEI: 81000, MEI_CAMINHONEIRO: 251600 };
 // TODO: buscar do backend
 const ULTIMO_LANCAMENTO = {
   descricao: "1º Frete de Julho",
-  data: "12/07/2026",
+  data: "10 de Julho",
   valor: 3500,
 };
 
