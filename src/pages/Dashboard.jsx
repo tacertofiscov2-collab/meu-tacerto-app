@@ -221,7 +221,7 @@ export default function Dashboard() {
           {/* Banner de visitante */}
           {isVisitante && banner && (
             <div
-              className="rounded-xl p-2 flex items-start gap-2"
+              className="rounded-xl p-1.5 flex items-start gap-2"
               style={{
                 backgroundColor: "rgba(245,158,11,0.12)",
                 border: "1px solid rgba(245,158,11,0.35)",
@@ -232,7 +232,7 @@ export default function Dashboard() {
                 className="mt-0.5 shrink-0"
                 style={{ color: "#f59e0b" }}
               />
-              <p className="flex-1 text-sm leading-snug" style={{ color: "var(--text)" }}>
+              <p className="flex-1 text-xs leading-snug" style={{ color: "var(--text)" }}>
                 Você ainda não tem conta.{" "}
                 <button
                   onClick={() => navigate("/cadastro")}
