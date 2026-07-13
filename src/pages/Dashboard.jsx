@@ -389,76 +389,91 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Navbar inferior com vidro fosco e botão + central elevado */}
+      {/* Navegação flutuante — bolhas soltas, sem barra */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-30"
-        style={{
-          backgroundColor: "rgba(24,24,27,0.72)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderTop: "1px solid rgba(63,63,70,0.5)",
-          paddingBottom: "env(safe-area-inset-bottom)",
-        }}
+        aria-label="Navegação principal"
+        className="fixed left-0 right-0 z-30 pointer-events-none"
+        style={{ bottom: "calc(12px + env(safe-area-inset-bottom))" }}
       >
-        <div className="relative max-w-xl mx-auto h-[64px] grid grid-cols-5 items-center">
+        <div className="relative max-w-xl mx-auto px-5 flex items-end justify-between">
           {/* Início */}
-          <button
+          <NavBubble
+            active={true}
+            label="Início"
+            icon={Home}
             onClick={() => navigate("/dashboard")}
-            className="flex flex-col items-center justify-center gap-0.5 h-full"
-            style={{ color: "var(--primary)" }}
-          >
-            <Home size={22} strokeWidth={2.5} />
-            <span className="text-[11px] font-medium leading-none">Início</span>
-          </button>
-
+          />
           {/* Histórico */}
-          <button
+          <NavBubble
+            label="Histórico"
+            icon={Receipt}
             onClick={() => navigate("/historico")}
-            className="flex flex-col items-center justify-center gap-0.5 h-full"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            <Receipt size={22} strokeWidth={2} />
-            <span className="text-[11px] font-medium leading-none">Histórico</span>
-          </button>
+          />
 
-          {/* Espaço reservado para o botão central */}
-          <div aria-hidden="true" />
-
-          {/* Menu */}
-          <button
-            onClick={() => navigate("/menu")}
-            className="flex flex-col items-center justify-center gap-0.5 h-full"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            <LayoutGrid size={22} strokeWidth={2} />
-            <span className="text-[11px] font-medium leading-none">Menu</span>
-          </button>
-
-          {/* Perfil */}
-          <button
-            onClick={() => navigate("/perfil")}
-            className="flex flex-col items-center justify-center gap-0.5 h-full"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            <User size={22} strokeWidth={2} />
-            <span className="text-[11px] font-medium leading-none">Perfil</span>
-          </button>
-
-          {/* Botão + central elevado */}
+          {/* Botão + central maior, base alinhada */}
           <button
             onClick={() => navigate("/lancar")}
             aria-label="Adicionar lançamento"
-            className="absolute left-1/2 -translate-x-1/2 -top-6 w-14 h-14 rounded-full flex items-center justify-center active:scale-95 transition z-40"
+            className="pointer-events-auto w-[66px] h-[66px] rounded-full flex items-center justify-center active:scale-95 transition"
             style={{
               backgroundColor: "var(--primary)",
-              color: "var(--primary-contrast)",
-              boxShadow: "0 8px 24px rgba(34,197,94,0.45)",
+              color: "var(--primary-contrast, #0f0f11)",
+              boxShadow: "0 10px 28px rgba(34,197,94,0.5), 0 0 0 1px rgba(34,197,94,0.35)",
             }}
           >
-            <Plus size={26} strokeWidth={2.5} />
+            <Plus size={30} strokeWidth={2.6} />
           </button>
+
+          {/* Menu */}
+          <NavBubble
+            label="Menu"
+            icon={LayoutGrid}
+            onClick={() => navigate("/menu")}
+          />
+          {/* Perfil */}
+          <NavBubble
+            label="Perfil"
+            icon={User}
+            onClick={() => navigate("/perfil")}
+          />
         </div>
       </nav>
+    </div>
+  );
+}
+
+function NavBubble({ icon: Icon, label, active = false, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={label}
+      className="pointer-events-auto flex flex-col items-center justify-end gap-1 active:scale-95 transition"
+    >
+      <span
+        className="w-12 h-12 rounded-full flex items-center justify-center"
+        style={{
+          backgroundColor: "rgba(24,24,27,0.6)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          border: "1px solid rgba(63,63,70,0.55)",
+          boxShadow: "0 6px 18px rgba(0,0,0,0.35)",
+        }}
+      >
+        <Icon
+          size={22}
+          strokeWidth={active ? 2.5 : 2}
+          style={{ color: active ? "var(--primary)" : "var(--text-secondary)" }}
+        />
+      </span>
+      <span
+        className="text-[10px] font-medium leading-none"
+        style={{ color: active ? "var(--primary)" : "var(--text-secondary)" }}
+      >
+        {label}
+      </span>
+    </button>
+  );
+}
 
       <ModalFaturamentoInicial
         aberto={modalFaturamento}
