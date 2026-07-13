@@ -279,6 +279,63 @@ export default function Dashboard() {
               </span>
             </div>
           </button>
+
+          {/* 5. Card Dica contextual */}
+          {/* TODO: mensagem dinâmica conforme faixa do velocímetro */}
+          <div
+            className={cardBase + " p-4 flex items-start gap-3"}
+            style={{
+              ...cardStyle,
+              borderLeft: "4px solid var(--primary)",
+            }}
+          >
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+              style={{ backgroundColor: "var(--field)" }}
+            >
+              <Lightbulb size={18} style={{ color: "var(--primary)" }} />
+            </div>
+            <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>
+              No seu ritmo atual, você deve fechar o ano dentro do limite. Continue assim!
+            </p>
+          </div>
+
+          {/* 6. Card Próximo DAS */}
+          {/* TODO: cálculo real da data */}
+          <button
+            onClick={() => navigate("/menu")}
+            className={cardBase + " p-4 text-left"}
+            style={cardStyle}
+          >
+            <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
+              Próximo DAS
+            </p>
+            <div className="flex items-center gap-3">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                style={{ backgroundColor: "var(--field)" }}
+              >
+                <Calendar size={18} style={{ color: "var(--primary)" }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium" style={{ color: "var(--text)" }}>
+                  Vence dia 20
+                </p>
+                <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                  Documento de Arrecadação do Simples
+                </p>
+              </div>
+              <span
+                className="text-xs font-semibold px-2.5 py-1 rounded-full shrink-0"
+                style={{
+                  backgroundColor: "rgba(34,197,94,0.12)",
+                  color: "var(--primary)",
+                }}
+              >
+                Em 8 dias
+              </span>
+            </div>
+          </button>
         </div>
       </div>
 
