@@ -176,12 +176,12 @@ export default function Dashboard() {
 
   return (
     <div
-      className="w-full"
+      className="min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       {/* Conteúdo com padding inferior para não ficar sob a navbar */}
       <div
-        className="overflow-y-auto"
+        className="flex-1 overflow-y-auto flex flex-col"
         style={{ paddingBottom: "calc(70px + env(safe-area-inset-bottom))" }}
       >
         {/* 1. Header */}
