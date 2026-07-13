@@ -12,6 +12,7 @@ import Lancar from "./pages/Lancar.jsx";
 import EmConstrucao from "./pages/EmConstrucao.jsx";
 import Historico from "./pages/Historico.jsx";
 import Perfil from "./pages/Perfil.jsx";
+import Menu from "./pages/Menu.jsx";
 
 export default function App() {
   return (
@@ -28,7 +29,7 @@ export default function App() {
         <Route path="/termos" element={<Termos />} />
         <Route path="/lancar" element={<Lancar />} />
         <Route path="/historico" element={<Historico />} />
-        <Route path="/menu" element={<EmConstrucao titulo="Menu" />} />
+        <Route path="/menu" element={<Menu />} />
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/alertas" element={<EmConstrucao titulo="Alertas" />} />
       </Routes>
