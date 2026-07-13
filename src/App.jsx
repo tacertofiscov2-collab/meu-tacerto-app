@@ -38,6 +38,7 @@ export default function App() {
         <Route path="/alertas" element={<Alertas />} />
         <Route path="/preferencias" element={<Preferencias />} />
         <Route path="/faq" element={<Faq />} />
+        <Route path="/contas" element={<Contas />} />
       </Routes>
     </BrowserRouter>
   );
