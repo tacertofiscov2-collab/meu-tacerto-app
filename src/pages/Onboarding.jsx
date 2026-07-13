@@ -76,8 +76,8 @@ function MonthPicker({ value, onChange }) {
         className="w-full h-[48px] px-4 flex items-center justify-between rounded-xl text-sm transition"
         style={{
           backgroundColor: "var(--field)",
-          border: `1px solid ${selected ? "var(--primary)" : "var(--border)"}`,
-          color: selected ? "var(--primary)" : "var(--text-secondary)",
+          border: `1px solid ${open ? "var(--primary)" : "var(--border)"}`,
+          color: selected ? "var(--text)" : "var(--text-secondary)",
           fontWeight: selected ? 600 : 400,
         }}
       >
@@ -86,7 +86,7 @@ function MonthPicker({ value, onChange }) {
           size={18}
           strokeWidth={2}
           className={`transition-transform ${open ? "rotate-180" : ""}`}
-          style={{ color: selected ? "var(--primary)" : "var(--text-secondary)" }}
+          style={{ color: open ? "var(--primary)" : "var(--text-secondary)" }}
         />
       </button>
       {open && (
