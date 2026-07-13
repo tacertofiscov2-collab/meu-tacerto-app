@@ -1,9 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { KeyRound } from "lucide-react";
+import { ArrowLeft, KeyRound, Mail } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { AuthLayout } from "@/components/AuthLayout";
-import SmartContactInput, { detectMode } from "@/components/SmartContactInput";
+import { detectMode } from "@/components/SmartContactInput";
 import AuthError, { translateAuthError } from "@/components/AuthError";
 
 export default function EsqueciSenha() {
@@ -12,6 +11,12 @@ export default function EsqueciSenha() {
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
   const [sucesso, setSucesso] = useState(false);
+
+  const fieldStyle = {
+    backgroundColor: "var(--field)",
+    border: "1px solid var(--border)",
+    color: "var(--text)",
+  };
 
   async function handleEnviar() {
     setErro("");
@@ -24,60 +29,87 @@ export default function EsqueciSenha() {
       if (error) return setErro(translateAuthError(error.message) || "Não foi possível enviar. Verifique o e-mail digitado.");
       setSucesso(true);
     } else {
+      // TODO: integrar SMS Auth depois
       if ((contato || "").replace(/\D/g, "").length < 10)
-        return setErro("Digite um celular válido com DDD.");
-      setErro("Recuperação por celular em desenvolvimento. Use e-mail por enquanto.");
+        return setErro("Digite um telefone válido com DDD.");
+      setErro("Recuperação por telefone em desenvolvimento. Use seu e-mail por enquanto.");
     }
   }
 
   return (
-    <AuthLayout onBack={() => navigate("/login")}>
-      {sucesso ? (
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-3">
-            <KeyRound size={32} strokeWidth={2} className="text-green-600" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-800">Link enviado!</h2>
-          <p className="text-sm text-gray-500 mt-2 mb-6">
-            Verifique seu e-mail e siga as instruções para redefinir sua senha.
-          </p>
-          <button
-            onClick={() => navigate("/login")}
-            className="w-full py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium text-sm transition-colors"
-          >
-            Voltar ao login
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="text-center mb-4">
-            <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2">
-              <KeyRound size={28} strokeWidth={2} className="text-green-600" />
-            </div>
-            <h2 className="text-lg font-semibold text-gray-800">Recuperar acesso</h2>
-            <p className="text-xs text-gray-500 mt-1">Informe seu e-mail ou telefone cadastrado</p>
-          </div>
+    <div
+      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
+      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
+    >
+      <div className="px-4 pt-5 shrink-0">
+        <button
+          onClick={() => navigate(-1)}
+          aria-label="Voltar"
+          className="w-10 h-10 flex items-center justify-center rounded-lg hover:opacity-80"
+          style={{ color: "var(--text)" }}
+        >
+          <ArrowLeft size={22} strokeWidth={2} />
+        </button>
+      </div>
 
-          <div className="mb-4">
-            <SmartContactInput value={contato} onChange={setContato} />
-          </div>
+      <div className="flex-1 flex flex-col justify-center px-6 pb-6">
+        <div className="max-w-sm w-full mx-auto">
+          {sucesso ? (
+            <>
+              <div className="flex justify-center mb-4">
+                <Mail size={52} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
+              </div>
+              <h1 className="text-2xl font-bold text-center" style={{ color: "var(--text)" }}>
+                Link enviado!
+              </h1>
+              <p className="text-sm text-center mt-1.5" style={{ color: "var(--text-secondary)" }}>
+                Verifique seu e-mail e siga as instruções para redefinir sua senha.
+              </p>
+              <button
+                onClick={() => navigate("/login")}
+                className="mt-6 w-full py-3.5 rounded-xl font-medium text-sm hover:opacity-90"
+                style={{ backgroundColor: "var(--primary)", color: "var(--primary-contrast)" }}
+              >
+                Voltar ao login
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="flex justify-center mb-4">
+                <KeyRound size={52} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
+              </div>
+              <h1 className="text-2xl font-bold text-center" style={{ color: "var(--text)" }}>
+                Recuperar acesso
+              </h1>
+              <p className="text-sm text-center mt-1.5" style={{ color: "var(--text-secondary)" }}>
+                Informe seu e-mail ou telefone cadastrado
+              </p>
 
-          {erro && (
-            <div className="mb-4">
-              <AuthError>{erro}</AuthError>
-            </div>
+              <div className="mt-6 space-y-5">
+                <input
+                  type="text"
+                  placeholder="Digite seu e-mail ou telefone"
+                  value={contato}
+                  onChange={(e) => setContato(e.target.value)}
+                  className="w-full px-4 py-4 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
+                  style={fieldStyle}
+                />
+
+                {erro && <AuthError>{erro}</AuthError>}
+
+                <button
+                  onClick={handleEnviar}
+                  disabled={loading}
+                  className="w-full py-3.5 rounded-xl font-medium text-sm hover:opacity-90 disabled:opacity-50"
+                  style={{ backgroundColor: "var(--primary)", color: "var(--primary-contrast)" }}
+                >
+                  {loading ? "Enviando..." : "Enviar código de recuperação"}
+                </button>
+              </div>
+            </>
           )}
-
-          <button
-            onClick={handleEnviar}
-            disabled={loading}
-            className="w-full py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium text-sm transition-colors disabled:opacity-50"
-          >
-            {loading ? "Enviando..." : "Enviar código de recuperação"}
-          </button>
-        </>
-      )}
-    </AuthLayout>
+        </div>
+      </div>
+    </div>
   );
 }
-
