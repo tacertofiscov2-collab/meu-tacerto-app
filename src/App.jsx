@@ -17,6 +17,7 @@ import Alertas from "./pages/Alertas.jsx";
 import Preferencias from "./pages/Preferencias.jsx";
 import Faq from "./pages/Faq.jsx";
 import Contas from "./pages/Contas.jsx";
+import Velocimetro from "./pages/Velocimetro.jsx";
 
 export default function App() {
   return (
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="/preferencias" element={<Preferencias />} />
         <Route path="/faq" element={<Faq />} />
         <Route path="/contas" element={<Contas />} />
+        <Route path="/velocimetro" element={<Velocimetro />} />
       </Routes>
     </BrowserRouter>
   );
