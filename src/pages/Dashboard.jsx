@@ -271,7 +271,7 @@ export default function Dashboard() {
             </div>
             <Velocimetro percentual={percentual} />
             <p
-              className="text-sm text-center mt-4"
+              className="text-xs text-center mt-2"
               style={{ color: "var(--text-secondary)" }}
             >
               Você já usou {Math.round(percentual)}% do seu limite anual.
