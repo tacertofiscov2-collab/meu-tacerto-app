@@ -147,16 +147,16 @@ export default function Welcome() {
       </div>
 
       {/* Rodapé fixo de ações */}
-      <div className="px-5 pb-5 pt-1 shrink-0 space-y-2">
+      <div className="px-5 pb-3 pt-0 shrink-0 space-y-1.5">
         <button
           onClick={() => navigate("/cadastro")}
-          className="w-full py-3 rounded-xl font-medium text-sm transition-opacity hover:opacity-90"
+          className="w-full py-2.5 rounded-xl font-medium text-sm transition-opacity hover:opacity-90"
           style={{ backgroundColor: "#22c55e", color: "#0a0a0a" }}
         >
           Cadastrar
         </button>
 
-        <div className="flex items-center gap-3 py-0.5">
+        <div className="flex items-center gap-3 py-0">
           <div className="flex-1 h-px bg-white/10" />
           <span className="text-xs text-white/60">ou</span>
           <div className="flex-1 h-px bg-white/10" />
@@ -164,13 +164,13 @@ export default function Welcome() {
 
         <button
           onClick={() => navigate("/onboarding")}
-          className="w-full py-3 rounded-xl font-medium text-sm transition-opacity hover:opacity-90"
+          className="w-full py-2.5 rounded-xl font-medium text-sm transition-opacity hover:opacity-90"
           style={{ backgroundColor: "#27272a", color: "#a1a1aa" }}
         >
           Cadastrar depois
         </button>
 
-        <p className="text-center text-xs pt-0.5 text-white/60">
+        <p className="text-center text-xs text-white/60">
           Já tem conta?{" "}
           <button
             onClick={() => navigate("/login")}
