@@ -316,22 +316,22 @@ export default function Dashboard() {
             >
               <div className="flex items-start gap-3">
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
                   style={{ backgroundColor: "var(--field)" }}
                 >
-                  <BarChart3 size={18} style={{ color: "var(--primary)" }} />
+                  <BarChart3 size={16} style={{ color: "var(--primary)" }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold" style={{ color: "var(--text)" }}>
                     Comece com o velocímetro certo
                   </p>
-                  <p className="text-sm mt-1 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
                     Já faturou este ano antes de instalar o app? Adicione o total em
                     1 minuto para o velocímetro refletir sua realidade desde agora.
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 mt-4">
+              <div className="flex items-center gap-2 mt-3">
                 <button
                   // TODO: abrir modal de faturamento inicial
                   onClick={() => setModalFaturamento(true)}
