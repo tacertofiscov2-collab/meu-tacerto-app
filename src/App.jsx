@@ -15,6 +15,7 @@ import Perfil from "./pages/Perfil.jsx";
 import Menu from "./pages/Menu.jsx";
 import Alertas from "./pages/Alertas.jsx";
 import Preferencias from "./pages/Preferencias.jsx";
+import Faq from "./pages/Faq.jsx";
 
 export default function App() {
   return (
