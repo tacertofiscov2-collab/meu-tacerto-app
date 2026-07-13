@@ -33,10 +33,10 @@ function Progress({ step }) {
 function IconCircle({ Icon }) {
   return (
     <div
-      className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+      className="w-[72px] h-[72px] rounded-full flex items-center justify-center mx-auto mb-4"
       style={{ backgroundColor: "rgba(34,197,94,0.12)" }}
     >
-      <Icon size={26} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
+      <Icon size={34} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
     </div>
   );
 }
