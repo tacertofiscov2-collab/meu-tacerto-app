@@ -10,6 +10,8 @@ import Sobre from "./pages/Sobre.jsx";
 import Termos from "./pages/Termos.jsx";
 import Lancar from "./pages/Lancar.jsx";
 import EmConstrucao from "./pages/EmConstrucao.jsx";
+import Historico from "./pages/Historico.jsx";
+import Perfil from "./pages/Perfil.jsx";
 
 export default function App() {
   return (
