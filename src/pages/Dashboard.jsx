@@ -334,7 +334,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-2 mt-4">
                 <button
                   // TODO: abrir modal de faturamento inicial
-                  onClick={() => navigate("/lancar")}
+                  onClick={() => setModalFaturamento(true)}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
                   style={{
                     backgroundColor: "var(--primary)",
