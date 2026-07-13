@@ -13,6 +13,8 @@ import EmConstrucao from "./pages/EmConstrucao.jsx";
 import Historico from "./pages/Historico.jsx";
 import Perfil from "./pages/Perfil.jsx";
 import Menu from "./pages/Menu.jsx";
+import Alertas from "./pages/Alertas.jsx";
+import Preferencias from "./pages/Preferencias.jsx";
 
 export default function App() {
   return (
