@@ -27,9 +27,9 @@ export default function App() {
         <Route path="/sobre" element={<Sobre />} />
         <Route path="/termos" element={<Termos />} />
         <Route path="/lancar" element={<Lancar />} />
-        <Route path="/historico" element={<EmConstrucao titulo="Histórico" />} />
+        <Route path="/historico" element={<Historico />} />
         <Route path="/menu" element={<EmConstrucao titulo="Menu" />} />
-        <Route path="/perfil" element={<EmConstrucao titulo="Perfil" />} />
+        <Route path="/perfil" element={<Perfil />} />
         <Route path="/alertas" element={<EmConstrucao titulo="Alertas" />} />
       </Routes>
     </BrowserRouter>
