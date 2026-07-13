@@ -411,7 +411,7 @@ export default function Dashboard() {
           </button>
 
           <div className="flex items-end justify-between h-full">
-            <div className="flex items-end gap-5">
+            <div className="flex items-end gap-5 pr-5">
               <NavBubble
                 active={true}
                 label="Início"
@@ -424,7 +424,7 @@ export default function Dashboard() {
                 onClick={() => navigate("/historico")}
               />
             </div>
-            <div className="flex items-end gap-5">
+            <div className="flex items-end gap-5 pl-5">
               <NavBubble
                 label="Menu"
                 icon={LayoutGrid}
