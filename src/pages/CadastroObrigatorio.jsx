@@ -64,8 +64,8 @@ export default function CadastroObrigatorio() {
       </div>
 
       {erro && (
-        <div className="mb-3 bg-red-50 border border-red-200 text-red-500 text-xs px-3 py-2 rounded-lg">
-          ⚠ {erro}
+        <div className="mb-3 bg-red-50 border border-red-200 text-red-600 text-xs px-3 py-2 rounded-lg">
+          {erro}
         </div>
       )}
 
