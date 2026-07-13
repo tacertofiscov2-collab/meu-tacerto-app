@@ -176,13 +176,13 @@ export default function Dashboard() {
 
   return (
     <div
-      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
+      className="min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       {/* Conteúdo com padding inferior para não ficar sob a navbar */}
       <div
-        className="flex-1 overflow-y-auto"
-        style={{ paddingBottom: "calc(160px + env(safe-area-inset-bottom))" }}
+        className="flex-1 overflow-y-auto flex flex-col"
+        style={{ paddingBottom: "calc(70px + env(safe-area-inset-bottom))" }}
       >
         {/* 1. Header */}
         <header className="px-5 pt-4 pb-2 flex items-start justify-between">
@@ -217,7 +217,7 @@ export default function Dashboard() {
         </header>
 
 
-        <div className="px-5 space-y-2">
+        <div className="px-5 space-y-2 flex-1 flex flex-col">
           {/* Banner de visitante */}
           {isVisitante && banner && (
             <div
@@ -311,7 +311,7 @@ export default function Dashboard() {
           {/* Card onboarding do faturamento OU Último lançamento */}
           {!jaLancouFaturamento && mostrarOnboarding ? (
             <div
-              className={cardBase + " py-1.5 px-4"}
+              className={cardBase + " py-1.5 px-4 flex-1"}
               style={{ ...cardStyle, borderLeft: "4px solid var(--primary)" }}
             >
               <div className="flex items-start gap-3">
@@ -392,8 +392,8 @@ export default function Dashboard() {
       {/* Navegação flutuante — bolhas soltas, sem barra */}
       <nav
         aria-label="Navegação principal"
-        className="fixed left-0 right-0 z-30 pointer-events-none"
-        style={{ bottom: "calc(12px + env(safe-area-inset-bottom))" }}
+        className="fixed left-0 right-0 bottom-0 z-30 pointer-events-none"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="relative max-w-xl mx-auto px-5">
           {/* Botão + central flutuante, elevado acima das bolhas */}
