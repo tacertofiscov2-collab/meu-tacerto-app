@@ -182,20 +182,20 @@ export default function Dashboard() {
       {/* Conteúdo com padding inferior para não ficar sob a navbar */}
       <div
         className="flex-1 overflow-y-auto"
-        style={{ paddingBottom: "calc(110px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(150px + env(safe-area-inset-bottom))" }}
       >
         {/* 1. Header */}
         <header className="px-5 pt-6 pb-4 flex items-start justify-between">
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <Gauge size={26} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
-              <span className="font-bold text-xl leading-none" style={{ color: "var(--text)" }}>
+            <div className="flex items-center gap-2.5">
+              <Gauge size={34} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
+              <span className="font-bold text-2xl leading-none" style={{ color: "var(--text)" }}>
                 Ta<span style={{ color: "var(--primary)" }}>Certo!</span>
               </span>
             </div>
             <div className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
               {saudacao}{" "}
-              <span className="font-medium" style={{ color: "var(--text)" }}>
+              <span className="text-base font-semibold" style={{ color: "var(--text)" }}>
                 {USUARIO.nome}
               </span>
             </div>
@@ -221,14 +221,14 @@ export default function Dashboard() {
           {/* Banner de visitante */}
           {isVisitante && banner && (
             <div
-              className="rounded-2xl p-3 flex items-start gap-3"
+              className="rounded-xl p-2 flex items-start gap-2"
               style={{
                 backgroundColor: "rgba(245,158,11,0.12)",
                 border: "1px solid rgba(245,158,11,0.35)",
               }}
             >
               <AlertTriangle
-                size={18}
+                size={16}
                 className="mt-0.5 shrink-0"
                 style={{ color: "#f59e0b" }}
               />
@@ -246,10 +246,10 @@ export default function Dashboard() {
               <button
                 onClick={() => setBanner(false)}
                 aria-label="Fechar aviso"
-                className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
+                className="w-6 h-6 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
                 style={{ backgroundColor: "rgba(0,0,0,0.15)" }}
               >
-                <X size={14} style={{ color: "var(--text)" }} />
+                <X size={12} style={{ color: "var(--text)" }} />
               </button>
             </div>
           )}
@@ -395,26 +395,12 @@ export default function Dashboard() {
         className="fixed left-0 right-0 z-30 pointer-events-none"
         style={{ bottom: "calc(12px + env(safe-area-inset-bottom))" }}
       >
-        <div className="relative max-w-xl mx-auto px-5 flex items-end justify-between">
-          {/* Início */}
-          <NavBubble
-            active={true}
-            label="Início"
-            icon={Home}
-            onClick={() => navigate("/dashboard")}
-          />
-          {/* Histórico */}
-          <NavBubble
-            label="Histórico"
-            icon={Receipt}
-            onClick={() => navigate("/historico")}
-          />
-
-          {/* Botão + central maior, base alinhada */}
+        <div className="relative max-w-xl mx-auto px-5 h-[72px]">
+          {/* Botão + central flutuante, elevado acima das bolhas */}
           <button
             onClick={() => navigate("/lancar")}
             aria-label="Adicionar lançamento"
-            className="pointer-events-auto w-[66px] h-[66px] rounded-full flex items-center justify-center active:scale-95 transition"
+            className="pointer-events-auto absolute left-1/2 -translate-x-1/2 bottom-[50px] w-[66px] h-[66px] rounded-full flex items-center justify-center active:scale-95 transition"
             style={{
               backgroundColor: "var(--primary)",
               color: "var(--primary-contrast, #0f0f11)",
@@ -424,18 +410,33 @@ export default function Dashboard() {
             <Plus size={30} strokeWidth={2.6} />
           </button>
 
-          {/* Menu */}
-          <NavBubble
-            label="Menu"
-            icon={LayoutGrid}
-            onClick={() => navigate("/menu")}
-          />
-          {/* Perfil */}
-          <NavBubble
-            label="Perfil"
-            icon={User}
-            onClick={() => navigate("/perfil")}
-          />
+          <div className="flex items-end justify-between h-full">
+            <div className="flex items-end gap-5">
+              <NavBubble
+                active={true}
+                label="Início"
+                icon={Home}
+                onClick={() => navigate("/dashboard")}
+              />
+              <NavBubble
+                label="Histórico"
+                icon={Receipt}
+                onClick={() => navigate("/historico")}
+              />
+            </div>
+            <div className="flex items-end gap-5">
+              <NavBubble
+                label="Menu"
+                icon={LayoutGrid}
+                onClick={() => navigate("/menu")}
+              />
+              <NavBubble
+                label="Perfil"
+                icon={User}
+                onClick={() => navigate("/perfil")}
+              />
+            </div>
+          </div>
         </div>
       </nav>
 
