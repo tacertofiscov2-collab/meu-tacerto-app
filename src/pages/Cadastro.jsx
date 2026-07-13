@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ArrowLeft, Eye, EyeOff, Mail, Gauge } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { detectMode } from "@/components/SmartContactInput";
+import AuthError, { translateAuthError } from "@/components/AuthError";
 
 export default function Cadastro() {
   const navigate = useNavigate();
