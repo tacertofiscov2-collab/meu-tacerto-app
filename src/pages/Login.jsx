@@ -60,7 +60,7 @@ export default function Login() {
             Bem-vindo de volta!
           </h1>
           <p className="text-sm text-center mt-1.5" style={{ color: "var(--text-secondary)" }}>
-            Entre para continuar
+            Acesse sua conta
           </p>
 
           {erro && (
@@ -72,7 +72,7 @@ export default function Login() {
             </p>
           )}
 
-          <div className="mt-6 space-y-3">
+          <div className="mt-6 space-y-5">
             <div className="relative">
               <Mail
                 size={18}
@@ -84,7 +84,7 @@ export default function Login() {
                 placeholder="Digite seu e-mail ou telefone"
                 value={contato}
                 onChange={(e) => setContato(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 transition placeholder:opacity-70"
+                className="w-full pl-11 pr-4 py-4 rounded-xl text-sm focus:outline-none focus:ring-2 transition placeholder:opacity-70"
                 style={fieldStyle}
               />
             </div>
@@ -95,7 +95,7 @@ export default function Login() {
                 placeholder="Sua senha"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
-                className="w-full px-4 py-3 pr-11 rounded-xl text-sm focus:outline-none focus:ring-2 transition placeholder:opacity-70"
+                className="w-full px-4 py-4 pr-11 rounded-xl text-sm focus:outline-none focus:ring-2 transition placeholder:opacity-70"
                 style={fieldStyle}
               />
               <button
