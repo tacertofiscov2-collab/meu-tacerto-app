@@ -4,6 +4,7 @@ import {
   Bell, TrendingUp, Plus, Home, Receipt, LayoutGrid, User,
   AlertTriangle, X, BarChart3, ChevronRight, Gauge,
 } from "lucide-react";
+import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 // TODO: buscar dados reais do Supabase/localStorage
 const USUARIO = {
