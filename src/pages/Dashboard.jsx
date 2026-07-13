@@ -159,7 +159,7 @@ export default function Dashboard() {
   const [faturamentoExtra, setFaturamentoExtra] = useState(0);
 
   const limite = LIMITES[USUARIO.perfil] ?? LIMITES.MEI;
-  const faturado = USUARIO.faturado;
+  const faturado = USUARIO.faturado + faturamentoExtra;
   const faltam = Math.max(0, limite - faturado);
   const percentual = (faturado / limite) * 100;
 
