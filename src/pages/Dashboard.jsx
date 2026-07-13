@@ -279,7 +279,7 @@ export default function Dashboard() {
           </div>
 
           {/* Card Faturado / Limite / Faltam */}
-          <div className={cardBase + " p-4"} style={cardStyle}>
+          <div className={cardBase + " py-3 px-4"} style={cardStyle}>
             <div className="grid grid-cols-3">
               {[
                 { valor: fmtBRL(faturado), label: "Faturado" },
@@ -311,7 +311,7 @@ export default function Dashboard() {
           {/* Card onboarding do faturamento OU Último lançamento */}
           {!jaLancouFaturamento && mostrarOnboarding ? (
             <div
-              className={cardBase + " p-4"}
+              className={cardBase + " py-3 px-4"}
               style={{ ...cardStyle, borderLeft: "4px solid var(--primary)" }}
             >
               <div className="flex items-start gap-3">
