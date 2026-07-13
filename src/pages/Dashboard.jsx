@@ -155,6 +155,8 @@ export default function Dashboard() {
 
   const [banner, setBanner] = useState(true);
   const [mostrarOnboarding, setMostrarOnboarding] = useState(true);
+  const [modalFaturamento, setModalFaturamento] = useState(false);
+  const [faturamentoExtra, setFaturamentoExtra] = useState(0);
 
   const limite = LIMITES[USUARIO.perfil] ?? LIMITES.MEI;
   const faturado = USUARIO.faturado;
