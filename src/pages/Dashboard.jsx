@@ -99,7 +99,7 @@ function Velocimetro({ percentual }) {
     <div className="flex flex-col items-center">
       <svg
         viewBox="0 0 200 120"
-        className="w-full max-w-[260px]"
+        className="w-full max-w-[220px]"
         role="img"
         aria-label={`Velocímetro fiscal: ${Math.round(p)} por cento`}
       >
@@ -182,7 +182,7 @@ export default function Dashboard() {
       {/* Conteúdo com padding inferior para não ficar sob a navbar */}
       <div
         className="flex-1 overflow-y-auto"
-        style={{ paddingBottom: "calc(150px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(160px + env(safe-area-inset-bottom))" }}
       >
         {/* 1. Header */}
         <header className="px-5 pt-6 pb-4 flex items-start justify-between">
@@ -217,7 +217,7 @@ export default function Dashboard() {
         </header>
 
 
-        <div className="px-5 space-y-4">
+        <div className="px-5 space-y-3">
           {/* Banner de visitante */}
           {isVisitante && banner && (
             <div
@@ -255,7 +255,7 @@ export default function Dashboard() {
           )}
 
           {/* Card Velocímetro */}
-          <div className={cardBase + " px-5 pt-4 pb-6"} style={cardStyle}>
+          <div className={cardBase + " px-5 pt-3 pb-5"} style={cardStyle}>
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
                 Velocímetro Fiscal
