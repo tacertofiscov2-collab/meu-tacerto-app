@@ -335,7 +335,7 @@ export default function Dashboard() {
                 <button
                   // TODO: abrir modal de faturamento inicial
                   onClick={() => setModalFaturamento(true)}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                  className="flex-1 py-2 rounded-xl text-sm font-semibold"
                   style={{
                     backgroundColor: "var(--primary)",
                     color: "var(--primary-contrast)",
@@ -345,7 +345,7 @@ export default function Dashboard() {
                 </button>
                 <button
                   onClick={() => setMostrarOnboarding(false)}
-                  className="px-3 py-2.5 text-sm font-medium"
+                  className="px-3 py-2 text-sm font-medium"
                   style={{ color: "var(--text-secondary)" }}
                 >
                   Agora não
