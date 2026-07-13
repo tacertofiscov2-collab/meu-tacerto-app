@@ -23,7 +23,7 @@ export default function Login() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email: contato, password: senha });
     setLoading(false);
-    if (error) return setErro("E-mail ou senha incorretos");
+    if (error) return setErro(translateAuthError(error.message) || "E-mail ou senha incorretos.");
     navigate("/dashboard");
   }
 
