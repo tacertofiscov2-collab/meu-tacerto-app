@@ -33,27 +33,46 @@ function faixaDoPercentual(p) {
 }
 
 /**
- * Velocímetro semicircular (arco 180°, abrindo para cima).
- * Especificação matemática:
- * - viewBox="0 0 200 120", centro (100,100), raio 80, stroke-width 18
- * - Verde 0-60%, Laranja 60-80%, Vermelho 80-100%
- * - Ponteiro recalculado automaticamente pelo percentual.
+ * Velocímetro: arco de fundo cinza + arco preenchido com degradê
+ * verde → amarelo → vermelho, e ponteiro em forma de seta grossa.
  */
 function Velocimetro({ percentual }) {
   const p = Math.max(0, Math.min(100, percentual));
 
-  // Pontos fixos dos segmentos coloridos (arco contínuo)
-  const P0 = { x: 20, y: 100 };
-  const P60 = { x: 124.7, y: 23.9 };
-  const P80 = { x: 164.7, y: 52.98 };
-  const P100 = { x: 180, y: 100 };
+  const cx = 100;
+  const cy = 100;
+  const r = 80;
 
-  // Ponteiro: raio 62, recalculado pelo percentual atual
+  const arcLength = Math.PI * r;
+  const filledLength = (p / 100) * arcLength;
+
+  const arcPath = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
+
   const angleDeg = 180 - (p / 100) * 180;
   const rad = (angleDeg * Math.PI) / 180;
-  const needleR = 62;
-  const nx = 100 + needleR * Math.cos(rad);
-  const ny = 100 - needleR * Math.sin(rad);
+  const needleR = 60;
+
+  const tipX = cx + needleR * Math.cos(rad);
+  const tipY = cy - needleR * Math.sin(rad);
+
+  const baseHalfWidth = 7;
+  const perpX = Math.sin(rad);
+  const perpY = Math.cos(rad);
+  const b1x = cx + baseHalfWidth * perpX;
+  const b1y = cy + baseHalfWidth * perpY;
+  const b2x = cx - baseHalfWidth * perpX;
+  const b2y = cy - baseHalfWidth * perpY;
+
+  const midR = needleR * 0.45;
+  const midHalfWidth = 3;
+  const mx = cx + midR * Math.cos(rad);
+  const my = cy - midR * Math.sin(rad);
+  const m1x = mx + midHalfWidth * perpX;
+  const m1y = my + midHalfWidth * perpY;
+  const m2x = mx - midHalfWidth * perpX;
+  const m2y = my - midHalfWidth * perpY;
+
+  const needlePoints = `${b1x},${b1y} ${m1x},${m1y} ${tipX},${tipY} ${m2x},${m2y} ${b2x},${b2y}`;
 
   const faixa = faixaDoPercentual(percentual);
 
@@ -65,52 +84,34 @@ function Velocimetro({ percentual }) {
         role="img"
         aria-label={`Velocímetro fiscal: ${Math.round(p)} por cento`}
       >
-        {/* trilha de fundo */}
+        <defs>
+          <linearGradient id="velocimetroGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={COR_VERDE} />
+            <stop offset="60%" stopColor={COR_LARANJA} />
+            <stop offset="100%" stopColor={COR_VERMELHO} />
+          </linearGradient>
+        </defs>
+
         <path
-          d={`M ${P0.x} ${P0.y} A 80 80 0 0 1 ${P100.x} ${P100.y}`}
+          d={arcPath}
           fill="none"
           stroke="var(--field)"
           strokeWidth={18}
           strokeLinecap="round"
         />
-        {/* verde 0-60 */}
+
         <path
-          d={`M ${P0.x} ${P0.y} A 80 80 0 0 1 ${P60.x} ${P60.y}`}
+          d={arcPath}
           fill="none"
-          stroke={COR_VERDE}
+          stroke="url(#velocimetroGrad)"
           strokeWidth={18}
           strokeLinecap="round"
-        />
-        {/* laranja 60-80 */}
-        <path
-          d={`M ${P60.x} ${P60.y} A 80 80 0 0 1 ${P80.x} ${P80.y}`}
-          fill="none"
-          stroke={COR_LARANJA}
-          strokeWidth={18}
-          strokeLinecap="round"
-        />
-        {/* vermelho 80-100 */}
-        <path
-          d={`M ${P80.x} ${P80.y} A 80 80 0 0 1 ${P100.x} ${P100.y}`}
-          fill="none"
-          stroke={COR_VERMELHO}
-          strokeWidth={18}
-          strokeLinecap="round"
+          strokeDasharray={`${filledLength} ${arcLength}`}
         />
 
-        {/* ponteiro */}
-        <line
-          x1={100}
-          y1={100}
-          x2={nx}
-          y2={ny}
-          stroke="var(--text)"
-          strokeWidth={3}
-          strokeLinecap="round"
-        />
-        {/* pivô: círculo branco com centro escuro */}
-        <circle cx={100} cy={100} r={7} fill="var(--text)" />
-        <circle cx={100} cy={100} r={3.5} fill="var(--bg)" />
+        <polygon points={needlePoints} fill="var(--text)" />
+        <circle cx={cx} cy={cy} r={8} fill="var(--text)" />
+        <circle cx={cx} cy={cy} r={3.5} fill="var(--bg)" />
       </svg>
 
       <div className="mt-1 flex flex-col items-center">
