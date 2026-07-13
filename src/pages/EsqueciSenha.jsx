@@ -4,6 +4,7 @@ import { KeyRound } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { AuthLayout } from "@/components/AuthLayout";
 import SmartContactInput, { detectMode } from "@/components/SmartContactInput";
+import AuthError, { translateAuthError } from "@/components/AuthError";
 
 export default function EsqueciSenha() {
   const navigate = useNavigate();
