@@ -179,42 +179,18 @@ export default function Dashboard() {
       {/* Conteúdo com padding inferior para não ficar sob a navbar */}
       <div className="flex-1 overflow-y-auto pb-[150px]">
         {/* 1. Header */}
-        <header className="px-5 pt-6 pb-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
-              style={{ backgroundColor: "var(--field)" }}
-              aria-hidden
-            >
-              {inicial ? (
-                <span
-                  className="text-lg font-bold"
-                  style={{ color: "var(--primary)" }}
-                >
-                  {inicial}
-                </span>
-              ) : (
-                <User size={22} style={{ color: "var(--primary)" }} />
-              )}
+        <header className="px-5 pt-6 pb-4 flex items-start justify-between">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <Gauge size={26} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
+              <span className="font-bold text-xl leading-none" style={{ color: "var(--text)" }}>
+                Ta<span style={{ color: "var(--primary)" }}>Certo!</span>
+              </span>
             </div>
-            <div className="flex flex-col leading-tight">
-              <span
-                className="text-sm"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                {saudacao}
-              </span>
-              <span
-                className="font-bold text-lg"
-                style={{ color: "var(--text)" }}
-              >
+            <div className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+              {saudacao}{" "}
+              <span className="font-medium" style={{ color: "var(--text)" }}>
                 {USUARIO.nome}
-              </span>
-              <span
-                className="text-xs mt-0.5"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                {dataHoje}
               </span>
             </div>
           </div>
@@ -233,6 +209,7 @@ export default function Dashboard() {
             />
           </button>
         </header>
+
 
         <div className="px-5 space-y-4">
           {/* Banner de visitante */}
