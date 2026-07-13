@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Bell, User, TrendingUp, Plus, Home, Receipt, LayoutGrid,
-  Calendar, AlertTriangle, X, BarChart3, ChevronRight,
+  Bell, TrendingUp, Plus, Home, Receipt, LayoutGrid, User,
+  AlertTriangle, X, BarChart3, ChevronRight, Gauge,
 } from "lucide-react";
 
 // TODO: buscar dados reais do Supabase/localStorage
