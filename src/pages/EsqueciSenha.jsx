@@ -21,7 +21,7 @@ export default function EsqueciSenha() {
       setLoading(true);
       const { error } = await supabase.auth.resetPasswordForEmail(contato);
       setLoading(false);
-      if (error) return setErro("Não foi possível enviar. Verifique o e-mail digitado.");
+      if (error) return setErro(translateAuthError(error.message) || "Não foi possível enviar. Verifique o e-mail digitado.");
       setSucesso(true);
     } else {
       if ((contato || "").replace(/\D/g, "").length < 10)
