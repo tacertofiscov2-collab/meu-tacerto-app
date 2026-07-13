@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import {
   Bell, User, TrendingUp, Plus, Home, Receipt, LayoutGrid,
+  Lightbulb, Calendar,
 } from "lucide-react";
 
 // TODO: buscar dados reais do Supabase/localStorage
