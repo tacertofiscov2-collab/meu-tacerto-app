@@ -380,43 +380,6 @@ export default function Dashboard() {
             </button>
           ) : null}
 
-
-          {/* 6. Card Próximo DAS */}
-          {/* TODO: cálculo real da data */}
-          <button
-            onClick={() => navigate("/menu")}
-            className={cardBase + " p-4 text-left"}
-            style={cardStyle}
-          >
-            <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
-              Próximo DAS
-            </p>
-            <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                style={{ backgroundColor: "var(--field)" }}
-              >
-                <Calendar size={18} style={{ color: "var(--primary)" }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium" style={{ color: "var(--text)" }}>
-                  Vence dia 20
-                </p>
-                <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                  Documento de Arrecadação do Simples
-                </p>
-              </div>
-              <span
-                className="text-xs font-semibold px-2.5 py-1 rounded-full shrink-0"
-                style={{
-                  backgroundColor: "rgba(34,197,94,0.12)",
-                  color: "var(--primary)",
-                }}
-              >
-                Em 8 dias
-              </span>
-            </div>
-          </button>
         </div>
       </div>
 
@@ -431,65 +394,69 @@ export default function Dashboard() {
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        <div className="relative max-w-xl mx-auto h-[72px] flex items-center justify-between px-2">
+        <div className="relative max-w-xl mx-auto h-[64px] grid grid-cols-5 items-center">
+          {/* Início */}
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="flex flex-col items-center justify-center gap-0.5 h-full"
+            style={{ color: "var(--primary)" }}
+          >
+            <Home size={22} strokeWidth={2.5} />
+            <span className="text-[11px] font-medium leading-none">Início</span>
+          </button>
+
+          {/* Histórico */}
+          <button
+            onClick={() => navigate("/historico")}
+            className="flex flex-col items-center justify-center gap-0.5 h-full"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            <Receipt size={22} strokeWidth={2} />
+            <span className="text-[11px] font-medium leading-none">Histórico</span>
+          </button>
+
+          {/* Espaço reservado para o botão central */}
+          <div aria-hidden="true" />
+
+          {/* Menu */}
+          <button
+            onClick={() => navigate("/menu")}
+            className="flex flex-col items-center justify-center gap-0.5 h-full"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            <LayoutGrid size={22} strokeWidth={2} />
+            <span className="text-[11px] font-medium leading-none">Menu</span>
+          </button>
+
+          {/* Perfil */}
+          <button
+            onClick={() => navigate("/perfil")}
+            className="flex flex-col items-center justify-center gap-0.5 h-full"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            <User size={22} strokeWidth={2} />
+            <span className="text-[11px] font-medium leading-none">Perfil</span>
+          </button>
+
           {/* Botão + central elevado */}
           <button
             onClick={() => navigate("/lancar")}
             aria-label="Adicionar lançamento"
-            className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 w-[58px] h-[58px] rounded-full flex items-center justify-center active:scale-95 transition z-40"
+            className="absolute left-1/2 -translate-x-1/2 -top-6 w-14 h-14 rounded-full flex items-center justify-center active:scale-95 transition z-40"
             style={{
               backgroundColor: "var(--primary)",
               color: "var(--primary-contrast)",
               boxShadow: "0 8px 24px rgba(34,197,94,0.45)",
             }}
           >
-            <Plus size={28} strokeWidth={2.5} />
-          </button>
-
-          {/* Início */}
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="flex flex-col items-center justify-center gap-1 w-16 py-2"
-            style={{ color: "var(--primary)" }}
-          >
-            <Home size={22} strokeWidth={2.5} />
-            <span className="text-[11px] font-medium">Início</span>
-          </button>
-
-          {/* Histórico */}
-          <button
-            onClick={() => navigate("/historico")}
-            className="flex flex-col items-center justify-center gap-1 w-16 py-2"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            <Receipt size={22} strokeWidth={2} />
-            <span className="text-[11px] font-medium">Histórico</span>
-          </button>
-
-          {/* Espaço reservado para o botão central */}
-          <div className="w-16" aria-hidden="true" />
-
-          {/* Menu */}
-          <button
-            onClick={() => navigate("/menu")}
-            className="flex flex-col items-center justify-center gap-1 w-16 py-2"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            <LayoutGrid size={22} strokeWidth={2} />
-            <span className="text-[11px] font-medium">Menu</span>
-          </button>
-
-          {/* Perfil */}
-          <button
-            onClick={() => navigate("/perfil")}
-            className="flex flex-col items-center justify-center gap-1 w-16 py-2"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            <User size={22} strokeWidth={2} />
-            <span className="text-[11px] font-medium">Perfil</span>
+            <Plus size={26} strokeWidth={2.5} />
           </button>
         </div>
       </nav>
+    </div>
+  );
+}
+
     </div>
   );
 }
