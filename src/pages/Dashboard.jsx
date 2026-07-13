@@ -4,6 +4,7 @@ import {
   Bell, TrendingUp, Plus, Home, Receipt, LayoutGrid, User,
   AlertTriangle, X, BarChart3, ChevronRight, Gauge,
 } from "lucide-react";
+import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 // TODO: buscar dados reais do Supabase/localStorage
 const USUARIO = {
@@ -154,9 +155,11 @@ export default function Dashboard() {
 
   const [banner, setBanner] = useState(true);
   const [mostrarOnboarding, setMostrarOnboarding] = useState(true);
+  const [modalFaturamento, setModalFaturamento] = useState(false);
+  const [faturamentoExtra, setFaturamentoExtra] = useState(0);
 
   const limite = LIMITES[USUARIO.perfil] ?? LIMITES.MEI;
-  const faturado = USUARIO.faturado;
+  const faturado = USUARIO.faturado + faturamentoExtra;
   const faltam = Math.max(0, limite - faturado);
   const percentual = (faturado / limite) * 100;
 
@@ -331,7 +334,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-2 mt-4">
                 <button
                   // TODO: abrir modal de faturamento inicial
-                  onClick={() => navigate("/lancar")}
+                  onClick={() => setModalFaturamento(true)}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
                   style={{
                     backgroundColor: "var(--primary)",
@@ -456,6 +459,16 @@ export default function Dashboard() {
           </button>
         </div>
       </nav>
+
+      <ModalFaturamentoInicial
+        aberto={modalFaturamento}
+        onClose={() => setModalFaturamento(false)}
+        onSalvar={(valor) => {
+          // TODO: persistir faturamento inicial no Supabase
+          setFaturamentoExtra((f) => f + valor);
+          setMostrarOnboarding(false);
+        }}
+      />
     </div>
   );
 }
