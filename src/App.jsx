@@ -16,6 +16,7 @@ import Menu from "./pages/Menu.jsx";
 import Alertas from "./pages/Alertas.jsx";
 import Preferencias from "./pages/Preferencias.jsx";
 import Faq from "./pages/Faq.jsx";
+import Contas from "./pages/Contas.jsx";
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/alertas" element={<Alertas />} />
         <Route path="/preferencias" element={<Preferencias />} />
         <Route path="/faq" element={<Faq />} />
+        <Route path="/contas" element={<Contas />} />
       </Routes>
     </BrowserRouter>
   );
