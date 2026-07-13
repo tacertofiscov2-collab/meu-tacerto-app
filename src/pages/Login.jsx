@@ -114,13 +114,7 @@ export default function Login() {
               {loading ? "Aguarde..." : "Entrar"}
             </button>
 
-              onClick={handleEntrar}
-              disabled={loading}
-              className="w-full py-3.5 rounded-xl font-medium text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
-              style={{ backgroundColor: "var(--primary)", color: "var(--primary-contrast)" }}
-            >
-              {loading ? "Aguarde..." : "Entrar"}
-            </button>
+
 
             <button
               onClick={() => navigate("/esqueci-senha")}
