@@ -33,7 +33,8 @@ export default function App() {
         <Route path="/historico" element={<Historico />} />
         <Route path="/menu" element={<Menu />} />
         <Route path="/perfil" element={<Perfil />} />
-        <Route path="/alertas" element={<EmConstrucao titulo="Alertas" />} />
+        <Route path="/alertas" element={<Alertas />} />
+        <Route path="/preferencias" element={<Preferencias />} />
       </Routes>
     </BrowserRouter>
   );
