@@ -58,15 +58,15 @@ export default function EsqueciSenha() {
             <p className="text-xs text-gray-500 mt-1">Informe seu e-mail ou telefone cadastrado</p>
           </div>
 
-          {erro && (
-            <div className="mb-3 bg-red-50 border border-red-200 text-red-500 text-xs px-3 py-2 rounded-lg">
-              ⚠ {erro}
-            </div>
-          )}
-
           <div className="mb-4">
             <SmartContactInput value={contato} onChange={setContato} />
           </div>
+
+          {erro && (
+            <div className="mb-4">
+              <AuthError>{erro}</AuthError>
+            </div>
+          )}
 
           <button
             onClick={handleEnviar}
