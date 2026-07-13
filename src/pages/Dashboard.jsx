@@ -131,6 +131,14 @@ function Velocimetro({ percentual }) {
 export default function Dashboard() {
   const navigate = useNavigate();
 
+  // TODO: detectar visitante real (sem conta criada)
+  const isVisitante = true;
+  // TODO: detectar se já lançou faturamento inicial do ano
+  const jaLancouFaturamento = false;
+
+  const [banner, setBanner] = useState(true);
+  const [mostrarOnboarding, setMostrarOnboarding] = useState(true);
+
   const limite = LIMITES[USUARIO.perfil] ?? LIMITES.MEI;
   const faturado = USUARIO.faturado;
   const faltam = Math.max(0, limite - faturado);
