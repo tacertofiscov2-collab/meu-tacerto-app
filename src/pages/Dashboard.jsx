@@ -99,7 +99,7 @@ function Velocimetro({ percentual }) {
     <div className="flex flex-col items-center">
       <svg
         viewBox="0 0 200 120"
-        className="w-full max-w-[190px]"
+        className="w-full max-w-[170px]"
         role="img"
         aria-label={`Velocímetro fiscal: ${Math.round(p)} por cento`}
       >
@@ -185,7 +185,7 @@ export default function Dashboard() {
         style={{ paddingBottom: "calc(160px + env(safe-area-inset-bottom))" }}
       >
         {/* 1. Header */}
-        <header className="px-5 pt-6 pb-3 flex items-start justify-between">
+        <header className="px-5 pt-5 pb-2 flex items-start justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2.5">
               <Gauge size={34} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
@@ -217,7 +217,7 @@ export default function Dashboard() {
         </header>
 
 
-        <div className="px-5 space-y-2.5">
+        <div className="px-5 space-y-2">
           {/* Banner de visitante */}
           {isVisitante && banner && (
             <div
@@ -255,7 +255,7 @@ export default function Dashboard() {
           )}
 
           {/* Card Velocímetro */}
-          <div className={cardBase + " px-5 pt-1.5 pb-3"} style={cardStyle}>
+          <div className={cardBase + " px-5 pt-1 pb-2"} style={cardStyle}>
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
                 Velocímetro Fiscal
@@ -279,7 +279,7 @@ export default function Dashboard() {
           </div>
 
           {/* Card Faturado / Limite / Faltam */}
-          <div className={cardBase + " py-3 px-4"} style={cardStyle}>
+          <div className={cardBase + " py-2 px-4"} style={cardStyle}>
             <div className="grid grid-cols-3">
               {[
                 { valor: fmtBRL(faturado), label: "Faturado" },
@@ -311,7 +311,7 @@ export default function Dashboard() {
           {/* Card onboarding do faturamento OU Último lançamento */}
           {!jaLancouFaturamento && mostrarOnboarding ? (
             <div
-              className={cardBase + " py-3 px-4"}
+              className={cardBase + " py-2 px-4"}
               style={{ ...cardStyle, borderLeft: "4px solid var(--primary)" }}
             >
               <div className="flex items-start gap-3">
