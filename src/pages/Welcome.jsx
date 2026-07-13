@@ -73,29 +73,29 @@ export default function Welcome() {
               className="min-w-full snap-center flex flex-col items-center px-6"
             >
               {/* Logo topo — igual em todos os slides */}
-              <div className="flex items-center justify-center gap-2 shrink-0">
-                <Gauge size={26} className="text-green-500" strokeWidth={2.5} />
-                <span className="text-2xl font-bold text-white">
+              <div className="flex items-center justify-center gap-1.5 shrink-0">
+                <Gauge size={22} className="text-green-500" strokeWidth={2.5} />
+                <span className="text-xl font-bold text-white">
                   Ta<span className="text-green-500">Certo!</span>
                 </span>
               </div>
 
               {/* Ilustração */}
-              <div className="flex-1 min-h-0 w-full flex items-center justify-center my-3">
+              <div className="flex-1 min-h-0 w-full flex items-center justify-center my-1">
                 <img
                   src={s.img}
                   alt={s.alt}
                   width={1024}
                   height={1024}
                   loading={i === 0 ? "eager" : "lazy"}
-                  className="max-h-full max-w-full object-contain"
+                  className="max-h-[34vh] max-w-full object-contain"
                   style={{ mixBlendMode: "screen" }}
                 />
               </div>
 
               {/* Título manuscrito */}
               <h2
-                className="text-3xl leading-tight text-center text-white px-2"
+                className="text-xl leading-tight text-center text-white px-2"
                 style={handwritten}
               >
                 {s.titulo}
@@ -103,10 +103,10 @@ export default function Welcome() {
 
               {/* Linha decorativa curva */}
               <svg
-                width="90"
-                height="12"
+                width="70"
+                height="8"
                 viewBox="0 0 90 12"
-                className="mt-1 mb-2 shrink-0"
+                className="mt-0.5 mb-0.5 shrink-0"
                 aria-hidden="true"
               >
                 <path
@@ -120,7 +120,7 @@ export default function Welcome() {
 
               {/* Subtítulo manuscrito mais fino */}
               <p
-                className="text-xl text-center text-white/80 leading-snug px-2 pb-1"
+                className="text-base text-center text-white/80 leading-snug px-2 pb-0.5"
                 style={{ ...handwritten, fontWeight: 500 }}
               >
                 {s.subtitulo}
@@ -130,7 +130,7 @@ export default function Welcome() {
         </div>
 
         {/* Indicador */}
-        <div className="flex justify-center gap-2 py-3 shrink-0">
+        <div className="flex justify-center gap-2 py-1 shrink-0">
           {SLIDES.map((_, i) => (
             <button
               key={i}
@@ -147,16 +147,16 @@ export default function Welcome() {
       </div>
 
       {/* Rodapé fixo de ações */}
-      <div className="px-6 pb-6 pt-2 shrink-0 space-y-3">
+      <div className="px-5 pb-3 pt-0 shrink-0 space-y-1.5">
         <button
           onClick={() => navigate("/cadastro")}
-          className="w-full py-3.5 rounded-xl font-medium text-sm transition-opacity hover:opacity-90"
+          className="w-full py-2.5 rounded-xl font-medium text-sm transition-opacity hover:opacity-90"
           style={{ backgroundColor: "#22c55e", color: "#0a0a0a" }}
         >
           Cadastrar
         </button>
 
-        <div className="flex items-center gap-3 py-0.5">
+        <div className="flex items-center gap-3 py-0">
           <div className="flex-1 h-px bg-white/10" />
           <span className="text-xs text-white/60">ou</span>
           <div className="flex-1 h-px bg-white/10" />
@@ -164,13 +164,13 @@ export default function Welcome() {
 
         <button
           onClick={() => navigate("/onboarding")}
-          className="w-full py-3.5 rounded-xl font-medium text-sm transition-opacity hover:opacity-90"
+          className="w-full py-2.5 rounded-xl font-medium text-sm transition-opacity hover:opacity-90"
           style={{ backgroundColor: "#27272a", color: "#a1a1aa" }}
         >
           Cadastrar depois
         </button>
 
-        <p className="text-center text-xs pt-1 text-white/60">
+        <p className="text-center text-xs text-white/60">
           Já tem conta?{" "}
           <button
             onClick={() => navigate("/login")}
