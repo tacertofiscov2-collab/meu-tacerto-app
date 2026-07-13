@@ -149,7 +149,7 @@ export default function Dashboard() {
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       {/* Conteúdo com padding inferior para não ficar sob a navbar/FAB */}
-      <div className="flex-1 pb-28">
+      <div className="flex-1 overflow-y-auto pb-[170px]">
         {/* 1. Header */}
         <header className="px-5 pt-6 pb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
