@@ -285,7 +285,7 @@ export default function Dashboard() {
       <button
         onClick={() => navigate("/lancar")}
         aria-label="Adicionar lançamento"
-        className="fixed right-5 bottom-24 w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:opacity-90 active:scale-95 transition"
+        className="fixed right-5 bottom-[80px] w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:opacity-90 active:scale-95 transition z-20"
         style={{
           backgroundColor: "var(--primary)",
           color: "var(--primary-contrast)",
