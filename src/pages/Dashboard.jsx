@@ -484,16 +484,3 @@ function NavBubble({ icon: Icon, label, active = false, onClick }) {
     </button>
   );
 }
-
-      <ModalFaturamentoInicial
-        aberto={modalFaturamento}
-        onClose={() => setModalFaturamento(false)}
-        onSalvar={(valor) => {
-          // TODO: persistir faturamento inicial no Supabase
-          setFaturamentoExtra((f) => f + valor);
-          setMostrarOnboarding(false);
-        }}
-      />
-    </div>
-  );
-}
