@@ -88,14 +88,14 @@ export default function Welcome() {
                   width={1024}
                   height={1024}
                   loading={i === 0 ? "eager" : "lazy"}
-                  className="max-h-[44vh] max-w-full object-contain"
+                  className="max-h-[38vh] max-w-full object-contain"
                   style={{ mixBlendMode: "screen" }}
                 />
               </div>
 
               {/* Título manuscrito */}
               <h2
-                className="text-2xl leading-tight text-center text-white px-2"
+                className="text-xl leading-tight text-center text-white px-2"
                 style={handwritten}
               >
                 {s.titulo}
