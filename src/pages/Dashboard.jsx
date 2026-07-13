@@ -182,7 +182,7 @@ export default function Dashboard() {
       {/* Conteúdo com padding inferior para não ficar sob a navbar */}
       <div
         className="flex-1 overflow-y-auto"
-        style={{ paddingBottom: "calc(190px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(150px + env(safe-area-inset-bottom))" }}
       >
         {/* 1. Header */}
         <header className="px-5 pt-6 pb-4 flex items-start justify-between">
@@ -395,12 +395,12 @@ export default function Dashboard() {
         className="fixed left-0 right-0 z-30 pointer-events-none"
         style={{ bottom: "calc(12px + env(safe-area-inset-bottom))" }}
       >
-        <div className="relative max-w-xl mx-auto px-5 h-[72px]">
+        <div className="relative max-w-xl mx-auto px-5">
           {/* Botão + central flutuante, elevado acima das bolhas */}
           <button
             onClick={() => navigate("/lancar")}
             aria-label="Adicionar lançamento"
-            className="pointer-events-auto absolute left-1/2 -translate-x-1/2 bottom-[40px] w-[66px] h-[66px] rounded-full flex items-center justify-center active:scale-95 transition"
+            className="pointer-events-auto absolute left-1/2 -translate-x-1/2 bottom-[16px] w-[66px] h-[66px] rounded-full flex items-center justify-center active:scale-95 transition"
             style={{
               backgroundColor: "var(--primary)",
               color: "var(--primary-contrast, #0f0f11)",
