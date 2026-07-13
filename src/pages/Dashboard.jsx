@@ -182,7 +182,7 @@ export default function Dashboard() {
       {/* Conteúdo com padding inferior para não ficar sob a navbar */}
       <div
         className="flex-1 overflow-y-auto"
-        style={{ paddingBottom: "calc(150px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(190px + env(safe-area-inset-bottom))" }}
       >
         {/* 1. Header */}
         <header className="px-5 pt-6 pb-4 flex items-start justify-between">
@@ -400,7 +400,7 @@ export default function Dashboard() {
           <button
             onClick={() => navigate("/lancar")}
             aria-label="Adicionar lançamento"
-            className="pointer-events-auto absolute left-1/2 -translate-x-1/2 bottom-[50px] w-[66px] h-[66px] rounded-full flex items-center justify-center active:scale-95 transition"
+            className="pointer-events-auto absolute left-1/2 -translate-x-1/2 bottom-[40px] w-[66px] h-[66px] rounded-full flex items-center justify-center active:scale-95 transition"
             style={{
               backgroundColor: "var(--primary)",
               color: "var(--primary-contrast, #0f0f11)",
