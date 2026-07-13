@@ -88,7 +88,7 @@ export default function Welcome() {
                   width={1024}
                   height={1024}
                   loading={i === 0 ? "eager" : "lazy"}
-                  className="max-h-[38vh] max-w-full object-contain"
+                  className="max-h-[34vh] max-w-full object-contain"
                   style={{ mixBlendMode: "screen" }}
                 />
               </div>
@@ -103,10 +103,10 @@ export default function Welcome() {
 
               {/* Linha decorativa curva */}
               <svg
-                width="80"
-                height="10"
+                width="70"
+                height="8"
                 viewBox="0 0 90 12"
-                className="mt-0.5 mb-1 shrink-0"
+                className="mt-0.5 mb-0.5 shrink-0"
                 aria-hidden="true"
               >
                 <path
@@ -120,7 +120,7 @@ export default function Welcome() {
 
               {/* Subtítulo manuscrito mais fino */}
               <p
-                className="text-lg text-center text-white/80 leading-snug px-2 pb-0.5"
+                className="text-base text-center text-white/80 leading-snug px-2 pb-0.5"
                 style={{ ...handwritten, fontWeight: 500 }}
               >
                 {s.subtitulo}
@@ -130,7 +130,7 @@ export default function Welcome() {
         </div>
 
         {/* Indicador */}
-        <div className="flex justify-center gap-2 py-2 shrink-0">
+        <div className="flex justify-center gap-2 py-1 shrink-0">
           {SLIDES.map((_, i) => (
             <button
               key={i}
