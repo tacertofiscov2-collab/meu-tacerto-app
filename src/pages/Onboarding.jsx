@@ -33,10 +33,10 @@ function Progress({ step }) {
 function IconCircle({ Icon }) {
   return (
     <div
-      className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+      className="w-[72px] h-[72px] rounded-full flex items-center justify-center mx-auto mb-4"
       style={{ backgroundColor: "rgba(34,197,94,0.12)" }}
     >
-      <Icon size={26} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
+      <Icon size={34} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
     </div>
   );
 }
@@ -76,8 +76,8 @@ function MonthPicker({ value, onChange }) {
         className="w-full h-[48px] px-4 flex items-center justify-between rounded-xl text-sm transition"
         style={{
           backgroundColor: "var(--field)",
-          border: `1px solid ${selected ? "var(--primary)" : "var(--border)"}`,
-          color: selected ? "var(--primary)" : "var(--text-secondary)",
+          border: `1px solid ${open ? "var(--primary)" : "var(--border)"}`,
+          color: selected ? "var(--text)" : "var(--text-secondary)",
           fontWeight: selected ? 600 : 400,
         }}
       >
@@ -86,7 +86,7 @@ function MonthPicker({ value, onChange }) {
           size={18}
           strokeWidth={2}
           className={`transition-transform ${open ? "rotate-180" : ""}`}
-          style={{ color: selected ? "var(--primary)" : "var(--text-secondary)" }}
+          style={{ color: open ? "var(--primary)" : "var(--text-secondary)" }}
         />
       </button>
       {open && (
@@ -207,14 +207,11 @@ export default function Onboarding() {
         >
           <ArrowLeft size={22} strokeWidth={2} />
         </button>
-        <div className="flex items-center gap-1.5">
-          <Gauge size={18} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
-          <span className="text-sm font-bold">
-            <span style={{ color: "var(--text)" }}>Ta</span>
-            <span style={{ color: "var(--primary)" }}>Certo!</span>
-          </span>
+        <div className="flex items-center justify-center">
+          <Gauge size={40} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
         </div>
       </div>
+
 
       <div className="flex-1 flex flex-col justify-center px-6 pb-6">
         <div className="max-w-sm w-full mx-auto">
@@ -231,7 +228,7 @@ export default function Onboarding() {
               <div className="mt-6 space-y-5">
                 <input
                   type="text"
-                  placeholder="Ex: João Silva"
+                  placeholder="Digite seu nome ou apelido"
                   value={nome}
                   maxLength={30}
                   autoFocus
