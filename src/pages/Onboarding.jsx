@@ -30,14 +30,12 @@ function Progress({ step }) {
   );
 }
 
-function IconCircle({ Icon }) {
+function StepTitle({ Icon, children }) {
   return (
-    <div
-      className="w-[72px] h-[72px] rounded-full flex items-center justify-center mx-auto mb-4"
-      style={{ backgroundColor: "rgba(34,197,94,0.12)" }}
-    >
-      <Icon size={34} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
-    </div>
+    <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-2 mb-6">
+      <Icon size={26} strokeWidth={2} style={{ color: "var(--primary)" }} />
+      {children}
+    </h1>
   );
 }
 
@@ -197,35 +195,32 @@ export default function Onboarding() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      {/* Top bar: back arrow + small logo */}
-      <div className="px-4 pt-5 shrink-0 relative flex items-center justify-center">
+      {/* Top bar: back arrow only */}
+      <div className="px-4 pt-5 shrink-0 relative flex items-center">
         <button
           onClick={handleBack}
           aria-label="Voltar"
-          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-lg hover:opacity-80"
+          className="w-10 h-10 flex items-center justify-center rounded-lg hover:opacity-80"
           style={{ color: "var(--text)" }}
         >
           <ArrowLeft size={22} strokeWidth={2} />
         </button>
-        <div className="flex items-center justify-center">
-          <Gauge size={40} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
-        </div>
       </div>
-
 
       <div className="flex-1 flex flex-col justify-center px-6 pb-6">
         <div className="max-w-sm w-full mx-auto">
+          {/* Gauge above progress */}
+          <div className="flex justify-center mb-8">
+            <Gauge size={52} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
+          </div>
+
           <Progress step={progressStep} />
 
           {step === 1 && (
             <>
-              <IconCircle Icon={Pencil} />
-              <h1 className="text-2xl font-bold text-center">Como posso te chamar?</h1>
-              <p className="text-sm text-center mt-1.5" style={{ color: "var(--text-secondary)" }}>
-                Seu nome ou apelido
-              </p>
+              <StepTitle Icon={Pencil}>Como posso te chamar?</StepTitle>
 
-              <div className="mt-6 space-y-5">
+              <div className="space-y-5">
                 <input
                   type="text"
                   placeholder="Digite seu nome ou apelido"
@@ -261,13 +256,9 @@ export default function Onboarding() {
 
           {step === 2 && (
             <>
-              <IconCircle Icon={ClipboardList} />
-              <h1 className="text-2xl font-bold text-center">Qual é o seu MEI?</h1>
-              <p className="text-sm text-center mt-1.5" style={{ color: "var(--text-secondary)" }}>
-                Selecione a categoria da sua atividade
-              </p>
+              <StepTitle Icon={ClipboardList}>Qual é o seu MEI?</StepTitle>
 
-              <div className="mt-6 space-y-2.5">
+              <div className="space-y-2.5">
                 {[
                   { v: "MEI", Icon: Briefcase, titulo: "MEI (outras atividades)",
                     desc: "Comércio, serviços · limite R$ 81.000/ano" },
@@ -321,13 +312,12 @@ export default function Onboarding() {
 
           {step === 3 && (
             <>
-              <IconCircle Icon={CalendarDays} />
-              <h1 className="text-2xl font-bold text-center">Sobre seu MEI</h1>
-              <p className="text-sm text-center mt-1.5" style={{ color: "var(--text-secondary)" }}>
+              <StepTitle Icon={CalendarDays}>Sobre seu MEI</StepTitle>
+              <p className="text-sm text-center -mt-3 mb-6" style={{ color: "var(--text-secondary)" }}>
                 Você abriu seu MEI em {anoAtual}?
               </p>
 
-              <div className="mt-6 grid grid-cols-2 gap-2.5 mb-3">
+              <div className="grid grid-cols-2 gap-2.5 mb-3">
                 {[
                   { v: true, Icon: CheckCircle2, l: "Sim, esse ano" },
                   { v: false, Icon: Clock, l: "Não, já faz tempo" },
