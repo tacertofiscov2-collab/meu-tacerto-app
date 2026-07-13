@@ -29,7 +29,7 @@ export default function Cadastro() {
     const { error } = await supabase.auth.signUp({ email: contato, password: senha });
     if (error) {
       setLoading(false);
-      return setErro(error.message);
+      return setErro(translateAuthError(error.message));
     }
     await supabase.auth.signInWithPassword({ email: contato, password: senha });
     setLoading(false);
