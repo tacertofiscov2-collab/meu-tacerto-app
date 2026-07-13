@@ -311,7 +311,7 @@ export default function Dashboard() {
           {/* Card onboarding do faturamento OU Último lançamento */}
           {!jaLancouFaturamento && mostrarOnboarding ? (
             <div
-              className={cardBase + " py-1.5 px-4"}
+              className={cardBase + " py-1.5 px-4 flex-1"}
               style={{ ...cardStyle, borderLeft: "4px solid var(--primary)" }}
             >
               <div className="flex items-start gap-3">
