@@ -99,7 +99,7 @@ function Velocimetro({ percentual }) {
     <div className="flex flex-col items-center">
       <svg
         viewBox="0 0 200 120"
-        className="w-full max-w-[220px]"
+        className="w-full max-w-[200px]"
         role="img"
         aria-label={`Velocímetro fiscal: ${Math.round(p)} por cento`}
       >
@@ -185,7 +185,7 @@ export default function Dashboard() {
         style={{ paddingBottom: "calc(160px + env(safe-area-inset-bottom))" }}
       >
         {/* 1. Header */}
-        <header className="px-5 pt-6 pb-4 flex items-start justify-between">
+        <header className="px-5 pt-6 pb-3 flex items-start justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2.5">
               <Gauge size={34} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
@@ -255,7 +255,7 @@ export default function Dashboard() {
           )}
 
           {/* Card Velocímetro */}
-          <div className={cardBase + " px-5 pt-3 pb-5"} style={cardStyle}>
+          <div className={cardBase + " px-5 pt-2 pb-4"} style={cardStyle}>
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
                 Velocímetro Fiscal
@@ -400,7 +400,7 @@ export default function Dashboard() {
           <button
             onClick={() => navigate("/lancar")}
             aria-label="Adicionar lançamento"
-            className="pointer-events-auto absolute left-1/2 -translate-x-1/2 bottom-[16px] w-[66px] h-[66px] rounded-full flex items-center justify-center active:scale-95 transition"
+            className="pointer-events-auto absolute left-1/2 -translate-x-1/2 bottom-[12px] w-[64px] h-[64px] rounded-full flex items-center justify-center active:scale-95 transition"
             style={{
               backgroundColor: "var(--primary)",
               color: "var(--primary-contrast, #0f0f11)",
