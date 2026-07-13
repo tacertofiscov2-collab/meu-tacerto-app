@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ArrowLeft, Eye, EyeOff, Mail, Gauge } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { detectMode } from "@/components/SmartContactInput";
+import AuthError, { translateAuthError } from "@/components/AuthError";
 
 export default function Cadastro() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ export default function Cadastro() {
     const { error } = await supabase.auth.signUp({ email: contato, password: senha });
     if (error) {
       setLoading(false);
-      return setErro(error.message);
+      return setErro(translateAuthError(error.message));
     }
     await supabase.auth.signInWithPassword({ email: contato, password: senha });
     setLoading(false);
@@ -65,15 +66,8 @@ export default function Cadastro() {
           <h1 className="text-2xl font-bold text-center" style={{ color: "var(--text)" }}>
             Crie sua conta
           </h1>
-          <p className="text-sm text-center mt-1.5" style={{ color: "var(--text-secondary)" }}>
-            Crie em 1 minuto e tenha a experiência completa do app.
-          </p>
 
-          {erro && (
-            <p className="text-xs text-center mt-4" style={{ color: "var(--danger)" }}>
-              {erro}
-            </p>
-          )}
+
 
           <div className="mt-6 space-y-5">
             <div className="relative">
@@ -110,6 +104,10 @@ export default function Cadastro() {
                 {showSenha ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+
+            {erro && <AuthError>{erro}</AuthError>}
+
+
 
             <button
               onClick={handleCadastrar}

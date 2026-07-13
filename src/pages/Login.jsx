@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ArrowLeft, Eye, EyeOff, Mail, Gauge } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { detectMode } from "@/components/SmartContactInput";
+import AuthError, { translateAuthError } from "@/components/AuthError";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export default function Login() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email: contato, password: senha });
     setLoading(false);
-    if (error) return setErro("E-mail ou senha incorretos");
+    if (error) return setErro(translateAuthError(error.message) || "E-mail ou senha incorretos.");
     navigate("/dashboard");
   }
 
@@ -63,14 +64,8 @@ export default function Login() {
             Acesse sua conta
           </p>
 
-          {erro && (
-            <p
-              className="text-xs text-center mt-4"
-              style={{ color: "var(--danger)" }}
-            >
-              {erro}
-            </p>
-          )}
+
+
 
           <div className="mt-6 space-y-5">
             <div className="relative">
@@ -108,6 +103,8 @@ export default function Login() {
               </button>
             </div>
 
+            {erro && <AuthError>{erro}</AuthError>}
+
             <button
               onClick={handleEntrar}
               disabled={loading}
@@ -116,6 +113,8 @@ export default function Login() {
             >
               {loading ? "Aguarde..." : "Entrar"}
             </button>
+
+
 
             <button
               onClick={() => navigate("/esqueci-senha")}

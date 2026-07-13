@@ -4,6 +4,7 @@ import { KeyRound } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { AuthLayout } from "@/components/AuthLayout";
 import SmartContactInput, { detectMode } from "@/components/SmartContactInput";
+import AuthError, { translateAuthError } from "@/components/AuthError";
 
 export default function EsqueciSenha() {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ export default function EsqueciSenha() {
       setLoading(true);
       const { error } = await supabase.auth.resetPasswordForEmail(contato);
       setLoading(false);
-      if (error) return setErro("Não foi possível enviar. Verifique o e-mail digitado.");
+      if (error) return setErro(translateAuthError(error.message) || "Não foi possível enviar. Verifique o e-mail digitado.");
       setSucesso(true);
     } else {
       if ((contato || "").replace(/\D/g, "").length < 10)
@@ -57,15 +58,15 @@ export default function EsqueciSenha() {
             <p className="text-xs text-gray-500 mt-1">Informe seu e-mail ou telefone cadastrado</p>
           </div>
 
-          {erro && (
-            <div className="mb-3 bg-red-50 border border-red-200 text-red-500 text-xs px-3 py-2 rounded-lg">
-              ⚠ {erro}
-            </div>
-          )}
-
           <div className="mb-4">
             <SmartContactInput value={contato} onChange={setContato} />
           </div>
+
+          {erro && (
+            <div className="mb-4">
+              <AuthError>{erro}</AuthError>
+            </div>
+          )}
 
           <button
             onClick={handleEnviar}
