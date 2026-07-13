@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Bell, User, TrendingUp, Plus, Home, Receipt, LayoutGrid,
-  Lightbulb, Calendar,
+  Calendar, AlertTriangle, X, BarChart3, ChevronRight,
 } from "lucide-react";
 
 // TODO: buscar dados reais do Supabase/localStorage
@@ -130,6 +131,14 @@ function Velocimetro({ percentual }) {
 export default function Dashboard() {
   const navigate = useNavigate();
 
+  // TODO: detectar visitante real (sem conta criada)
+  const isVisitante = true;
+  // TODO: detectar se já lançou faturamento inicial do ano
+  const jaLancouFaturamento = false;
+
+  const [banner, setBanner] = useState(true);
+  const [mostrarOnboarding, setMostrarOnboarding] = useState(true);
+
   const limite = LIMITES[USUARIO.perfil] ?? LIMITES.MEI;
   const faturado = USUARIO.faturado;
   const faltam = Math.max(0, limite - faturado);
@@ -196,18 +205,57 @@ export default function Dashboard() {
         </header>
 
         <div className="px-5 space-y-4">
-          {/* 2. Card Velocímetro */}
-          <button
-            onClick={() => navigate("/velocimetro")}
-            className={cardBase + " text-left px-5 pt-5 pb-6"}
-            style={cardStyle}
-          >
-            <p
-              className="text-sm text-center mb-2"
-              style={{ color: "var(--text-secondary)" }}
+          {/* Banner de visitante */}
+          {isVisitante && banner && (
+            <div
+              className="rounded-2xl p-3 flex items-start gap-3"
+              style={{
+                backgroundColor: "rgba(245,158,11,0.12)",
+                border: "1px solid rgba(245,158,11,0.35)",
+              }}
             >
-              Velocímetro Fiscal
-            </p>
+              <AlertTriangle
+                size={18}
+                className="mt-0.5 shrink-0"
+                style={{ color: "#f59e0b" }}
+              />
+              <p className="flex-1 text-sm leading-snug" style={{ color: "var(--text)" }}>
+                Você ainda não tem conta.{" "}
+                <button
+                  onClick={() => navigate("/cadastro")}
+                  className="font-semibold underline-offset-2 hover:underline"
+                  style={{ color: "var(--primary)" }}
+                >
+                  Criar conta
+                </button>{" "}
+                para manter seus lançamentos salvos.
+              </p>
+              <button
+                onClick={() => setBanner(false)}
+                aria-label="Fechar aviso"
+                className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
+                style={{ backgroundColor: "rgba(0,0,0,0.15)" }}
+              >
+                <X size={14} style={{ color: "var(--text)" }} />
+              </button>
+            </div>
+          )}
+
+          {/* Card Velocímetro */}
+          <div className={cardBase + " px-5 pt-4 pb-6"} style={cardStyle}>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                Velocímetro Fiscal
+              </p>
+              <button
+                onClick={() => navigate("/velocimetro")}
+                className="text-sm font-semibold flex items-center gap-0.5 hover:opacity-80"
+                style={{ color: "var(--primary)" }}
+              >
+                Ver detalhes
+                <ChevronRight size={14} />
+              </button>
+            </div>
             <Velocimetro percentual={percentual} />
             <p
               className="text-sm text-center mt-4"
@@ -215,9 +263,9 @@ export default function Dashboard() {
             >
               Você já usou {Math.round(percentual)}% do seu limite anual.
             </p>
-          </button>
+          </div>
 
-          {/* 3. Card Resumo */}
+          {/* Card Faturado / Limite / Faltam */}
           <div className={cardBase + " p-4"} style={cardStyle}>
             <div className="grid grid-cols-3">
               {[
@@ -247,58 +295,84 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* 4. Card Último lançamento */}
-          <button
-            onClick={() => navigate("/historico")}
-            className={cardBase + " p-4 text-left"}
-            style={cardStyle}
-          >
-            <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
-              Último lançamento
-            </p>
-            <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                style={{ backgroundColor: "var(--field)" }}
-              >
-                <TrendingUp size={18} style={{ color: "var(--primary)" }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>
-                  {ULTIMO_LANCAMENTO.descricao}
-                </p>
-                <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                  {ULTIMO_LANCAMENTO.data}
-                </p>
-              </div>
-              <span
-                className="font-bold text-sm shrink-0"
-                style={{ color: "var(--primary)" }}
-              >
-                + {fmtBRL(ULTIMO_LANCAMENTO.valor)}
-              </span>
-            </div>
-          </button>
-
-          {/* 5. Card Dica contextual */}
-          {/* TODO: mensagem dinâmica conforme faixa do velocímetro */}
-          <div
-            className={cardBase + " p-4 flex items-start gap-3"}
-            style={{
-              ...cardStyle,
-              borderLeft: "4px solid var(--primary)",
-            }}
-          >
+          {/* Card onboarding do faturamento OU Último lançamento */}
+          {!jaLancouFaturamento && mostrarOnboarding ? (
             <div
-              className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-              style={{ backgroundColor: "var(--field)" }}
+              className={cardBase + " p-4"}
+              style={{ ...cardStyle, borderLeft: "4px solid var(--primary)" }}
             >
-              <Lightbulb size={18} style={{ color: "var(--primary)" }} />
+              <div className="flex items-start gap-3">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "var(--field)" }}
+                >
+                  <BarChart3 size={18} style={{ color: "var(--primary)" }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold" style={{ color: "var(--text)" }}>
+                    Comece com o velocímetro certo
+                  </p>
+                  <p className="text-sm mt-1 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                    Já faturou este ano antes de instalar o app? Adicione o total em
+                    1 minuto para o velocímetro refletir sua realidade desde agora.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mt-4">
+                <button
+                  // TODO: abrir modal de faturamento inicial
+                  onClick={() => navigate("/lancar")}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                  style={{
+                    backgroundColor: "var(--primary)",
+                    color: "var(--primary-contrast)",
+                  }}
+                >
+                  Adicionar faturamento
+                </button>
+                <button
+                  onClick={() => setMostrarOnboarding(false)}
+                  className="px-3 py-2.5 text-sm font-medium"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Agora não
+                </button>
+              </div>
             </div>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>
-              No seu ritmo atual, você deve fechar o ano dentro do limite. Continue assim!
-            </p>
-          </div>
+          ) : jaLancouFaturamento ? (
+            <button
+              onClick={() => navigate("/historico")}
+              className={cardBase + " p-4 text-left"}
+              style={cardStyle}
+            >
+              <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
+                Último lançamento
+              </p>
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "var(--field)" }}
+                >
+                  <TrendingUp size={18} style={{ color: "var(--primary)" }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>
+                    {ULTIMO_LANCAMENTO.descricao}
+                  </p>
+                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                    {ULTIMO_LANCAMENTO.data}
+                  </p>
+                </div>
+                <span
+                  className="font-bold text-sm shrink-0"
+                  style={{ color: "var(--primary)" }}
+                >
+                  + {fmtBRL(ULTIMO_LANCAMENTO.valor)}
+                </span>
+              </div>
+            </button>
+          ) : null}
+
 
           {/* 6. Card Próximo DAS */}
           {/* TODO: cálculo real da data */}
