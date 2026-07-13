@@ -8,6 +8,8 @@ import CadastroObrigatorio from "./pages/CadastroObrigatorio.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Sobre from "./pages/Sobre.jsx";
 import Termos from "./pages/Termos.jsx";
+import Lancar from "./pages/Lancar.jsx";
+import EmConstrucao from "./pages/EmConstrucao.jsx";
 
 export default function App() {
   return (
@@ -22,6 +24,11 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/sobre" element={<Sobre />} />
         <Route path="/termos" element={<Termos />} />
+        <Route path="/lancar" element={<Lancar />} />
+        <Route path="/historico" element={<EmConstrucao titulo="Histórico" />} />
+        <Route path="/menu" element={<EmConstrucao titulo="Menu" />} />
+        <Route path="/perfil" element={<EmConstrucao titulo="Perfil" />} />
+        <Route path="/alertas" element={<EmConstrucao titulo="Alertas" />} />
       </Routes>
     </BrowserRouter>
   );
