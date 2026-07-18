@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import Brand from "@/components/Brand";
 
+import BottomNav from "../components/BottomNav.jsx";
 const SECOES = [
   {
     titulo: "O QUE COLETAMOS",
@@ -58,7 +59,7 @@ export default function Termos() {
         </button>
       </div>
 
-      <div className="max-w-md mx-auto px-5 pb-10">
+      <div className="max-w-md mx-auto px-5 pb-[110px]">
         <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>
           Termos e Privacidade
         </h1>
@@ -137,6 +138,8 @@ export default function Termos() {
           <Brand /> v0.1
         </p>
       </div>
+
+      <BottomNav />
     </div>
   );
 }

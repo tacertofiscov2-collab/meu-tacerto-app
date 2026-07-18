@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
+import BottomNav from "../components/BottomNav.jsx";
 // TODO: buscar do backend
 const USUARIO = {
   perfil: "MEI", // "MEI" | "MEI_CAMINHONEIRO"
@@ -315,7 +316,7 @@ export default function Menu() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="flex-1 overflow-y-auto pb-10">
+      <div className="flex-1 overflow-y-auto pb-[110px]">
         <header className="px-5 pt-6 pb-4 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
@@ -404,6 +405,8 @@ export default function Menu() {
           setModalFaturamento(false);
         }}
       />
+
+      <BottomNav ativo="menu" />
     </div>
   );
 }

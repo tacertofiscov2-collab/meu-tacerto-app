@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Bell, BarChart3 } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
+import BottomNav from "../components/BottomNav.jsx";
 // TODO: gerar alertas dinamicamente conforme eventos reais
 // (faixa do velocímetro, proximidade do DAS dia 20, projeção anual, DASN em maio).
 const ALERTAS_MOCK = [];
@@ -36,7 +37,7 @@ export default function Alertas() {
         </h1>
       </header>
 
-      <div className="px-5 pb-10 space-y-3">
+      <div className="px-5 pb-[110px] space-y-3">
         {/* Card permanente: faturamento inicial */}
         <div
           className="rounded-2xl p-4"
@@ -126,6 +127,8 @@ export default function Alertas() {
           setModalFaturamento(false);
         }}
       />
+
+      <BottomNav />
     </div>
   );
 }
