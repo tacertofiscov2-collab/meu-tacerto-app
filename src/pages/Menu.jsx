@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Bell, HelpCircle, Calculator, FileText, Calendar, TrendingUp,
-  ChevronDown, AlertTriangle,
+  ArrowLeft, Bell, HelpCircle, Calculator, FileText, Calendar, TrendingUp,
+  ChevronDown, ChevronRight, AlertTriangle, BarChart3,
 } from "lucide-react";
+import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 // TODO: buscar do backend
 const USUARIO = {
