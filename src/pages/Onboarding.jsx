@@ -6,6 +6,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
+import { setUserState } from "@/lib/userState";
+import { LIMITES_ANUAIS, limiteProporcional } from "@/lib/fiscal";
 import AuthError from "@/components/AuthError";
 
 const MESES = [
