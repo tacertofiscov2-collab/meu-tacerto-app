@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 
 import BottomNav from "../components/BottomNav.jsx";
+import { SectionTitle } from "../components/FlatList.jsx";
+
 function Segmented({ opcoes, valor, onChange }) {
   return (
     <div
       className="flex p-1 rounded-xl"
-      style={{ backgroundColor: "var(--field)", border: "1px solid var(--border)" }}
+      style={{ backgroundColor: "var(--field)" }}
     >
       {opcoes.map((op) => {
         const ativo = valor === op.value;
@@ -50,35 +52,16 @@ function Switch({ ativo, onChange, label }) {
   );
 }
 
-function SecaoTitulo({ children }) {
-  return (
-    <p
-      className="text-xs font-semibold uppercase tracking-wider px-1 mb-2"
-      style={{ color: "var(--text-secondary)" }}
-    >
-      {children}
-    </p>
-  );
-}
-
 export default function Preferencias() {
   const navigate = useNavigate();
 
-  // TODO: conectar troca de tema real
   const [tema, setTema] = useState("escuro");
-  // TODO: aplicar tamanho de fonte global
   const [fonte, setFonte] = useState("padrao");
-  // TODO: registrar preferências no backend
   const [push, setPush] = useState(true);
   const [lembreteDas, setLembreteDas] = useState("3");
 
-  const cardStyle = {
-    backgroundColor: "var(--surface)",
-    border: "1px solid var(--border)",
-  };
   const selectStyle = {
     backgroundColor: "var(--field)",
-    border: "1px solid var(--border)",
     color: "var(--text)",
   };
 
@@ -101,83 +84,80 @@ export default function Preferencias() {
         </h1>
       </header>
 
-      <div className="px-5 pb-[130px] space-y-6">
-        {/* Aparência */}
-        <section>
-          <SecaoTitulo>Aparência</SecaoTitulo>
-          <div className="rounded-2xl p-4 space-y-4" style={cardStyle}>
-            <div>
-              <p className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
-                Tema
-              </p>
-              <Segmented
-                opcoes={[
-                  { value: "claro", label: "Claro" },
-                  { value: "escuro", label: "Escuro" },
-                  { value: "auto", label: "Automático" },
-                ]}
-                valor={tema}
-                onChange={setTema}
-              />
-            </div>
+      <div
+        className="px-5"
+        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
+      >
+        <SectionTitle>Aparência</SectionTitle>
+        <div className="space-y-5 pt-1">
+          <div>
+            <p className="text-[15px] mb-2" style={{ color: "var(--text)" }}>
+              Tema
+            </p>
+            <Segmented
+              opcoes={[
+                { value: "claro", label: "Claro" },
+                { value: "escuro", label: "Escuro" },
+                { value: "auto", label: "Automático" },
+              ]}
+              valor={tema}
+              onChange={setTema}
+            />
+          </div>
 
-            <div>
-              <p className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
-                Tamanho da fonte
+          <div>
+            <p className="text-[15px] mb-2" style={{ color: "var(--text)" }}>
+              Tamanho da fonte
+            </p>
+            <Segmented
+              opcoes={[
+                { value: "padrao", label: "Padrão" },
+                { value: "grande", label: "Grande" },
+              ]}
+              valor={fonte}
+              onChange={setFonte}
+            />
+          </div>
+        </div>
+
+        <SectionTitle>Notificações</SectionTitle>
+        <div className="space-y-5 pt-1">
+          <div className="flex items-center gap-3 py-1">
+            <div className="flex-1 min-w-0">
+              <p className="text-[15px]" style={{ color: "var(--text)" }}>
+                Notificações push
               </p>
-              <Segmented
-                opcoes={[
-                  { value: "padrao", label: "Padrão" },
-                  { value: "grande", label: "Grande" },
-                ]}
-                valor={fonte}
-                onChange={setFonte}
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                Receber alertas do app
+              </p>
+            </div>
+            <Switch ativo={push} onChange={setPush} label="Notificações push" />
+          </div>
+
+          <div>
+            <p className="text-[15px] mb-2" style={{ color: "var(--text)" }}>
+              Lembrete do DAS
+            </p>
+            <div className="relative">
+              <select
+                value={lembreteDas}
+                onChange={(e) => setLembreteDas(e.target.value)}
+                className="w-full appearance-none pl-4 pr-10 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                style={selectStyle}
+              >
+                <option value="5">5 dias antes</option>
+                <option value="3">3 dias antes</option>
+                <option value="1">1 dia antes</option>
+                <option value="0">No dia do vencimento</option>
+              </select>
+              <ChevronDown
+                size={18}
+                className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                style={{ color: "var(--text-secondary)" }}
               />
             </div>
           </div>
-        </section>
-
-        {/* Notificações */}
-        <section>
-          <SecaoTitulo>Notificações</SecaoTitulo>
-          <div className="rounded-2xl p-4 space-y-4" style={cardStyle}>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium" style={{ color: "var(--text)" }}>
-                  Notificações push
-                </p>
-                <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                  Receber alertas do app
-                </p>
-              </div>
-              <Switch ativo={push} onChange={setPush} label="Notificações push" />
-            </div>
-
-            <div style={{ borderTop: "1px solid var(--border)" }} className="pt-4">
-              <p className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
-                Lembrete do DAS
-              </p>
-              <div className="relative">
-                <select
-                  value={lembreteDas}
-                  onChange={(e) => setLembreteDas(e.target.value)}
-                  className="w-full appearance-none pl-4 pr-10 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  style={selectStyle}
-                >
-                  <option value="5">5 dias antes</option>
-                  <option value="3">3 dias antes</option>
-                  <option value="1">1 dia antes</option>
-                  <option value="0">No dia do vencimento</option>
-                </select>
-                <ChevronDown
-                  size={18}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                  style={{ color: "var(--text-secondary)" }}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
+        </div>
       </div>
 
       <BottomNav />
