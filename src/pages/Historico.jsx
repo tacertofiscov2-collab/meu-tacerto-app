@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Search, TrendingUp, ChevronDown, Receipt, X, Trash2, Plus,
+  ArrowLeft, Search, TrendingUp, ChevronDown, Receipt, Plus, Pencil, Trash2,
   BarChart3,
 } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
