@@ -1,31 +1,23 @@
 import { useNavigate } from "react-router-dom";
 import { Bell, ChevronRight, Gauge } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
-
-// TODO: buscar dados reais do Supabase/localStorage
-const USUARIO = {
-  nome: "Fernando",
-  perfil: "MEI", // "MEI" | "MEI_CAMINHONEIRO"
-  faturado: 48600,
-};
-const LIMITES = { MEI: 81000, MEI_CAMINHONEIRO: 251600 };
-const ROTULO_PERFIL = {
-  MEI: "MEI",
-  MEI_CAMINHONEIRO: "MEI Caminhoneiro",
-};
-
-const fmtBRL = (v) =>
-  "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+import { useUserState } from "@/lib/userState";
+import {
+  LABEL_TIPO,
+  calcularPercentual,
+  calcularFaltam,
+  faixaDoVelocimetro,
+  FAIXA_INFO,
+  fmtBRL,
+} from "@/lib/fiscal";
 
 const COR_VERDE = "#22c55e";
 const COR_LARANJA = "#f59e0b";
 const COR_VERMELHO = "#ef4444";
 
 function faixaDoPercentual(p) {
-  if (p < 60) return { cor: COR_VERDE, label: "Tudo certo" };
-  if (p < 80) return { cor: COR_LARANJA, label: "Atenção" };
-  if (p <= 100) return { cor: COR_VERMELHO, label: "Cuidado" };
-  return { cor: "#991b1b", label: "Limite ultrapassado" };
+  const info = FAIXA_INFO[faixaDoVelocimetro(p)];
+  return { cor: info.cor, label: info.label };
 }
 
 function saudacaoPorHora() {
@@ -130,12 +122,11 @@ function Velocimetro({ percentual }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { nome, tipo, faturado, limite } = useUserState();
 
-  const limite = LIMITES[USUARIO.perfil] ?? LIMITES.MEI;
-  const faturado = USUARIO.faturado;
-  const faltam = Math.max(0, limite - faturado);
-  const percentual = (faturado / limite) * 100;
-  const rotuloPerfil = ROTULO_PERFIL[USUARIO.perfil] ?? "MEI";
+  const faltam = calcularFaltam(faturado, limite);
+  const percentual = calcularPercentual(faturado, limite);
+  const rotuloPerfil = LABEL_TIPO[tipo];
 
   const saudacao = saudacaoPorHora();
 
@@ -160,7 +151,7 @@ export default function Dashboard() {
             <div className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
               {saudacao}{" "}
               <span className="text-base font-semibold" style={{ color: "var(--text)" }}>
-                {USUARIO.nome}
+                {nome}
               </span>
             </div>
           </div>

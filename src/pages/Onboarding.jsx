@@ -6,6 +6,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
+import { setUserState } from "@/lib/userState";
+import { LIMITES_ANUAIS, limiteProporcional } from "@/lib/fiscal";
 import AuthError from "@/components/AuthError";
 
 const MESES = [
@@ -138,12 +140,11 @@ export default function Onboarding() {
   const [mesMei, setMesMei] = useState("");
 
   const anoAtual = new Date().getFullYear();
-  const limiteCheio = tipoMei === "MEI_CAMINHONEIRO" ? 251600 : 81000;
+  const tipoCanonico = tipoMei === "MEI_CAMINHONEIRO" ? "MEI_CAMINHONEIRO" : "MEI";
+  const limiteCheio = LIMITES_ANUAIS[tipoCanonico];
   const limiteFinal = (() => {
     if (meiEsseAno && mesMei) {
-      const mes = parseInt(mesMei);
-      const mesesRestantes = 12 - mes + 1;
-      return Math.round((limiteCheio / 12) * mesesRestantes);
+      return limiteProporcional(tipoCanonico, parseInt(mesMei), anoAtual, anoAtual);
     }
     return limiteCheio;
   })();
@@ -162,8 +163,14 @@ export default function Onboarding() {
   async function handleFinalizar() {
     salvarPerfilLocal({
       nome,
-      perfil: (tipoMei || "MEI").toLowerCase(),
+      perfil: tipoCanonico.toLowerCase(),
       limite: limiteFinal,
+    });
+    setUserState({
+      nome,
+      tipo: tipoCanonico,
+      mesAbertura: meiEsseAno && mesMei ? parseInt(mesMei) : null,
+      anoAbertura: meiEsseAno && mesMei ? anoAtual : null,
     });
     try {
       const { data } = await supabase.auth.getUser();
@@ -261,9 +268,9 @@ export default function Onboarding() {
               <div className="space-y-2.5">
                 {[
                   { v: "MEI", Icon: Briefcase, titulo: "MEI (outras atividades)",
-                    desc: "Comércio, serviços · limite R$ 81.000/ano" },
+                    desc: `Comércio, serviços · limite R$ ${LIMITES_ANUAIS.MEI.toLocaleString("pt-BR")}/ano` },
                   { v: "MEI_CAMINHONEIRO", Icon: Truck, titulo: "MEI Caminhoneiro",
-                    desc: "Transporte de cargas · limite R$ 251.600/ano" },
+                    desc: `Transporte de cargas · limite R$ ${LIMITES_ANUAIS.MEI_CAMINHONEIRO.toLocaleString("pt-BR")}/ano` },
                 ].map((o) => {
                   const sel = tipoMei === o.v;
                   const Ico = o.Icon;

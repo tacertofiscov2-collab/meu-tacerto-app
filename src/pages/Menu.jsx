@@ -7,12 +7,8 @@ import {
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
-// TODO: buscar do backend
-const USUARIO = {
-  perfil: "MEI", // "MEI" | "MEI_CAMINHONEIRO"
-  faturado: 48600,
-};
-const LIMITES = { MEI: 81000, MEI_CAMINHONEIRO: 251600 };
+import { useUserState } from "@/lib/userState";
+import { LIMITES_ANUAIS } from "@/lib/fiscal";
 
 // TODO: tabela oficial atualizada
 const INSS_MEI = 75.90;             // mock 5% s/ salário mínimo
@@ -99,10 +95,11 @@ function AccordionItem({ Icon, titulo, aberto, onToggle, children }) {
 }
 
 function CalculadoraDAS() {
+  const { tipo } = useUserState();
   const [uf, setUf] = useState("SP");
   const [tipoAtividade, setTipoAtividade] = useState("comercio"); // comercio(ICMS) | servicos(ISS)
 
-  const inss = USUARIO.perfil === "MEI_CAMINHONEIRO" ? INSS_MEI_CAMINHONEIRO : INSS_MEI;
+  const inss = tipo === "MEI_CAMINHONEIRO" ? INSS_MEI_CAMINHONEIRO : INSS_MEI;
   const imposto = tipoAtividade === "servicos" ? ISS : ICMS;
   const total = inss + imposto;
 
@@ -241,8 +238,7 @@ function CalendarioFiscal() {
 }
 
 function SimuladorDesenquadramento() {
-  const limite = LIMITES[USUARIO.perfil] ?? LIMITES.MEI;
-  const faturado = USUARIO.faturado;
+  const { faturado, limite } = useUserState();
   const restante = Math.max(0, limite - faturado);
 
   // TODO: usar mês atual real

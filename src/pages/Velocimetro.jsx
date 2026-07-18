@@ -2,40 +2,33 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, TrendingUp } from "lucide-react";
 
 import BottomNav from "../components/BottomNav.jsx";
-// TODO: buscar dados reais do Supabase
-const USUARIO = {
-  nome: "Fernando",
-  perfil: "MEI", // "MEI" | "MEI_CAMINHONEIRO"
-  faturado: 48600,
-};
-const LIMITES = { MEI: 81000, MEI_CAMINHONEIRO: 251600 };
+import { useUserState } from "@/lib/userState";
+import {
+  calcularPercentual,
+  calcularFaltam,
+  faixaDoVelocimetro,
+  FAIXA_INFO,
+  fmtBRL,
+} from "@/lib/fiscal";
 
 const COR_VERDE = "#22c55e";
 const COR_LARANJA = "#f59e0b";
 const COR_VERMELHO = "#ef4444";
 
-const fmtBRL = (v) =>
-  "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-
 function faixaDoPercentual(p) {
-  if (p <= 60) return { cor: COR_VERDE, label: "Tudo tranquilo", chave: "verde" };
-  if (p < 80) return { cor: COR_LARANJA, label: "Atenção", chave: "laranja" };
-  if (p <= 100) return { cor: COR_VERMELHO, label: "Cuidado, perto do limite", chave: "vermelho" };
-  return { cor: "#991b1b", label: "Limite ultrapassado", chave: "excesso" };
+  const chave = faixaDoVelocimetro(p);
+  const info = FAIXA_INFO[chave];
+  return { cor: info.cor, label: info.label, chave, mensagem: info.mensagem };
 }
 
 function textoAviso(p, faturado, limite) {
-  if (p <= 60) {
-    return `Com base nos lançamentos registrados, você utilizou ${Math.round(p)}% do seu limite anual. Você está na zona tranquila — continue acompanhando seus lançamentos no app.`;
+  const faixa = faixaDoPercentual(p);
+  const pct = Math.round(p);
+  if (p > 100) {
+    const excesso = faturado - limite;
+    return `Com base nos lançamentos registrados, você ultrapassou o limite anual em ${fmtBRL(excesso)}. ${faixa.mensagem}`;
   }
-  if (p < 80) {
-    return `Com base nos lançamentos registrados, você utilizou ${Math.round(p)}% do seu limite anual. Você está na zona de atenção — continue acompanhando para não ultrapassar o teto.`;
-  }
-  if (p <= 100) {
-    return `Com base nos lançamentos registrados, você utilizou ${Math.round(p)}% do seu limite anual. Você está perto do limite — fique atento aos próximos lançamentos para evitar o desenquadramento.`;
-  }
-  const excesso = faturado - limite;
-  return `Com base nos lançamentos registrados, você ultrapassou o limite anual em ${fmtBRL(excesso)}. Atenção: se ultrapassar o teto, há regra dos 20% de tolerância em alguns casos, mas é importante regularizar a situação e acompanhar um contador.`;
+  return `Com base nos lançamentos registrados, você utilizou ${pct}% do seu limite anual. ${faixa.mensagem}`;
 }
 
 /**
@@ -146,10 +139,9 @@ function VelocimetroGrande({ percentual }) {
 export default function Velocimetro() {
   const navigate = useNavigate();
 
-  const limite = LIMITES[USUARIO.perfil] ?? LIMITES.MEI;
-  const faturado = USUARIO.faturado;
-  const faltam = Math.max(0, limite - faturado);
-  const percentual = 60; // TODO: calcular a partir de faturado real
+  const { faturado, limite } = useUserState();
+  const faltam = calcularFaltam(faturado, limite);
+  const percentual = calcularPercentual(faturado, limite);
 
   const faixa = faixaDoPercentual(percentual);
 
@@ -159,8 +151,9 @@ export default function Velocimetro() {
     border: "1px solid var(--border)",
   };
 
-  // TODO: cálculo real de projeção
-  const projecaoAnual = 83200;
+  // Projeção linear até dezembro com base no mês atual
+  const mesAtual = new Date().getMonth() + 1; // 1-12
+  const projecaoAnual = Math.round((faturado / mesAtual) * 12);
   const ultrapassa = projecaoAnual > limite;
 
   return (

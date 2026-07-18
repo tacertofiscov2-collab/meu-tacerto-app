@@ -6,20 +6,11 @@ import {
   BarChart3, FileText,
 } from "lucide-react";
 
-// TODO: buscar do backend/Supabase
-const USUARIO_MOCK = {
-  nome: "Fernando",
-  email: "fernando@email.com",
-  perfil: "MEI", // "MEI" | "MEI_CAMINHONEIRO"
-  faturado2026: 48600,
-  lancamentos2026: 12,
-  vencimentoDAS: 20,
-};
-const LIMITES = { MEI: 81000, MEI_CAMINHONEIRO: 251600 };
-const LABEL_PERFIL = { MEI: "MEI", MEI_CAMINHONEIRO: "MEI Caminhoneiro" };
+import { useUserState } from "@/lib/userState";
+import { LABEL_TIPO } from "@/lib/fiscal";
 
-const fmtBRL = (v) =>
-  "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+// TODO: buscar email do backend
+const EMAIL_MOCK = "fernando@email.com";
 
 function Brand({ className = "" }) {
   return (
@@ -55,11 +46,10 @@ function ListaItem({ Icon, label, onClick, cor }) {
 
 export default function Perfil() {
   const navigate = useNavigate();
-  const [usuario] = useState(USUARIO_MOCK);
+  const { nome, tipo } = useUserState();
   const [confirmarSair, setConfirmarSair] = useState(false);
 
-  const inicial = (usuario.nome || "?").trim().charAt(0).toUpperCase();
-  const limite = LIMITES[usuario.perfil] ?? LIMITES.MEI;
+  const inicial = (nome || "?").trim().charAt(0).toUpperCase();
 
   const cardStyle = {
     backgroundColor: "var(--surface)",
@@ -109,10 +99,10 @@ export default function Perfil() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-bold truncate" style={{ color: "var(--text)" }}>
-                {usuario.nome}
+                {nome}
               </p>
               <p className="text-xs truncate mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                {usuario.email}
+                {EMAIL_MOCK}
               </p>
               <span
                 className="inline-block mt-2 text-xs font-semibold px-2.5 py-1 rounded-full"
@@ -121,7 +111,7 @@ export default function Perfil() {
                   color: "var(--primary)",
                 }}
               >
-                {LABEL_PERFIL[usuario.perfil]}
+                {LABEL_TIPO[tipo]}
               </span>
             </div>
             <ChevronRight size={18} style={{ color: "var(--text-secondary)" }} />

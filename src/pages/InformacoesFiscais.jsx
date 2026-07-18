@@ -1,21 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
-
-// TODO: buscar do backend/Supabase
-const USUARIO_MOCK = {
-  perfil: "MEI", // "MEI" | "MEI_CAMINHONEIRO"
-  vencimentoDAS: 20,
-};
-const LIMITES = { MEI: 81000, MEI_CAMINHONEIRO: 251600 };
-const LABEL_PERFIL = { MEI: "MEI", MEI_CAMINHONEIRO: "MEI Caminhoneiro" };
-
-const fmtBRL = (v) =>
-  "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+import { useUserState } from "@/lib/userState";
+import { LABEL_TIPO, fmtBRL, DAS_VENCIMENTO_LABEL } from "@/lib/fiscal";
 
 export default function InformacoesFiscais() {
   const navigate = useNavigate();
-  const limite = LIMITES[USUARIO_MOCK.perfil] ?? LIMITES.MEI;
+  const { tipo, limite } = useUserState();
 
   const cardStyle = {
     backgroundColor: "var(--surface)",
@@ -47,7 +38,7 @@ export default function InformacoesFiscais() {
             <div className="flex justify-between text-sm">
               <span style={{ color: "var(--text-secondary)" }}>Tipo de perfil</span>
               <span className="font-semibold" style={{ color: "var(--text)" }}>
-                {LABEL_PERFIL[USUARIO_MOCK.perfil]}
+                {LABEL_TIPO[tipo]}
               </span>
             </div>
             <div className="flex justify-between text-sm">
@@ -56,10 +47,10 @@ export default function InformacoesFiscais() {
                 {fmtBRL(limite)}
               </span>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-sm gap-3">
               <span style={{ color: "var(--text-secondary)" }}>Vencimento do DAS</span>
-              <span className="font-semibold" style={{ color: "var(--text)" }}>
-                Dia {USUARIO_MOCK.vencimentoDAS}
+              <span className="font-semibold text-right" style={{ color: "var(--text)" }}>
+                {DAS_VENCIMENTO_LABEL}
               </span>
             </div>
           </div>

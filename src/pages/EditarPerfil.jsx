@@ -3,30 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, User, Briefcase, ChevronRight, Check } from "lucide-react";
 
 import BottomNav from "../components/BottomNav.jsx";
-const LIMITES = {
-  MEI: 81000,
-  MEI_CAMINHONEIRO: 251600,
-};
+import { useUserState } from "@/lib/userState";
+import { LIMITES_ANUAIS, fmtBRL } from "@/lib/fiscal";
+
 const LABEL_PERFIL = {
   MEI: "MEI (outras atividades)",
   MEI_CAMINHONEIRO: "MEI Caminhoneiro",
 };
 
-function fmtBRL(v) {
-  return v.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
-}
-
 export default function EditarPerfil() {
   const navigate = useNavigate();
 
-  // TODO: carregar do backend
-  const [nome, setNome] = useState("Fernando");
-  const [perfil, setPerfil] = useState("MEI");
+  const { nome: nomeSalvo, tipo, setNome: salvarNome, setTipo } = useUserState();
+  const [nome, setNome] = useState(nomeSalvo);
+  const perfil = tipo;
   const [selecionarTipo, setSelecionarTipo] = useState(false);
   const [perfilPendente, setPerfilPendente] = useState(null);
   const [confirmarTroca, setConfirmarTroca] = useState(false);
@@ -51,12 +41,13 @@ export default function EditarPerfil() {
   }
 
   function confirmarAlteracao() {
-    if (perfilPendente) setPerfil(perfilPendente);
+    if (perfilPendente) setTipo(perfilPendente);
     setConfirmarTroca(false);
     setPerfilPendente(null);
   }
 
   function salvar() {
+    salvarNome(nome);
     // TODO: persistir no Supabase
     navigate(-1);
   }
@@ -192,7 +183,7 @@ export default function EditarPerfil() {
                         {opt === "MEI" ? "MEI" : "MEI Caminhoneiro"}
                       </p>
                       <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                        Limite anual {fmtBRL(LIMITES[opt])}
+                        Limite anual {fmtBRL(LIMITES_ANUAIS[opt])}
                       </p>
                     </div>
                     {ativo && <Check size={18} style={{ color: "var(--primary)" }} />}
@@ -227,7 +218,7 @@ export default function EditarPerfil() {
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               O limite anual será recalculado para{" "}
               <strong style={{ color: "var(--text)" }}>
-                {fmtBRL(LIMITES[perfilPendente])}
+                {fmtBRL(LIMITES_ANUAIS[perfilPendente])}
               </strong>
               .
             </p>
