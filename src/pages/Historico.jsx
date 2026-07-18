@@ -172,6 +172,20 @@ export default function Historico() {
             />
           </div>
 
+          {/* Novo lançamento (opção discreta) */}
+          <button
+            onClick={() => navigate("/lancar")}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm active:scale-[0.99] transition"
+            style={{
+              backgroundColor: "var(--surface)",
+              border: "1px solid var(--border)",
+              color: "var(--text)",
+            }}
+          >
+            <Plus size={18} style={{ color: "var(--primary)" }} />
+            Fazer novo lançamento
+          </button>
+
           {/* Filtro de mês */}
           <div className="relative">
             <select
