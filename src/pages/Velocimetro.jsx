@@ -9,7 +9,6 @@ import {
   calcularFaltam,
   faixaDoVelocimetro,
   FAIXA_INFO,
-  fmtBRL,
 } from "@/lib/fiscal";
 
 const COR_VERDE = "#22c55e";
@@ -22,12 +21,17 @@ function faixaDoPercentual(p) {
   return { cor: info.cor, label: info.label, chave, mensagem: info.mensagem };
 }
 
-function textoAviso(p, faturado, limite) {
-  const faixa = faixaDoPercentual(p);
-  const pct = Math.round(p);
-  if (p > 100) {
+function TextoAviso({ percentual, faturado, limite }) {
+  const faixa = faixaDoPercentual(percentual);
+  const pct = Math.round(percentual);
+  if (percentual > 100) {
     const excesso = faturado - limite;
-    return `Com base nos lançamentos registrados, você ultrapassou o limite anual em ${fmtBRL(excesso)}. ${faixa.mensagem}`;
+    return (
+      <>
+        Com base nos lançamentos registrados, você ultrapassou o limite anual em{" "}
+        <Valor tamanho="sm">{excesso}</Valor>. {faixa.mensagem}
+      </>
+    );
   }
   return `Com base nos lançamentos registrados, você utilizou ${pct}% do seu limite anual. ${faixa.mensagem}`;
 }
