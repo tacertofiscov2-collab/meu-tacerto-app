@@ -237,8 +237,7 @@ function CalendarioFiscal() {
 }
 
 function SimuladorDesenquadramento() {
-  const limite = LIMITES[USUARIO.perfil] ?? LIMITES.MEI;
-  const faturado = USUARIO.faturado;
+  const { faturado, limite } = useUserState();
   const restante = Math.max(0, limite - faturado);
 
   // TODO: usar mês atual real
