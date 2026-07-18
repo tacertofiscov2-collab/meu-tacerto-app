@@ -44,7 +44,7 @@ export default function ResumoPerfil() {
                   Faturado
                 </p>
                 <p className="text-lg font-bold mt-1" style={{ color: "var(--text)" }}>
-                  {fmtBRL(USUARIO_MOCK.faturado2026)}
+                  {fmtBRL(faturado)}
                 </p>
               </div>
               <div>
@@ -52,7 +52,7 @@ export default function ResumoPerfil() {
                   Lançamentos
                 </p>
                 <p className="text-lg font-bold mt-1" style={{ color: "var(--text)" }}>
-                  {USUARIO_MOCK.lancamentos2026}
+                  {LANCAMENTOS_MOCK}
                 </p>
               </div>
             </div>
