@@ -3,23 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, User, Briefcase, ChevronRight, Check } from "lucide-react";
 
 import BottomNav from "../components/BottomNav.jsx";
-const LIMITES = {
-  MEI: 81000,
-  MEI_CAMINHONEIRO: 251600,
-};
+import { useUserState } from "@/lib/userState";
+import { LIMITES_ANUAIS, fmtBRL } from "@/lib/fiscal";
+
 const LABEL_PERFIL = {
   MEI: "MEI (outras atividades)",
   MEI_CAMINHONEIRO: "MEI Caminhoneiro",
 };
-
-function fmtBRL(v) {
-  return v.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
-}
 
 export default function EditarPerfil() {
   const navigate = useNavigate();
