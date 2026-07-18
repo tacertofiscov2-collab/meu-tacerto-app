@@ -1,14 +1,12 @@
 /**
- * <Valor /> — formatação canônica de valores em R$ do TaCerto! (padrão Nubank).
+ * <Valor /> — formatação canônica de valores em R$ do TaCerto!.
  *
  * <Valor>48600</Valor>              → R$ 48.600,00
  * <Valor decimais={2}>48600.5</Valor> → R$ 48.600,50
  * <Valor sinal="+">3500</Valor>     → + R$ 3.500,00  (sinal em verde)
  *
  * Regras visuais:
- * - "R$" em cor --text (BRANCO).
- * - Parte inteira em cor --text (branco).
- * - Vírgula e centavos em cor --text-secondary (cinza sutil).
+ * - Todo o valor renderiza em cor --text (BRANCO uniforme).
  * - Sinal opcional (+/-) em cor --primary (verde), ANTES do "R$".
  * - SEMPRE 2 casas decimais.
  * - SEMPRE em uma linha (white-space: nowrap), tabular-nums.
@@ -37,7 +35,7 @@ function partes(valor, decimais = 2) {
   const negativo = intRaw.startsWith("-");
   const intAbs = negativo ? intRaw.slice(1) : intRaw;
   const inteiro = Number(intAbs).toLocaleString("pt-BR");
-  const centavos = casas > 0 ? "," + decRaw : "";
+  const centavos = casas > 0 ? decRaw : "";
   return { inteiro, centavos, negativo };
 }
 
@@ -72,11 +70,9 @@ export default function Valor({
           {sinal}
         </span>
       )}
-      <span style={{ color: "var(--text)" }}>R$&nbsp;</span>
-      <span style={{ color: "var(--text)" }}>{inteiro}</span>
-      {centavos && (
-        <span style={{ color: "var(--text-secondary)" }}>{centavos}</span>
-      )}
+      <span style={{ color: "var(--text)" }}>
+        R$&nbsp;{inteiro},{centavos}
+      </span>
     </span>
   );
 }
