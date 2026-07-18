@@ -55,8 +55,21 @@ export default function App() {
         <Route path="/perfil/informacoes-fiscais" element={<InformacoesFiscais />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/dev/simulador" element={<DevSimulador />} />
+        <Route path="/dev/simulador" element={<DevSimulador />} />
+        <Route path="/excluir-conta" element={<ExcluirConta />} />
         <Route path="*" element={<EmConstrucao />} />
       </Routes>
+      <Toaster
+        theme="dark"
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            color: "var(--text)",
+          },
+        }}
+      />
     </BrowserRouter>
   );
 }
