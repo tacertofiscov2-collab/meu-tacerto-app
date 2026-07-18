@@ -6,7 +6,7 @@ import { useUserState } from "@/lib/userState";
 import {
   LABEL_TIPO,
   calcularPercentual,
-  calcularFaltam,
+  calcularFaltamOuExcedeu,
   faixaDoVelocimetro,
   FAIXA_INFO,
   fmtBRL,
@@ -15,7 +15,7 @@ import {
 function faixaDoPercentual(p) {
   const chave = faixaDoVelocimetro(p);
   const info = FAIXA_INFO[chave];
-  return { chave, cor: info.cor, principal: info.principal, apoio: info.apoio };
+  return { chave, cor: info.cor, mensagem: info.mensagem };
 }
 
 function saudacaoPorHora() {
