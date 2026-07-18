@@ -29,10 +29,10 @@ export default function BottomNav({ ativo }) {
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      {/* Curva orgânica no topo — arco leve sobre o botão central */}
+      {/* Curva orgânica no topo — arco simétrico sobre o botão central */}
       <svg
         aria-hidden="true"
-        viewBox="0 0 400 32"
+        viewBox="0 0 400 40"
         preserveAspectRatio="none"
         style={{
           position: "absolute",
@@ -40,12 +40,13 @@ export default function BottomNav({ ativo }) {
           left: 0,
           right: 0,
           width: "100%",
-          height: "32px",
+          height: "40px",
           pointerEvents: "none",
+          zIndex: 0,
         }}
       >
         <path
-          d="M 0 30 L 160 30 C 178 30 182 6 200 6 C 218 6 222 30 240 30 L 400 30"
+          d="M 0 39 L 168 39 C 184 39 188 8 200 8 C 212 8 216 39 232 39 L 400 39"
           stroke="var(--border)"
           strokeWidth="1"
           fill="none"
