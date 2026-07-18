@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, User, Briefcase, ChevronRight, Camera } from "lucide-react";
+import { ArrowLeft, User, Briefcase, ChevronRight, Check } from "lucide-react";
 
 import BottomNav from "../components/BottomNav.jsx";
 const LIMITES = {
