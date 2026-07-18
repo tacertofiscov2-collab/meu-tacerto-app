@@ -93,7 +93,7 @@ export default function Welcome() {
         </div>
 
         {/* Indicador — mais espaço acima */}
-        <div className="flex justify-center gap-2 pt-5 pb-2 shrink-0">
+        <div className="flex justify-center gap-2 pt-10 pb-2 shrink-0">
           {SLIDES.map((_, i) => (
             <button
               key={i}
@@ -111,7 +111,7 @@ export default function Welcome() {
 
       {/* Rodapé fixo de ações */}
       <div
-        className="px-5 pb-4 pt-2 shrink-0"
+        className="px-5 pb-4 pt-6 shrink-0"
         style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom))" }}
       >
         <button
@@ -127,7 +127,7 @@ export default function Welcome() {
 
         <div className="flex items-center gap-3 my-5">
           <div className="flex-1 h-px" style={{ backgroundColor: "var(--border)" }} />
-          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>ou</span>
+          <span className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>ou</span>
           <div className="flex-1 h-px" style={{ backgroundColor: "var(--border)" }} />
         </div>
 
@@ -143,7 +143,7 @@ export default function Welcome() {
           Cadastrar depois
         </button>
 
-        <p className="text-center text-xs mt-6" style={{ color: "var(--text-secondary)" }}>
+        <p className="text-center text-sm mt-6" style={{ color: "var(--text-secondary)" }}>
           Já tem conta?{" "}
           <button
             onClick={() => navigate("/login")}
