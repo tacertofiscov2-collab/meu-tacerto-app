@@ -168,9 +168,6 @@ export default function Lancar() {
               className="w-full px-4 py-4 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
               style={fieldStyle}
             />
-            <p className="text-xs mt-2" style={{ color: "var(--text-secondary)" }}>
-              Se vazio, geramos automaticamente (ex: 1º Frete de Julho)
-            </p>
           </div>
 
           {/* Campo DATA */}
@@ -186,12 +183,10 @@ export default function Lancar() {
               value={data}
               max={hoje}
               onChange={(e) => setData(e.target.value)}
-              className="w-full px-4 py-4 rounded-xl text-sm focus:outline-none focus:ring-2"
+              onClick={(e) => e.currentTarget.showPicker?.()}
+              className="w-full px-4 py-4 rounded-xl text-sm focus:outline-none focus:ring-2 cursor-pointer"
               style={{ ...fieldStyle, colorScheme: "dark" }}
             />
-            <p className="text-xs mt-2" style={{ color: "var(--text-secondary)" }}>
-              Se não alterar, usaremos a data de hoje.
-            </p>
           </div>
         </div>
       </div>

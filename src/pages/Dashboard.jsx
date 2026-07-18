@@ -163,10 +163,12 @@ export default function Dashboard() {
               </span>
             </div>
             <div className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
-              {saudacao}{" "}
-              <span className="text-base font-semibold" style={{ color: "var(--text)" }}>
-                {nome}
-              </span>
+              {saudacao}{nome ? " " : "!"}
+              {nome && (
+                <span className="text-base font-semibold" style={{ color: "var(--text)" }}>
+                  {nome}
+                </span>
+              )}
             </div>
           </div>
 

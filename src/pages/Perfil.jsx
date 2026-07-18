@@ -1,52 +1,43 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import BottomNav from "../components/BottomNav.jsx";
 import { SectionTitle, FlatGroup, FlatItem } from "../components/FlatList.jsx";
 import {
-  ArrowLeft, Settings, Info, Shield, Users, Lock, LogOut, ChevronRight,
-  ChevronDown, BarChart3, FileText, UserPlus, Eraser, Trash2, Plus, X,
+  ArrowLeft, User, Settings, Info, Shield, Users, Lock, LogOut,
+  ChevronDown, UserPlus, Trash2, Pencil, X, Check, Plus,
 } from "lucide-react";
 
 import { useUserState } from "@/lib/userState";
-import { LABEL_TIPO } from "@/lib/fiscal";
-import { useAppState } from "@/context/AppStateContext";
 
-// TODO: buscar email do backend
-const EMAIL_MOCK = "fernando@email.com";
-
-function Brand({ className = "" }) {
-  return (
-    <span className={className}>
-      <span style={{ color: "var(--text)" }}>Ta</span>
-      <span style={{ color: "var(--primary)" }}>Certo!</span>
-    </span>
-  );
-}
+const FOTO_KEY = "tacerto_foto_usuario";
+const CONTAS_KEY = "tacerto_contas";
+const CONTA_ATIVA_KEY = "tacerto_conta_ativa";
 
 function lerContas() {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem("tacerto_contas");
+    const raw = localStorage.getItem(CONTAS_KEY);
     const arr = raw ? JSON.parse(raw) : null;
     return Array.isArray(arr) ? arr : [];
-  } catch {
-    return [];
-  }
+  } catch { return []; }
 }
 
 export default function Perfil() {
   const navigate = useNavigate();
-  const { nome, tipo } = useUserState();
-  const { removerTodosLancamentos } = useAppState();
-  const [confirmarSair, setConfirmarSair] = useState(false);
-  const [confirmarLimpar, setConfirmarLimpar] = useState(false);
-  const [seletorAberto, setSeletorAberto] = useState(false);
+  const { nome } = useUserState();
+  const fileRef = useRef(null);
+
+  const [foto, setFoto] = useState(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(FOTO_KEY) || null;
+  });
   const [contas, setContas] = useState(lerContas);
   const [contaAtiva, setContaAtiva] = useState(() => {
     if (typeof window === "undefined") return 0;
-    return Number(localStorage.getItem("tacerto_conta_ativa") || 0);
+    return Number(localStorage.getItem(CONTA_ATIVA_KEY) || 0);
   });
+  const [seletorAberto, setSeletorAberto] = useState(false);
+  const [confirmarSair, setConfirmarSair] = useState(false);
 
   useEffect(() => {
     const handler = () => setContas(lerContas());
@@ -54,40 +45,45 @@ export default function Perfil() {
     return () => window.removeEventListener("storage", handler);
   }, []);
 
-  const nomePersistido =
-    typeof window !== "undefined" && !!localStorage.getItem("tacerto_nome");
+  const nomePersistido = !!nome;
   const totalContas = contas.length > 0 ? contas.length : (nomePersistido ? 1 : 0);
   const ehVisitante = totalContas === 0;
   const temMultiplas = totalContas >= 2;
 
-  const inicial = (nome || "?").trim().charAt(0).toUpperCase();
+  const nomeExibido = ehVisitante ? "Visitante" : (nome || "Visitante");
+  const inicial = (nome || "").trim().charAt(0).toUpperCase();
+
+  function handleFoto(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = String(reader.result || "");
+      try { localStorage.setItem(FOTO_KEY, base64); } catch {}
+      setFoto(base64);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function trocarConta(idx) {
+    setContaAtiva(idx);
+    try { localStorage.setItem(CONTA_ATIVA_KEY, String(idx)); } catch {}
+    setSeletorAberto(false);
+  }
 
   function sair() {
     setConfirmarSair(false);
     navigate("/");
   }
 
-  function limparLancamentos() {
-    removerTodosLancamentos();
-    setConfirmarLimpar(false);
-    toast.success("Todos os lançamentos foram excluídos.");
-  }
-
-  function trocarConta(idx) {
-    setContaAtiva(idx);
-    try {
-      localStorage.setItem("tacerto_conta_ativa", String(idx));
-    } catch {}
-    setSeletorAberto(false);
-  }
-
+  // Item dinâmico "conta"
   let contaItem;
   if (ehVisitante) {
     contaItem = { Icon: UserPlus, label: "Cadastrar", onClick: () => navigate("/cadastro") };
   } else if (totalContas === 1) {
     contaItem = { Icon: UserPlus, label: "Adicionar nova conta", onClick: () => navigate("/cadastro") };
   } else {
-    contaItem = { Icon: Users, label: "Trocar de conta", onClick: () => navigate("/contas") };
+    contaItem = { Icon: Users, label: "Trocar de conta", onClick: () => setSeletorAberto(true) };
   }
 
   return (
@@ -113,75 +109,104 @@ export default function Perfil() {
           </h1>
         </header>
 
-        <div className="px-5">
-          {/* Card usuário — único bloco com moldura permanece: identidade */}
-          <button
-            onClick={() =>
-              temMultiplas ? setSeletorAberto(true) : navigate("/editar-perfil")
-            }
-            className="w-full flex items-center gap-4 py-2 text-left active:opacity-80"
-          >
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center shrink-0"
+        {/* Topo — avatar grande centralizado */}
+        <div className="px-5 pt-2 pb-6 flex flex-col items-center">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="block w-24 h-24 rounded-full overflow-hidden active:opacity-80"
               style={{ backgroundColor: "var(--field)" }}
+              aria-label="Alterar foto"
             >
-              <span className="text-2xl font-bold" style={{ color: "var(--primary)" }}>
-                {inicial}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <p className="font-bold truncate" style={{ color: "var(--text)" }}>
-                  {nome}
-                </p>
-                {temMultiplas && (
-                  <ChevronDown size={16} style={{ color: "var(--text-secondary)" }} />
-                )}
-              </div>
-              <p className="text-xs truncate mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                {EMAIL_MOCK}
-              </p>
-              <span
-                className="inline-block mt-2 text-xs font-semibold px-2.5 py-1 rounded-full"
-                style={{
-                  backgroundColor: "rgba(34,197,94,0.12)",
-                  color: "var(--primary)",
-                }}
-              >
-                {LABEL_TIPO[tipo]}
-              </span>
-            </div>
-            {!temMultiplas && (
-              <ChevronRight size={18} style={{ color: "var(--text-secondary)" }} />
+              {foto ? (
+                <img
+                  src={foto}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              ) : ehVisitante ? (
+                <div className="w-full h-full flex items-center justify-center">
+                  <User size={40} style={{ color: "var(--text-secondary)" }} />
+                </div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="font-bold" style={{ color: "var(--primary)", fontSize: 40 }}>
+                    {inicial || "?"}
+                  </span>
+                </div>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              aria-label="Editar foto"
+              className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center shadow"
+              style={{ backgroundColor: "var(--primary)" }}
+            >
+              <Pencil size={14} style={{ color: "#0f0f11" }} />
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFoto}
+            />
+          </div>
+
+          <button
+            type="button"
+            disabled={!temMultiplas}
+            onClick={() => temMultiplas && setSeletorAberto(true)}
+            className="mt-4 flex items-center gap-1.5"
+          >
+            <span
+              className="font-bold"
+              style={{
+                color: ehVisitante ? "var(--text-secondary)" : "var(--text)",
+                fontSize: 22,
+              }}
+            >
+              {nomeExibido}
+            </span>
+            {temMultiplas && (
+              <ChevronDown size={18} style={{ color: "var(--text-secondary)" }} />
             )}
           </button>
+        </div>
 
-          <SectionTitle>Fiscal</SectionTitle>
-          <FlatGroup>
-            <FlatItem
-              Icon={BarChart3}
-              label="Resumo de 2026"
-              onClick={() => navigate("/perfil/resumo")}
-            />
-            <FlatItem
-              Icon={FileText}
-              label="Informações fiscais"
-              onClick={() => navigate("/perfil/informacoes-fiscais")}
-            />
-          </FlatGroup>
-
+        <div className="px-5">
           <SectionTitle>Geral</SectionTitle>
           <FlatGroup>
+            <FlatItem
+              Icon={User}
+              label="Editar perfil"
+              onClick={() => navigate("/editar-perfil")}
+            />
             <FlatItem
               Icon={Settings}
               label="Preferências"
               onClick={() => navigate("/preferencias")}
             />
             <FlatItem
-              Icon={Info}
-              label="Sobre o TaCerto!"
-              onClick={() => navigate("/sobre")}
+              Icon={contaItem.Icon}
+              label={contaItem.label}
+              onClick={contaItem.onClick}
             />
+          </FlatGroup>
+
+          <SectionTitle>Segurança</SectionTitle>
+          <FlatGroup>
+            <FlatItem
+              Icon={Lock}
+              label="Alterar senha"
+              onClick={() => navigate("/alterar-senha")}
+            />
+          </FlatGroup>
+
+          <SectionTitle>Privacidade</SectionTitle>
+          <FlatGroup>
             <FlatItem
               Icon={Shield}
               label="Termos e Privacidade"
@@ -189,45 +214,53 @@ export default function Perfil() {
             />
           </FlatGroup>
 
-          <SectionTitle>Conta e segurança</SectionTitle>
+          <SectionTitle>Sobre</SectionTitle>
           <FlatGroup>
             <FlatItem
-              Icon={contaItem.Icon}
-              label={contaItem.label}
-              onClick={contaItem.onClick}
-            />
-            <FlatItem
-              Icon={Lock}
-              label="Alterar senha"
-              onClick={() => navigate("/alterar-senha")}
-            />
-            <FlatItem
-              Icon={LogOut}
-              label="Sair da conta"
-              cor="#ef4444"
-              onClick={() => setConfirmarSair(true)}
-            />
-            <FlatItem
-              Icon={Eraser}
-              label="Excluir todos os lançamentos"
-              iconCor="#f97316"
-              onClick={() => setConfirmarLimpar(true)}
-            />
-            <FlatItem
-              Icon={Trash2}
-              label="Excluir conta"
-              cor="#ef4444"
-              onClick={() => navigate("/excluir-conta")}
+              Icon={Info}
+              label="Sobre o TaCerto!"
+              onClick={() => navigate("/sobre")}
             />
           </FlatGroup>
 
-          <p className="text-center text-xs pt-8" style={{ color: "var(--text-secondary)" }}>
-            <Brand /> v0.1
+          {/* Ações finais — sem chevron */}
+          <div style={{ marginTop: 32 }}>
+            <FlatGroup>
+              <FlatItem
+                Icon={Trash2}
+                label="Excluir conta"
+                cor="#ef4444"
+                iconCor="#ef4444"
+                semChevron
+                onClick={() => navigate("/excluir-conta")}
+              />
+              <FlatItem
+                Icon={LogOut}
+                label="Sair da conta"
+                cor="#ef4444"
+                iconCor="#ef4444"
+                semChevron
+                onClick={() => setConfirmarSair(true)}
+              />
+            </FlatGroup>
+          </div>
+
+          {/* Versão discreta */}
+          <p
+            className="text-center"
+            style={{
+              color: "var(--text-secondary)",
+              opacity: 0.6,
+              fontSize: 11,
+              marginTop: 24,
+            }}
+          >
+            v0.1
           </p>
         </div>
       </div>
 
-      {/* Seletor de contas (bottom sheet — moldura mantida por regra) */}
+      {/* Bottom sheet: seletor de contas */}
       {seletorAberto && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
@@ -235,13 +268,17 @@ export default function Perfil() {
           onClick={() => setSeletorAberto(false)}
         >
           <div
-            className="w-full max-w-md rounded-t-2xl sm:rounded-2xl p-4 space-y-2"
-            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
+            className="w-full max-w-md p-4 space-y-2 animate-in slide-in-from-bottom duration-200"
+            style={{
+              backgroundColor: "var(--surface)",
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-1 pb-2">
-              <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-                Trocar de conta
+              <p className="text-base font-bold" style={{ color: "var(--text)" }}>
+                Suas contas
               </p>
               <button
                 onClick={() => setSeletorAberto(false)}
@@ -260,36 +297,31 @@ export default function Perfil() {
                   <button
                     key={idx}
                     onClick={() => trocarConta(idx)}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl hover:opacity-90"
-                    style={{ backgroundColor: ativa ? "var(--field)" : "transparent" }}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl active:opacity-80"
                   >
                     <div
-                      className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
+                      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
                       style={{ backgroundColor: "var(--field)" }}
                     >
-                      <span className="text-lg font-bold" style={{ color: "var(--primary)" }}>
-                        {ini}
-                      </span>
+                      {c.foto ? (
+                        <img src={c.foto} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="font-bold" style={{ color: "var(--primary)" }}>
+                          {ini}
+                        </span>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0 text-left">
                       <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>
                         {c.nome || "Conta"}
                       </p>
-                      <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>
-                        {c.email || ""}
-                      </p>
+                      {c.email && (
+                        <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>
+                          {c.email}
+                        </p>
+                      )}
                     </div>
-                    {ativa && (
-                      <span
-                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                        style={{
-                          backgroundColor: "rgba(34,197,94,0.15)",
-                          color: "var(--primary)",
-                        }}
-                      >
-                        ATIVA
-                      </span>
-                    )}
+                    {ativa && <Check size={20} style={{ color: "var(--primary)" }} />}
                   </button>
                 );
               })}
@@ -298,13 +330,13 @@ export default function Perfil() {
                   setSeletorAberto(false);
                   navigate("/cadastro");
                 }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl hover:opacity-90"
+                className="w-full flex items-center gap-3 p-3 rounded-xl active:opacity-80"
               >
                 <div
-                  className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
+                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                   style={{ backgroundColor: "var(--field)" }}
                 >
-                  <Plus size={20} style={{ color: "var(--primary)" }} />
+                  <UserPlus size={18} style={{ color: "var(--primary)" }} />
                 </div>
                 <span className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
                   Adicionar nova conta
@@ -315,7 +347,7 @@ export default function Perfil() {
         </div>
       )}
 
-      {/* Confirmar sair (modal — moldura mantida) */}
+      {/* Confirmar sair */}
       {confirmarSair && (
         <div
           className="fixed inset-0 z-40 flex items-center justify-center p-4"
@@ -326,11 +358,8 @@ export default function Perfil() {
             style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
           >
             <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
-              Sair da conta?
+              Deseja sair da sua conta?
             </h3>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              Você precisará fazer login novamente para acessar o app.
-            </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setConfirmarSair(false)}
@@ -345,42 +374,6 @@ export default function Perfil() {
                 style={{ backgroundColor: "#ef4444", color: "#fff" }}
               >
                 Sair
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Confirmar limpar todos os lançamentos (modal — moldura mantida) */}
-      {confirmarLimpar && (
-        <div
-          className="fixed inset-0 z-40 flex items-center justify-center p-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
-        >
-          <div
-            className="w-full max-w-sm rounded-2xl p-5 space-y-4"
-            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
-          >
-            <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
-              Excluir todos os lançamentos?
-            </h3>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              Esta ação não pode ser desfeita. Sua conta será mantida.
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setConfirmarLimpar(false)}
-                className="flex-1 py-3 rounded-xl font-semibold"
-                style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={limparLancamentos}
-                className="flex-1 py-3 rounded-xl font-semibold"
-                style={{ backgroundColor: "#f97316", color: "#fff" }}
-              >
-                Excluir tudo
               </button>
             </div>
           </div>

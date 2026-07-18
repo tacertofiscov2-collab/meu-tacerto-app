@@ -29,16 +29,17 @@ function normalizarTipo(v) {
 function ler() {
   if (!isBrowser()) {
     return {
-      nome: "Usuário",
+      nome: "",
+      email: null,
+      visitante: true,
       tipo: "MEI",
-      faturado: 48600,
+      faturado: 0,
       mesAbertura: null,
       anoAbertura: null,
     };
   }
   let tipoRaw = localStorage.getItem(KEYS.tipo);
   if (!tipoRaw) {
-    // migração do formato antigo (lowercase em `tacerto_perfil`)
     const legado = localStorage.getItem(KEYS.perfilLegado);
     if (legado) tipoRaw = legado;
   }
@@ -46,10 +47,13 @@ function ler() {
   const faturadoRaw = localStorage.getItem(KEYS.faturado);
   const mesRaw = localStorage.getItem(KEYS.mesAbertura);
   const anoRaw = localStorage.getItem(KEYS.anoAbertura);
+  const nomeRaw = localStorage.getItem(KEYS.nome);
   return {
-    nome: localStorage.getItem(KEYS.nome) || "Usuário",
+    nome: nomeRaw || "",
+    email: null, // modo visitante: e-mail nunca vaza; será populado por sessão real
+    visitante: !nomeRaw,
     tipo,
-    faturado: faturadoRaw != null ? Number(faturadoRaw) : 48600,
+    faturado: faturadoRaw != null ? Number(faturadoRaw) : 0,
     mesAbertura: mesRaw ? Number(mesRaw) : null,
     anoAbertura: anoRaw ? Number(anoRaw) : null,
   };
@@ -89,7 +93,7 @@ let cache = null;
 let cacheKey = "";
 function snapshot() {
   const s = ler();
-  const key = `${s.nome}|${s.tipo}|${s.faturado}|${s.mesAbertura}|${s.anoAbertura}`;
+  const key = `${s.nome}|${s.tipo}|${s.faturado}|${s.mesAbertura}|${s.anoAbertura}|${s.visitante}`;
   if (key !== cacheKey) {
     cacheKey = key;
     cache = s;
@@ -98,9 +102,11 @@ function snapshot() {
 }
 function ssrSnapshot() {
   return {
-    nome: "Usuário",
+    nome: "",
+    email: null,
+    visitante: true,
     tipo: "MEI",
-    faturado: 48600,
+    faturado: 0,
     mesAbertura: null,
     anoAbertura: null,
   };
