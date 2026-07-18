@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, FlaskConical } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
+import Valor from "../components/Valor.jsx";
 import {
   LIMITES_ANUAIS,
   LABEL_TIPO,
   calcularPercentual,
   faixaDoVelocimetro,
   FAIXA_INFO,
-  fmtBRL,
 } from "@/lib/fiscal";
 
 const PRESETS = [
