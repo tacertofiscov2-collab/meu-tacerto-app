@@ -26,6 +26,10 @@ import ResumoPerfil from "./pages/ResumoPerfil.jsx";
 import InformacoesFiscais from "./pages/InformacoesFiscais.jsx";
 import Chat from "./pages/Chat.jsx";
 import DevSimulador from "./pages/DevSimulador.jsx";
+import CalculadoraDASPage from "./pages/CalculadoraDAS.jsx";
+import GuiaDAS from "./pages/GuiaDAS.jsx";
+import CalendarioFiscalPage from "./pages/CalendarioFiscal.jsx";
+import SimuladorDesenquadramentoPage from "./pages/SimuladorDesenquadramento.jsx";
 
 export default function App() {
   return (
