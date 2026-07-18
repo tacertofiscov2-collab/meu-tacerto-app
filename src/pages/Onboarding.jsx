@@ -9,6 +9,7 @@ import { salvarPerfilLocal } from "@/lib/localData";
 import { setUserState } from "@/lib/userState";
 import { LIMITES_ANUAIS, limiteProporcional } from "@/lib/fiscal";
 import AuthError from "@/components/AuthError";
+import Valor from "@/components/Valor";
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
