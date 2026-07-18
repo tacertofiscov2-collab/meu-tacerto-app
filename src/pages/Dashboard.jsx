@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Bell, ChevronRight, Gauge } from "lucide-react";
+import { Bell, ChevronRight, Gauge, AlertTriangle } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import { useUserState } from "@/lib/userState";
 import {
@@ -11,13 +11,10 @@ import {
   fmtBRL,
 } from "@/lib/fiscal";
 
-const COR_VERDE = "#22c55e";
-const COR_LARANJA = "#f59e0b";
-const COR_VERMELHO = "#ef4444";
-
 function faixaDoPercentual(p) {
-  const info = FAIXA_INFO[faixaDoVelocimetro(p)];
-  return { cor: info.cor, label: info.label };
+  const chave = faixaDoVelocimetro(p);
+  const info = FAIXA_INFO[chave];
+  return { chave, cor: info.cor, label: info.label };
 }
 
 function saudacaoPorHora() {
@@ -80,9 +77,11 @@ function Velocimetro({ percentual }) {
       >
         <defs>
           <linearGradient id="velocimetroGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={COR_VERDE} />
-            <stop offset="60%" stopColor={COR_LARANJA} />
-            <stop offset="100%" stopColor={COR_VERMELHO} />
+            <stop offset="0%" stopColor={FAIXA_INFO.tranquilo.cor} />
+            <stop offset="50%" stopColor={FAIXA_INFO.fique_de_olho.cor} />
+            <stop offset="75%" stopColor={FAIXA_INFO.atencao.cor} />
+            <stop offset="90%" stopColor={FAIXA_INFO.perto_do_limite.cor} />
+            <stop offset="100%" stopColor={FAIXA_INFO.estourou.cor} />
           </linearGradient>
         </defs>
 
@@ -112,7 +111,11 @@ function Velocimetro({ percentual }) {
         <span className="text-5xl font-bold" style={{ color: "var(--text)" }}>
           {Math.round(percentual)}%
         </span>
-        <span className="text-sm font-semibold mt-1" style={{ color: faixa.cor }}>
+        <span
+          className="text-sm font-semibold mt-1 flex items-center gap-1.5"
+          style={{ color: faixa.cor }}
+        >
+          {faixa.chave === "critico" && <AlertTriangle size={14} style={{ color: faixa.cor }} />}
           {faixa.label}
         </span>
       </div>
