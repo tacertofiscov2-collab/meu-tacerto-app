@@ -391,6 +391,31 @@ export default function Historico() {
           </div>
         </div>
       )}
+
+      {/* FAB — novo lançamento */}
+      <button
+        onClick={() => navigate("/lancar")}
+        aria-label="Novo lançamento"
+        className="fixed right-5 z-20 w-14 h-14 rounded-full flex items-center justify-center active:scale-95 transition"
+        style={{
+          bottom: "calc(20px + env(safe-area-inset-bottom))",
+          backgroundColor: "var(--primary)",
+          color: "var(--primary-contrast)",
+          boxShadow: "0 10px 28px rgba(34,197,94,0.5), 0 0 0 1px rgba(34,197,94,0.35)",
+        }}
+      >
+        <Plus size={26} strokeWidth={2.6} />
+      </button>
+
+      <ModalFaturamentoInicial
+        aberto={modalFaturamento}
+        onClose={() => setModalFaturamento(false)}
+        onSalvar={() => {
+          // TODO: persistir faturamento inicial no Supabase
+          setModalFaturamento(false);
+          dispensarFaturamento();
+        }}
+      />
     </div>
   );
 }
