@@ -192,9 +192,10 @@ export default function DevSimulador() {
                 value={anoAbertura ?? ""}
                 placeholder="Ano"
                 onChange={(e) =>
-                  setUserState({
-                    anoAbertura: e.target.value ? Number(e.target.value) : null,
-                  })
+                  setMesAnoAbertura(
+                    mesAbertura,
+                    e.target.value ? Number(e.target.value) : null,
+                  )
                 }
                 className="w-full px-3 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 style={fieldStyle}
