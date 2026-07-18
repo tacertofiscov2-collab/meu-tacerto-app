@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Pencil, Settings, Info, Shield, Users, Lock, LogOut, ChevronRight,
+  ArrowLeft, Settings, Info, Shield, Users, Lock, LogOut, ChevronRight,
 } from "lucide-react";
 
 // TODO: buscar do backend/Supabase
@@ -53,10 +53,7 @@ function ListaItem({ Icon, label, onClick, cor }) {
 
 export default function Perfil() {
   const navigate = useNavigate();
-  const [usuario, setUsuario] = useState(USUARIO_MOCK);
-  const [editarNome, setEditarNome] = useState(false);
-  const [nomeTemp, setNomeTemp] = useState(usuario.nome);
-  const [confirmarTroca, setConfirmarTroca] = useState(false);
+  const [usuario] = useState(USUARIO_MOCK);
   const [confirmarSair, setConfirmarSair] = useState(false);
 
   const inicial = (usuario.nome || "?").trim().charAt(0).toUpperCase();
@@ -66,21 +63,6 @@ export default function Perfil() {
     backgroundColor: "var(--surface)",
     border: "1px solid var(--border)",
   };
-
-  function salvarNome() {
-    // TODO: persistir no backend
-    setUsuario((u) => ({ ...u, nome: nomeTemp.trim() || u.nome }));
-    setEditarNome(false);
-  }
-
-  function alternarPerfil() {
-    // TODO: persistir e recalcular limite no backend
-    setUsuario((u) => ({
-      ...u,
-      perfil: u.perfil === "MEI" ? "MEI_CAMINHONEIRO" : "MEI",
-    }));
-    setConfirmarTroca(false);
-  }
 
   function sair() {
     // TODO: chamar signOut do Supabase
@@ -94,15 +76,27 @@ export default function Perfil() {
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       <div className="flex-1 overflow-y-auto pb-[100px]">
-        <header className="px-5 pt-6 pb-4">
+        <header className="px-5 pt-6 pb-4 flex items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            aria-label="Voltar"
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+            style={{ backgroundColor: "var(--field)" }}
+          >
+            <ArrowLeft size={20} style={{ color: "var(--text)" }} />
+          </button>
           <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
             Perfil
           </h1>
         </header>
 
         <div className="px-5 space-y-4">
-          {/* Card usuário */}
-          <div className="rounded-2xl p-5 flex items-center gap-4" style={cardStyle}>
+          {/* Card usuário — inteiro clicável para editar perfil */}
+          <button
+            onClick={() => navigate("/editar-perfil")}
+            className="w-full rounded-2xl p-5 flex items-center gap-4 text-left transition-transform active:scale-[0.99]"
+            style={cardStyle}
+          >
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center shrink-0"
               style={{ backgroundColor: "var(--field)" }}
@@ -112,40 +106,9 @@ export default function Perfil() {
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              {editarNome ? (
-                <div className="flex items-center gap-2">
-                  <input
-                    autoFocus
-                    value={nomeTemp}
-                    onChange={(e) => setNomeTemp(e.target.value)}
-                    onBlur={salvarNome}
-                    onKeyDown={(e) => e.key === "Enter" && salvarNome()}
-                    className="flex-1 min-w-0 px-3 py-2 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    style={{
-                      backgroundColor: "var(--field)",
-                      border: "1px solid var(--border)",
-                      color: "var(--text)",
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <p className="font-bold truncate" style={{ color: "var(--text)" }}>
-                    {usuario.nome}
-                  </p>
-                  <button
-                    onClick={() => {
-                      setNomeTemp(usuario.nome);
-                      setEditarNome(true);
-                    }}
-                    aria-label="Editar nome"
-                    className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-80"
-                    style={{ backgroundColor: "var(--field)" }}
-                  >
-                    <Pencil size={13} style={{ color: "var(--primary)" }} />
-                  </button>
-                </div>
-              )}
+              <p className="font-bold truncate" style={{ color: "var(--text)" }}>
+                {usuario.nome}
+              </p>
               <p className="text-xs truncate mt-0.5" style={{ color: "var(--text-secondary)" }}>
                 {usuario.email}
               </p>
@@ -159,7 +122,8 @@ export default function Perfil() {
                 {LABEL_PERFIL[usuario.perfil]}
               </span>
             </div>
-          </div>
+            <ChevronRight size={18} style={{ color: "var(--text-secondary)" }} />
+          </button>
 
           {/* Resumo 2026 */}
           <div className="rounded-2xl p-5" style={cardStyle}>
@@ -209,14 +173,6 @@ export default function Perfil() {
                 Dia {usuario.vencimentoDAS}
               </span>
             </div>
-            <button
-              onClick={() => setConfirmarTroca(true)}
-              className="w-full mt-2 flex items-center justify-between py-2 text-sm"
-              style={{ color: "var(--primary)" }}
-            >
-              <span className="font-semibold">Alterar tipo de MEI</span>
-              <ChevronRight size={18} />
-            </button>
           </div>
 
           {/* Geral */}
@@ -251,49 +207,7 @@ export default function Perfil() {
       </div>
 
 
-      {/* Confirmar troca de tipo */}
-      {confirmarTroca && (
-        <div
-          className="fixed inset-0 z-40 flex items-center justify-center p-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
-        >
-          <div
-            className="w-full max-w-sm rounded-2xl p-5 space-y-4"
-            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
-          >
-            <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
-              Alterar tipo de MEI?
-            </h3>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              O limite anual será recalculado para{" "}
-              <strong style={{ color: "var(--text)" }}>
-                {fmtBRL(
-                  usuario.perfil === "MEI"
-                    ? LIMITES.MEI_CAMINHONEIRO
-                    : LIMITES.MEI,
-                )}
-              </strong>
-              .
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setConfirmarTroca(false)}
-                className="flex-1 py-3 rounded-xl font-semibold"
-                style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={alternarPerfil}
-                className="flex-1 py-3 rounded-xl font-semibold"
-                style={{ backgroundColor: "var(--primary)", color: "var(--primary-contrast)" }}
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Confirmar sair */}
       {confirmarSair && (

@@ -1,8 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Search, TrendingUp, ChevronDown, Receipt, X, Trash2,
+  ArrowLeft, Search, TrendingUp, ChevronDown, Receipt, X, Trash2, Plus,
+  BarChart3,
 } from "lucide-react";
+import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
+
+const DISMISS_KEY = "tacerto:hist_faturamento_dismissed";
 
 // TODO: buscar do backend
 const LANCAMENTOS_MOCK = [
@@ -29,6 +33,22 @@ export default function Historico() {
   const [mes, setMes] = useState("Julho 2026"); // TODO: filtrar por mês real
   const [editando, setEditando] = useState(null);
   const [confirmarExcluir, setConfirmarExcluir] = useState(false);
+  const [modalFaturamento, setModalFaturamento] = useState(false);
+  const [mostrarFaturamento, setMostrarFaturamento] = useState(true);
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(DISMISS_KEY) === "1") setMostrarFaturamento(false);
+    } catch {}
+  }, []);
+
+  function dispensarFaturamento() {
+    // TODO: persistir preferência no backend/Supabase
+    try {
+      localStorage.setItem(DISMISS_KEY, "1");
+    } catch {}
+    setMostrarFaturamento(false);
+  }
 
   const filtrados = useMemo(() => {
     const q = busca.trim().toLowerCase();
@@ -89,6 +109,51 @@ export default function Historico() {
         </header>
 
         <div className="px-5 space-y-4">
+          {/* Card faturamento inicial (dispensável) */}
+          {mostrarFaturamento && (
+            <div
+              className="rounded-2xl py-3 px-4"
+              style={{ ...cardStyle, borderLeft: "4px solid var(--primary)" }}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "var(--field)" }}
+                >
+                  <BarChart3 size={16} style={{ color: "var(--primary)" }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold" style={{ color: "var(--text)" }}>
+                    Comece com o velocímetro certo
+                  </p>
+                  <p className="text-xs leading-relaxed mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                    Já faturou este ano antes de instalar o app? Adicione o total em
+                    1 minuto.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <button
+                  onClick={() => setModalFaturamento(true)}
+                  className="flex-1 py-2 rounded-xl text-sm font-semibold"
+                  style={{
+                    backgroundColor: "var(--primary)",
+                    color: "var(--primary-contrast)",
+                  }}
+                >
+                  Adicionar faturamento
+                </button>
+                <button
+                  onClick={dispensarFaturamento}
+                  className="px-3 py-2 text-sm font-medium"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Agora não
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Busca */}
           <div className="relative">
             <Search
@@ -326,6 +391,31 @@ export default function Historico() {
           </div>
         </div>
       )}
+
+      {/* FAB — novo lançamento */}
+      <button
+        onClick={() => navigate("/lancar")}
+        aria-label="Novo lançamento"
+        className="fixed right-5 z-20 w-14 h-14 rounded-full flex items-center justify-center active:scale-95 transition"
+        style={{
+          bottom: "calc(20px + env(safe-area-inset-bottom))",
+          backgroundColor: "var(--primary)",
+          color: "var(--primary-contrast)",
+          boxShadow: "0 10px 28px rgba(34,197,94,0.5), 0 0 0 1px rgba(34,197,94,0.35)",
+        }}
+      >
+        <Plus size={26} strokeWidth={2.6} />
+      </button>
+
+      <ModalFaturamentoInicial
+        aberto={modalFaturamento}
+        onClose={() => setModalFaturamento(false)}
+        onSalvar={() => {
+          // TODO: persistir faturamento inicial no Supabase
+          setModalFaturamento(false);
+          dispensarFaturamento();
+        }}
+      />
     </div>
   );
 }

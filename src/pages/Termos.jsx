@@ -51,10 +51,10 @@ export default function Termos() {
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
-          className="w-10 h-10 flex items-center justify-center rounded-lg hover:opacity-80"
-          style={{ color: "var(--text)" }}
+          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+          style={{ backgroundColor: "var(--field)" }}
         >
-          <ArrowLeft size={22} strokeWidth={2} />
+          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
         </button>
       </div>
 

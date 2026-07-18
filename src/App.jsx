@@ -19,6 +19,7 @@ import Faq from "./pages/Faq.jsx";
 import Contas from "./pages/Contas.jsx";
 import Velocimetro from "./pages/Velocimetro.jsx";
 import AlterarSenha from "./pages/AlterarSenha.jsx";
+import EditarPerfil from "./pages/EditarPerfil.jsx";
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/contas" element={<Contas />} />
         <Route path="/velocimetro" element={<Velocimetro />} />
         <Route path="/alterar-senha" element={<AlterarSenha />} />
+        <Route path="/editar-perfil" element={<EditarPerfil />} />
         <Route path="*" element={<EmConstrucao />} />
       </Routes>
     </BrowserRouter>
