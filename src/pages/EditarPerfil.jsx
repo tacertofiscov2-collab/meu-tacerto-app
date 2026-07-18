@@ -183,7 +183,7 @@ export default function EditarPerfil() {
                         {opt === "MEI" ? "MEI" : "MEI Caminhoneiro"}
                       </p>
                       <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                        Limite anual {fmtBRL(LIMITES[opt])}
+                        Limite anual {fmtBRL(LIMITES_ANUAIS[opt])}
                       </p>
                     </div>
                     {ativo && <Check size={18} style={{ color: "var(--primary)" }} />}
@@ -218,7 +218,7 @@ export default function EditarPerfil() {
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               O limite anual será recalculado para{" "}
               <strong style={{ color: "var(--text)" }}>
-                {fmtBRL(LIMITES[perfilPendente])}
+                {fmtBRL(LIMITES_ANUAIS[perfilPendente])}
               </strong>
               .
             </p>
