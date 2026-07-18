@@ -118,7 +118,7 @@ export default function EditarPerfil() {
 
         {/* Alterar tipo de MEI */}
         <button
-          onClick={() => setConfirmarTroca(true)}
+          onClick={() => setSelecionarTipo(true)}
           className="w-full rounded-2xl p-4 flex items-center gap-3 text-left"
           style={cardStyle}
         >
