@@ -61,6 +61,7 @@ export default function Alertas() {
   // TODO: substituir por fetch real
   const alertas = [...ALERTAS_MOCK].sort((a, b) => b.ordem - a.ordem);
   const [expandido, setExpandido] = useState(null);
+  const [modalFaturamento, setModalFaturamento] = useState(false);
 
   const cardStyle = {
     backgroundColor: "var(--surface)",
