@@ -268,9 +268,9 @@ export default function Onboarding() {
               <div className="space-y-2.5">
                 {[
                   { v: "MEI", Icon: Briefcase, titulo: "MEI (outras atividades)",
-                    desc: "Comércio, serviços · limite R$ 81.000/ano" },
+                    desc: `Comércio, serviços · limite R$ ${LIMITES_ANUAIS.MEI.toLocaleString("pt-BR")}/ano` },
                   { v: "MEI_CAMINHONEIRO", Icon: Truck, titulo: "MEI Caminhoneiro",
-                    desc: "Transporte de cargas · limite R$ 251.600/ano" },
+                    desc: `Transporte de cargas · limite R$ ${LIMITES_ANUAIS.MEI_CAMINHONEIRO.toLocaleString("pt-BR")}/ano` },
                 ].map((o) => {
                   const sel = tipoMei === o.v;
                   const Ico = o.Icon;
