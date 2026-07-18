@@ -7,6 +7,7 @@ import {
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
+import Valor from "../components/Valor.jsx";
 import { useAppState } from "@/context/AppStateContext";
 const DISMISS_KEY = "tacerto:hist_faturamento_dismissed";
 
