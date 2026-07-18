@@ -304,9 +304,7 @@ function SimuladorDesenquadramento() {
           <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
             Quanto você pode faturar por mês, sem estourar
           </p>
-          <p className="text-2xl font-bold mt-1" style={{ color: "var(--primary)" }}>
-            {fmtBRL0(podeFaturarPorMes)}
-          </p>
+          <div className="mt-1"><Valor tamanho="xl">{podeFaturarPorMes}</Valor></div>
           <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
             Considerando {mesesRestantes}{" "}
             {mesesRestantes === 1 ? "mês restante" : "meses restantes"} até dezembro.
