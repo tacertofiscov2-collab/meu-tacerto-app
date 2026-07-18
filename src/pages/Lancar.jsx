@@ -183,7 +183,8 @@ export default function Lancar() {
               value={data}
               max={hoje}
               onChange={(e) => setData(e.target.value)}
-              className="w-full px-4 py-4 rounded-xl text-sm focus:outline-none focus:ring-2"
+              onClick={(e) => e.currentTarget.showPicker?.()}
+              className="w-full px-4 py-4 rounded-xl text-sm focus:outline-none focus:ring-2 cursor-pointer"
               style={{ ...fieldStyle, colorScheme: "dark" }}
             />
           </div>
