@@ -246,7 +246,8 @@ export default function Velocimetro() {
                 Projeção para dezembro
               </p>
               <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                No ritmo atual, você deve fechar o ano em {fmtBRL(projecaoAnual)}
+                No ritmo atual, você deve fechar o ano em{" "}
+                <Valor tamanho="sm">{projecaoAnual}</Valor>
                 {ultrapassa
                   ? " — atenção, isso ultrapassaria o limite anual."
                   : " — dentro do limite anual."}
