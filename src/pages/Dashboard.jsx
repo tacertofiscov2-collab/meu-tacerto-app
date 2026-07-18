@@ -69,7 +69,7 @@ function Velocimetro({ percentual }) {
   const faixa = faixaDoPercentual(percentual);
 
   return (
-    <div className="w-full flex flex-col items-center">
+    <div className="w-full h-full flex flex-col items-center">
       <svg
         viewBox="0 0 200 120"
         className="block mx-auto w-full max-w-[220px]"
