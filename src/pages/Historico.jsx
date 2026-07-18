@@ -1,8 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Search, TrendingUp, ChevronDown, Receipt, X, Trash2,
+  ArrowLeft, Search, TrendingUp, ChevronDown, Receipt, X, Trash2, Plus,
+  BarChart3,
 } from "lucide-react";
+import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
+
+const DISMISS_KEY = "tacerto:hist_faturamento_dismissed";
 
 // TODO: buscar do backend
 const LANCAMENTOS_MOCK = [
