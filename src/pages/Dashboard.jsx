@@ -112,21 +112,12 @@ function Velocimetro({ percentual }) {
         <span className="text-5xl font-bold" style={{ color: "var(--text)" }}>
           {Math.round(percentual)}%
         </span>
-        <div className="flex-1 flex flex-col items-center justify-center gap-1.5 px-3 py-3 w-full">
+        <div className="flex-1 flex flex-col items-center justify-center px-3 py-3 w-full">
           <span
-            className="text-base font-bold text-center flex items-center gap-1.5"
-            style={{ color: faixa.cor }}
-          >
-            {faixa.chave === "critico" && (
-              <AlertTriangle size={16} style={{ color: faixa.cor }} />
-            )}
-            {faixa.principal}
-          </span>
-          <span
-            className="text-sm font-normal text-center leading-snug"
+            className="text-[15px] font-normal text-center leading-snug"
             style={{ color: "var(--text-secondary)" }}
           >
-            {faixa.apoio}
+            {faixa.mensagem}
           </span>
         </div>
       </div>
