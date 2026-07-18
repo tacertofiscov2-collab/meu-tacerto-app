@@ -225,7 +225,7 @@ export default function Velocimetro() {
           }}
         >
           <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>
-            {textoAviso(percentual, faturado, limite)}
+            <TextoAviso percentual={percentual} faturado={faturado} limite={limite} />
           </p>
         </div>
 
