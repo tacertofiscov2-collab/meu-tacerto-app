@@ -2,12 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Bell, HelpCircle, Calculator, FileText, Calendar, TrendingUp,
-  ChevronDown, ChevronRight, AlertTriangle, BarChart3, MessageCircle,
+  ChevronDown, AlertTriangle, BarChart3, MessageCircle,
 } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
+import { FlatItem, SectionTitle } from "../components/FlatList.jsx";
 import { useUserState } from "@/lib/userState";
 import { LIMITES_ANUAIS, faixaDoVelocimetro, FAIXA_INFO, calcularPercentual } from "@/lib/fiscal";
 
@@ -22,56 +23,20 @@ const UFS = [
   "PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO",
 ];
 
-const fmtBRL = (v) =>
-  "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const fmtBRL0 = (v) =>
-  "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-
-function Atalho({ Icon, label, sub, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="rounded-2xl p-3 flex flex-col items-start gap-2 transition-transform active:scale-[0.99] text-left"
-      style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
-    >
-      <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center"
-        style={{ backgroundColor: "var(--field)" }}
-      >
-        <Icon size={20} style={{ color: "var(--primary)" }} />
-      </div>
-      <div className="min-w-0">
-        <p className="text-sm font-semibold leading-tight" style={{ color: "var(--text)" }}>
-          {label}
-        </p>
-        {sub && (
-          <p className="text-[11px] mt-0.5 leading-tight" style={{ color: "var(--text-secondary)" }}>
-            {sub}
-          </p>
-        )}
-      </div>
-    </button>
-  );
-}
-
-function AccordionItem({ Icon, titulo, aberto, onToggle, children }) {
+function AccordionItem({ Icon, titulo, aberto, onToggle, primeiro, children }) {
   return (
     <div
-      className="rounded-2xl overflow-hidden"
-      style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
+      style={{
+        borderTop: primeiro ? "none" : "1px solid var(--border)",
+      }}
     >
       <button
         onClick={onToggle}
         aria-expanded={aberto}
-        className="w-full flex items-center gap-3 px-4 py-4 text-left hover:opacity-90"
+        className="w-full flex items-center gap-3 py-3.5 text-left active:opacity-70"
       >
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-          style={{ backgroundColor: "var(--field)" }}
-        >
-          <Icon size={18} style={{ color: "var(--primary)" }} />
-        </div>
-        <span className="flex-1 text-sm font-semibold" style={{ color: "var(--text)" }}>
+        <Icon size={22} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
+        <span className="flex-1 text-[16px]" style={{ color: "var(--text)" }}>
           {titulo}
         </span>
         <ChevronDown
@@ -84,16 +49,14 @@ function AccordionItem({ Icon, titulo, aberto, onToggle, children }) {
         />
       </button>
       {aberto && (
-        <div
-          className="px-4 pb-4 pt-1 text-sm"
-          style={{ color: "var(--text-secondary)" }}
-        >
+        <div className="pb-4 pl-[34px] text-sm" style={{ color: "var(--text-secondary)" }}>
           {children}
         </div>
       )}
     </div>
   );
 }
+
 
 function CalculadoraDAS() {
   const { tipo } = useUserState();
