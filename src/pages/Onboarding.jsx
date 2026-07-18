@@ -366,7 +366,7 @@ export default function Onboarding() {
                     >
                       <p className="text-xs font-medium inline-flex items-center gap-1.5" style={{ color: "var(--text)" }}>
                         <Info size={14} strokeWidth={2} style={{ color: "var(--primary)" }} />
-                        Limite: R$ {limiteFinal.toLocaleString("pt-BR")},00
+                        Limite: <Valor tamanho="sm">{limiteFinal}</Valor>
                       </p>
                     </div>
                   )}
