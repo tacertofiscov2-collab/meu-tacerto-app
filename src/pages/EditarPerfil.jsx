@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, User, Briefcase, ChevronRight, Check } from "lucide-react";
+import { ArrowLeft, User, Briefcase, Check } from "lucide-react";
 
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
+import { FlatItem, SectionTitle } from "../components/FlatList.jsx";
 import { useUserState } from "@/lib/userState";
 import { LIMITES_ANUAIS } from "@/lib/fiscal";
 
@@ -30,7 +31,6 @@ export default function EditarPerfil() {
   };
   const fieldStyle = {
     backgroundColor: "var(--field)",
-    border: "1px solid var(--border)",
     color: "var(--text)",
   };
 
@@ -49,7 +49,6 @@ export default function EditarPerfil() {
 
   function salvar() {
     salvarNome(nome);
-    // TODO: persistir no Supabase
     navigate(-1);
   }
 
@@ -72,12 +71,12 @@ export default function EditarPerfil() {
         </h1>
       </header>
 
-      <div className="flex-1 px-5 pb-6 space-y-6">
+      <div className="flex-1 px-5 pb-6">
         {/* Avatar */}
         <div className="flex flex-col items-center gap-2 pt-2">
           <div
             className="w-24 h-24 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: "var(--field)", border: "1px solid var(--border)" }}
+            style={{ backgroundColor: "var(--field)" }}
           >
             <span className="text-4xl font-bold" style={{ color: "var(--primary)" }}>
               {inicial}
@@ -85,13 +84,8 @@ export default function EditarPerfil() {
           </div>
         </div>
 
-
-
-        {/* Nome */}
+        <SectionTitle>Dados</SectionTitle>
         <div className="space-y-2">
-          <label className="text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>
-            Nome
-          </label>
           <div className="relative">
             <User
               size={18}
@@ -108,34 +102,19 @@ export default function EditarPerfil() {
           </div>
         </div>
 
-        {/* Alterar tipo de MEI */}
-        <button
+        <SectionTitle>Perfil fiscal</SectionTitle>
+        <FlatItem
+          Icon={Briefcase}
+          label="Alterar tipo de MEI"
+          sub={`Atual: ${LABEL_PERFIL[perfil]}`}
           onClick={() => setSelecionarTipo(true)}
-          className="w-full rounded-2xl p-4 flex items-center gap-3 text-left"
-          style={cardStyle}
-        >
-          <div
-            className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-            style={{ backgroundColor: "var(--field)" }}
-          >
-            <Briefcase size={18} style={{ color: "var(--primary)" }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-              Alterar tipo de MEI
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-              Atual: {LABEL_PERFIL[perfil]}
-            </p>
-          </div>
-          <ChevronRight size={18} style={{ color: "var(--text-secondary)" }} />
-        </button>
+        />
       </div>
 
       {/* Salvar */}
       <div
         className="px-5 pb-6"
-        style={{ paddingBottom: "calc(130px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
       >
         <button
           onClick={salvar}

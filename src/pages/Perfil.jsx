@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import BottomNav from "../components/BottomNav.jsx";
+import { SectionTitle, FlatGroup, FlatItem } from "../components/FlatList.jsx";
 import {
   ArrowLeft, Settings, Info, Shield, Users, Lock, LogOut, ChevronRight,
   ChevronDown, BarChart3, FileText, UserPlus, Eraser, Trash2, Plus, X,
@@ -20,29 +21,6 @@ function Brand({ className = "" }) {
       <span style={{ color: "var(--text)" }}>Ta</span>
       <span style={{ color: "var(--primary)" }}>Certo!</span>
     </span>
-  );
-}
-
-function ListaItem({ Icon, label, onClick, cor, iconCor }) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full flex items-center gap-3 py-3 hover:opacity-90"
-    >
-      <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-        style={{ backgroundColor: "var(--field)" }}
-      >
-        <Icon size={18} style={{ color: iconCor || cor || "var(--primary)" }} />
-      </div>
-      <span
-        className="flex-1 text-left text-sm font-medium"
-        style={{ color: cor || "var(--text)" }}
-      >
-        {label}
-      </span>
-      <ChevronRight size={18} style={{ color: "var(--text-secondary)" }} />
-    </button>
   );
 }
 
@@ -76,18 +54,13 @@ export default function Perfil() {
     return () => window.removeEventListener("storage", handler);
   }, []);
 
-  // Deduzir se o usuário está logado (nome persistido) — para diferenciar "visitante".
-  const nomePersistido = typeof window !== "undefined" && !!localStorage.getItem("tacerto_nome");
+  const nomePersistido =
+    typeof window !== "undefined" && !!localStorage.getItem("tacerto_nome");
   const totalContas = contas.length > 0 ? contas.length : (nomePersistido ? 1 : 0);
   const ehVisitante = totalContas === 0;
   const temMultiplas = totalContas >= 2;
 
   const inicial = (nome || "?").trim().charAt(0).toUpperCase();
-
-  const cardStyle = {
-    backgroundColor: "var(--surface)",
-    border: "1px solid var(--border)",
-  };
 
   function sair() {
     setConfirmarSair(false);
@@ -108,7 +81,6 @@ export default function Perfil() {
     setSeletorAberto(false);
   }
 
-  // Item dinâmico "trocar/adicionar/cadastrar"
   let contaItem;
   if (ehVisitante) {
     contaItem = { Icon: UserPlus, label: "Cadastrar", onClick: () => navigate("/cadastro") };
@@ -123,7 +95,10 @@ export default function Perfil() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="flex-1 overflow-y-auto pb-[130px]">
+      <div
+        className="flex-1 overflow-y-auto"
+        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
+      >
         <header className="px-5 pt-6 pb-4 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
@@ -138,14 +113,13 @@ export default function Perfil() {
           </h1>
         </header>
 
-        <div className="px-5 space-y-4">
-          {/* Card usuário — clicável para editar OU abrir seletor se houver múltiplas contas */}
+        <div className="px-5">
+          {/* Card usuário — único bloco com moldura permanece: identidade */}
           <button
             onClick={() =>
               temMultiplas ? setSeletorAberto(true) : navigate("/editar-perfil")
             }
-            className="w-full rounded-2xl p-5 flex items-center gap-4 text-left transition-transform active:scale-[0.99]"
-            style={cardStyle}
+            className="w-full flex items-center gap-4 py-2 text-left active:opacity-80"
           >
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center shrink-0"
@@ -182,65 +156,78 @@ export default function Perfil() {
             )}
           </button>
 
-          {/* Resumo & Informações fiscais como itens clicáveis */}
-          <div className="rounded-2xl px-5 py-2" style={cardStyle}>
-            <ListaItem
+          <SectionTitle>Fiscal</SectionTitle>
+          <FlatGroup>
+            <FlatItem
               Icon={BarChart3}
               label="Resumo de 2026"
               onClick={() => navigate("/perfil/resumo")}
             />
-            <ListaItem
+            <FlatItem
               Icon={FileText}
               label="Informações fiscais"
               onClick={() => navigate("/perfil/informacoes-fiscais")}
             />
-          </div>
+          </FlatGroup>
 
+          <SectionTitle>Geral</SectionTitle>
+          <FlatGroup>
+            <FlatItem
+              Icon={Settings}
+              label="Preferências"
+              onClick={() => navigate("/preferencias")}
+            />
+            <FlatItem
+              Icon={Info}
+              label="Sobre o TaCerto!"
+              onClick={() => navigate("/sobre")}
+            />
+            <FlatItem
+              Icon={Shield}
+              label="Termos e Privacidade"
+              onClick={() => navigate("/termos")}
+            />
+          </FlatGroup>
 
-          {/* Geral */}
-          <div className="rounded-2xl px-5 py-2" style={cardStyle}>
-            <p className="text-xs pt-3 pb-1" style={{ color: "var(--text-secondary)" }}>
-              Geral
-            </p>
-            <ListaItem Icon={Settings} label="Preferências" onClick={() => navigate("/preferencias")} />
-            <ListaItem Icon={Info} label="Sobre o TaCerto!" onClick={() => navigate("/sobre")} />
-            <ListaItem Icon={Shield} label="Termos e Privacidade" onClick={() => navigate("/termos")} />
-          </div>
-
-          {/* Conta e segurança */}
-          <div className="rounded-2xl px-5 py-2" style={cardStyle}>
-            <p className="text-xs pt-3 pb-1" style={{ color: "var(--text-secondary)" }}>
-              Conta e segurança
-            </p>
-            <ListaItem Icon={contaItem.Icon} label={contaItem.label} onClick={contaItem.onClick} />
-            <ListaItem Icon={Lock} label="Alterar senha" onClick={() => navigate("/alterar-senha")} />
-            <ListaItem
+          <SectionTitle>Conta e segurança</SectionTitle>
+          <FlatGroup>
+            <FlatItem
+              Icon={contaItem.Icon}
+              label={contaItem.label}
+              onClick={contaItem.onClick}
+            />
+            <FlatItem
+              Icon={Lock}
+              label="Alterar senha"
+              onClick={() => navigate("/alterar-senha")}
+            />
+            <FlatItem
               Icon={LogOut}
               label="Sair da conta"
               cor="#ef4444"
               onClick={() => setConfirmarSair(true)}
             />
-            <ListaItem
+            <FlatItem
               Icon={Eraser}
               label="Excluir todos os lançamentos"
               iconCor="#f97316"
               onClick={() => setConfirmarLimpar(true)}
             />
-            <ListaItem
+            <FlatItem
               Icon={Trash2}
               label="Excluir conta"
               cor="#ef4444"
               onClick={() => navigate("/excluir-conta")}
             />
-          </div>
+          </FlatGroup>
 
-          <p className="text-center text-xs pt-2" style={{ color: "var(--text-secondary)" }}>
+          <p className="text-center text-xs pt-8" style={{ color: "var(--text-secondary)" }}>
             <Brand /> v0.1
           </p>
         </div>
       </div>
 
-      {/* Seletor de contas (padrão Instagram) */}
+      {/* Seletor de contas (bottom sheet — moldura mantida por regra) */}
       {seletorAberto && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
@@ -328,7 +315,7 @@ export default function Perfil() {
         </div>
       )}
 
-      {/* Confirmar sair */}
+      {/* Confirmar sair (modal — moldura mantida) */}
       {confirmarSair && (
         <div
           className="fixed inset-0 z-40 flex items-center justify-center p-4"
@@ -364,7 +351,7 @@ export default function Perfil() {
         </div>
       )}
 
-      {/* Confirmar limpar todos os lançamentos */}
+      {/* Confirmar limpar todos os lançamentos (modal — moldura mantida) */}
       {confirmarLimpar && (
         <div
           className="fixed inset-0 z-40 flex items-center justify-center p-4"

@@ -2,15 +2,9 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
+import { SectionTitle } from "../components/FlatList.jsx";
 import { useUserState } from "@/lib/userState";
 import { LABEL_TIPO, LIMITES_ANUAIS, DAS_2026 } from "@/lib/fiscal";
-
-const fmtBRL2 = (v) =>
-  "R$ " +
-  Number(v || 0).toLocaleString("pt-BR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
 
 const DAS_LABELS = {
   MEI: {
@@ -29,15 +23,6 @@ export default function InformacoesFiscais() {
   const navigate = useNavigate();
   const { tipo } = useUserState();
 
-  const cardStyle = {
-    backgroundColor: "var(--surface)",
-    border: "1px solid var(--border)",
-  };
-  const innerStyle = {
-    backgroundColor: "var(--field)",
-    border: "1px solid var(--border)",
-  };
-
   const limiteAnual = LIMITES_ANUAIS[tipo];
   const dasValores = DAS_2026[tipo] || {};
 
@@ -48,7 +33,7 @@ export default function InformacoesFiscais() {
     >
       <div
         className="flex-1 overflow-y-auto"
-        style={{ paddingBottom: "calc(130px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
       >
         <header className="px-5 pt-6 pb-4 flex items-center gap-3">
           <button
@@ -64,60 +49,42 @@ export default function InformacoesFiscais() {
           </h1>
         </header>
 
-        <div className="px-5 space-y-4">
+        <div className="px-5">
           {/* Perfil + Limite */}
-          <div className="rounded-2xl p-5 space-y-3" style={cardStyle}>
-            <Linha rotulo="Tipo de perfil" valor={LABEL_TIPO[tipo]} />
-            <Linha rotulo="Limite anual" valor={<Valor tamanho="sm">{limiteAnual}</Valor>} />
+          <SectionTitle className="mt-2">Perfil</SectionTitle>
+          <div>
+            <Linha rotulo="Tipo de perfil" valor={LABEL_TIPO[tipo]} primeiro />
+            <Linha
+              rotulo="Limite anual"
+              valor={<Valor tamanho="sm">{limiteAnual}</Valor>}
+            />
           </div>
 
-          {/* Vencimento DAS */}
-          <div className="rounded-2xl p-5 space-y-2" style={cardStyle}>
-            <p className="text-xs uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
-              Vencimento do DAS
-            </p>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>
-              Todo dia 20 (antecipa se cair em fim de semana ou feriado).
-            </p>
+          <SectionTitle>Vencimento do DAS</SectionTitle>
+          <p className="text-[15px] leading-relaxed" style={{ color: "var(--text)" }}>
+            Todo dia 20 (antecipa se cair em fim de semana ou feriado).
+          </p>
+
+          <SectionTitle>Valor do DAS mensal (2026)</SectionTitle>
+          <div>
+            {Object.entries(dasValores).map(([chave, valor], i) => (
+              <Linha
+                key={chave}
+                rotulo={DAS_LABELS[tipo]?.[chave] ?? chave}
+                valor={<Valor tamanho="sm" decimais={2}>{valor}</Valor>}
+                primeiro={i === 0}
+              />
+            ))}
           </div>
 
-          {/* Valor DAS mensal */}
-          <div className="rounded-2xl p-5 space-y-3" style={cardStyle}>
-            <p className="text-xs uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
-              Valor do DAS mensal (2026)
-            </p>
-            <div className="space-y-2">
-              {Object.entries(dasValores).map(([chave, valor]) => (
-                <div
-                  key={chave}
-                  className="rounded-xl p-3 flex items-center justify-between"
-                  style={innerStyle}
-                >
-                  <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                    {DAS_LABELS[tipo]?.[chave] ?? chave}
-                  </span>
-                  <span className="text-sm font-bold" style={{ color: "var(--text)" }}>
-                    <Valor tamanho="sm" decimais={2}>{valor}</Valor>
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <SectionTitle>DASN-SIMEI</SectionTitle>
+          <p className="text-[15px] leading-relaxed" style={{ color: "var(--text)" }}>
+            Declaração anual obrigatória. Prazo: 31 de maio de cada ano.
+            Obrigatória mesmo com faturamento zero.
+          </p>
 
-          {/* DASN-SIMEI */}
-          <div className="rounded-2xl p-5 space-y-2" style={cardStyle}>
-            <p className="text-xs uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
-              DASN-SIMEI
-            </p>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>
-              Declaração anual obrigatória. Prazo: 31 de maio de cada ano.
-              Obrigatória mesmo com faturamento zero.
-            </p>
-          </div>
-
-          {/* Aviso */}
           <p
-            className="text-xs leading-relaxed px-1 pt-1"
+            className="text-xs leading-relaxed mt-8"
             style={{ color: "var(--text-secondary)" }}
           >
             Estas informações são educativas e baseadas na LC 123/2006. O
@@ -131,11 +98,18 @@ export default function InformacoesFiscais() {
   );
 }
 
-function Linha({ rotulo, valor }) {
+function Linha({ rotulo, valor, primeiro }) {
   return (
-    <div className="flex justify-between text-sm gap-3">
-      <span style={{ color: "var(--text-secondary)" }}>{rotulo}</span>
-      <span className="font-semibold text-right" style={{ color: "var(--text)" }}>
+    <div
+      className="flex justify-between items-center gap-3 py-3.5"
+      style={{
+        borderTop: primeiro ? "none" : "1px solid var(--border)",
+      }}
+    >
+      <span className="text-[15px]" style={{ color: "var(--text-secondary)" }}>
+        {rotulo}
+      </span>
+      <span className="text-[15px] font-semibold text-right" style={{ color: "var(--text)" }}>
         {valor}
       </span>
     </div>

@@ -38,10 +38,6 @@ export default function Contas() {
 
   const limiteAtingido = contas.length >= MAX_CONTAS;
 
-  const cardStyle = {
-    backgroundColor: "var(--surface)",
-    border: "1px solid var(--border)",
-  };
 
   function trocarConta(conta) {
     // TODO: realizar troca real de sessão via Supabase
@@ -62,7 +58,10 @@ export default function Contas() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="flex-1 overflow-y-auto pb-[130px]">
+      <div
+        className="flex-1 overflow-y-auto"
+        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
+      >
         <header className="px-5 pt-6 pb-4 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
@@ -77,24 +76,23 @@ export default function Contas() {
           </h1>
         </header>
 
-        <div className="px-5 space-y-5">
+        <div className="px-5">
           <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
             Gerencie as contas neste aparelho (máximo 5).
           </p>
 
-          {/* Lista de contas */}
-          <div className="space-y-3">
-            {contas.map((conta) => {
+          {/* Lista de contas (flat, com separador sutil) */}
+          <div className="mt-4">
+            {contas.map((conta, i) => {
               const inicial = (conta.nome || "?").trim().charAt(0).toUpperCase();
               const isAtual = conta.atual;
 
               return (
                 <div
                   key={conta.id}
-                  className="rounded-xl p-4 flex items-center gap-3"
+                  className="flex items-center gap-3 py-3"
                   style={{
-                    ...cardStyle,
-                    borderColor: isAtual ? "var(--primary)" : "var(--border)",
+                    borderTop: i === 0 ? "none" : "1px solid var(--border)",
                   }}
                 >
                   <div
@@ -154,7 +152,6 @@ export default function Contas() {
                         onClick={() => setConfirmarRemover(conta)}
                         aria-label="Remover conta"
                         className="w-8 h-8 rounded-lg flex items-center justify-center hover:opacity-80"
-                        style={{ backgroundColor: "var(--field)" }}
                       >
                         <Trash2
                           size={16}
@@ -170,28 +167,19 @@ export default function Contas() {
 
           {/* Limite atingido ou adicionar conta */}
           {limiteAtingido ? (
-            <div
-              className="rounded-xl p-4 text-sm text-center"
-              style={{
-                backgroundColor: "rgba(245,158,11,0.12)",
-                color: "#f59e0b",
-                border: "1px solid rgba(245,158,11,0.25)",
-              }}
+            <p
+              className="mt-4 text-sm text-center"
+              style={{ color: "#f59e0b" }}
             >
-              Limite de 5 contas atingido. Remova uma conta para adicionar
-              outra.
-            </div>
+              Limite de 5 contas atingido. Remova uma conta para adicionar outra.
+            </p>
           ) : (
             <button
               onClick={() => navigate("/login")}
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm"
-              style={{
-                backgroundColor: "var(--field)",
-                color: "var(--text)",
-                border: "1px solid var(--border)",
-              }}
+              className="mt-4 w-full flex items-center gap-3 py-3.5 text-[16px] active:opacity-70"
+              style={{ color: "var(--text)" }}
             >
-              <Plus size={18} style={{ color: "var(--primary)" }} />
+              <Plus size={22} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
               Adicionar outra conta
             </button>
           )}

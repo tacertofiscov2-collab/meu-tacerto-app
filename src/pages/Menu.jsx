@@ -2,12 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Bell, HelpCircle, Calculator, FileText, Calendar, TrendingUp,
-  ChevronDown, ChevronRight, AlertTriangle, BarChart3, MessageCircle,
+  ChevronDown, AlertTriangle, BarChart3, MessageCircle,
 } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
+import { FlatItem, SectionTitle } from "../components/FlatList.jsx";
 import { useUserState } from "@/lib/userState";
 import { LIMITES_ANUAIS, faixaDoVelocimetro, FAIXA_INFO, calcularPercentual } from "@/lib/fiscal";
 
@@ -22,56 +23,20 @@ const UFS = [
   "PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO",
 ];
 
-const fmtBRL = (v) =>
-  "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const fmtBRL0 = (v) =>
-  "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-
-function Atalho({ Icon, label, sub, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="rounded-2xl p-3 flex flex-col items-start gap-2 transition-transform active:scale-[0.99] text-left"
-      style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
-    >
-      <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center"
-        style={{ backgroundColor: "var(--field)" }}
-      >
-        <Icon size={20} style={{ color: "var(--primary)" }} />
-      </div>
-      <div className="min-w-0">
-        <p className="text-sm font-semibold leading-tight" style={{ color: "var(--text)" }}>
-          {label}
-        </p>
-        {sub && (
-          <p className="text-[11px] mt-0.5 leading-tight" style={{ color: "var(--text-secondary)" }}>
-            {sub}
-          </p>
-        )}
-      </div>
-    </button>
-  );
-}
-
-function AccordionItem({ Icon, titulo, aberto, onToggle, children }) {
+function AccordionItem({ Icon, titulo, aberto, onToggle, primeiro, children }) {
   return (
     <div
-      className="rounded-2xl overflow-hidden"
-      style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
+      style={{
+        borderTop: primeiro ? "none" : "1px solid var(--border)",
+      }}
     >
       <button
         onClick={onToggle}
         aria-expanded={aberto}
-        className="w-full flex items-center gap-3 px-4 py-4 text-left hover:opacity-90"
+        className="w-full flex items-center gap-3 py-3.5 text-left active:opacity-70"
       >
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-          style={{ backgroundColor: "var(--field)" }}
-        >
-          <Icon size={18} style={{ color: "var(--primary)" }} />
-        </div>
-        <span className="flex-1 text-sm font-semibold" style={{ color: "var(--text)" }}>
+        <Icon size={22} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
+        <span className="flex-1 text-[16px]" style={{ color: "var(--text)" }}>
           {titulo}
         </span>
         <ChevronDown
@@ -84,16 +49,14 @@ function AccordionItem({ Icon, titulo, aberto, onToggle, children }) {
         />
       </button>
       {aberto && (
-        <div
-          className="px-4 pb-4 pt-1 text-sm"
-          style={{ color: "var(--text-secondary)" }}
-        >
+        <div className="pb-4 pl-[34px] text-sm" style={{ color: "var(--text-secondary)" }}>
           {children}
         </div>
       )}
     </div>
   );
 }
+
 
 function CalculadoraDAS() {
   const { tipo } = useUserState();
@@ -358,7 +321,10 @@ export default function Menu() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="flex-1 overflow-y-auto pb-[130px]">
+      <div
+        className="flex-1 overflow-y-auto"
+        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
+      >
         <header className="px-5 pt-6 pb-4 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
@@ -373,44 +339,43 @@ export default function Menu() {
           </h1>
         </header>
 
-        <div className="px-5 space-y-4">
-          {/* Atalhos */}
-          <div className="grid grid-cols-3 gap-2.5">
-            <Atalho Icon={Bell} label="Notificações" onClick={() => navigate("/alertas")} />
-            <Atalho Icon={HelpCircle} label="Dúvidas" onClick={() => navigate("/faq")} />
-            <Atalho
+        <div className="px-5">
+          <SectionTitle className="mt-2">Atalhos</SectionTitle>
+          <div>
+            <FlatItem
+              Icon={Bell}
+              label="Notificações"
+              onClick={() => navigate("/alertas")}
+            />
+            <FlatItem
+              Icon={HelpCircle}
+              label="Dúvidas"
+              onClick={() => navigate("/faq")}
+              withDivider
+            />
+            <FlatItem
               Icon={MessageCircle}
               label="Chat IA"
               sub="Sua assistente fiscal"
               onClick={() => navigate("/chat")}
+              withDivider
+            />
+            <FlatItem
+              Icon={BarChart3}
+              label="Adicionar faturamento do ano"
+              onClick={() => setModalFaturamento(true)}
+              withDivider
             />
           </div>
 
-          {/* Item permanente: adicionar faturamento */}
-          <button
-            onClick={() => setModalFaturamento(true)}
-            className="w-full rounded-2xl p-4 flex items-center gap-3 text-left transition-transform active:scale-[0.99]"
-            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
-          >
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-              style={{ backgroundColor: "var(--field)" }}
-            >
-              <BarChart3 size={18} style={{ color: "var(--primary)" }} />
-            </div>
-            <span className="flex-1 text-sm font-semibold" style={{ color: "var(--text)" }}>
-              Adicionar faturamento do ano
-            </span>
-            <ChevronRight size={18} style={{ color: "var(--text-secondary)" }} />
-          </button>
-
-          {/* Accordion */}
-          <div className="space-y-2">
+          <SectionTitle>Ferramentas</SectionTitle>
+          <div>
             <AccordionItem
               Icon={Calculator}
               titulo="Calculadora DAS"
               aberto={aberto === "das"}
               onToggle={() => toggle("das")}
+              primeiro
             >
               <CalculadoraDAS />
             </AccordionItem>
