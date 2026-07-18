@@ -10,6 +10,7 @@ const LANCAMENTOS_MOCK = 12;
 
 export default function ResumoPerfil() {
   const navigate = useNavigate();
+  const { faturado } = useUserState();
   const cardStyle = {
     backgroundColor: "var(--surface)",
     border: "1px solid var(--border)",
