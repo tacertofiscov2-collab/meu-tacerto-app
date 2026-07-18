@@ -213,28 +213,30 @@ export default function Historico() {
           ) : (
             <ul>
               {filtrados.map((l) => (
-                <li
-                  key={l.id}
-                  className="w-full flex items-center gap-2"
-                  style={{ paddingTop: 14, paddingBottom: 14 }}
-                >
+                <li key={l.id} className="flex items-stretch gap-3">
                   <TrendingUp
                     size={20}
                     strokeWidth={1.75}
-                    style={{ color: "var(--primary)" }}
+                    style={{ color: "var(--primary)", marginTop: 16 }}
                     className="shrink-0"
                   />
                   <div
                     className="flex-1 min-w-0 flex items-center gap-2"
                     style={{
+                      paddingTop: 14,
+                      paddingBottom: 14,
                       borderBottom: "1px solid var(--border)",
-                      // divisor sutil só a partir do texto
                     }}
                   >
-                    <div className="flex-1 min-w-0" style={{ paddingBottom: 14, marginBottom: -14 }}>
+                    <div className="flex-1 min-w-0">
                       <p
-                        className="text-[15px] truncate"
-                        style={{ color: "var(--text)", whiteSpace: "nowrap" }}
+                        className="text-[15px]"
+                        style={{
+                          color: "var(--text)",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
                       >
                         {l.descricao}
                       </p>
@@ -245,12 +247,12 @@ export default function Historico() {
                         {labelData(l.data)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0" style={{ paddingBottom: 14, marginBottom: -14 }}>
+                    <div className="flex items-center gap-1 shrink-0">
                       <Valor tamanho="md" sinal="+">{l.valor}</Valor>
                       <button
                         onClick={() => navigate(`/lancar?id=${l.id}`)}
                         aria-label="Editar lançamento"
-                        className="w-10 h-10 -mr-1 rounded-full flex items-center justify-center active:opacity-70"
+                        className="w-10 h-10 rounded-full flex items-center justify-center active:opacity-70"
                       >
                         <Pencil size={16} style={{ color: "var(--text-secondary)" }} />
                       </button>
