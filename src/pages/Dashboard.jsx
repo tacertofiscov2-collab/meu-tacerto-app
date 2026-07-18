@@ -1,9 +1,6 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Bell, Plus, Home, Receipt, LayoutGrid, User,
-  ChevronRight, Gauge,
-} from "lucide-react";
+import { Bell, ChevronRight, Gauge } from "lucide-react";
+import BottomNav from "../components/BottomNav.jsx";
 
 // TODO: buscar dados reais do Supabase/localStorage
 const USUARIO = {
@@ -13,7 +10,7 @@ const USUARIO = {
 };
 const LIMITES = { MEI: 81000, MEI_CAMINHONEIRO: 251600 };
 const ROTULO_PERFIL = {
-  MEI: "MEI (outras atividades)",
+  MEI: "MEI",
   MEI_CAMINHONEIRO: "MEI Caminhoneiro",
 };
 
@@ -82,10 +79,10 @@ function Velocimetro({ percentual }) {
   const faixa = faixaDoPercentual(percentual);
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="w-full flex flex-col items-center">
       <svg
         viewBox="0 0 200 120"
-        className="w-full max-w-[220px]"
+        className="block mx-auto w-full max-w-[220px]"
         role="img"
         aria-label={`Velocímetro fiscal: ${Math.round(p)} por cento`}
       >
@@ -149,7 +146,7 @@ export default function Dashboard() {
     >
       <div
         className="flex-1 flex flex-col"
-        style={{ paddingBottom: "calc(120px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}
       >
         {/* Header */}
         <header className="px-5 pt-4 pb-2 flex items-start justify-between">
@@ -183,42 +180,33 @@ export default function Dashboard() {
           </button>
         </header>
 
-        {/* Bloco de cards ocupando o resto da tela */}
-        <div className="px-5 pt-4 flex-1 flex flex-col gap-4">
-          {/* Card Velocímetro (efeito espelhado exclusivo) */}
+        {/* Bloco de cards */}
+        <div className="px-5 pt-3 flex-1 flex flex-col gap-3">
+          {/* Card Velocímetro */}
           <button
             onClick={() => navigate("/velocimetro")}
             className="relative w-full rounded-3xl px-5 pt-4 pb-5 text-left flex-1 flex flex-col transition-transform active:scale-[0.99]"
             style={{
               background:
                 "linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 55%, rgba(255,255,255,0) 100%), var(--surface)",
+              border: "1px solid rgba(63,63,70,0.6)",
               boxShadow:
                 "0 10px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}
           >
-            {/* Borda gradiente sutil */}
-            <span
+            {/* Seta de "clicável" no canto superior direito */}
+            <ChevronRight
+              size={20}
+              className="absolute top-4 right-4"
+              style={{ color: "var(--text-secondary)" }}
               aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-3xl"
-              style={{
-                padding: 1,
-                background:
-                  "linear-gradient(to bottom, rgba(255,255,255,0.12), rgba(255,255,255,0))",
-                WebkitMask:
-                  "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-                WebkitMaskComposite: "xor",
-                maskComposite: "exclude",
-              }}
             />
 
-            <div className="relative flex items-start justify-between">
-              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                {rotuloPerfil}
-              </p>
-              <ChevronRight size={20} style={{ color: "var(--text-secondary)" }} />
-            </div>
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              {rotuloPerfil}
+            </p>
 
-            <div className="relative flex-1 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center w-full">
               <Velocimetro percentual={percentual} />
             </div>
           </button>
@@ -261,58 +249,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Navbar: bolhas soltas, 5 itens iguais, só no dashboard */}
-      <nav
-        aria-label="Navegação principal"
-        className="fixed left-0 right-0 bottom-0 z-30 pointer-events-none"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-      >
-        <div className="max-w-xl mx-auto px-4 pb-3 flex items-end justify-between">
-          <NavBubble active label="Início" icon={Home} onClick={() => navigate("/dashboard")} />
-          <NavBubble label="Histórico" icon={Receipt} onClick={() => navigate("/historico")} />
-          <NavBubble label="Lançar" icon={Plus} accent onClick={() => navigate("/lancar")} />
-          <NavBubble label="Menu" icon={LayoutGrid} onClick={() => navigate("/menu")} />
-          <NavBubble label="Perfil" icon={User} onClick={() => navigate("/perfil")} />
-        </div>
-      </nav>
+      <BottomNav ativo="inicio" />
     </div>
-  );
-}
-
-function NavBubble({ icon: Icon, label, active = false, accent = false, onClick }) {
-  const color = accent
-    ? "var(--primary)"
-    : active
-    ? "var(--primary)"
-    : "var(--text-secondary)";
-  return (
-    <button
-      onClick={onClick}
-      aria-label={label}
-      className="pointer-events-auto flex flex-col items-center justify-end gap-1 active:scale-95 transition"
-    >
-      <span
-        className="w-12 h-12 rounded-full flex items-center justify-center"
-        style={{
-          backgroundColor: "rgba(24,24,27,0.6)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          border: "1px solid rgba(63,63,70,0.55)",
-          boxShadow: "0 6px 18px rgba(0,0,0,0.35)",
-        }}
-      >
-        <Icon
-          size={22}
-          strokeWidth={active || accent ? 2.5 : 2}
-          style={{ color }}
-        />
-      </span>
-      <span
-        className="text-[10px] font-medium leading-none"
-        style={{ color }}
-      >
-        {label}
-      </span>
-    </button>
   );
 }
