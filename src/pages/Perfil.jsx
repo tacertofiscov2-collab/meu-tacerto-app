@@ -46,11 +46,10 @@ function ListaItem({ Icon, label, onClick, cor }) {
 
 export default function Perfil() {
   const navigate = useNavigate();
-  const [usuario] = useState(USUARIO_MOCK);
+  const { nome, tipo } = useUserState();
   const [confirmarSair, setConfirmarSair] = useState(false);
 
-  const inicial = (usuario.nome || "?").trim().charAt(0).toUpperCase();
-  const limite = LIMITES[usuario.perfil] ?? LIMITES.MEI;
+  const inicial = (nome || "?").trim().charAt(0).toUpperCase();
 
   const cardStyle = {
     backgroundColor: "var(--surface)",
