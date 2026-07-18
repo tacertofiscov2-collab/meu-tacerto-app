@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Bell, TrendingUp, Plus, Home, Receipt, LayoutGrid, User,
-  AlertTriangle, X, BarChart3, ChevronRight, Gauge,
+  Bell, Plus, Home, Receipt, LayoutGrid, User,
+  ChevronRight, Gauge,
 } from "lucide-react";
-import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 // TODO: buscar dados reais do Supabase/localStorage
 const USUARIO = {
@@ -13,12 +12,9 @@ const USUARIO = {
   faturado: 48600,
 };
 const LIMITES = { MEI: 81000, MEI_CAMINHONEIRO: 251600 };
-
-// TODO: buscar do backend
-const ULTIMO_LANCAMENTO = {
-  descricao: "1º Frete de Julho",
-  data: "10 de Julho",
-  valor: 3500,
+const ROTULO_PERFIL = {
+  MEI: "MEI (outras atividades)",
+  MEI_CAMINHONEIRO: "MEI Caminhoneiro",
 };
 
 const fmtBRL = (v) =>
@@ -42,18 +38,8 @@ function saudacaoPorHora() {
   return "Boa noite,";
 }
 
-function dataPorExtenso() {
-  const raw = new Date().toLocaleDateString("pt-BR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-  return raw.charAt(0).toUpperCase() + raw.slice(1);
-}
-
 /**
- * Velocímetro: arco de fundo cinza + arco preenchido com degradê
- * verde → amarelo → vermelho, e ponteiro em forma de seta grossa.
+ * Velocímetro — NÃO ALTERAR o SVG. Mantido igual.
  */
 function Velocimetro({ percentual }) {
   const p = Math.max(0, Math.min(100, percentual));
@@ -99,7 +85,7 @@ function Velocimetro({ percentual }) {
     <div className="flex flex-col items-center">
       <svg
         viewBox="0 0 200 120"
-        className="w-full max-w-[150px]"
+        className="w-full max-w-[220px]"
         role="img"
         aria-label={`Velocímetro fiscal: ${Math.round(p)} por cento`}
       >
@@ -133,11 +119,11 @@ function Velocimetro({ percentual }) {
         <circle cx={cx} cy={cy} r={3.5} fill="var(--bg)" />
       </svg>
 
-      <div className="mt-1 flex flex-col items-center">
-        <span className="text-4xl font-bold" style={{ color: "var(--text)" }}>
+      <div className="mt-2 flex flex-col items-center">
+        <span className="text-5xl font-bold" style={{ color: "var(--text)" }}>
           {Math.round(percentual)}%
         </span>
-        <span className="text-sm font-semibold mt-0.5" style={{ color: faixa.cor }}>
+        <span className="text-sm font-semibold mt-1" style={{ color: faixa.cor }}>
           {faixa.label}
         </span>
       </div>
@@ -148,43 +134,24 @@ function Velocimetro({ percentual }) {
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  // TODO: detectar visitante real (sem conta criada)
-  const isVisitante = true;
-  // TODO: detectar se já lançou faturamento inicial do ano
-  const jaLancouFaturamento = false;
-
-  const [banner, setBanner] = useState(true);
-  const [mostrarOnboarding, setMostrarOnboarding] = useState(true);
-  const [modalFaturamento, setModalFaturamento] = useState(false);
-  const [faturamentoExtra, setFaturamentoExtra] = useState(0);
-
   const limite = LIMITES[USUARIO.perfil] ?? LIMITES.MEI;
-  const faturado = USUARIO.faturado + faturamentoExtra;
+  const faturado = USUARIO.faturado;
   const faltam = Math.max(0, limite - faturado);
   const percentual = (faturado / limite) * 100;
+  const rotuloPerfil = ROTULO_PERFIL[USUARIO.perfil] ?? "MEI";
 
-  const inicial = (USUARIO.nome || "?").trim().charAt(0).toUpperCase();
   const saudacao = saudacaoPorHora();
-  const dataHoje = dataPorExtenso();
-
-  const cardBase =
-    "w-full rounded-2xl transition-transform active:scale-[0.99]";
-  const cardStyle = {
-    backgroundColor: "var(--surface)",
-    border: "1px solid var(--border)",
-  };
 
   return (
     <div
       className="min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      {/* Conteúdo com padding inferior para não ficar sob a navbar */}
       <div
-        className="flex-1 overflow-y-auto flex flex-col"
-        style={{ paddingBottom: "calc(70px + env(safe-area-inset-bottom))" }}
+        className="flex-1 flex flex-col"
+        style={{ paddingBottom: "calc(120px + env(safe-area-inset-bottom))" }}
       >
-        {/* 1. Header */}
+        {/* Header */}
         <header className="px-5 pt-4 pb-2 flex items-start justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2.5">
@@ -216,70 +183,54 @@ export default function Dashboard() {
           </button>
         </header>
 
-
-        <div className="px-5 space-y-2 flex-1 flex flex-col">
-          {/* Banner de visitante */}
-          {isVisitante && banner && (
-            <div
-              className="rounded-xl p-1 flex items-start gap-1.5"
+        {/* Bloco de cards ocupando o resto da tela */}
+        <div className="px-5 pt-4 flex-1 flex flex-col gap-4">
+          {/* Card Velocímetro (efeito espelhado exclusivo) */}
+          <button
+            onClick={() => navigate("/velocimetro")}
+            className="relative w-full rounded-3xl px-5 pt-4 pb-5 text-left flex-1 flex flex-col transition-transform active:scale-[0.99]"
+            style={{
+              background:
+                "linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 55%, rgba(255,255,255,0) 100%), var(--surface)",
+              boxShadow:
+                "0 10px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)",
+            }}
+          >
+            {/* Borda gradiente sutil */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-3xl"
               style={{
-                backgroundColor: "rgba(245,158,11,0.12)",
-                border: "1px solid rgba(245,158,11,0.35)",
+                padding: 1,
+                background:
+                  "linear-gradient(to bottom, rgba(255,255,255,0.12), rgba(255,255,255,0))",
+                WebkitMask:
+                  "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+                WebkitMaskComposite: "xor",
+                maskComposite: "exclude",
               }}
-            >
-              <AlertTriangle
-                size={16}
-                className="mt-0.5 shrink-0"
-                style={{ color: "#f59e0b" }}
-              />
-              <p className="flex-1 text-xs leading-snug" style={{ color: "var(--text)" }}>
-                Você ainda não tem conta.{" "}
-                <button
-                  onClick={() => navigate("/cadastro")}
-                  className="font-semibold underline-offset-2 hover:underline"
-                  style={{ color: "var(--primary)" }}
-                >
-                  Criar conta
-                </button>{" "}
-                para manter seus lançamentos salvos.
-              </p>
-              <button
-                onClick={() => setBanner(false)}
-                aria-label="Fechar aviso"
-                className="w-6 h-6 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
-                style={{ backgroundColor: "rgba(0,0,0,0.15)" }}
-              >
-                <X size={12} style={{ color: "var(--text)" }} />
-              </button>
-            </div>
-          )}
+            />
 
-          {/* Card Velocímetro */}
-          <div className={cardBase + " px-5 pt-0.5 pb-1.5"} style={cardStyle}>
-            <div className="flex items-center justify-between mb-2">
+            <div className="relative flex items-start justify-between">
               <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                Velocímetro Fiscal
+                {rotuloPerfil}
               </p>
-              <button
-                onClick={() => navigate("/velocimetro")}
-                className="text-sm font-semibold flex items-center gap-0.5 hover:opacity-80"
-                style={{ color: "var(--primary)" }}
-              >
-                Ver detalhes
-                <ChevronRight size={14} />
-              </button>
+              <ChevronRight size={20} style={{ color: "var(--text-secondary)" }} />
             </div>
-            <Velocimetro percentual={percentual} />
-            <p
-              className="text-xs text-center mt-2"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Você já usou {Math.round(percentual)}% do seu limite anual.
-            </p>
-          </div>
+
+            <div className="relative flex-1 flex items-center justify-center">
+              <Velocimetro percentual={percentual} />
+            </div>
+          </button>
 
           {/* Card Faturado / Limite / Faltam */}
-          <div className={cardBase + " py-1.5 px-4"} style={cardStyle}>
+          <div
+            className="w-full rounded-2xl py-4 px-4"
+            style={{
+              backgroundColor: "var(--surface)",
+              border: "1px solid var(--border)",
+            }}
+          >
             <div className="grid grid-cols-3">
               {[
                 { valor: fmtBRL(faturado), label: "Faturado" },
@@ -307,153 +258,33 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
-
-          {/* Card onboarding do faturamento OU Último lançamento */}
-          {!jaLancouFaturamento && mostrarOnboarding ? (
-            <div
-              className={cardBase + " py-1.5 px-4 flex-1"}
-              style={{ ...cardStyle, borderLeft: "4px solid var(--primary)" }}
-            >
-              <div className="flex items-start gap-3">
-                <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: "var(--field)" }}
-                >
-                  <BarChart3 size={14} style={{ color: "var(--primary)" }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold" style={{ color: "var(--text)" }}>
-                    Comece com o velocímetro certo
-                  </p>
-                  <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                    Já faturou este ano antes de instalar o app? Adicione o total em
-                    1 minuto para o velocímetro refletir sua realidade desde agora.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 mt-2">
-                <button
-                  // TODO: abrir modal de faturamento inicial
-                  onClick={() => setModalFaturamento(true)}
-                  className="flex-1 py-2 rounded-xl text-sm font-semibold"
-                  style={{
-                    backgroundColor: "var(--primary)",
-                    color: "var(--primary-contrast)",
-                  }}
-                >
-                  Adicionar faturamento
-                </button>
-                <button
-                  onClick={() => setMostrarOnboarding(false)}
-                  className="px-3 py-2 text-sm font-medium"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Agora não
-                </button>
-              </div>
-            </div>
-          ) : jaLancouFaturamento ? (
-            <button
-              onClick={() => navigate("/historico")}
-              className={cardBase + " p-4 text-left"}
-              style={cardStyle}
-            >
-              <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
-                Último lançamento
-              </p>
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: "var(--field)" }}
-                >
-                  <TrendingUp size={18} style={{ color: "var(--primary)" }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>
-                    {ULTIMO_LANCAMENTO.descricao}
-                  </p>
-                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                    {ULTIMO_LANCAMENTO.data}
-                  </p>
-                </div>
-                <span
-                  className="font-bold text-sm shrink-0"
-                  style={{ color: "var(--primary)" }}
-                >
-                  + {fmtBRL(ULTIMO_LANCAMENTO.valor)}
-                </span>
-              </div>
-            </button>
-          ) : null}
-
         </div>
       </div>
 
-      {/* Navegação flutuante — bolhas soltas, sem barra */}
+      {/* Navbar: bolhas soltas, 5 itens iguais, só no dashboard */}
       <nav
         aria-label="Navegação principal"
         className="fixed left-0 right-0 bottom-0 z-30 pointer-events-none"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <div className="relative max-w-xl mx-auto px-5">
-          {/* Botão + central flutuante, elevado acima das bolhas */}
-          <button
-            onClick={() => navigate("/lancar")}
-            aria-label="Adicionar lançamento"
-            className="pointer-events-auto absolute left-1/2 -translate-x-1/2 bottom-[12px] w-[64px] h-[64px] rounded-full flex items-center justify-center active:scale-95 transition"
-            style={{
-              backgroundColor: "var(--primary)",
-              color: "var(--primary-contrast, #0f0f11)",
-              boxShadow: "0 10px 28px rgba(34,197,94,0.5), 0 0 0 1px rgba(34,197,94,0.35)",
-            }}
-          >
-            <Plus size={30} strokeWidth={2.6} />
-          </button>
-
-          <div className="flex items-end justify-between h-full">
-            <div className="flex items-end gap-5 pr-5">
-              <NavBubble
-                active={true}
-                label="Início"
-                icon={Home}
-                onClick={() => navigate("/dashboard")}
-              />
-              <NavBubble
-                label="Histórico"
-                icon={Receipt}
-                onClick={() => navigate("/historico")}
-              />
-            </div>
-            <div className="flex items-end gap-5 pl-5">
-              <NavBubble
-                label="Menu"
-                icon={LayoutGrid}
-                onClick={() => navigate("/menu")}
-              />
-              <NavBubble
-                label="Perfil"
-                icon={User}
-                onClick={() => navigate("/perfil")}
-              />
-            </div>
-          </div>
+        <div className="max-w-xl mx-auto px-4 pb-3 flex items-end justify-between">
+          <NavBubble active label="Início" icon={Home} onClick={() => navigate("/dashboard")} />
+          <NavBubble label="Histórico" icon={Receipt} onClick={() => navigate("/historico")} />
+          <NavBubble label="Lançar" icon={Plus} accent onClick={() => navigate("/lancar")} />
+          <NavBubble label="Menu" icon={LayoutGrid} onClick={() => navigate("/menu")} />
+          <NavBubble label="Perfil" icon={User} onClick={() => navigate("/perfil")} />
         </div>
       </nav>
-
-      <ModalFaturamentoInicial
-        aberto={modalFaturamento}
-        onClose={() => setModalFaturamento(false)}
-        onSalvar={(valor) => {
-          // TODO: persistir faturamento inicial no Supabase
-          setFaturamentoExtra((f) => f + valor);
-          setMostrarOnboarding(false);
-        }}
-      />
     </div>
   );
 }
 
-function NavBubble({ icon: Icon, label, active = false, onClick }) {
+function NavBubble({ icon: Icon, label, active = false, accent = false, onClick }) {
+  const color = accent
+    ? "var(--primary)"
+    : active
+    ? "var(--primary)"
+    : "var(--text-secondary)";
   return (
     <button
       onClick={onClick}
@@ -472,13 +303,13 @@ function NavBubble({ icon: Icon, label, active = false, onClick }) {
       >
         <Icon
           size={22}
-          strokeWidth={active ? 2.5 : 2}
-          style={{ color: active ? "var(--primary)" : "var(--text-secondary)" }}
+          strokeWidth={active || accent ? 2.5 : 2}
+          style={{ color }}
         />
       </span>
       <span
         className="text-[10px] font-medium leading-none"
-        style={{ color: active ? "var(--primary)" : "var(--text-secondary)" }}
+        style={{ color }}
       >
         {label}
       </span>

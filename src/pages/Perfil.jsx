@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import {
   Pencil, Settings, Info, Shield, Users, Lock, LogOut, ChevronRight,
 } from "lucide-react";
-import BottomNav from "../components/BottomNav.jsx";
 
 // TODO: buscar do backend/Supabase
 const USUARIO_MOCK = {
@@ -251,7 +250,6 @@ export default function Perfil() {
         </div>
       </div>
 
-      <BottomNav ativo="perfil" />
 
       {/* Confirmar troca de tipo */}
       {confirmarTroca && (

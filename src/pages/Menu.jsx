@@ -4,7 +4,6 @@ import {
   Bell, HelpCircle, Calculator, FileText, Calendar, TrendingUp,
   ChevronDown, AlertTriangle,
 } from "lucide-react";
-import BottomNav from "../components/BottomNav.jsx";
 
 // TODO: buscar do backend
 const USUARIO = {
@@ -369,7 +368,6 @@ export default function Menu() {
         </div>
       </div>
 
-      <BottomNav ativo="menu" />
     </div>
   );
 }

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Search, TrendingUp, ChevronDown, Receipt, X, Trash2,
 } from "lucide-react";
-import BottomNav from "../components/BottomNav.jsx";
 
 // TODO: buscar do backend
 const LANCAMENTOS_MOCK = [
@@ -192,7 +191,6 @@ export default function Historico() {
         </div>
       </div>
 
-      <BottomNav ativo="historico" />
 
       {/* Modal edição */}
       {editando && (
