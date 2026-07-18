@@ -186,9 +186,6 @@ export default function Lancar() {
               className="w-full px-4 py-4 rounded-xl text-sm focus:outline-none focus:ring-2"
               style={{ ...fieldStyle, colorScheme: "dark" }}
             />
-            <p className="text-xs mt-2" style={{ color: "var(--text-secondary)" }}>
-              Se não alterar, usaremos a data de hoje.
-            </p>
           </div>
         </div>
       </div>
