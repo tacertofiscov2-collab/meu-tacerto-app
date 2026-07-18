@@ -8,7 +8,7 @@ import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
 import { useUserState } from "@/lib/userState";
-import { LIMITES_ANUAIS } from "@/lib/fiscal";
+import { LIMITES_ANUAIS, faixaDoVelocimetro, FAIXA_INFO, calcularPercentual } from "@/lib/fiscal";
 
 // TODO: tabela oficial atualizada
 const INSS_MEI = 75.90;             // mock 5% s/ salário mínimo
