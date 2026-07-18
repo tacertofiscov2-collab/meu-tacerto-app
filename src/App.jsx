@@ -52,6 +52,7 @@ export default function App() {
         <Route path="/perfil/resumo" element={<ResumoPerfil />} />
         <Route path="/perfil/informacoes-fiscais" element={<InformacoesFiscais />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/dev/simulador" element={<DevSimulador />} />
         <Route path="*" element={<EmConstrucao />} />
       </Routes>
     </BrowserRouter>
