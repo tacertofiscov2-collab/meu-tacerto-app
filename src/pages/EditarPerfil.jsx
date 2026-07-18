@@ -217,10 +217,7 @@ export default function EditarPerfil() {
             </h3>
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               O limite anual será recalculado para{" "}
-              <strong style={{ color: "var(--text)" }}>
-                {fmtBRL(LIMITES_ANUAIS[perfilPendente])}
-              </strong>
-              .
+              <Valor tamanho="sm">{LIMITES_ANUAIS[perfilPendente]}</Valor>.
             </p>
             <div className="flex gap-2">
               <button
