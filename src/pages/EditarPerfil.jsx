@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, User, Briefcase, ChevronRight, Check } from "lucide-react";
 
 import BottomNav from "../components/BottomNav.jsx";
+import Valor from "../components/Valor.jsx";
 import { useUserState } from "@/lib/userState";
-import { LIMITES_ANUAIS, fmtBRL } from "@/lib/fiscal";
+import { LIMITES_ANUAIS } from "@/lib/fiscal";
 
 const LABEL_PERFIL = {
   MEI: "MEI (outras atividades)",
@@ -182,8 +183,8 @@ export default function EditarPerfil() {
                       <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
                         {opt === "MEI" ? "MEI" : "MEI Caminhoneiro"}
                       </p>
-                      <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                        Limite anual {fmtBRL(LIMITES_ANUAIS[opt])}
+                      <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: "var(--text-secondary)" }}>
+                        Limite anual <Valor tamanho="sm">{LIMITES_ANUAIS[opt]}</Valor>
                       </p>
                     </div>
                     {ativo && <Check size={18} style={{ color: "var(--primary)" }} />}
@@ -217,10 +218,7 @@ export default function EditarPerfil() {
             </h3>
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               O limite anual será recalculado para{" "}
-              <strong style={{ color: "var(--text)" }}>
-                {fmtBRL(LIMITES_ANUAIS[perfilPendente])}
-              </strong>
-              .
+              <Valor tamanho="sm">{LIMITES_ANUAIS[perfilPendente]}</Valor>.
             </p>
             <div className="flex gap-2">
               <button

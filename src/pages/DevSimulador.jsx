@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, FlaskConical } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
+import Valor from "../components/Valor.jsx";
 import {
   LIMITES_ANUAIS,
   LABEL_TIPO,
   calcularPercentual,
   faixaDoVelocimetro,
   FAIXA_INFO,
-  fmtBRL,
 } from "@/lib/fiscal";
 
 const PRESETS = [
@@ -238,9 +238,9 @@ export default function DevSimulador() {
               Resumo em tempo real
             </p>
             <Linha rotulo="Tipo" valor={LABEL_TIPO[tipo]} />
-            <Linha rotulo="Limite anual aplicado" valor={fmtBRL(limite)} />
-            <Linha rotulo="Limite cheio" valor={fmtBRL(LIMITES_ANUAIS[tipo])} />
-            <Linha rotulo="Faturado" valor={fmtBRL(faturado)} />
+            <Linha rotulo="Limite anual aplicado" valor={<Valor tamanho="sm">{limite}</Valor>} />
+            <Linha rotulo="Limite cheio" valor={<Valor tamanho="sm">{LIMITES_ANUAIS[tipo]}</Valor>} />
+            <Linha rotulo="Faturado" valor={<Valor tamanho="sm">{faturado}</Valor>} />
             <Linha rotulo="%" valor={`${percentual.toFixed(1)}%`} />
             <Linha rotulo="Faixa" valor={faixa.label} cor={faixa.cor} />
             <p className="text-sm leading-relaxed pt-1" style={{ color: "var(--text)" }}>

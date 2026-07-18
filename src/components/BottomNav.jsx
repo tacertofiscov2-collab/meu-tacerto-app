@@ -23,13 +23,35 @@ export default function BottomNav({ ativo }) {
       aria-label="Navegação principal"
       className="fixed bottom-0 left-0 right-0 z-40"
       style={{
-        backgroundColor: "rgba(24,24,27,0.72)",
+        backgroundColor: "rgba(24,24,27,0.82)",
         backdropFilter: "blur(18px)",
         WebkitBackdropFilter: "blur(18px)",
-        borderTop: "1px solid rgba(63,63,70,0.35)",
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
+      {/* Curva orgânica no topo — arco leve sobre o botão central */}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 400 32"
+        preserveAspectRatio="none"
+        style={{
+          position: "absolute",
+          top: "-1px",
+          left: 0,
+          right: 0,
+          width: "100%",
+          height: "32px",
+          pointerEvents: "none",
+        }}
+      >
+        <path
+          d="M 0 30 L 160 30 C 178 30 182 6 200 6 C 218 6 222 30 240 30 L 400 30"
+          stroke="var(--border)"
+          strokeWidth="1"
+          fill="none"
+          opacity="0.55"
+        />
+      </svg>
       <div className="max-w-xl mx-auto grid grid-cols-5 px-2 pt-2 pb-2">
         {itens.map(({ key, label, Icon, route, center }) => {
           const ehAtivo = key === ativo;

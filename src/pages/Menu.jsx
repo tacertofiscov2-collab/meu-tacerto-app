@@ -7,6 +7,7 @@ import {
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
+import Valor from "../components/Valor.jsx";
 import { useUserState } from "@/lib/userState";
 import { LIMITES_ANUAIS, faixaDoVelocimetro, FAIXA_INFO, calcularPercentual } from "@/lib/fiscal";
 
@@ -139,22 +140,22 @@ function CalculadoraDAS() {
         className="rounded-xl p-4 space-y-2"
         style={{ backgroundColor: "var(--field)", border: "1px solid var(--border)" }}
       >
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-sm items-center">
           <span style={{ color: "var(--text-secondary)" }}>INSS</span>
-          <span style={{ color: "var(--text)" }}>{fmtBRL(inss)}</span>
+          <Valor tamanho="sm" decimais={2}>{inss}</Valor>
         </div>
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-sm items-center">
           <span style={{ color: "var(--text-secondary)" }}>
             {tipoAtividade === "servicos" ? "ISS" : "ICMS"}
           </span>
-          <span style={{ color: "var(--text)" }}>{fmtBRL(imposto)}</span>
+          <Valor tamanho="sm" decimais={2}>{imposto}</Valor>
         </div>
         <div
-          className="flex justify-between pt-2 mt-1 text-base font-bold"
+          className="flex justify-between items-center pt-2 mt-1"
           style={{ borderTop: "1px solid var(--border)" }}
         >
-          <span style={{ color: "var(--text)" }}>Total DAS</span>
-          <span style={{ color: "var(--primary)" }}>{fmtBRL(total)}</span>
+          <span className="font-bold" style={{ color: "var(--text)" }}>Total DAS</span>
+          <Valor tamanho="md" decimais={2}>{total}</Valor>
         </div>
       </div>
 
@@ -266,18 +267,14 @@ function SimuladorDesenquadramento() {
           style={{ backgroundColor: "var(--field)", border: "1px solid var(--border)" }}
         >
           <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Limite anual</p>
-          <p className="text-sm font-bold mt-1" style={{ color: "var(--text)" }}>
-            {fmtBRL0(limite)}
-          </p>
+          <div className="mt-1"><Valor tamanho="sm">{limite}</Valor></div>
         </div>
         <div
           className="rounded-xl p-3"
           style={{ backgroundColor: "var(--field)", border: "1px solid var(--border)" }}
         >
           <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Faturado</p>
-          <p className="text-sm font-bold mt-1" style={{ color: "var(--text)" }}>
-            {fmtBRL0(faturado)}
-          </p>
+          <div className="mt-1"><Valor tamanho="sm">{faturado}</Valor></div>
         </div>
       </div>
 
@@ -308,9 +305,7 @@ function SimuladorDesenquadramento() {
           <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
             Quanto você pode faturar por mês, sem estourar
           </p>
-          <p className="text-2xl font-bold mt-1" style={{ color: "var(--primary)" }}>
-            {fmtBRL0(podeFaturarPorMes)}
-          </p>
+          <div className="mt-1"><Valor tamanho="xl">{podeFaturarPorMes}</Valor></div>
           <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
             Considerando {mesesRestantes}{" "}
             {mesesRestantes === 1 ? "mês restante" : "meses restantes"} até dezembro.
@@ -329,12 +324,7 @@ function SimuladorDesenquadramento() {
         <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
           Se mantiver o ritmo atual, projeção anual:
         </p>
-        <p
-          className="text-2xl font-bold mt-1"
-          style={{ color: projecaoEstoura ? faixaProjecao.cor : "var(--text)" }}
-        >
-          {fmtBRL0(projecaoAnual)}
-        </p>
+        <div className="mt-1"><Valor tamanho="xl">{projecaoAnual}</Valor></div>
         {projecaoEstoura && (
           <div className="flex items-start gap-2 mt-2">
             <AlertTriangle

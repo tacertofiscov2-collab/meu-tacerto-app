@@ -7,6 +7,7 @@ import {
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
+import Valor from "../components/Valor.jsx";
 import { useAppState } from "@/context/AppStateContext";
 const DISMISS_KEY = "tacerto:hist_faturamento_dismissed";
 
@@ -224,12 +225,9 @@ export default function Historico() {
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               Total de {mes.split(" ")[0]}
             </p>
-            <p
-              className="text-3xl font-bold mt-1"
-              style={{ color: "var(--primary)" }}
-            >
-              {fmtBRL(total)}
-            </p>
+            <div className="mt-1">
+              <Valor tamanho="xl">{total}</Valor>
+            </div>
           </div>
 
           {/* Lista */}
@@ -271,11 +269,8 @@ export default function Historico() {
                         {labelData(l.data)}
                       </p>
                     </div>
-                    <span
-                      className="font-bold text-sm shrink-0"
-                      style={{ color: "var(--primary)" }}
-                    >
-                      + {fmtBRL(l.valor)}
+                    <span className="shrink-0">
+                      <Valor tamanho="sm" sinal="+">{l.valor}</Valor>
                     </span>
                   </button>
                 </li>

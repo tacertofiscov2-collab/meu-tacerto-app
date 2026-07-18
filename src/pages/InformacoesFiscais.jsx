@@ -1,13 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
+import Valor from "../components/Valor.jsx";
 import { useUserState } from "@/lib/userState";
-import {
-  LABEL_TIPO,
-  LIMITES_ANUAIS,
-  DAS_2026,
-  fmtBRL,
-} from "@/lib/fiscal";
+import { LABEL_TIPO, LIMITES_ANUAIS, DAS_2026 } from "@/lib/fiscal";
 
 const fmtBRL2 = (v) =>
   "R$ " +
@@ -72,7 +68,7 @@ export default function InformacoesFiscais() {
           {/* Perfil + Limite */}
           <div className="rounded-2xl p-5 space-y-3" style={cardStyle}>
             <Linha rotulo="Tipo de perfil" valor={LABEL_TIPO[tipo]} />
-            <Linha rotulo="Limite anual" valor={fmtBRL(limiteAnual)} />
+            <Linha rotulo="Limite anual" valor={<Valor tamanho="sm">{limiteAnual}</Valor>} />
           </div>
 
           {/* Vencimento DAS */}
@@ -101,7 +97,7 @@ export default function InformacoesFiscais() {
                     {DAS_LABELS[tipo]?.[chave] ?? chave}
                   </span>
                   <span className="text-sm font-bold" style={{ color: "var(--text)" }}>
-                    {fmtBRL2(valor)}
+                    <Valor tamanho="sm" decimais={2}>{valor}</Valor>
                   </span>
                 </div>
               ))}
