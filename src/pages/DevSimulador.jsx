@@ -132,10 +132,19 @@ export default function DevSimulador() {
               type="number"
               min="0"
               value={faturado}
-              onChange={(e) => setUserState({ faturado: Number(e.target.value) || 0 })}
+              onChange={(e) => setFaturamentoSimulado(Number(e.target.value) || 0)}
               className="w-full px-4 py-4 rounded-xl text-2xl font-bold outline-none focus:ring-2 focus:ring-[var(--primary)]"
               style={fieldStyle}
             />
+            <button
+              onClick={() => setModoSimulacao(!modoSimulacao)}
+              className="text-xs underline"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              {modoSimulacao
+                ? "Desativar simulação (usar soma real dos lançamentos)"
+                : "Ativar simulação (ignorar lançamentos)"}
+            </button>
             <div className="grid grid-cols-1 gap-2 pt-1">
               {PRESETS.map((p) => (
                 <button
