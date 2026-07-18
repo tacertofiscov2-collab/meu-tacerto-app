@@ -172,10 +172,10 @@ export default function DevSimulador() {
               <select
                 value={mesAbertura ?? ""}
                 onChange={(e) =>
-                  setUserState({
-                    mesAbertura: e.target.value ? Number(e.target.value) : null,
-                    anoAbertura: anoAbertura ?? anoAtual,
-                  })
+                  setMesAnoAbertura(
+                    e.target.value ? Number(e.target.value) : null,
+                    e.target.value ? (anoAbertura ?? anoAtual) : null,
+                  )
                 }
                 className="w-full px-3 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 style={fieldStyle}
