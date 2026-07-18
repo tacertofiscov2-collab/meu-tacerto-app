@@ -407,23 +407,6 @@ export default function Historico() {
         </div>
       )}
 
-      {/* Botão fixo — novo lançamento */}
-      <div
-        className="fixed left-0 right-0 z-20 px-5"
-        style={{ bottom: "calc(90px + env(safe-area-inset-bottom))" }}
-      >
-        <button
-          onClick={() => navigate("/lancar")}
-          className="w-full py-3.5 rounded-xl font-semibold active:scale-[0.99] transition"
-          style={{
-            backgroundColor: "var(--primary)",
-            color: "var(--primary-contrast)",
-            boxShadow: "0 10px 28px rgba(34,197,94,0.35)",
-          }}
-        >
-          Fazer novo lançamento
-        </button>
-      </div>
 
 
       <ModalFaturamentoInicial
