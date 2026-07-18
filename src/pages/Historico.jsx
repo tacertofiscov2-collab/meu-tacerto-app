@@ -212,40 +212,57 @@ export default function Historico() {
             </div>
           ) : (
             <ul>
-              {filtrados.map((l, i) => (
+              {filtrados.map((l) => (
                 <li
                   key={l.id}
-                  className="w-full flex items-center gap-3 py-3"
-                  style={{
-                    borderTop: i === 0 ? "none" : "1px solid var(--border)",
-                  }}
+                  className="w-full flex items-center gap-2"
+                  style={{ paddingTop: 14, paddingBottom: 14 }}
                 >
-                  <TrendingUp size={22} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-medium truncate" style={{ color: "var(--text)" }}>
-                      {l.descricao}
-                    </p>
-                    <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                      {labelData(l.data)}
-                    </p>
+                  <TrendingUp
+                    size={20}
+                    strokeWidth={1.75}
+                    style={{ color: "var(--primary)" }}
+                    className="shrink-0"
+                  />
+                  <div
+                    className="flex-1 min-w-0 flex items-center gap-2"
+                    style={{
+                      borderBottom: "1px solid var(--border)",
+                      // divisor sutil só a partir do texto
+                    }}
+                  >
+                    <div className="flex-1 min-w-0" style={{ paddingBottom: 14, marginBottom: -14 }}>
+                      <p
+                        className="text-[15px] truncate"
+                        style={{ color: "var(--text)", whiteSpace: "nowrap" }}
+                      >
+                        {l.descricao}
+                      </p>
+                      <p
+                        className="text-xs mt-0.5"
+                        style={{ color: "var(--text-secondary)", whiteSpace: "nowrap" }}
+                      >
+                        {labelData(l.data)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0" style={{ paddingBottom: 14, marginBottom: -14 }}>
+                      <Valor tamanho="md" sinal="+">{l.valor}</Valor>
+                      <button
+                        onClick={() => navigate(`/lancar?id=${l.id}`)}
+                        aria-label="Editar lançamento"
+                        className="w-10 h-10 -mr-1 rounded-full flex items-center justify-center active:opacity-70"
+                      >
+                        <Pencil size={16} style={{ color: "var(--text-secondary)" }} />
+                      </button>
+                      <button
+                        onClick={() => setExcluirId(l.id)}
+                        aria-label="Excluir lançamento"
+                        className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center active:opacity-70"
+                      >
+                        <Trash2 size={16} style={{ color: "var(--text-secondary)" }} />
+                      </button>
+                    </div>
                   </div>
-                  <span className="shrink-0">
-                    <Valor tamanho="sm" sinal="+">{l.valor}</Valor>
-                  </span>
-                  <button
-                    onClick={() => navigate(`/lancar?id=${l.id}`)}
-                    aria-label="Editar lançamento"
-                    className="w-9 h-9 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
-                  >
-                    <Pencil size={17} style={{ color: "var(--text-secondary)" }} />
-                  </button>
-                  <button
-                    onClick={() => setExcluirId(l.id)}
-                    aria-label="Excluir lançamento"
-                    className="w-9 h-9 -ml-1 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
-                  >
-                    <Trash2 size={17} style={{ color: "var(--text-secondary)" }} />
-                  </button>
                 </li>
               ))}
             </ul>
