@@ -33,10 +33,12 @@ export default function DevSimulador() {
     limiteAtual: limite,
     mesAnoAbertura,
     modoSimulacao,
+    lancamentos,
     setTipoMEI,
     setFaturamentoSimulado,
     setMesAnoAbertura,
     setModoSimulacao,
+    removerTodosLancamentos,
   } = useAppState();
   const mesAbertura = mesAnoAbertura?.mes ?? null;
   const anoAbertura = mesAnoAbertura?.ano ?? null;
