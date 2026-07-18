@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
+import Valor from "../components/Valor.jsx";
 
 import { useUserState } from "@/lib/userState";
-import { fmtBRL } from "@/lib/fiscal";
 
 // TODO: buscar quantidade de lançamentos do backend
 const LANCAMENTOS_MOCK = 12;
