@@ -307,6 +307,7 @@ function SimuladorDesenquadramento() {
 export default function Menu() {
   const navigate = useNavigate();
   const [aberto, setAberto] = useState(null);
+  const [modalFaturamento, setModalFaturamento] = useState(false);
   const toggle = (id) => setAberto((a) => (a === id ? null : id));
 
   return (
@@ -314,8 +315,16 @@ export default function Menu() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="flex-1 overflow-y-auto pb-[100px]">
-        <header className="px-5 pt-6 pb-4">
+      <div className="flex-1 overflow-y-auto pb-10">
+        <header className="px-5 pt-6 pb-4 flex items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            aria-label="Voltar"
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+            style={{ backgroundColor: "var(--field)" }}
+          >
+            <ArrowLeft size={20} style={{ color: "var(--text)" }} />
+          </button>
           <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
             Menu
           </h1>
@@ -327,6 +336,24 @@ export default function Menu() {
             <Atalho Icon={Bell} label="Notificações" onClick={() => navigate("/alertas")} />
             <Atalho Icon={HelpCircle} label="Dúvidas" onClick={() => navigate("/faq")} />
           </div>
+
+          {/* Item permanente: adicionar faturamento */}
+          <button
+            onClick={() => setModalFaturamento(true)}
+            className="w-full rounded-2xl p-4 flex items-center gap-3 text-left transition-transform active:scale-[0.99]"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
+          >
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ backgroundColor: "var(--field)" }}
+            >
+              <BarChart3 size={18} style={{ color: "var(--primary)" }} />
+            </div>
+            <span className="flex-1 text-sm font-semibold" style={{ color: "var(--text)" }}>
+              Adicionar faturamento do ano
+            </span>
+            <ChevronRight size={18} style={{ color: "var(--text-secondary)" }} />
+          </button>
 
           {/* Accordion */}
           <div className="space-y-2">
@@ -369,6 +396,14 @@ export default function Menu() {
         </div>
       </div>
 
+      <ModalFaturamentoInicial
+        aberto={modalFaturamento}
+        onClose={() => setModalFaturamento(false)}
+        onSalvar={() => {
+          // TODO: persistir faturamento inicial no Supabase
+          setModalFaturamento(false);
+        }}
+      />
     </div>
   );
 }
