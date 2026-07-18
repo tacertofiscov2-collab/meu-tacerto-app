@@ -143,7 +143,10 @@ export default function Faq() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="flex-1 overflow-y-auto pb-[130px]">
+      <div
+        className="flex-1 overflow-y-auto"
+        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
+      >
         {/* Header */}
         <header className="flex items-center gap-3 px-5 pt-6 pb-4">
           <button
@@ -158,7 +161,7 @@ export default function Faq() {
           </h1>
         </header>
 
-        <div className="px-5 space-y-4">
+        <div className="px-5">
           {/* Search */}
           <div className="relative">
             <Search
@@ -178,23 +181,24 @@ export default function Faq() {
 
           {/* List */}
           {filtradas.length > 0 ? (
-            <div className="space-y-2">
-              {filtradas.map((item) => (
+            <div className="mt-2">
+              {filtradas.map((item, i) => (
                 <AccordionItem
                   key={item.id}
                   item={item}
                   aberto={aberto === item.id}
                   onToggle={() => toggle(item.id)}
+                  primeiro={i === 0}
                 />
               ))}
             </div>
           ) : (
-            <div
-              className="rounded-xl p-6 text-center text-sm"
-              style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}
+            <p
+              className="py-6 text-center text-sm"
+              style={{ color: "var(--text-secondary)" }}
             >
               Nenhuma dúvida encontrada. Tente outra palavra.
-            </div>
+            </p>
           )}
         </div>
       </div>
