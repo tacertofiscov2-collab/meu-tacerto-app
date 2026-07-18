@@ -352,12 +352,12 @@ export default function Onboarding() {
                     <div
                       className="rounded-xl p-3"
                       style={{
-                        backgroundColor: "rgba(34,197,94,0.10)",
-                        border: "1px solid var(--primary)",
+                        backgroundColor: "var(--field)",
+                        border: "1px solid var(--border)",
                       }}
                     >
-                      <p className="text-xs font-medium inline-flex items-center gap-1.5" style={{ color: "var(--primary)" }}>
-                        <Info size={14} strokeWidth={2} />
+                      <p className="text-xs font-medium inline-flex items-center gap-1.5" style={{ color: "var(--text)" }}>
+                        <Info size={14} strokeWidth={2} style={{ color: "var(--primary)" }} />
                         Limite: R$ {limiteFinal.toLocaleString("pt-BR")},00
                       </p>
                     </div>
@@ -369,12 +369,12 @@ export default function Onboarding() {
                 <div
                   className="rounded-xl p-3"
                   style={{
-                    backgroundColor: "rgba(34,197,94,0.10)",
-                    border: "1px solid var(--primary)",
+                    backgroundColor: "var(--field)",
+                    border: "1px solid var(--border)",
                   }}
                 >
-                  <p className="text-xs font-medium inline-flex items-center gap-1.5" style={{ color: "var(--primary)" }}>
-                    <CheckCircle2 size={14} strokeWidth={2} />
+                  <p className="text-xs font-medium inline-flex items-center gap-1.5" style={{ color: "var(--text)" }}>
+                    <CheckCircle2 size={14} strokeWidth={2} style={{ color: "var(--primary)" }} />
                     Limite cheio: R$ {limiteCheio.toLocaleString("pt-BR")},00 / ano
                   </p>
                 </div>
