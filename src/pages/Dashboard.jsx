@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Bell, ChevronRight, Gauge, AlertTriangle } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
+import Valor from "../components/Valor.jsx";
 import { useUserState } from "@/lib/userState";
 import {
   LABEL_TIPO,
