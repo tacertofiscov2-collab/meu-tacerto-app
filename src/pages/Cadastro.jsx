@@ -4,6 +4,8 @@ import { ArrowLeft, Eye, EyeOff, Mail, Gauge } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { detectMode } from "@/components/SmartContactInput";
 import AuthError, { translateAuthError } from "@/components/AuthError";
+import { adicionarConta, lerContas } from "@/lib/contas";
+import { setUserState } from "@/lib/userState";
 
 export default function Cadastro() {
   const navigate = useNavigate();
@@ -32,9 +34,18 @@ export default function Cadastro() {
       return setErro(translateAuthError(error.message));
     }
     await supabase.auth.signInWithPassword({ email: contato, password: senha });
+
+    // Multi-conta: sempre APPEND ao array, nunca sobrescreve.
+    const contasAntes = lerContas();
+    const nomeInicial = contato.split("@")[0];
+    adicionarConta({ nome: nomeInicial, email: contato });
+    setUserState({ nome: nomeInicial, email: contato, visitante: false });
+
     setLoading(false);
-    navigate("/onboarding");
+    // Primeira conta → onboarding. Adição de conta → dashboard.
+    navigate(contasAntes.length === 0 ? "/onboarding" : "/dashboard");
   }
+
 
   function handleGoogle() {
     // TODO: configurar Google OAuth no Supabase depois
