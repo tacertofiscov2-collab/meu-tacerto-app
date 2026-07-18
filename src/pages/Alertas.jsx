@@ -1,17 +1,46 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Bell, BarChart3 } from "lucide-react";
+import { ArrowLeft, Bell, BarChart3, AlertCircle, AlertTriangle } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
-// TODO: gerar alertas dinamicamente conforme eventos reais
-// (faixa do velocímetro, proximidade do DAS dia 20, projeção anual, DASN em maio).
-const ALERTAS_MOCK = [];
+import { useUserState } from "@/lib/userState";
+import {
+  calcularPercentual,
+  faixaDoVelocimetro,
+  FAIXA_INFO,
+} from "@/lib/fiscal";
+
+const TITULOS_ALERTA = {
+  atencao: "Você passou de 75% do limite",
+  perto_do_limite: "Você está perto do teto",
+  estourou: "Você ultrapassou o limite anual",
+  critico: "Desenquadramento retroativo",
+};
+
+const ICONE_ALERTA = {
+  atencao: AlertTriangle,
+  perto_do_limite: AlertTriangle,
+  estourou: AlertCircle,
+  critico: AlertCircle,
+};
 
 export default function Alertas() {
   const navigate = useNavigate();
-  const alertas = [...ALERTAS_MOCK].sort((a, b) => b.ordem - a.ordem);
+  const { faturado, limite } = useUserState();
   const [modalFaturamento, setModalFaturamento] = useState(false);
+
+  const percentual = calcularPercentual(faturado, limite);
+  const chaveFaixa = faixaDoVelocimetro(percentual);
+  const alertaFaixa = TITULOS_ALERTA[chaveFaixa]
+    ? {
+        chave: chaveFaixa,
+        titulo: TITULOS_ALERTA[chaveFaixa],
+        mensagem: FAIXA_INFO[chaveFaixa].mensagem,
+        cor: FAIXA_INFO[chaveFaixa].cor,
+        Icon: ICONE_ALERTA[chaveFaixa],
+      }
+    : null;
 
   const cardStyle = {
     backgroundColor: "var(--surface)",
