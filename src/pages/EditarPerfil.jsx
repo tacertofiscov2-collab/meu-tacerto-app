@@ -27,6 +27,8 @@ export default function EditarPerfil() {
   // TODO: carregar do backend
   const [nome, setNome] = useState("Fernando");
   const [perfil, setPerfil] = useState("MEI");
+  const [selecionarTipo, setSelecionarTipo] = useState(false);
+  const [perfilPendente, setPerfilPendente] = useState(null);
   const [confirmarTroca, setConfirmarTroca] = useState(false);
 
   const inicial = (nome || "?").trim().charAt(0).toUpperCase();
