@@ -1,15 +1,21 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useState, useMemo, useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { ArrowLeft, Calendar as CalendarIcon } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
+import { getUserState } from "@/lib/userState";
 
 const MAX_CENTAVOS = 99999999; // R$ 999.999,99
+const LIMITE_VISITANTE = 8;
 
 function formatBRLFromCentavos(centavos) {
   const reais = Math.floor(centavos / 100);
   const cents = centavos % 100;
   const reaisStr = reais.toLocaleString("pt-BR");
   return `${reaisStr},${String(cents).padStart(2, "0")}`;
+}
+
+function pad2(n) {
+  return String(n).padStart(2, "0");
 }
 
 function hojeISO() {
@@ -19,15 +25,46 @@ function hojeISO() {
   return local.toISOString().slice(0, 10);
 }
 
-function isoToDateInput(iso) {
-  try {
-    const d = new Date(iso);
-    const off = d.getTimezoneOffset();
-    const local = new Date(d.getTime() - off * 60000);
-    return local.toISOString().slice(0, 10);
-  } catch {
-    return hojeISO();
-  }
+function isoToBR(iso) {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-");
+  if (!y || !m || !d) return "";
+  return `${d}/${m}/${y}`;
+}
+
+function brToISO(br) {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(br);
+  if (!m) return null;
+  return `${m[3]}-${m[2]}-${m[1]}`;
+}
+
+function mascararData(raw) {
+  const digits = String(raw).replace(/\D/g, "").slice(0, 8);
+  const p1 = digits.slice(0, 2);
+  const p2 = digits.slice(2, 4);
+  const p3 = digits.slice(4, 8);
+  if (digits.length <= 2) return p1;
+  if (digits.length <= 4) return `${p1}/${p2}`;
+  return `${p1}/${p2}/${p3}`;
+}
+
+function diasNoMes(mes, ano) {
+  return new Date(ano, mes, 0).getDate();
+}
+
+function validarDataBR(br) {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(br);
+  if (!m) return false;
+  const dia = Number(m[1]);
+  const mes = Number(m[2]);
+  const ano = Number(m[3]);
+  const anoAtual = new Date().getFullYear();
+  if (mes < 1 || mes > 12) return false;
+  if (ano < 2020 || ano > anoAtual) return false;
+  if (dia < 1 || dia > diasNoMes(mes, ano)) return false;
+  const iso = `${m[3]}-${m[2]}-${m[1]}`;
+  if (iso > hojeISO()) return false;
+  return true;
 }
 
 export default function Lancar() {
@@ -47,23 +84,39 @@ export default function Lancar() {
   );
   const modoEdicao = Boolean(lancamentoAtual);
 
+  // Bloqueio de visitante ao abrir para NOVO lançamento
+  useEffect(() => {
+    if (modoEdicao) return;
+    const { visitante } = getUserState();
+    if (visitante && lancamentos.length >= LIMITE_VISITANTE) {
+      navigate("/lancar/limite-atingido", { replace: true });
+    }
+  }, [modoEdicao, lancamentos.length, navigate]);
+
   const [centavos, setCentavos] = useState(0);
   const [descricao, setDescricao] = useState("");
-  const [data, setData] = useState(hojeISO());
+  const [dataBR, setDataBR] = useState(isoToBR(hojeISO()));
   const [salvando, setSalvando] = useState(false);
   const [preenchido, setPreenchido] = useState(false);
+  const nativoRef = useRef(null);
 
   useEffect(() => {
     if (lancamentoAtual && !preenchido) {
       setCentavos(Math.round((Number(lancamentoAtual.valor) || 0) * 100));
       setDescricao(lancamentoAtual.descricao || "");
-      setData(isoToDateInput(lancamentoAtual.data));
+      const d = new Date(lancamentoAtual.data);
+      const iso = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+      setDataBR(isoToBR(iso));
       setPreenchido(true);
     }
   }, [lancamentoAtual, preenchido]);
 
   const valorFmt = useMemo(() => formatBRLFromCentavos(centavos), [centavos]);
-  const hoje = hojeISO();
+  const digitando = centavos > 0;
+
+  const dataCompleta = dataBR.length === 10;
+  const dataValida = dataCompleta && validarDataBR(dataBR);
+  const mostrarErroData = dataCompleta && !dataValida;
 
   function handleValor(e) {
     const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
@@ -71,13 +124,43 @@ export default function Lancar() {
     setCentavos(Math.min(n, MAX_CENTAVOS));
   }
 
+  function handleDataChange(e) {
+    setDataBR(mascararData(e.target.value));
+  }
+
+  function abrirPickerNativo() {
+    const el = nativoRef.current;
+    if (!el) return;
+    if (typeof el.showPicker === "function") {
+      try { el.showPicker(); return; } catch { /* fallback */ }
+    }
+    el.focus();
+    el.click();
+  }
+
+  function handleNativoChange(e) {
+    const iso = e.target.value;
+    if (iso) setDataBR(isoToBR(iso));
+  }
+
   async function handleSalvar() {
-    if (centavos <= 0) return;
+    if (centavos <= 0 || !dataValida || salvando) return;
+
+    // Regra de negócio: visitante limitado a 8 lançamentos
+    if (!modoEdicao) {
+      const { visitante } = getUserState();
+      if (visitante && lancamentos.length >= LIMITE_VISITANTE) {
+        navigate("/lancar/limite-atingido", { replace: true });
+        return;
+      }
+    }
+
     setSalvando(true);
+    const iso = brToISO(dataBR);
     const payload = {
       descricao,
       valor: centavos / 100,
-      data: new Date(data + "T12:00:00").toISOString(),
+      data: new Date(iso + "T12:00:00").toISOString(),
     };
     if (modoEdicao) {
       atualizarLancamento(lancamentoAtual.id, payload);
@@ -96,7 +179,11 @@ export default function Lancar() {
     color: "var(--text)",
   };
 
-  const digitando = centavos > 0;
+  const dataFieldStyle = {
+    backgroundColor: "var(--field)",
+    border: `1px solid ${mostrarErroData ? "#ef4444" : "var(--border)"}`,
+    color: "var(--text)",
+  };
 
   return (
     <div
@@ -133,7 +220,7 @@ export default function Lancar() {
             >
               <span
                 className="pl-4 pr-2 text-2xl font-bold"
-                style={{ color: "var(--primary)" }}
+                style={{ color: "var(--text)" }}
               >
                 R$
               </span>
@@ -148,7 +235,7 @@ export default function Lancar() {
               />
             </div>
             <p className="text-xs mt-2" style={{ color: "var(--text-secondary)" }}>
-              {digitando ? "Valor por extenso em breve" : "Digite o valor recebido"}
+              Digite o valor recebido
             </p>
           </div>
 
@@ -165,8 +252,8 @@ export default function Lancar() {
               value={descricao}
               onChange={(e) => setDescricao(e.target.value)}
               placeholder="Descrição (opcional)"
-              className="w-full px-4 py-4 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
-              style={fieldStyle}
+              className="w-full px-4 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
+              style={{ ...fieldStyle, minHeight: 52 }}
             />
           </div>
 
@@ -178,15 +265,45 @@ export default function Lancar() {
             >
               Data
             </label>
-            <input
-              type="date"
-              value={data}
-              max={hoje}
-              onChange={(e) => setData(e.target.value)}
-              onClick={(e) => e.currentTarget.showPicker?.()}
-              className="w-full px-4 py-4 rounded-xl text-sm focus:outline-none focus:ring-2 cursor-pointer"
-              style={{ ...fieldStyle, colorScheme: "dark" }}
-            />
+            <div
+              className="flex items-center rounded-xl px-4"
+              style={{ ...dataFieldStyle, minHeight: 52 }}
+            >
+              <input
+                type="text"
+                inputMode="numeric"
+                value={dataBR}
+                onChange={handleDataChange}
+                placeholder="dd/mm/aaaa"
+                maxLength={10}
+                className="flex-1 bg-transparent text-sm focus:outline-none placeholder:opacity-70"
+                style={{ color: "var(--text)" }}
+              />
+              <button
+                type="button"
+                onClick={abrirPickerNativo}
+                aria-label="Selecionar data"
+                className="ml-2 shrink-0 flex items-center justify-center hover:opacity-80"
+              >
+                <CalendarIcon size={18} style={{ color: "var(--text-secondary)" }} />
+              </button>
+              {/* input date invisível para acionar o picker nativo */}
+              <input
+                ref={nativoRef}
+                type="date"
+                max={hojeISO()}
+                onChange={handleNativoChange}
+                className="sr-only"
+                tabIndex={-1}
+                aria-hidden="true"
+                style={{ colorScheme: "dark" }}
+              />
+            </div>
+            {mostrarErroData && (
+              <p className="mt-2" style={{ color: "#ef4444", fontSize: 12 }}>
+                Data inválida
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -203,7 +320,7 @@ export default function Lancar() {
         <div className="max-w-md mx-auto">
           <button
             onClick={handleSalvar}
-            disabled={salvando || centavos <= 0}
+            disabled={salvando || centavos <= 0 || !dataValida}
             className="w-full py-3.5 rounded-xl font-medium text-sm hover:opacity-90 disabled:opacity-50"
             style={{
               backgroundColor: "var(--primary)",
