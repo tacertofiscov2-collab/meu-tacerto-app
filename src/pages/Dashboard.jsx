@@ -137,7 +137,7 @@ export default function Dashboard() {
     >
       <div
         className="flex-1 flex flex-col"
-        style={{ paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(130px + env(safe-area-inset-bottom))" }}
       >
         {/* Header */}
         <header className="px-5 pt-4 pb-2 flex items-start justify-between">

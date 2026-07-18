@@ -63,7 +63,7 @@ export default function Chat() {
       <div
         ref={listaRef}
         className="flex-1 overflow-y-auto px-5"
-        style={{ paddingBottom: "calc(180px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(130px + env(safe-area-inset-bottom))" }}
       >
         {vazio ? (
           <div className="flex flex-col items-center text-center pt-4">

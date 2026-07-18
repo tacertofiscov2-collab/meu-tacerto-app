@@ -37,7 +37,7 @@ export default function Alertas() {
         </h1>
       </header>
 
-      <div className="px-5 pb-[110px] space-y-3">
+      <div className="px-5 pb-[130px] space-y-3">
         {/* Card permanente: faturamento inicial */}
         <div
           className="rounded-2xl p-4"

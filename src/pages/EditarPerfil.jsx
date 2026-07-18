@@ -134,7 +134,7 @@ export default function EditarPerfil() {
       {/* Salvar */}
       <div
         className="px-5 pb-6"
-        style={{ paddingBottom: "calc(110px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(130px + env(safe-area-inset-bottom))" }}
       >
         <button
           onClick={salvar}

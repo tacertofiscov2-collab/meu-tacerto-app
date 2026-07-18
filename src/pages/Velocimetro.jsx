@@ -177,7 +177,7 @@ export default function Velocimetro() {
       </header>
 
       {/* Conteúdo */}
-      <div className="flex-1 overflow-y-auto px-5 pb-[110px] space-y-5">
+      <div className="flex-1 overflow-y-auto px-5 pb-[130px] space-y-5">
         {/* Velocímetro grande */}
         <div className={cardBase + " px-5 pt-6 pb-6"} style={cardStyle}>
           <VelocimetroGrande percentual={percentual} />
