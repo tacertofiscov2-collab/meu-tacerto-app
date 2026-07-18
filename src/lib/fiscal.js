@@ -35,43 +35,20 @@ export function faixaDoVelocimetro(percentual) {
 }
 
 export const FAIXA_INFO = {
-  tranquilo: {
-    cor: "#22c55e",
-    principal: "Tá tudo em ordem por aqui.",
-    apoio: "Continua no seu ritmo.",
-  },
-  fique_de_olho: {
-    cor: "#84cc16",
-    principal: "Metade do caminho já foi.",
-    apoio: "Vale começar a acompanhar de perto.",
-  },
-  atencao: {
-    cor: "#f59e0b",
-    principal: "Tá chegando no teto.",
-    apoio: "Bora planejar os próximos meses.",
-  },
-  perto_do_limite: {
-    cor: "#f97316",
-    principal: "Muito próximo do limite.",
-    apoio: "Segura a mão até janeiro pra não estourar.",
-  },
-  estourou: {
-    cor: "#ef4444",
-    principal: "Passou do teto, mas dá pra segurar.",
-    apoio: "Você paga DAS complementar e ajusta em janeiro.",
-  },
-  critico: {
-    cor: "#dc2626",
-    principal: "Deu ruim, mas dá pra resolver.",
-    apoio: "Fala com um contador o quanto antes.",
-  },
+  tranquilo: { cor: "#22c55e", mensagem: "Continua no seu ritmo." },
+  fique_de_olho: { cor: "#84cc16", mensagem: "Vale começar a acompanhar de perto." },
+  atencao: { cor: "#f59e0b", mensagem: "Bora planejar os próximos meses." },
+  perto_do_limite: { cor: "#f97316", mensagem: "Segura a mão até janeiro pra não estourar." },
+  estourou: { cor: "#ef4444", mensagem: "Você paga DAS complementar e ajusta em janeiro." },
+  critico: { cor: "#dc2626", mensagem: "Fala com um contador o quanto antes." },
 };
 
-// Aliases retro-compatíveis para telas que ainda consomem `label`/`mensagem`.
+// Aliases de compatibilidade — todas as chaves antigas apontam para `mensagem`.
 for (const chave of Object.keys(FAIXA_INFO)) {
   const f = FAIXA_INFO[chave];
-  f.label = f.principal;
-  f.mensagem = f.apoio;
+  f.label = f.mensagem;
+  f.principal = f.mensagem;
+  f.apoio = f.mensagem;
 }
 
 // DAS mensal 2026
@@ -101,6 +78,12 @@ export function calcularPercentual(faturado, limite) {
 
 export function calcularFaltam(faturado, limite) {
   return Math.max(0, limite - faturado);
+}
+
+export function calcularFaltamOuExcedeu(faturado, limite) {
+  const diff = Number(limite) - Number(faturado);
+  if (diff >= 0) return { tipo: "faltam", valor: diff };
+  return { tipo: "excedeu", valor: Math.abs(diff) };
 }
 
 export const fmtBRL = (v) =>

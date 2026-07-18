@@ -6,7 +6,7 @@ import { useUserState } from "@/lib/userState";
 import {
   LABEL_TIPO,
   calcularPercentual,
-  calcularFaltam,
+  calcularFaltamOuExcedeu,
   faixaDoVelocimetro,
   FAIXA_INFO,
   fmtBRL,
@@ -15,7 +15,7 @@ import {
 function faixaDoPercentual(p) {
   const chave = faixaDoVelocimetro(p);
   const info = FAIXA_INFO[chave];
-  return { chave, cor: info.cor, principal: info.principal, apoio: info.apoio };
+  return { chave, cor: info.cor, mensagem: info.mensagem };
 }
 
 function saudacaoPorHora() {
@@ -112,21 +112,12 @@ function Velocimetro({ percentual }) {
         <span className="text-5xl font-bold" style={{ color: "var(--text)" }}>
           {Math.round(percentual)}%
         </span>
-        <div className="flex-1 flex flex-col items-center justify-center gap-1.5 px-3 py-3 w-full">
+        <div className="flex-1 flex flex-col items-center justify-center px-3 py-3 w-full">
           <span
-            className="text-base font-bold text-center flex items-center gap-1.5"
-            style={{ color: faixa.cor }}
-          >
-            {faixa.chave === "critico" && (
-              <AlertTriangle size={16} style={{ color: faixa.cor }} />
-            )}
-            {faixa.principal}
-          </span>
-          <span
-            className="text-sm font-normal text-center leading-snug"
+            className="text-[15px] font-normal text-center leading-snug"
             style={{ color: "var(--text-secondary)" }}
           >
-            {faixa.apoio}
+            {faixa.mensagem}
           </span>
         </div>
       </div>
@@ -138,7 +129,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { nome, tipo, faturado, limite } = useUserState();
 
-  const faltam = calcularFaltam(faturado, limite);
+  const restante = calcularFaltamOuExcedeu(faturado, limite);
   const percentual = calcularPercentual(faturado, limite);
   const rotuloPerfil = LABEL_TIPO[tipo];
 
@@ -228,9 +219,13 @@ export default function Dashboard() {
           >
             <div className="grid grid-cols-3">
               {[
-                { valor: faturado, label: "Faturado" },
-                { valor: limite, label: "Limite" },
-                { valor: faltam, label: "Faltam" },
+                { valor: faturado, label: "Faturado", cor: undefined },
+                { valor: limite, label: "Limite", cor: undefined },
+                {
+                  valor: restante.valor,
+                  label: restante.tipo === "excedeu" ? "Excedeu" : "Faltam",
+                  cor: restante.tipo === "excedeu" ? "#ef4444" : undefined,
+                },
               ].map((c, i) => (
                 <div
                   key={c.label}
@@ -240,7 +235,7 @@ export default function Dashboard() {
                   }
                   style={i > 0 ? { borderColor: "var(--border)" } : undefined}
                 >
-                  <Valor tamanho="sm">{c.valor}</Valor>
+                  <Valor tamanho="sm" cor={c.cor}>{c.valor}</Valor>
                   <span
                     className="text-xs mt-1"
                     style={{ color: "var(--text-secondary)" }}

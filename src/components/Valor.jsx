@@ -44,12 +44,14 @@ export default function Valor({
   decimais = 2,
   sinal,
   tamanho = "md",
+  cor,
   className = "",
   style,
 }) {
   const { inteiro, centavos } = partes(children, decimais);
   const baseSize = TAMANHOS[tamanho] || TAMANHOS.md;
   const peso = PESOS[tamanho] || PESOS.md;
+  const corValor = cor || "var(--text)";
 
   return (
     <span
@@ -70,7 +72,7 @@ export default function Valor({
           {sinal}
         </span>
       )}
-      <span style={{ color: "var(--text)" }}>
+      <span style={{ color: corValor }}>
         R$&nbsp;{inteiro},{centavos}
       </span>
     </span>

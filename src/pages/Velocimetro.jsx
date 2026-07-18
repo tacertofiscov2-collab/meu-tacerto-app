@@ -6,7 +6,7 @@ import Valor from "../components/Valor.jsx";
 import { useUserState } from "@/lib/userState";
 import {
   calcularPercentual,
-  calcularFaltam,
+  calcularFaltamOuExcedeu,
   faixaDoVelocimetro,
   FAIXA_INFO,
 } from "@/lib/fiscal";
@@ -145,7 +145,7 @@ export default function Velocimetro() {
   const navigate = useNavigate();
 
   const { faturado, limite } = useUserState();
-  const faltam = calcularFaltam(faturado, limite);
+  const restante = calcularFaltamOuExcedeu(faturado, limite);
   const percentual = calcularPercentual(faturado, limite);
 
   const faixa = faixaDoPercentual(percentual);
@@ -192,9 +192,13 @@ export default function Velocimetro() {
         <div className={cardBase + " p-3"} style={cardStyle}>
           <div className="grid grid-cols-3">
             {[
-              { valor: faturado, label: "Faturado" },
-              { valor: limite, label: "Limite" },
-              { valor: faltam, label: "Faltam" },
+              { valor: faturado, label: "Faturado", cor: undefined },
+              { valor: limite, label: "Limite", cor: undefined },
+              {
+                valor: restante.valor,
+                label: restante.tipo === "excedeu" ? "Excedeu" : "Faltam",
+                cor: restante.tipo === "excedeu" ? "#ef4444" : undefined,
+              },
             ].map((c, i) => (
               <div
                 key={c.label}
@@ -204,7 +208,7 @@ export default function Velocimetro() {
                 }
                 style={i > 0 ? { borderColor: "var(--border)" } : undefined}
               >
-                <Valor tamanho="sm">{c.valor}</Valor>
+                <Valor tamanho="sm" cor={c.cor}>{c.valor}</Valor>
                 <span
                   className="text-xs mt-1"
                   style={{ color: "var(--text-secondary)" }}
