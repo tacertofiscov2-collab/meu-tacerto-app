@@ -109,6 +109,51 @@ export default function Historico() {
         </header>
 
         <div className="px-5 space-y-4">
+          {/* Card faturamento inicial (dispensável) */}
+          {mostrarFaturamento && (
+            <div
+              className="rounded-2xl py-3 px-4"
+              style={{ ...cardStyle, borderLeft: "4px solid var(--primary)" }}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "var(--field)" }}
+                >
+                  <BarChart3 size={16} style={{ color: "var(--primary)" }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold" style={{ color: "var(--text)" }}>
+                    Comece com o velocímetro certo
+                  </p>
+                  <p className="text-xs leading-relaxed mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                    Já faturou este ano antes de instalar o app? Adicione o total em
+                    1 minuto.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <button
+                  onClick={() => setModalFaturamento(true)}
+                  className="flex-1 py-2 rounded-xl text-sm font-semibold"
+                  style={{
+                    backgroundColor: "var(--primary)",
+                    color: "var(--primary-contrast)",
+                  }}
+                >
+                  Adicionar faturamento
+                </button>
+                <button
+                  onClick={dispensarFaturamento}
+                  className="px-3 py-2 text-sm font-medium"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Agora não
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Busca */}
           <div className="relative">
             <Search
