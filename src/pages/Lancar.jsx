@@ -24,6 +24,7 @@ function hojeISO() {
 
 export default function Lancar() {
   const navigate = useNavigate();
+  const { adicionarLancamento, setModoSimulacao } = useAppState();
   const [centavos, setCentavos] = useState(0);
   const [descricao, setDescricao] = useState("");
   const [data, setData] = useState(hojeISO());
