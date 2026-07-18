@@ -207,49 +207,7 @@ export default function Perfil() {
       </div>
 
 
-      {/* Confirmar troca de tipo */}
-      {confirmarTroca && (
-        <div
-          className="fixed inset-0 z-40 flex items-center justify-center p-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
-        >
-          <div
-            className="w-full max-w-sm rounded-2xl p-5 space-y-4"
-            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
-          >
-            <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
-              Alterar tipo de MEI?
-            </h3>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              O limite anual será recalculado para{" "}
-              <strong style={{ color: "var(--text)" }}>
-                {fmtBRL(
-                  usuario.perfil === "MEI"
-                    ? LIMITES.MEI_CAMINHONEIRO
-                    : LIMITES.MEI,
-                )}
-              </strong>
-              .
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setConfirmarTroca(false)}
-                className="flex-1 py-3 rounded-xl font-semibold"
-                style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={alternarPerfil}
-                className="flex-1 py-3 rounded-xl font-semibold"
-                style={{ backgroundColor: "var(--primary)", color: "var(--primary-contrast)" }}
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Confirmar sair */}
       {confirmarSair && (
