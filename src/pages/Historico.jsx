@@ -93,7 +93,7 @@ export default function Historico() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="flex-1 overflow-y-auto pb-[110px]">
+      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: "calc(180px + env(safe-area-inset-bottom))" }}>
         {/* Header */}
         <header className="px-5 pt-6 pb-4 flex items-center gap-3">
           <button
