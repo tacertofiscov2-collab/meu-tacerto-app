@@ -269,10 +269,8 @@ export default function Onboarding() {
               <div className="space-y-2.5">
                 {[
                   { v: "MEI", Icon: Briefcase, titulo: "MEI (outras atividades)",
-                    prefixo: "Comércio, serviços · limite ", sufixo: "/ano",
                     limite: LIMITES_ANUAIS.MEI },
                   { v: "MEI_CAMINHONEIRO", Icon: Truck, titulo: "MEI Caminhoneiro",
-                    prefixo: "Transporte de cargas · limite ", sufixo: "/ano",
                     limite: LIMITES_ANUAIS.MEI_CAMINHONEIRO },
                 ].map((o) => {
                   const sel = tipoMei === o.v;
@@ -281,10 +279,10 @@ export default function Onboarding() {
                     <button
                       key={o.v}
                       onClick={() => setTipoMei(o.v)}
-                      className="w-full flex items-start gap-3 p-3.5 rounded-xl text-left transition"
+                      className="w-full flex items-center gap-3 p-3.5 rounded-xl text-left transition"
                       style={{
                         backgroundColor: sel ? "rgba(34,197,94,0.10)" : "var(--field)",
-                        border: `1.5px solid ${sel ? "var(--primary)" : "var(--border)"}`,
+                        border: `2px solid ${sel ? "var(--primary)" : "var(--border)"}`,
                       }}
                     >
                       <div
@@ -293,17 +291,18 @@ export default function Onboarding() {
                       >
                         <Ico size={20} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div
                           className="text-sm font-semibold"
                           style={{ color: sel ? "var(--primary)" : "var(--text)" }}
                         >
                           {o.titulo}
                         </div>
-                        <div className="text-[11px] mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                          {o.prefixo}
-                          <Valor tamanho="sm">{o.limite}</Valor>
-                          {o.sufixo}
+                        <div
+                          className="text-[12px] mt-0.5"
+                          style={{ color: "var(--text-secondary)", whiteSpace: "nowrap" }}
+                        >
+                          Limite: <Valor tamanho="sm">{o.limite}</Valor> / ano
                         </div>
                       </div>
                     </button>

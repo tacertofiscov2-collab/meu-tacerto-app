@@ -26,6 +26,10 @@ import ResumoPerfil from "./pages/ResumoPerfil.jsx";
 import InformacoesFiscais from "./pages/InformacoesFiscais.jsx";
 import Chat from "./pages/Chat.jsx";
 import DevSimulador from "./pages/DevSimulador.jsx";
+import CalculadoraDASPage from "./pages/CalculadoraDAS.jsx";
+import GuiaDAS from "./pages/GuiaDAS.jsx";
+import CalendarioFiscalPage from "./pages/CalendarioFiscal.jsx";
+import SimuladorDesenquadramentoPage from "./pages/SimuladorDesenquadramento.jsx";
 
 export default function App() {
   return (
@@ -57,6 +61,10 @@ export default function App() {
         <Route path="/dev/simulador" element={<DevSimulador />} />
         <Route path="/dev/simulador" element={<DevSimulador />} />
         <Route path="/excluir-conta" element={<ExcluirConta />} />
+        <Route path="/menu/calculadora-das" element={<CalculadoraDASPage />} />
+        <Route path="/menu/guia-das" element={<GuiaDAS />} />
+        <Route path="/menu/calendario-fiscal" element={<CalendarioFiscalPage />} />
+        <Route path="/menu/simulador-desenquadramento" element={<SimuladorDesenquadramentoPage />} />
         <Route path="*" element={<EmConstrucao />} />
       </Routes>
       <Toaster
