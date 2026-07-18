@@ -202,7 +202,7 @@ export default function DevSimulador() {
               />
             </div>
             <button
-              onClick={() => setUserState({ mesAbertura: null, anoAbertura: null })}
+              onClick={() => setMesAnoAbertura(null, null)}
               className="text-xs underline"
               style={{ color: "var(--text-secondary)" }}
             >
