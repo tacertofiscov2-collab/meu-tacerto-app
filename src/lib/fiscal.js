@@ -36,36 +36,34 @@ export function faixaDoVelocimetro(percentual) {
 
 export const FAIXA_INFO = {
   tranquilo: {
-    label: "Piloto tranquilo 🟢",
     cor: "#22c55e",
-    mensagem: "Você está bem dentro do limite.",
+    principal: "Tá tudo em ordem por aqui.",
+    apoio: "Continua no seu ritmo.",
   },
   fique_de_olho: {
-    label: "Acelerando bem",
     cor: "#84cc16",
-    mensagem: "Já passou da metade do limite. Continue acompanhando.",
+    principal: "Metade do caminho já foi.",
+    apoio: "Vale começar a acompanhar de perto.",
   },
   atencao: {
-    label: "Pé um pouco mais leve",
     cor: "#f59e0b",
-    mensagem: "Você está se aproximando do teto. Planeje os próximos meses.",
+    principal: "Tá chegando no teto.",
+    apoio: "Bora planejar os próximos meses.",
   },
   perto_do_limite: {
-    label: "Freia aí!",
     cor: "#f97316",
-    mensagem: "Muito perto do teto. Considere pausar novos lançamentos até janeiro.",
+    principal: "Muito próximo do limite.",
+    apoio: "Segura a mão até janeiro pra não estourar.",
   },
   estourou: {
-    label: "Passou do limite. Ainda dá tempo.",
     cor: "#ef4444",
-    mensagem:
-      "Você passou do teto, mas ainda dentro da margem de 20%. Você pagará DAS complementar e permanece MEI até 31/dez, com desenquadramento a partir de 1º de janeiro. Procure um contador.",
+    principal: "Passou do teto, mas dá pra segurar.",
+    apoio: "Você paga DAS complementar e ajusta em janeiro.",
   },
   critico: {
-    label: "Freio de mão. Procura um contador.",
     cor: "#dc2626",
-    mensagem:
-      "Você passou mais de 20% acima do teto. Pela LC 123/2006, o desenquadramento é retroativo a 1º de janeiro deste ano, com recálculo de tributos como Simples Nacional. Procure um contador com urgência.",
+    principal: "Deu ruim, mas dá pra resolver.",
+    apoio: "Fala com um contador o quanto antes.",
   },
 };
 
