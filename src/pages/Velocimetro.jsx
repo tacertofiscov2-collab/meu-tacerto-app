@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, TrendingUp } from "lucide-react";
 
+import BottomNav from "../components/BottomNav.jsx";
 // TODO: buscar dados reais do Supabase
 const USUARIO = {
   nome: "Fernando",
@@ -183,7 +184,7 @@ export default function Velocimetro() {
       </header>
 
       {/* Conteúdo */}
-      <div className="flex-1 overflow-y-auto px-5 pb-[100px] space-y-5">
+      <div className="flex-1 overflow-y-auto px-5 pb-[110px] space-y-5">
         {/* Velocímetro grande */}
         <div className={cardBase + " px-5 pt-6 pb-6"} style={cardStyle}>
           <VelocimetroGrande percentual={percentual} />
@@ -258,6 +259,8 @@ export default function Velocimetro() {
           </div>
         </div>
       </div>
+
+      <BottomNav />
     </div>
   );
 }

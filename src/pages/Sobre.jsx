@@ -3,6 +3,7 @@ import { Gauge, CheckCircle2, Info } from "lucide-react";
 import { ArrowLeft } from "lucide-react";
 import Brand from "@/components/Brand";
 
+import BottomNav from "../components/BottomNav.jsx";
 export default function Sobre() {
   const navigate = useNavigate();
 
@@ -22,7 +23,7 @@ export default function Sobre() {
         </button>
       </div>
 
-      <div className="flex-1 px-6 pb-8">
+      <div className="flex-1 px-6 pb-[110px]">
         <div className="max-w-md mx-auto">
           <div className="flex justify-center mb-4">
             <Gauge size={52} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
@@ -76,6 +77,8 @@ export default function Sobre() {
           </p>
         </div>
       </div>
+
+      <BottomNav />
     </div>
   );
 }

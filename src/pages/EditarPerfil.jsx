@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, User, Briefcase, ChevronRight, Camera } from "lucide-react";
 
+import BottomNav from "../components/BottomNav.jsx";
 const LIMITES = {
   MEI: 81000,
   MEI_CAMINHONEIRO: 251600,
@@ -145,7 +146,7 @@ export default function EditarPerfil() {
       {/* Salvar */}
       <div
         className="px-5 pb-6"
-        style={{ paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(110px + env(safe-area-inset-bottom))" }}
       >
         <button
           onClick={salvar}
@@ -200,6 +201,8 @@ export default function EditarPerfil() {
           </div>
         </div>
       )}
+
+      <BottomNav />
     </div>
   );
 }

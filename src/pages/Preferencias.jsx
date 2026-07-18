@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 
+import BottomNav from "../components/BottomNav.jsx";
 function Segmented({ opcoes, valor, onChange }) {
   return (
     <div
@@ -100,7 +101,7 @@ export default function Preferencias() {
         </h1>
       </header>
 
-      <div className="px-5 pb-10 space-y-6">
+      <div className="px-5 pb-[110px] space-y-6">
         {/* Aparência */}
         <section>
           <SecaoTitulo>Aparência</SecaoTitulo>
@@ -178,6 +179,8 @@ export default function Preferencias() {
           </div>
         </section>
       </div>
+
+      <BottomNav />
     </div>
   );
 }

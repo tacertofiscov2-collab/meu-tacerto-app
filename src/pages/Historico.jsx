@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
+import BottomNav from "../components/BottomNav.jsx";
 const DISMISS_KEY = "tacerto:hist_faturamento_dismissed";
 
 // TODO: buscar do backend
@@ -92,7 +93,7 @@ export default function Historico() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="flex-1 overflow-y-auto pb-[100px]">
+      <div className="flex-1 overflow-y-auto pb-[110px]">
         {/* Header */}
         <header className="px-5 pt-6 pb-4 flex items-center gap-3">
           <button
@@ -416,6 +417,8 @@ export default function Historico() {
           dispensarFaturamento();
         }}
       />
+
+      <BottomNav ativo="historico" />
     </div>
   );
 }

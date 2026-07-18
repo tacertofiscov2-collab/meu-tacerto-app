@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, Trash2, Plus } from "lucide-react";
 
+import BottomNav from "../components/BottomNav.jsx";
 // TODO: integrar com backend/Supabase para contas reais do dispositivo
 const CONTAS_MOCK = [
   {
@@ -61,7 +62,7 @@ export default function Contas() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="flex-1 overflow-y-auto pb-8">
+      <div className="flex-1 overflow-y-auto pb-[110px]">
         <header className="px-5 pt-6 pb-4 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
@@ -270,6 +271,8 @@ export default function Contas() {
           </div>
         </div>
       )}
+
+      <BottomNav />
     </div>
   );
 }
