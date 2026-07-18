@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Bell, HelpCircle, Calculator, FileText, Calendar, TrendingUp,
-  ChevronDown, ChevronRight, AlertTriangle, BarChart3,
+  ChevronDown, ChevronRight, AlertTriangle, BarChart3, MessageCircle,
 } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
