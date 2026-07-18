@@ -340,9 +340,15 @@ export default function Menu() {
 
         <div className="px-5 space-y-4">
           {/* Atalhos */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-2.5">
             <Atalho Icon={Bell} label="Notificações" onClick={() => navigate("/alertas")} />
             <Atalho Icon={HelpCircle} label="Dúvidas" onClick={() => navigate("/faq")} />
+            <Atalho
+              Icon={MessageCircle}
+              label="Chat IA"
+              sub="Sua assistente fiscal"
+              onClick={() => navigate("/chat")}
+            />
           </div>
 
           {/* Item permanente: adicionar faturamento */}
