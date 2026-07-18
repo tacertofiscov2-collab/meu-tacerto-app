@@ -59,7 +59,7 @@ export default function Termos() {
         </button>
       </div>
 
-      <div className="max-w-md mx-auto px-5 pb-[110px]">
+      <div className="max-w-md mx-auto px-5 pb-[130px]">
         <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>
           Termos e Privacidade
         </h1>

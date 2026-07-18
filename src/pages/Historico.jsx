@@ -93,7 +93,7 @@ export default function Historico() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: "calc(180px + env(safe-area-inset-bottom))" }}>
+      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: "calc(130px + env(safe-area-inset-bottom))" }}>
         {/* Header */}
         <header className="px-5 pt-6 pb-4 flex items-center gap-3">
           <button
@@ -171,6 +171,20 @@ export default function Historico() {
               style={fieldStyle}
             />
           </div>
+
+          {/* Novo lançamento (opção discreta) */}
+          <button
+            onClick={() => navigate("/lancar")}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm active:scale-[0.99] transition"
+            style={{
+              backgroundColor: "var(--surface)",
+              border: "1px solid var(--border)",
+              color: "var(--text)",
+            }}
+          >
+            <Plus size={18} style={{ color: "var(--primary)" }} />
+            Fazer novo lançamento
+          </button>
 
           {/* Filtro de mês */}
           <div className="relative">
@@ -393,23 +407,6 @@ export default function Historico() {
         </div>
       )}
 
-      {/* Botão fixo — novo lançamento */}
-      <div
-        className="fixed left-0 right-0 z-20 px-5"
-        style={{ bottom: "calc(90px + env(safe-area-inset-bottom))" }}
-      >
-        <button
-          onClick={() => navigate("/lancar")}
-          className="w-full py-3.5 rounded-xl font-semibold active:scale-[0.99] transition"
-          style={{
-            backgroundColor: "var(--primary)",
-            color: "var(--primary-contrast)",
-            boxShadow: "0 10px 28px rgba(34,197,94,0.35)",
-          }}
-        >
-          Fazer novo lançamento
-        </button>
-      </div>
 
 
       <ModalFaturamentoInicial

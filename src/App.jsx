@@ -23,6 +23,7 @@ import EditarPerfil from "./pages/EditarPerfil.jsx";
 import ResumoPerfil from "./pages/ResumoPerfil.jsx";
 import InformacoesFiscais from "./pages/InformacoesFiscais.jsx";
 import Chat from "./pages/Chat.jsx";
+import DevSimulador from "./pages/DevSimulador.jsx";
 
 export default function App() {
   return (
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="/perfil/resumo" element={<ResumoPerfil />} />
         <Route path="/perfil/informacoes-fiscais" element={<InformacoesFiscais />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/dev/simulador" element={<DevSimulador />} />
         <Route path="*" element={<EmConstrucao />} />
       </Routes>
     </BrowserRouter>

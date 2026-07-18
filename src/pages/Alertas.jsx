@@ -1,17 +1,46 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Bell, BarChart3 } from "lucide-react";
+import { ArrowLeft, Bell, BarChart3, AlertCircle, AlertTriangle } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
-// TODO: gerar alertas dinamicamente conforme eventos reais
-// (faixa do velocímetro, proximidade do DAS dia 20, projeção anual, DASN em maio).
-const ALERTAS_MOCK = [];
+import { useUserState } from "@/lib/userState";
+import {
+  calcularPercentual,
+  faixaDoVelocimetro,
+  FAIXA_INFO,
+} from "@/lib/fiscal";
+
+const TITULOS_ALERTA = {
+  atencao: "Você passou de 75% do limite",
+  perto_do_limite: "Você está perto do teto",
+  estourou: "Você ultrapassou o limite anual",
+  critico: "Desenquadramento retroativo",
+};
+
+const ICONE_ALERTA = {
+  atencao: AlertTriangle,
+  perto_do_limite: AlertTriangle,
+  estourou: AlertCircle,
+  critico: AlertCircle,
+};
 
 export default function Alertas() {
   const navigate = useNavigate();
-  const alertas = [...ALERTAS_MOCK].sort((a, b) => b.ordem - a.ordem);
+  const { faturado, limite } = useUserState();
   const [modalFaturamento, setModalFaturamento] = useState(false);
+
+  const percentual = calcularPercentual(faturado, limite);
+  const chaveFaixa = faixaDoVelocimetro(percentual);
+  const alertaFaixa = TITULOS_ALERTA[chaveFaixa]
+    ? {
+        chave: chaveFaixa,
+        titulo: TITULOS_ALERTA[chaveFaixa],
+        mensagem: FAIXA_INFO[chaveFaixa].mensagem,
+        cor: FAIXA_INFO[chaveFaixa].cor,
+        Icon: ICONE_ALERTA[chaveFaixa],
+      }
+    : null;
 
   const cardStyle = {
     backgroundColor: "var(--surface)",
@@ -37,7 +66,7 @@ export default function Alertas() {
         </h1>
       </header>
 
-      <div className="px-5 pb-[110px] space-y-3">
+      <div className="px-5 pb-[130px] space-y-3">
         {/* Card permanente: faturamento inicial */}
         <div
           className="rounded-2xl p-4"
@@ -72,7 +101,29 @@ export default function Alertas() {
           </div>
         </div>
 
-        {alertas.length === 0 ? (
+        {alertaFaixa ? (
+          <div
+            className="rounded-2xl p-4"
+            style={{ ...cardStyle, borderLeft: `4px solid ${alertaFaixa.cor}` }}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                style={{ backgroundColor: "var(--field)" }}
+              >
+                <alertaFaixa.Icon size={18} style={{ color: alertaFaixa.cor }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                  {alertaFaixa.titulo}
+                </p>
+                <p className="text-sm mt-1 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  {alertaFaixa.mensagem}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
           <div
             className="rounded-2xl py-16 px-6 flex flex-col items-center gap-3 text-center"
             style={cardStyle}
@@ -90,32 +141,6 @@ export default function Alertas() {
               Seus alertas aparecerão aqui conforme você usar o app.
             </p>
           </div>
-        ) : (
-          <ul className="space-y-3">
-            {alertas.map((a) => (
-              <li key={a.id} className="rounded-2xl overflow-hidden" style={cardStyle}>
-                <div className="p-4 flex items-start gap-3">
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: "var(--field)" }}
-                  >
-                    <a.Icon size={18} style={{ color: "var(--primary)" }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-                      {a.titulo}
-                    </p>
-                    <p className="text-sm mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                      {a.descricao}
-                    </p>
-                    <p className="text-xs mt-1.5" style={{ color: "var(--text-secondary)" }}>
-                      {a.data}
-                    </p>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
         )}
       </div>
 
