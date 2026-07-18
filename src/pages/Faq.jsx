@@ -78,18 +78,19 @@ const PERGUNTAS = [
   },
 ];
 
-function AccordionItem({ item, aberto, onToggle }) {
+function AccordionItem({ item, aberto, onToggle, primeiro }) {
   return (
     <div
-      className="rounded-xl overflow-hidden"
-      style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
+      style={{
+        borderTop: primeiro ? "none" : "1px solid var(--border)",
+      }}
     >
       <button
         onClick={onToggle}
         aria-expanded={aberto}
-        className="w-full flex items-center justify-between gap-3 px-4 py-4 text-left"
+        className="w-full flex items-center justify-between gap-3 py-4 text-left active:opacity-70"
       >
-        <span className="text-sm font-medium" style={{ color: "var(--text)" }}>
+        <span className="text-[16px]" style={{ color: "var(--text)" }}>
           {item.pergunta}
         </span>
         <ChevronDown
@@ -104,7 +105,7 @@ function AccordionItem({ item, aberto, onToggle }) {
       </button>
       {aberto && (
         <div
-          className="px-4 pb-4 text-sm leading-relaxed"
+          className="pb-4 text-sm leading-relaxed"
           style={{ color: "var(--text-secondary)" }}
         >
           {item.resposta}
