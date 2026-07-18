@@ -15,9 +15,11 @@ export default function BottomNav({ ativo }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const { nome, visitante } = useUserState();
+
   if (!ROTAS_COM_NAVBAR.includes(location.pathname)) return null;
 
-  const { nome, visitante } = useUserState();
+
   const foto =
     typeof window !== "undefined"
       ? localStorage.getItem("tacerto_foto_usuario") ||
