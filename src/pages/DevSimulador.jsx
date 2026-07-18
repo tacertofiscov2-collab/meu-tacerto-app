@@ -247,6 +247,31 @@ export default function DevSimulador() {
               {faixa.mensagem}
             </p>
           </div>
+
+          {/* Ações destrutivas */}
+          <div className="rounded-2xl p-4 space-y-3" style={cardStyle}>
+            <p className="text-xs uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
+              Dados
+            </p>
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              {lancamentos.length} lançamento(s) registrado(s).
+            </p>
+            <button
+              onClick={() => {
+                if (confirm("Apagar todos os lançamentos? Esta ação não pode ser desfeita.")) {
+                  removerTodosLancamentos();
+                }
+              }}
+              className="w-full py-2.5 rounded-xl text-sm font-semibold"
+              style={{
+                backgroundColor: "rgba(239,68,68,0.12)",
+                border: "1px solid rgba(239,68,68,0.4)",
+                color: "#ef4444",
+              }}
+            >
+              Limpar todos os lançamentos (teste)
+            </button>
+          </div>
         </div>
       </div>
     </div>
