@@ -1,15 +1,11 @@
+import { useLocation } from "react-router-dom";
 import BottomNav from "./BottomNav.jsx";
+
+const ROTAS_COM_NAVBAR = ["/dashboard", "/menu"];
 
 /**
  * PageLayout — wrapper canônico das telas internas do TaCerto!.
- *
- * - Aplica cor de fundo e texto padrão.
- * - Reserva padding-bottom fixo para acomodar a navbar (~80px) + 24px de folga.
- * - Renderiza a <BottomNav /> fixa na base.
- *
- * Props:
- * - ativo: chave da navbar (inicio | menu | lancar | historico | perfil).
- * - semNav: quando true, não renderiza a navbar (usado em telas sem barra).
+ * A navbar (e o padding-bottom pra ela) só aparece em /dashboard e /menu.
  */
 export default function PageLayout({
   children,
@@ -18,6 +14,9 @@ export default function PageLayout({
   className = "",
   style,
 }) {
+  const location = useLocation();
+  const mostrarNavbar = !semNav && ROTAS_COM_NAVBAR.includes(location.pathname);
+
   return (
     <div
       className={`min-h-screen min-h-[100dvh] w-full ${className}`}
@@ -25,9 +24,9 @@ export default function PageLayout({
     >
       <div
         style={{
-          paddingBottom: semNav
-            ? "env(safe-area-inset-bottom)"
-            : "calc(104px + env(safe-area-inset-bottom))",
+          paddingBottom: mostrarNavbar
+            ? "calc(90px + env(safe-area-inset-bottom))"
+            : "env(safe-area-inset-bottom)",
         }}
       >
         {children}
