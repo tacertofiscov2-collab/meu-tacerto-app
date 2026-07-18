@@ -122,12 +122,11 @@ function Velocimetro({ percentual }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { nome, tipo, faturado, limite } = useUserState();
 
-  const limite = LIMITES[USUARIO.perfil] ?? LIMITES.MEI;
-  const faturado = USUARIO.faturado;
-  const faltam = Math.max(0, limite - faturado);
-  const percentual = (faturado / limite) * 100;
-  const rotuloPerfil = ROTULO_PERFIL[USUARIO.perfil] ?? "MEI";
+  const faltam = calcularFaltam(faturado, limite);
+  const percentual = calcularPercentual(faturado, limite);
+  const rotuloPerfil = LABEL_TIPO[tipo];
 
   const saudacao = saudacaoPorHora();
 
