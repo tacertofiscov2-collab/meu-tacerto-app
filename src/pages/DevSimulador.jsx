@@ -27,7 +27,19 @@ const MESES = [
 
 export default function DevSimulador() {
   const navigate = useNavigate();
-  const { tipo, faturado, limite, mesAbertura, anoAbertura } = useUserState();
+  const {
+    tipoMEI: tipo,
+    faturamentoAtual: faturado,
+    limiteAtual: limite,
+    mesAnoAbertura,
+    modoSimulacao,
+    setTipoMEI,
+    setFaturamentoSimulado,
+    setMesAnoAbertura,
+    setModoSimulacao,
+  } = useAppState();
+  const mesAbertura = mesAnoAbertura?.mes ?? null;
+  const anoAbertura = mesAnoAbertura?.ano ?? null;
   const anoAtual = new Date().getFullYear();
 
   const percentual = calcularPercentual(faturado, limite);
@@ -45,8 +57,9 @@ export default function DevSimulador() {
   };
 
   function aplicarPreset(pct) {
-    setUserState({ faturado: Math.round((limite * pct) / 100) });
+    setFaturamentoSimulado(Math.round((limite * pct) / 100));
   }
+
 
   return (
     <div
