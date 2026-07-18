@@ -203,11 +203,8 @@ export default function ModalFaturamentoInicial({ aberto, onClose, onSalvar }) {
                 <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
                   {valores.length} {valores.length === 1 ? "valor encontrado" : "valores encontrados"}
                 </span>
-                <span
-                  className="text-lg font-bold"
-                  style={{ color: "var(--primary)" }}
-                >
-                  R$ {totalFmt}
+                <span className="text-lg font-bold">
+                  <Valor tamanho="md">{valorFinal}</Valor>
                 </span>
               </div>
 
