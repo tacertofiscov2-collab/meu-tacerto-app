@@ -53,10 +53,7 @@ function ListaItem({ Icon, label, onClick, cor }) {
 
 export default function Perfil() {
   const navigate = useNavigate();
-  const [usuario, setUsuario] = useState(USUARIO_MOCK);
-  const [editarNome, setEditarNome] = useState(false);
-  const [nomeTemp, setNomeTemp] = useState(usuario.nome);
-  const [confirmarTroca, setConfirmarTroca] = useState(false);
+  const [usuario] = useState(USUARIO_MOCK);
   const [confirmarSair, setConfirmarSair] = useState(false);
 
   const inicial = (usuario.nome || "?").trim().charAt(0).toUpperCase();
@@ -66,21 +63,6 @@ export default function Perfil() {
     backgroundColor: "var(--surface)",
     border: "1px solid var(--border)",
   };
-
-  function salvarNome() {
-    // TODO: persistir no backend
-    setUsuario((u) => ({ ...u, nome: nomeTemp.trim() || u.nome }));
-    setEditarNome(false);
-  }
-
-  function alternarPerfil() {
-    // TODO: persistir e recalcular limite no backend
-    setUsuario((u) => ({
-      ...u,
-      perfil: u.perfil === "MEI" ? "MEI_CAMINHONEIRO" : "MEI",
-    }));
-    setConfirmarTroca(false);
-  }
 
   function sair() {
     // TODO: chamar signOut do Supabase
