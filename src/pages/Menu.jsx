@@ -266,18 +266,14 @@ function SimuladorDesenquadramento() {
           style={{ backgroundColor: "var(--field)", border: "1px solid var(--border)" }}
         >
           <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Limite anual</p>
-          <p className="text-sm font-bold mt-1" style={{ color: "var(--text)" }}>
-            {fmtBRL0(limite)}
-          </p>
+          <div className="mt-1"><Valor tamanho="sm">{limite}</Valor></div>
         </div>
         <div
           className="rounded-xl p-3"
           style={{ backgroundColor: "var(--field)", border: "1px solid var(--border)" }}
         >
           <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Faturado</p>
-          <p className="text-sm font-bold mt-1" style={{ color: "var(--text)" }}>
-            {fmtBRL0(faturado)}
-          </p>
+          <div className="mt-1"><Valor tamanho="sm">{faturado}</Valor></div>
         </div>
       </div>
 
