@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, User, Briefcase, ChevronRight, Check } from "lucide-react";
 
 import BottomNav from "../components/BottomNav.jsx";
+import Valor from "../components/Valor.jsx";
 import { useUserState } from "@/lib/userState";
-import { LIMITES_ANUAIS, fmtBRL } from "@/lib/fiscal";
+import { LIMITES_ANUAIS } from "@/lib/fiscal";
 
 const LABEL_PERFIL = {
   MEI: "MEI (outras atividades)",
