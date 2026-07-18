@@ -19,6 +19,7 @@ import Faq from "./pages/Faq.jsx";
 import Contas from "./pages/Contas.jsx";
 import Velocimetro from "./pages/Velocimetro.jsx";
 import AlterarSenha from "./pages/AlterarSenha.jsx";
+import EditarPerfil from "./pages/EditarPerfil.jsx";
 
 export default function App() {
   return (
