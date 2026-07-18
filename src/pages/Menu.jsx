@@ -239,14 +239,24 @@ function CalendarioFiscal() {
 
 function SimuladorDesenquadramento() {
   const { faturado, limite } = useUserState();
-  const restante = Math.max(0, limite - faturado);
+  const restante = limite - faturado;
 
-  // TODO: usar mês atual real
-  const mesAtual = new Date().getMonth(); // 0-11
-  const mesesRestantes = Math.max(1, 12 - mesAtual);
-  const mediaSegura = restante / mesesRestantes;
+  const mesAtual1a12 = new Date().getMonth() + 1; // 1-12
+  const mesesRestantes = Math.max(1, 12 - mesAtual1a12 + 1); // inclui o mês atual
+  const mesesDecorridos = Math.max(1, mesAtual1a12); // para média
+  const podeFaturarPorMes = restante / mesesRestantes;
+  const estourouAnual = restante <= 0;
 
-  const risco = faturado / limite >= 0.8;
+  const mediaMensal = faturado / mesesDecorridos;
+  const projecaoAnual = mediaMensal * 12;
+
+  const percentualProjetado = calcularPercentual(projecaoAnual, limite);
+  const chaveProjecao = faixaDoVelocimetro(percentualProjetado);
+  const faixaProjecao = FAIXA_INFO[chaveProjecao];
+  const projecaoEstoura = projecaoAnual > limite;
+
+  const percentualAtual = calcularPercentual(faturado, limite);
+  const faixaAtual = FAIXA_INFO[faixaDoVelocimetro(percentualAtual)];
 
   return (
     <div className="space-y-3 pt-2">
@@ -271,39 +281,78 @@ function SimuladorDesenquadramento() {
         </div>
       </div>
 
+      {/* Quanto pode faturar por mês */}
+      {estourouAnual ? (
+        <div
+          className="rounded-xl p-4"
+          style={{
+            backgroundColor: "rgba(239,68,68,0.10)",
+            border: `1px solid ${faixaAtual.cor}`,
+          }}
+        >
+          <p className="text-sm font-bold" style={{ color: faixaAtual.cor }}>
+            Você já ultrapassou o limite anual
+          </p>
+          <p className="text-xs mt-1 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            {faixaAtual.mensagem}
+          </p>
+        </div>
+      ) : (
+        <div
+          className="rounded-xl p-4"
+          style={{
+            backgroundColor: "rgba(34,197,94,0.10)",
+            border: "1px solid rgba(34,197,94,0.30)",
+          }}
+        >
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+            Quanto você pode faturar por mês, sem estourar
+          </p>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--primary)" }}>
+            {fmtBRL0(podeFaturarPorMes)}
+          </p>
+          <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+            Considerando {mesesRestantes}{" "}
+            {mesesRestantes === 1 ? "mês restante" : "meses restantes"} até dezembro.
+          </p>
+        </div>
+      )}
+
+      {/* Projeção anual */}
       <div
         className="rounded-xl p-4"
         style={{
-          backgroundColor: "rgba(34,197,94,0.10)",
-          border: "1px solid rgba(34,197,94,0.30)",
+          backgroundColor: "var(--field)",
+          border: `1px solid ${projecaoEstoura ? faixaProjecao.cor : "var(--border)"}`,
         }}
       >
         <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-          Média mensal segura até dezembro
+          Se mantiver o ritmo atual, projeção anual:
         </p>
-        <p className="text-2xl font-bold mt-1" style={{ color: "var(--primary)" }}>
-          {fmtBRL0(mediaSegura)}
+        <p
+          className="text-2xl font-bold mt-1"
+          style={{ color: projecaoEstoura ? faixaProjecao.cor : "var(--text)" }}
+        >
+          {fmtBRL0(projecaoAnual)}
         </p>
-        <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-          Mantendo esse ritmo, você fecha o ano dentro do limite.
-        </p>
+        {projecaoEstoura && (
+          <div className="flex items-start gap-2 mt-2">
+            <AlertTriangle
+              size={14}
+              className="mt-0.5 shrink-0"
+              style={{ color: faixaProjecao.cor }}
+            />
+            <p className="text-xs leading-relaxed" style={{ color: faixaProjecao.cor }}>
+              Nesse ritmo, você deve encerrar o ano em {Math.round(percentualProjetado)}% do
+              limite — {faixaProjecao.label.toLowerCase()}.
+            </p>
+          </div>
+        )}
       </div>
 
-      {risco && (
-        <div
-          className="flex items-start gap-2 rounded-xl p-3 text-xs"
-          style={{
-            backgroundColor: "rgba(239,68,68,0.10)",
-            border: "1px solid rgba(239,68,68,0.30)",
-            color: "#ef4444",
-          }}
-        >
-          <AlertTriangle size={14} className="mt-0.5 shrink-0" />
-          <span>
-            Atenção: você já usou mais de 80% do limite. Passar do teto pode desenquadrar seu MEI.
-          </span>
-        </div>
-      )}
+      <p className="text-xs leading-relaxed pt-1" style={{ color: "var(--text-secondary)" }}>
+        Simulação com base no que você registrou no app. Não substitui análise contábil.
+      </p>
     </div>
   );
 }
