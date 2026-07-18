@@ -215,6 +215,15 @@ export default function Alertas() {
           </ul>
         )}
       </div>
+
+      <ModalFaturamentoInicial
+        aberto={modalFaturamento}
+        onClose={() => setModalFaturamento(false)}
+        onSalvar={() => {
+          // TODO: persistir faturamento inicial no Supabase
+          setModalFaturamento(false);
+        }}
+      />
     </div>
   );
 }
