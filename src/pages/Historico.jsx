@@ -348,9 +348,9 @@ export default function Historico() {
                 </label>
                 <input
                   type="date"
-                  value={editando.dataISO}
+                  value={editando._dataInput}
                   onChange={(e) =>
-                    setEditando({ ...editando, dataISO: e.target.value })
+                    setEditando({ ...editando, _dataInput: e.target.value })
                   }
                   className="w-full mt-1 px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   style={fieldStyle}
