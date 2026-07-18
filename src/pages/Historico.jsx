@@ -7,17 +7,8 @@ import {
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
+import { useAppState } from "@/context/AppStateContext";
 const DISMISS_KEY = "tacerto:hist_faturamento_dismissed";
-
-// TODO: buscar do backend
-const LANCAMENTOS_MOCK = [
-  { id: 1, descricao: "1º Frete de Julho", data: "10 de Julho", dataISO: "2026-07-10", valor: 3500 },
-  { id: 2, descricao: "Frete São Paulo → Rio", data: "08 de Julho", dataISO: "2026-07-08", valor: 2800 },
-  { id: 3, descricao: "Serviço avulso", data: "05 de Julho", dataISO: "2026-07-05", valor: 1200 },
-  { id: 4, descricao: "Frete Curitiba → Joinville", data: "03 de Julho", dataISO: "2026-07-03", valor: 2400 },
-  { id: 5, descricao: "Entrega expressa", data: "02 de Julho", dataISO: "2026-07-02", valor: 900 },
-  { id: 6, descricao: "Frete BH → Vitória", data: "01 de Julho", dataISO: "2026-07-01", valor: 1600 },
-];
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -26,6 +17,14 @@ const MESES = [
 
 const fmtBRL = (v) =>
   "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+function labelData(iso) {
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2, "0")} de ${MESES[d.getMonth()]}`;
+}
+function isoDateOnly(iso) {
+  return new Date(iso).toISOString().slice(0, 10);
+}
 
 export default function Historico() {
   const navigate = useNavigate();
