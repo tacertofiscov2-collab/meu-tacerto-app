@@ -108,7 +108,7 @@ export default function DevSimulador() {
                 return (
                   <button
                     key={t}
-                    onClick={() => setUserState({ tipo: t })}
+                    onClick={() => setTipoMEI(t)}
                     className="py-2.5 rounded-xl text-sm font-semibold"
                     style={{
                       backgroundColor: sel ? "var(--primary)" : "var(--field)",
