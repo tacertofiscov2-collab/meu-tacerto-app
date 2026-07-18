@@ -38,10 +38,6 @@ export default function Contas() {
 
   const limiteAtingido = contas.length >= MAX_CONTAS;
 
-  const cardStyle = {
-    backgroundColor: "var(--surface)",
-    border: "1px solid var(--border)",
-  };
 
   function trocarConta(conta) {
     // TODO: realizar troca real de sessão via Supabase
