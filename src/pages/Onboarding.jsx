@@ -140,12 +140,11 @@ export default function Onboarding() {
   const [mesMei, setMesMei] = useState("");
 
   const anoAtual = new Date().getFullYear();
-  const limiteCheio = tipoMei === "MEI_CAMINHONEIRO" ? 251600 : 81000;
+  const tipoCanonico = tipoMei === "MEI_CAMINHONEIRO" ? "MEI_CAMINHONEIRO" : "MEI";
+  const limiteCheio = LIMITES_ANUAIS[tipoCanonico];
   const limiteFinal = (() => {
     if (meiEsseAno && mesMei) {
-      const mes = parseInt(mesMei);
-      const mesesRestantes = 12 - mes + 1;
-      return Math.round((limiteCheio / 12) * mesesRestantes);
+      return limiteProporcional(tipoCanonico, parseInt(mesMei), anoAtual, anoAtual);
     }
     return limiteCheio;
   })();
