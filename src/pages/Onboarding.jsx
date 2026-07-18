@@ -383,7 +383,7 @@ export default function Onboarding() {
                 >
                   <p className="text-xs font-medium inline-flex items-center gap-1.5" style={{ color: "var(--text)" }}>
                     <CheckCircle2 size={14} strokeWidth={2} style={{ color: "var(--primary)" }} />
-                    Limite cheio: R$ {limiteCheio.toLocaleString("pt-BR")},00 / ano
+                    Limite cheio: <Valor tamanho="sm">{limiteCheio}</Valor> / ano
                   </p>
                 </div>
               )}
