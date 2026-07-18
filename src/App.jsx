@@ -22,6 +22,7 @@ import AlterarSenha from "./pages/AlterarSenha.jsx";
 import EditarPerfil from "./pages/EditarPerfil.jsx";
 import ResumoPerfil from "./pages/ResumoPerfil.jsx";
 import InformacoesFiscais from "./pages/InformacoesFiscais.jsx";
+import Chat from "./pages/Chat.jsx";
 
 export default function App() {
   return (
