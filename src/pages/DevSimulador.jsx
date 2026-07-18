@@ -136,15 +136,32 @@ export default function DevSimulador() {
               className="w-full px-4 py-4 rounded-xl text-2xl font-bold outline-none focus:ring-2 focus:ring-[var(--primary)]"
               style={fieldStyle}
             />
-            <button
-              onClick={() => setModoSimulacao(!modoSimulacao)}
-              className="text-xs underline"
-              style={{ color: "var(--text-secondary)" }}
+            <div
+              className="flex items-center justify-between rounded-xl px-3 py-2.5"
+              style={{ backgroundColor: "var(--field)", border: "1px solid var(--border)" }}
             >
-              {modoSimulacao
-                ? "Desativar simulação (usar soma real dos lançamentos)"
-                : "Ativar simulação (ignorar lançamentos)"}
-            </button>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                  Modo simulação
+                </p>
+                <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                  {modoSimulacao ? "ON — usando valor acima" : "OFF — somando lançamentos reais"}
+                </p>
+              </div>
+              <button
+                onClick={() => setModoSimulacao(!modoSimulacao)}
+                aria-pressed={modoSimulacao}
+                className="relative w-12 h-7 rounded-full transition-colors"
+                style={{
+                  backgroundColor: modoSimulacao ? "var(--primary)" : "var(--border)",
+                }}
+              >
+                <span
+                  className="absolute top-0.5 w-6 h-6 rounded-full bg-white transition-all"
+                  style={{ left: modoSimulacao ? "22px" : "2px" }}
+                />
+              </button>
+            </div>
             <div className="grid grid-cols-1 gap-2 pt-1">
               {PRESETS.map((p) => (
                 <button
