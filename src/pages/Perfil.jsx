@@ -4,27 +4,17 @@ import BottomNav from "../components/BottomNav.jsx";
 import { SectionTitle, FlatGroup, FlatItem } from "../components/FlatList.jsx";
 import {
   ArrowLeft, User, Settings, Info, Shield, Users, Lock, LogOut,
-  ChevronDown, UserPlus, Trash2, Pencil, X, Check, Plus,
+  ChevronDown, UserPlus, Pencil, X, Check,
 } from "lucide-react";
 
-import { useUserState } from "@/lib/userState";
+import { useUserState, setUserState } from "@/lib/userState";
+import { lerContas, lerContaAtivaId, ativarConta } from "@/lib/contas";
 
 const FOTO_KEY = "tacerto_foto_usuario";
-const CONTAS_KEY = "tacerto_contas";
-const CONTA_ATIVA_KEY = "tacerto_conta_ativa";
-
-function lerContas() {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(CONTAS_KEY);
-    const arr = raw ? JSON.parse(raw) : null;
-    return Array.isArray(arr) ? arr : [];
-  } catch { return []; }
-}
 
 export default function Perfil() {
   const navigate = useNavigate();
-  const { nome } = useUserState();
+  const { nome, visitante } = useUserState();
   const fileRef = useRef(null);
 
   const [foto, setFoto] = useState(() => {
@@ -32,25 +22,27 @@ export default function Perfil() {
     return localStorage.getItem(FOTO_KEY) || null;
   });
   const [contas, setContas] = useState(lerContas);
-  const [contaAtiva, setContaAtiva] = useState(() => {
-    if (typeof window === "undefined") return 0;
-    return Number(localStorage.getItem(CONTA_ATIVA_KEY) || 0);
-  });
+  const [contaAtivaId, setContaAtivaId] = useState(lerContaAtivaId);
   const [seletorAberto, setSeletorAberto] = useState(false);
   const [confirmarSair, setConfirmarSair] = useState(false);
 
   useEffect(() => {
-    const handler = () => setContas(lerContas());
+    const handler = () => {
+      setContas(lerContas());
+      setContaAtivaId(lerContaAtivaId());
+    };
     window.addEventListener("storage", handler);
-    return () => window.removeEventListener("storage", handler);
+    window.addEventListener("tacerto-user-changed", handler);
+    return () => {
+      window.removeEventListener("storage", handler);
+      window.removeEventListener("tacerto-user-changed", handler);
+    };
   }, []);
 
-  const nomePersistido = !!nome;
-  const totalContas = contas.length > 0 ? contas.length : (nomePersistido ? 1 : 0);
-  const ehVisitante = totalContas === 0;
-  const temMultiplas = totalContas >= 2;
+  const totalContas = contas.length;
+  const temMultiplas = !visitante && totalContas >= 2;
 
-  const nomeExibido = ehVisitante ? "Visitante" : (nome || "Visitante");
+  const nomeExibido = visitante ? "Visitante" : (nome || "Usuário");
   const inicial = (nome || "").trim().charAt(0).toUpperCase();
 
   function handleFoto(e) {
@@ -65,9 +57,16 @@ export default function Perfil() {
     reader.readAsDataURL(file);
   }
 
-  function trocarConta(idx) {
-    setContaAtiva(idx);
-    try { localStorage.setItem(CONTA_ATIVA_KEY, String(idx)); } catch {}
+  function trocarConta(id) {
+    const conta = ativarConta(id);
+    if (conta) {
+      setUserState({
+        nome: conta.nome || "",
+        email: conta.email || "",
+        visitante: false,
+      });
+      setContaAtivaId(id);
+    }
     setSeletorAberto(false);
   }
 
@@ -76,14 +75,26 @@ export default function Perfil() {
     navigate("/");
   }
 
-  // Item dinâmico "conta"
+  // Item dinâmico de conta
   let contaItem;
-  if (ehVisitante) {
-    contaItem = { Icon: UserPlus, label: "Cadastrar", onClick: () => navigate("/cadastro") };
-  } else if (totalContas === 1) {
-    contaItem = { Icon: UserPlus, label: "Adicionar nova conta", onClick: () => navigate("/cadastro") };
+  if (visitante) {
+    contaItem = {
+      Icon: UserPlus,
+      label: "Cadastrar conta",
+      onClick: () => navigate("/cadastro"),
+    };
+  } else if (totalContas <= 1) {
+    contaItem = {
+      Icon: UserPlus,
+      label: "Adicionar nova conta",
+      onClick: () => navigate("/cadastro"),
+    };
   } else {
-    contaItem = { Icon: Users, label: "Trocar de conta", onClick: () => setSeletorAberto(true) };
+    contaItem = {
+      Icon: Users,
+      label: "Trocar de conta",
+      onClick: () => setSeletorAberto(true),
+    };
   }
 
   return (
@@ -120,12 +131,8 @@ export default function Perfil() {
               aria-label="Alterar foto"
             >
               {foto ? (
-                <img
-                  src={foto}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              ) : ehVisitante ? (
+                <img src={foto} alt="" className="w-full h-full object-cover" />
+              ) : visitante ? (
                 <div className="w-full h-full flex items-center justify-center">
                   <User size={40} style={{ color: "var(--text-secondary)" }} />
                 </div>
@@ -164,7 +171,7 @@ export default function Perfil() {
             <span
               className="font-bold"
               style={{
-                color: ehVisitante ? "var(--text-secondary)" : "var(--text)",
+                color: visitante ? "var(--text-secondary)" : "var(--text)",
                 fontSize: 22,
               }}
             >
@@ -196,26 +203,18 @@ export default function Perfil() {
             />
           </FlatGroup>
 
-          <SectionTitle>Segurança</SectionTitle>
+          <SectionTitle>Segurança e Privacidade</SectionTitle>
           <FlatGroup>
             <FlatItem
               Icon={Lock}
               label="Alterar senha"
               onClick={() => navigate("/alterar-senha")}
             />
-          </FlatGroup>
-
-          <SectionTitle>Privacidade</SectionTitle>
-          <FlatGroup>
             <FlatItem
               Icon={Shield}
               label="Termos e Privacidade"
               onClick={() => navigate("/termos")}
             />
-          </FlatGroup>
-
-          <SectionTitle>Sobre</SectionTitle>
-          <FlatGroup>
             <FlatItem
               Icon={Info}
               label="Sobre o TaCerto!"
@@ -223,17 +222,9 @@ export default function Perfil() {
             />
           </FlatGroup>
 
-          {/* Ações finais — sem chevron */}
+          {/* Rodapé — apenas Sair */}
           <div style={{ marginTop: 32 }}>
             <FlatGroup>
-              <FlatItem
-                Icon={Trash2}
-                label="Excluir conta"
-                cor="#ef4444"
-                iconCor="#ef4444"
-                semChevron
-                onClick={() => navigate("/excluir-conta")}
-              />
               <FlatItem
                 Icon={LogOut}
                 label="Sair da conta"
@@ -290,13 +281,13 @@ export default function Perfil() {
               </button>
             </div>
             <div className="space-y-1">
-              {contas.map((c, idx) => {
+              {contas.map((c) => {
                 const ini = (c.nome || "?").trim().charAt(0).toUpperCase();
-                const ativa = idx === contaAtiva;
+                const ativa = c.id === contaAtivaId;
                 return (
                   <button
-                    key={idx}
-                    onClick={() => trocarConta(idx)}
+                    key={c.id}
+                    onClick={() => trocarConta(c.id)}
                     className="w-full flex items-center gap-3 p-3 rounded-xl active:opacity-80"
                   >
                     <div

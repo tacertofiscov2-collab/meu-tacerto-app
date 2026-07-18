@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, User, Briefcase, Check } from "lucide-react";
+import { ArrowLeft, Briefcase, Check, Pencil, Trash2, User } from "lucide-react";
 
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
-import { FlatItem, SectionTitle } from "../components/FlatList.jsx";
+import { FlatItem, FlatGroup, SectionTitle } from "../components/FlatList.jsx";
 import { useUserState } from "@/lib/userState";
 import { LIMITES_ANUAIS } from "@/lib/fiscal";
+
+const FOTO_KEY = "tacerto_foto_usuario";
 
 const LABEL_PERFIL = {
   MEI: "MEI (outras atividades)",
@@ -15,13 +17,36 @@ const LABEL_PERFIL = {
 
 export default function EditarPerfil() {
   const navigate = useNavigate();
+  const fileRef = useRef(null);
 
-  const { nome: nomeSalvo, tipo, setNome: salvarNome, setTipo } = useUserState();
-  const [nome, setNome] = useState(nomeSalvo);
+  const {
+    nome: nomeSalvo,
+    email,
+    visitante,
+    tipo,
+    setNome: salvarNome,
+    setTipo,
+  } = useUserState();
+
+  const [nome, setNome] = useState(nomeSalvo || "");
   const perfil = tipo;
   const [selecionarTipo, setSelecionarTipo] = useState(false);
   const [perfilPendente, setPerfilPendente] = useState(null);
   const [confirmarTroca, setConfirmarTroca] = useState(false);
+
+  const [foto, setFoto] = useState(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(FOTO_KEY) || null;
+  });
+
+  // Auto-save do nome — debounce 500ms
+  useEffect(() => {
+    if (nome === nomeSalvo) return;
+    const t = setTimeout(() => {
+      salvarNome(nome);
+    }, 500);
+    return () => clearTimeout(t);
+  }, [nome, nomeSalvo, salvarNome]);
 
   const inicial = (nome || "?").trim().charAt(0).toUpperCase();
 
@@ -31,8 +56,21 @@ export default function EditarPerfil() {
   };
   const fieldStyle = {
     backgroundColor: "var(--field)",
+    border: "1px solid var(--border)",
     color: "var(--text)",
   };
+
+  function handleFoto(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = String(reader.result || "");
+      try { localStorage.setItem(FOTO_KEY, base64); } catch {}
+      setFoto(base64);
+    };
+    reader.readAsDataURL(file);
+  }
 
   function escolherTipo(novo) {
     setSelecionarTipo(false);
@@ -45,11 +83,6 @@ export default function EditarPerfil() {
     if (perfilPendente) setTipo(perfilPendente);
     setConfirmarTroca(false);
     setPerfilPendente(null);
-  }
-
-  function salvar() {
-    salvarNome(nome);
-    navigate(-1);
   }
 
   return (
@@ -71,61 +104,106 @@ export default function EditarPerfil() {
         </h1>
       </header>
 
-      <div className="flex-1 px-5 pb-6">
+      <div
+        className="flex-1 px-5"
+        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
+      >
         {/* Avatar */}
         <div className="flex flex-col items-center gap-2 pt-2">
-          <div
-            className="w-24 h-24 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: "var(--field)" }}
-          >
-            <span className="text-4xl font-bold" style={{ color: "var(--primary)" }}>
-              {inicial}
-            </span>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="block w-24 h-24 rounded-full overflow-hidden active:opacity-80"
+              style={{ backgroundColor: "var(--field)" }}
+              aria-label="Alterar foto"
+            >
+              {foto ? (
+                <img src={foto} alt="" className="w-full h-full object-cover" />
+              ) : visitante ? (
+                <div className="w-full h-full flex items-center justify-center">
+                  <User size={40} style={{ color: "var(--text-secondary)" }} />
+                </div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-4xl font-bold" style={{ color: "var(--primary)" }}>
+                    {inicial}
+                  </span>
+                </div>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              aria-label="Editar foto"
+              className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center shadow"
+              style={{ backgroundColor: "var(--primary)" }}
+            >
+              <Pencil size={14} style={{ color: "#0f0f11" }} />
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFoto}
+            />
           </div>
         </div>
 
-        <SectionTitle>Dados</SectionTitle>
-        <div className="space-y-2">
-          <div className="relative">
-            <User
-              size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2"
+        <SectionTitle>Informações pessoais</SectionTitle>
+        <div className="space-y-4">
+          <div>
+            <label
+              className="block text-xs mb-2"
               style={{ color: "var(--text-secondary)" }}
-            />
+            >
+              Nome
+            </label>
             <input
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               placeholder="Seu nome"
-              className="w-full pl-10 pr-3 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
               style={fieldStyle}
+            />
+          </div>
+
+          <div>
+            <label
+              className="block text-xs mb-2"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              E-mail
+            </label>
+            <input
+              value={visitante ? "" : (email || "")}
+              readOnly
+              tabIndex={-1}
+              placeholder={visitante ? "Você não tem e-mail cadastrado" : "—"}
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none placeholder:opacity-70"
+              style={{ ...fieldStyle, opacity: 0.7, cursor: "default" }}
             />
           </div>
         </div>
 
         <SectionTitle>Perfil fiscal</SectionTitle>
-        <FlatItem
-          Icon={Briefcase}
-          label="Alterar tipo de MEI"
-          sub={`Atual: ${LABEL_PERFIL[perfil]}`}
-          onClick={() => setSelecionarTipo(true)}
-        />
-      </div>
-
-      {/* Salvar */}
-      <div
-        className="px-5 pb-6"
-        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
-      >
-        <button
-          onClick={salvar}
-          className="w-full py-3.5 rounded-xl font-semibold"
-          style={{
-            backgroundColor: "var(--primary)",
-            color: "var(--primary-contrast)",
-          }}
-        >
-          Salvar alterações
-        </button>
+        <FlatGroup>
+          <FlatItem
+            Icon={Briefcase}
+            label="Alterar tipo de MEI"
+            sub={`Atual: ${LABEL_PERFIL[perfil]}`}
+            onClick={() => setSelecionarTipo(true)}
+          />
+          <FlatItem
+            Icon={Trash2}
+            label="Excluir conta"
+            cor="#ef4444"
+            iconCor="#ef4444"
+            semChevron
+            onClick={() => navigate("/excluir-conta")}
+          />
+        </FlatGroup>
       </div>
 
       {/* Modal seleção de tipo */}

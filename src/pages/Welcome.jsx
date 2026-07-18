@@ -132,7 +132,10 @@ export default function Welcome() {
         </div>
 
         <button
-          onClick={() => navigate("/onboarding")}
+          onClick={() => {
+            try { localStorage.setItem("tacerto_visitante", "true"); } catch {}
+            navigate("/onboarding");
+          }}
           className="w-full py-3 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90"
           style={{
             backgroundColor: "var(--field)",
