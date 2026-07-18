@@ -93,7 +93,7 @@ let cache = null;
 let cacheKey = "";
 function snapshot() {
   const s = ler();
-  const key = `${s.nome}|${s.tipo}|${s.faturado}|${s.mesAbertura}|${s.anoAbertura}`;
+  const key = `${s.nome}|${s.tipo}|${s.faturado}|${s.mesAbertura}|${s.anoAbertura}|${s.visitante}`;
   if (key !== cacheKey) {
     cacheKey = key;
     cache = s;
@@ -102,9 +102,11 @@ function snapshot() {
 }
 function ssrSnapshot() {
   return {
-    nome: "Usuário",
+    nome: "",
+    email: null,
+    visitante: true,
     tipo: "MEI",
-    faturado: 48600,
+    faturado: 0,
     mesAbertura: null,
     anoAbertura: null,
   };
