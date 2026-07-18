@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from "sonner";
+import ExcluirConta from "./pages/ExcluirConta.jsx";
 import Welcome from "./pages/Welcome.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
 import Login from "./pages/Login.jsx";
@@ -53,8 +55,21 @@ export default function App() {
         <Route path="/perfil/informacoes-fiscais" element={<InformacoesFiscais />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/dev/simulador" element={<DevSimulador />} />
+        <Route path="/dev/simulador" element={<DevSimulador />} />
+        <Route path="/excluir-conta" element={<ExcluirConta />} />
         <Route path="*" element={<EmConstrucao />} />
       </Routes>
+      <Toaster
+        theme="dark"
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            color: "var(--text)",
+          },
+        }}
+      />
     </BrowserRouter>
   );
 }
