@@ -129,7 +129,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { nome, tipo, faturado, limite } = useUserState();
 
-  const faltam = calcularFaltam(faturado, limite);
+  const restante = calcularFaltamOuExcedeu(faturado, limite);
   const percentual = calcularPercentual(faturado, limite);
   const rotuloPerfil = LABEL_TIPO[tipo];
 
@@ -219,9 +219,13 @@ export default function Dashboard() {
           >
             <div className="grid grid-cols-3">
               {[
-                { valor: faturado, label: "Faturado" },
-                { valor: limite, label: "Limite" },
-                { valor: faltam, label: "Faltam" },
+                { valor: faturado, label: "Faturado", cor: undefined },
+                { valor: limite, label: "Limite", cor: undefined },
+                {
+                  valor: restante.valor,
+                  label: restante.tipo === "excedeu" ? "Excedeu" : "Faltam",
+                  cor: restante.tipo === "excedeu" ? "#ef4444" : undefined,
+                },
               ].map((c, i) => (
                 <div
                   key={c.label}
@@ -231,7 +235,7 @@ export default function Dashboard() {
                   }
                   style={i > 0 ? { borderColor: "var(--border)" } : undefined}
                 >
-                  <Valor tamanho="sm">{c.valor}</Valor>
+                  <Valor tamanho="sm" cor={c.cor}>{c.valor}</Valor>
                   <span
                     className="text-xs mt-1"
                     style={{ color: "var(--text-secondary)" }}
