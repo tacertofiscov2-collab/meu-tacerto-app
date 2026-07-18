@@ -1,31 +1,20 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-import { Gauge } from "lucide-react";
-import slide1 from "@/assets/welcome-slide-1.jpg";
-import slide2 from "@/assets/welcome-slide-2.jpg";
-import slide3 from "@/assets/welcome-slide-3.jpg";
+import { Gauge, Image as ImageIcon } from "lucide-react";
 
+// TODO: substituir por ilustrações reais + frases de vantagem.
 const SLIDES = [
   {
-    img: slide1,
-    alt: "Ilustração de um velocímetro com uma pessoa ajustando o ponteiro",
-    titulo: "Saiba sempre quanto você ainda pode faturar",
-    subtitulo:
-      "Acompanhe em tempo real seu limite de MEI, sem sustos no fim do ano.",
+    titulo: "Título do slide 1",
+    subtitulo: "Subtítulo do slide 1 (placeholder).",
   },
   {
-    img: slide2,
-    alt: "Ilustração de uma pessoa relaxada em uma poltrona com o celular",
-    titulo: "Feito para quem trabalha, não para quem entende de imposto",
-    subtitulo:
-      "Sem termos complicados. Você só precisa saber se está tranquilo ou se precisa se cuidar.",
+    titulo: "Título do slide 2",
+    subtitulo: "Subtítulo do slide 2 (placeholder).",
   },
   {
-    img: slide3,
-    alt: "Ilustração de um painel mostrando 99% do limite anual utilizado",
-    titulo: "Evite o desenquadramento por falta de informação",
-    subtitulo:
-      "Milhares de MEIs perdem o regime todo ano sem saber que ultrapassaram o limite. Com o TaCerto!, isso não acontece com você.",
+    titulo: "Título do slide 3",
+    subtitulo: "Subtítulo do slide 3 (placeholder).",
   },
 ];
 
@@ -51,14 +40,10 @@ export default function Welcome() {
     el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
   };
 
-  const handwritten = {
-    fontFamily: "'Caveat', 'Bradley Hand', cursive",
-  };
-
   return (
     <div
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
-      style={{ backgroundColor: "#000", color: "#fff" }}
+      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       {/* Carrossel */}
       <div className="flex-1 min-h-0 flex flex-col pt-5">
@@ -72,56 +57,34 @@ export default function Welcome() {
               key={i}
               className="min-w-full snap-center flex flex-col items-center px-6"
             >
-              {/* Logo topo — igual em todos os slides */}
+              {/* Logo topo */}
               <div className="flex items-center justify-center gap-1.5 shrink-0">
-                <Gauge size={22} className="text-green-500" strokeWidth={2.5} />
-                <span className="text-xl font-bold text-white">
-                  Ta<span className="text-green-500">Certo!</span>
+                <Gauge size={22} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
+                <span className="text-xl font-bold" style={{ color: "var(--text)" }}>
+                  Ta<span style={{ color: "var(--primary)" }}>Certo!</span>
                 </span>
               </div>
 
-              {/* Ilustração */}
-              <div className="flex-1 min-h-0 w-full flex items-center justify-center my-1">
-                <img
-                  src={s.img}
-                  alt={s.alt}
-                  width={1024}
-                  height={1024}
-                  loading={i === 0 ? "eager" : "lazy"}
-                  className="max-h-[34vh] max-w-full object-contain"
-                  style={{ mixBlendMode: "screen" }}
-                />
+              {/* Placeholder de ilustração — integrado ao fundo, sem moldura */}
+              <div className="w-full flex flex-col items-center justify-center gap-2 my-4" style={{ maxHeight: "28vh" }}>
+                <ImageIcon size={64} strokeWidth={1.5} style={{ color: "var(--text-secondary)" }} />
+                <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                  Imagem em breve
+                </span>
               </div>
 
-              {/* Título manuscrito */}
+              {/* Título placeholder */}
               <h2
-                className="text-xl leading-tight text-center text-white px-2"
-                style={handwritten}
+                className="text-xl font-semibold leading-tight text-center px-2"
+                style={{ color: "var(--text)" }}
               >
                 {s.titulo}
               </h2>
 
-              {/* Linha decorativa curva */}
-              <svg
-                width="70"
-                height="8"
-                viewBox="0 0 90 12"
-                className="mt-0.5 mb-0.5 shrink-0"
-                aria-hidden="true"
-              >
-                <path
-                  d="M2 8 Q 25 -2, 45 6 T 88 4"
-                  stroke="#39FF14"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-              </svg>
-
-              {/* Subtítulo manuscrito mais fino */}
+              {/* Subtítulo placeholder */}
               <p
-                className="text-base text-center text-white/80 leading-snug px-2 pb-0.5"
-                style={{ ...handwritten, fontWeight: 500 }}
+                className="text-sm text-center leading-snug px-2 mt-2"
+                style={{ color: "var(--text-secondary)" }}
               >
                 {s.subtitulo}
               </p>
@@ -129,8 +92,8 @@ export default function Welcome() {
           ))}
         </div>
 
-        {/* Indicador */}
-        <div className="flex justify-center gap-2 py-1 shrink-0">
+        {/* Indicador — mais espaço acima */}
+        <div className="flex justify-center gap-2 pt-5 pb-2 shrink-0">
           {SLIDES.map((_, i) => (
             <button
               key={i}
@@ -139,7 +102,7 @@ export default function Welcome() {
               className="h-2 rounded-full transition-all"
               style={{
                 width: i === active ? 24 : 8,
-                backgroundColor: i === active ? "#22c55e" : "#3f3f46",
+                backgroundColor: i === active ? "var(--primary)" : "var(--border)",
               }}
             />
           ))}
@@ -147,34 +110,45 @@ export default function Welcome() {
       </div>
 
       {/* Rodapé fixo de ações */}
-      <div className="px-5 pb-3 pt-0 shrink-0 space-y-1.5">
+      <div
+        className="px-5 pb-4 pt-2 shrink-0"
+        style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom))" }}
+      >
         <button
           onClick={() => navigate("/cadastro")}
-          className="w-full py-2.5 rounded-xl font-medium text-sm transition-opacity hover:opacity-90"
-          style={{ backgroundColor: "#22c55e", color: "#0a0a0a" }}
+          className="w-full py-3 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90"
+          style={{
+            backgroundColor: "var(--primary)",
+            color: "var(--primary-contrast)",
+          }}
         >
           Cadastrar
         </button>
 
-        <div className="flex items-center gap-3 py-0">
-          <div className="flex-1 h-px bg-white/10" />
-          <span className="text-xs text-white/60">ou</span>
-          <div className="flex-1 h-px bg-white/10" />
+        <div className="flex items-center gap-3 my-5">
+          <div className="flex-1 h-px" style={{ backgroundColor: "var(--border)" }} />
+          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>ou</span>
+          <div className="flex-1 h-px" style={{ backgroundColor: "var(--border)" }} />
         </div>
 
         <button
           onClick={() => navigate("/onboarding")}
-          className="w-full py-2.5 rounded-xl font-medium text-sm transition-opacity hover:opacity-90"
-          style={{ backgroundColor: "#27272a", color: "#a1a1aa" }}
+          className="w-full py-3 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90"
+          style={{
+            backgroundColor: "var(--field)",
+            color: "var(--text-secondary)",
+            border: "1px solid var(--border)",
+          }}
         >
           Cadastrar depois
         </button>
 
-        <p className="text-center text-xs text-white/60">
+        <p className="text-center text-xs mt-6" style={{ color: "var(--text-secondary)" }}>
           Já tem conta?{" "}
           <button
             onClick={() => navigate("/login")}
-            className="font-medium text-green-500"
+            className="font-semibold"
+            style={{ color: "var(--primary)" }}
           >
             Entrar
           </button>
