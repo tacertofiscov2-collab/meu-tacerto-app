@@ -1,17 +1,17 @@
 /**
- * <Valor /> — formatação canônica de valores em R$ do TaCerto!.
+ * <Valor /> — formatação canônica de valores em R$ do TaCerto! (padrão Nubank).
  *
- * <Valor>48600</Valor>              → R$ 48.600
+ * <Valor>48600</Valor>              → R$ 48.600,00
  * <Valor decimais={2}>48600.5</Valor> → R$ 48.600,50
- * <Valor sinal="+">3500</Valor>     → + R$ 3.500
+ * <Valor sinal="+">3500</Valor>     → + R$ 3.500,00  (sinal em verde)
  *
  * Regras visuais:
- * - "R$" e sinal opcional em cor --primary (verde).
- * - Número em cor --text.
- * - Renderiza SEMPRE em uma linha só (nowrap). Se o container é pequeno,
- *   o próprio font-size do container deve encolher — o componente respeita
- *   isso usando `em`/`fontSize: inherit` e força `white-space: nowrap`.
- * - Prop `tamanho` controla o tamanho base (sm/md/lg/xl).
+ * - "R$" em cor --text (BRANCO).
+ * - Parte inteira em cor --text (branco).
+ * - Vírgula e centavos em cor --text-secondary (cinza sutil).
+ * - Sinal opcional (+/-) em cor --primary (verde), ANTES do "R$".
+ * - SEMPRE 2 casas decimais.
+ * - SEMPRE em uma linha (white-space: nowrap), tabular-nums.
  */
 
 const TAMANHOS = {
@@ -21,26 +21,37 @@ const TAMANHOS = {
   xl: "2rem",
 };
 
-function formatar(valor, decimais) {
+const PESOS = {
+  sm: 600,
+  md: 600,
+  lg: 700,
+  xl: 700,
+};
+
+function partes(valor, decimais = 2) {
   const n = Number(valor);
-  if (!Number.isFinite(n)) return "0";
-  const temCent = decimais != null ? decimais > 0 : n % 1 !== 0;
-  return n.toLocaleString("pt-BR", {
-    minimumFractionDigits: temCent ? (decimais ?? 2) : 0,
-    maximumFractionDigits: temCent ? (decimais ?? 2) : 0,
-  });
+  const safe = Number.isFinite(n) ? n : 0;
+  const casas = Math.max(0, Math.min(4, decimais ?? 2));
+  const fixado = safe.toFixed(casas);
+  const [intRaw, decRaw = ""] = fixado.split(".");
+  const negativo = intRaw.startsWith("-");
+  const intAbs = negativo ? intRaw.slice(1) : intRaw;
+  const inteiro = Number(intAbs).toLocaleString("pt-BR");
+  const centavos = casas > 0 ? "," + decRaw : "";
+  return { inteiro, centavos, negativo };
 }
 
 export default function Valor({
   children,
-  decimais,
+  decimais = 2,
   sinal,
   tamanho = "md",
   className = "",
   style,
 }) {
-  const numero = formatar(children, decimais);
+  const { inteiro, centavos } = partes(children, decimais);
   const baseSize = TAMANHOS[tamanho] || TAMANHOS.md;
+  const peso = PESOS[tamanho] || PESOS.md;
 
   return (
     <span
@@ -48,19 +59,24 @@ export default function Valor({
       style={{
         display: "inline-flex",
         alignItems: "baseline",
-        gap: "0.28em",
         whiteSpace: "nowrap",
         fontSize: baseSize,
         lineHeight: 1.1,
         fontVariantNumeric: "tabular-nums",
+        fontWeight: peso,
         ...style,
       }}
     >
       {sinal && (
-        <span style={{ color: "var(--primary)", fontWeight: 600 }}>{sinal}</span>
+        <span style={{ color: "var(--primary)", marginRight: "0.28em" }}>
+          {sinal}
+        </span>
       )}
-      <span style={{ color: "var(--primary)", fontWeight: 600 }}>R$</span>
-      <span style={{ color: "var(--text)", fontWeight: 700 }}>{numero}</span>
+      <span style={{ color: "var(--text)" }}>R$&nbsp;</span>
+      <span style={{ color: "var(--text)" }}>{inteiro}</span>
+      {centavos && (
+        <span style={{ color: "var(--text-secondary)" }}>{centavos}</span>
+      )}
     </span>
   );
 }
