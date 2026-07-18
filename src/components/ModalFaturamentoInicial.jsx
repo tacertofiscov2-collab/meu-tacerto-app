@@ -230,7 +230,7 @@ export default function ModalFaturamentoInicial({ aberto, onClose, onSalvar }) {
               color: "var(--primary-contrast)",
             }}
           >
-            Salvar R$ {totalFmt} e atualizar
+            Salvar <Valor tamanho="sm" style={{ color: "var(--primary-contrast)" }}>{valorFinal}</Valor> e atualizar
           </button>
           <p className="text-[11px] leading-relaxed text-center" style={{ color: "var(--text-secondary)" }}>
             Os valores informados são de sua responsabilidade. O TaCerto! não
