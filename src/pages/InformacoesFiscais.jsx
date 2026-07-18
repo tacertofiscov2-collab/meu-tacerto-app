@@ -1,13 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
+import Valor from "../components/Valor.jsx";
 import { useUserState } from "@/lib/userState";
-import {
-  LABEL_TIPO,
-  LIMITES_ANUAIS,
-  DAS_2026,
-  fmtBRL,
-} from "@/lib/fiscal";
+import { LABEL_TIPO, LIMITES_ANUAIS, DAS_2026 } from "@/lib/fiscal";
 
 const fmtBRL2 = (v) =>
   "R$ " +
