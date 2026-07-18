@@ -41,8 +41,14 @@ export default function Lancar() {
   async function handleSalvar() {
     if (centavos <= 0) return;
     setSalvando(true);
-    // TODO: salvar no Supabase/localStorage
-    await new Promise((r) => setTimeout(r, 400));
+    // Sair do modo simulação ao registrar dado real
+    setModoSimulacao(false);
+    adicionarLancamento({
+      descricao,
+      valor: centavos / 100,
+      data: new Date(data + "T12:00:00").toISOString(),
+    });
+    await new Promise((r) => setTimeout(r, 200));
     setSalvando(false);
     navigate("/dashboard");
   }
