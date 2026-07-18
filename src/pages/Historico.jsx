@@ -190,7 +190,7 @@ export default function Historico() {
           </div>
 
           {/* Total do período */}
-          <div className="rounded-2xl p-5" style={cardStyle}>
+          <div className="pt-1 pb-1">
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               Total de {mes.split(" ")[0]}
             </p>
@@ -199,26 +199,19 @@ export default function Historico() {
             </div>
           </div>
 
-          {/* Novo lançamento (opção discreta) */}
+          {/* Novo lançamento (opção discreta, flat) */}
           <button
             onClick={() => navigate("/lancar")}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm active:scale-[0.99] transition"
-            style={{
-              backgroundColor: "var(--surface)",
-              border: "1px solid var(--border)",
-              color: "var(--text)",
-            }}
+            className="w-full flex items-center gap-3 py-3.5 text-[16px] active:opacity-70"
+            style={{ color: "var(--text)" }}
           >
-            <Plus size={18} style={{ color: "var(--primary)" }} />
+            <Plus size={22} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
             Fazer novo lançamento
           </button>
 
-          {/* Lista */}
+          {/* Lista flat */}
           {filtrados.length === 0 ? (
-            <div
-              className="rounded-2xl py-12 flex flex-col items-center gap-3"
-              style={cardStyle}
-            >
+            <div className="py-12 flex flex-col items-center gap-3">
               <div
                 className="w-14 h-14 rounded-full flex items-center justify-center"
                 style={{ backgroundColor: "var(--field)" }}
@@ -230,24 +223,21 @@ export default function Historico() {
               </p>
             </div>
           ) : (
-            <ul className="space-y-2">
-              {filtrados.map((l) => (
+            <ul>
+              {filtrados.map((l, i) => (
                 <li
                   key={l.id}
-                  className="w-full rounded-xl p-4 flex items-center gap-3"
-                  style={cardStyle}
+                  className="w-full flex items-center gap-3 py-3"
+                  style={{
+                    borderTop: i === 0 ? "none" : "1px solid var(--border)",
+                  }}
                 >
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: "var(--field)" }}
-                  >
-                    <TrendingUp size={18} style={{ color: "var(--primary)" }} />
-                  </div>
+                  <TrendingUp size={22} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>
+                    <p className="text-[15px] font-medium truncate" style={{ color: "var(--text)" }}>
                       {l.descricao}
                     </p>
-                    <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
                       {labelData(l.data)}
                     </p>
                   </div>
@@ -257,16 +247,16 @@ export default function Historico() {
                   <button
                     onClick={() => navigate(`/lancar?id=${l.id}`)}
                     aria-label="Editar lançamento"
-                    className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
+                    className="w-9 h-9 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
                   >
-                    <Pencil size={18} style={{ color: "var(--text-secondary)" }} />
+                    <Pencil size={17} style={{ color: "var(--text-secondary)" }} />
                   </button>
                   <button
                     onClick={() => setExcluirId(l.id)}
                     aria-label="Excluir lançamento"
-                    className="w-10 h-10 -ml-1 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
+                    className="w-9 h-9 -ml-1 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
                   >
-                    <Trash2 size={18} style={{ color: "var(--text-secondary)" }} />
+                    <Trash2 size={17} style={{ color: "var(--text-secondary)" }} />
                   </button>
                 </li>
               ))}
