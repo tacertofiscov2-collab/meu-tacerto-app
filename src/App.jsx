@@ -44,6 +44,7 @@ export default function App() {
         <Route path="/contas" element={<Contas />} />
         <Route path="/velocimetro" element={<Velocimetro />} />
         <Route path="/alterar-senha" element={<AlterarSenha />} />
+        <Route path="/editar-perfil" element={<EditarPerfil />} />
         <Route path="*" element={<EmConstrucao />} />
       </Routes>
     </BrowserRouter>
