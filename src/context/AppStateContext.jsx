@@ -101,6 +101,34 @@ export function AppStateProvider({ children }) {
     first.current = false;
   }, [state]);
 
+  // Sincroniza com escritas legadas (Onboarding/EditarPerfil via userState.js)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sync = () => {
+      const tipoLeg = localStorage.getItem("tacerto_tipo");
+      const mes = localStorage.getItem("tacerto_mes_abertura");
+      const ano = localStorage.getItem("tacerto_ano_abertura");
+      setState((s) => {
+        const novoTipo = normalizarTipo(tipoLeg || s.tipoMEI);
+        const novaAb = mes && ano ? { mes: Number(mes), ano: Number(ano) } : null;
+        const mesmoTipo = novoTipo === s.tipoMEI;
+        const mesmaAb =
+          (novaAb && s.mesAnoAbertura &&
+            novaAb.mes === s.mesAnoAbertura.mes &&
+            novaAb.ano === s.mesAnoAbertura.ano) ||
+          (novaAb == null && s.mesAnoAbertura == null);
+        if (mesmoTipo && mesmaAb) return s;
+        return { ...s, tipoMEI: novoTipo, mesAnoAbertura: novaAb };
+      });
+    };
+    window.addEventListener("tacerto-user-changed", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("tacerto-user-changed", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
   const adicionarLancamento = useCallback((l) => {
     setState((s) => {
       const data = l.data || new Date().toISOString();
