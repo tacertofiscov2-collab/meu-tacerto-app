@@ -6,30 +6,32 @@ import {
 import Brand from "@/components/Brand";
 
 import BottomNav from "../components/BottomNav.jsx";
+import { SectionTitle } from "../components/FlatList.jsx";
+
 const SECOES = [
   {
-    titulo: "O QUE COLETAMOS",
+    titulo: "O que coletamos",
     itens: [
       { Icon: Database, t: "Só o essencial: nome, e-mail ou telefone, e os lançamentos que você registra." },
       { Icon: EyeOff, t: "Não pedimos CPF, endereço nem dados bancários nesta fase." },
     ],
   },
   {
-    titulo: "COMO PROTEGEMOS",
+    titulo: "Como protegemos",
     itens: [
       { Icon: Lock, t: "Seus dados são protegidos e nunca vendidos a terceiros." },
       { Icon: ShieldCheck, t: "Guardamos com segurança e criptografia, seguindo a LGPD." },
     ],
   },
   {
-    titulo: "SEUS DIREITOS",
+    titulo: "Seus direitos",
     itens: [
       { Icon: UserCheck, t: "Você pode acessar, corrigir ou excluir seus dados quando quiser." },
       { Icon: Bot, t: "Pode pedir revisão humana de decisões feitas pela IA." },
     ],
   },
   {
-    titulo: "SUAS RESPONSABILIDADES",
+    titulo: "Suas responsabilidades",
     itens: [
       { Icon: Pencil, t: "Você é responsável pela veracidade dos dados que insere no app." },
     ],
@@ -59,7 +61,10 @@ export default function Termos() {
         </button>
       </div>
 
-      <div className="max-w-md mx-auto px-5 pb-[130px]">
+      <div
+        className="max-w-md mx-auto px-5"
+        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
+      >
         <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>
           Termos e Privacidade
         </h1>
@@ -84,49 +89,37 @@ export default function Termos() {
           </p>
         </div>
 
-        <div className="mt-6 space-y-6">
-          {SECOES.map((s) => (
-            <section key={s.titulo}>
-              <h2
-                className="text-xs font-medium uppercase tracking-wide mb-2"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                {s.titulo}
-              </h2>
-              <div className="flex flex-col gap-2">
-                {s.itens.map(({ Icon, t }) => (
-                  <div
-                    key={t}
-                    className="flex items-start gap-2.5 rounded-lg"
-                    style={{
-                      padding: "11px 12px",
-                      backgroundColor: "var(--surface)",
-                      border: "1px solid var(--border)",
-                    }}
-                  >
-                    <Icon size={17} strokeWidth={2} style={{ color: "var(--primary)" }} className="shrink-0 mt-0.5" />
-                    <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>{t}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+        {SECOES.map((s) => (
+          <section key={s.titulo}>
+            <SectionTitle>{s.titulo}</SectionTitle>
+            <ul className="space-y-3 pt-1">
+              {s.itens.map(({ Icon, t }) => (
+                <li key={t} className="flex items-start gap-3">
+                  <Icon
+                    size={22}
+                    strokeWidth={1.75}
+                    style={{ color: "var(--primary)" }}
+                    className="shrink-0 mt-0.5"
+                  />
+                  <p className="text-[15px] leading-relaxed" style={{ color: "var(--text)" }}>
+                    {t}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
 
-        <div className="mt-6 space-y-2">
+        <div className="mt-8 space-y-1">
           {["Ver Política de Privacidade", "Ver Termos de Uso"].map((label) => (
             <button
               key={label}
               onClick={docEmBreve}
-              className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium hover:opacity-90"
-              style={{
-                backgroundColor: "var(--field)",
-                color: "var(--text)",
-                border: "1px solid var(--border)",
-              }}
+              className="w-full flex items-center justify-between py-4 text-[16px] active:opacity-70"
+              style={{ color: "var(--text)" }}
             >
               <span>{label}</span>
-              <ChevronRight size={18} strokeWidth={2} style={{ color: "var(--text-secondary)" }} />
+              <ChevronRight size={18} style={{ color: "var(--text-secondary)" }} />
             </button>
           ))}
         </div>
