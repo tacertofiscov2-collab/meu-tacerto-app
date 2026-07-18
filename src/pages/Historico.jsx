@@ -28,9 +28,11 @@ function isoDateOnly(iso) {
 
 export default function Historico() {
   const navigate = useNavigate();
-  const [lancamentos, setLancamentos] = useState(LANCAMENTOS_MOCK);
+  const { lancamentos, atualizarLancamento, removerLancamento } = useAppState();
+  const anoAtual = new Date().getFullYear();
+  const mesAtual = new Date().getMonth();
   const [busca, setBusca] = useState("");
-  const [mes, setMes] = useState("Julho 2026"); // TODO: filtrar por mês real
+  const [mes, setMes] = useState(`${MESES[mesAtual]} ${anoAtual}`);
   const [editando, setEditando] = useState(null);
   const [confirmarExcluir, setConfirmarExcluir] = useState(false);
   const [modalFaturamento, setModalFaturamento] = useState(false);
@@ -43,21 +45,33 @@ export default function Historico() {
   }, []);
 
   function dispensarFaturamento() {
-    // TODO: persistir preferência no backend/Supabase
     try {
       localStorage.setItem(DISMISS_KEY, "1");
     } catch {}
     setMostrarFaturamento(false);
   }
 
+  const [mesNome, anoStr] = mes.split(" ");
+  const mesIdx = MESES.indexOf(mesNome);
+  const anoNum = Number(anoStr);
+
+  const doMes = useMemo(
+    () =>
+      lancamentos.filter((l) => {
+        const d = new Date(l.data);
+        return d.getMonth() === mesIdx && d.getFullYear() === anoNum;
+      }),
+    [lancamentos, mesIdx, anoNum],
+  );
+
   const filtrados = useMemo(() => {
     const q = busca.trim().toLowerCase();
-    if (!q) return lancamentos;
-    return lancamentos.filter((l) => l.descricao.toLowerCase().includes(q));
-  }, [busca, lancamentos]);
+    const base = q ? doMes.filter((l) => l.descricao.toLowerCase().includes(q)) : doMes;
+    return [...base].sort((a, b) => new Date(b.data) - new Date(a.data));
+  }, [busca, doMes]);
 
   const total = useMemo(
-    () => filtrados.reduce((s, l) => s + l.valor, 0),
+    () => filtrados.reduce((s, l) => s + (Number(l.valor) || 0), 0),
     [filtrados],
   );
 
@@ -73,19 +87,20 @@ export default function Historico() {
 
   function salvarEdicao(e) {
     e.preventDefault();
-    // TODO: persistir no backend
-    setLancamentos((prev) =>
-      prev.map((l) => (l.id === editando.id ? { ...editando } : l)),
-    );
+    atualizarLancamento(editando.id, {
+      descricao: editando.descricao,
+      valor: Number(editando.valor) || 0,
+      data: new Date(editando._dataInput + "T12:00:00").toISOString(),
+    });
     setEditando(null);
   }
 
   function excluir() {
-    // TODO: excluir no backend
-    setLancamentos((prev) => prev.filter((l) => l.id !== editando.id));
+    removerLancamento(editando.id);
     setConfirmarExcluir(false);
     setEditando(null);
   }
+
 
   return (
     <div
