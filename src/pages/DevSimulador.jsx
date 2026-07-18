@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, FlaskConical } from "lucide-react";
-import { useUserState, setUserState } from "@/lib/userState";
+import { useAppState } from "@/context/AppStateContext";
 import {
   LIMITES_ANUAIS,
   LABEL_TIPO,
