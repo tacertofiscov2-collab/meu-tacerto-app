@@ -74,6 +74,27 @@ export function AppStateProvider({ children }) {
   const [state, setState] = useState(hidratar);
   const first = useRef(true);
 
+  // Migração única: descrições antigas "Xº Recebimento/Frete de Mês" → "Xº Lançamento de Mês".
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (localStorage.getItem("tacerto_migracao_descricoes") === "true") return;
+    const re = /^(\d+º) (Recebimento|Frete) de /;
+    setState((s) => {
+      let mudou = false;
+      const novos = s.lancamentos.map((l) => {
+        if (l.descricao && re.test(l.descricao)) {
+          mudou = true;
+          return { ...l, descricao: l.descricao.replace(re, "$1 Lançamento de ") };
+        }
+        return l;
+      });
+      if (mudou) return { ...s, lancamentos: novos };
+      return s;
+    });
+    localStorage.setItem("tacerto_migracao_descricoes", "true");
+  }, []);
+
+
   // Persistência + bridge para as chaves antigas (useUserState continua reativo)
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -137,10 +158,9 @@ export function AppStateProvider({ children }) {
         const dx = new Date(x.data);
         return dx.getMonth() === d.getMonth() && dx.getFullYear() === d.getFullYear();
       }).length;
-      const termo = s.tipoMEI === "MEI_CAMINHONEIRO" ? "Frete" : "Recebimento";
       const descricao =
         (l.descricao && l.descricao.trim()) ||
-        `${ordinal(mesmoMes + 1)} ${termo} de ${MESES[d.getMonth()]}`;
+        `${ordinal(mesmoMes + 1)} Lançamento de ${MESES[d.getMonth()]}`;
       const novo = {
         id: uuid(),
         descricao,
