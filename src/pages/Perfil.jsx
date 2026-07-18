@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Pencil, Settings, Info, Shield, Users, Lock, LogOut, ChevronRight,
+  ArrowLeft, Settings, Info, Shield, Users, Lock, LogOut, ChevronRight,
 } from "lucide-react";
 
 // TODO: buscar do backend/Supabase
