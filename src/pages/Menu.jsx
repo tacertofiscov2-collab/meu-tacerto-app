@@ -139,22 +139,22 @@ function CalculadoraDAS() {
         className="rounded-xl p-4 space-y-2"
         style={{ backgroundColor: "var(--field)", border: "1px solid var(--border)" }}
       >
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-sm items-center">
           <span style={{ color: "var(--text-secondary)" }}>INSS</span>
-          <span style={{ color: "var(--text)" }}>{fmtBRL(inss)}</span>
+          <Valor tamanho="sm" decimais={2}>{inss}</Valor>
         </div>
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-sm items-center">
           <span style={{ color: "var(--text-secondary)" }}>
             {tipoAtividade === "servicos" ? "ISS" : "ICMS"}
           </span>
-          <span style={{ color: "var(--text)" }}>{fmtBRL(imposto)}</span>
+          <Valor tamanho="sm" decimais={2}>{imposto}</Valor>
         </div>
         <div
-          className="flex justify-between pt-2 mt-1 text-base font-bold"
+          className="flex justify-between items-center pt-2 mt-1"
           style={{ borderTop: "1px solid var(--border)" }}
         >
-          <span style={{ color: "var(--text)" }}>Total DAS</span>
-          <span style={{ color: "var(--primary)" }}>{fmtBRL(total)}</span>
+          <span className="font-bold" style={{ color: "var(--text)" }}>Total DAS</span>
+          <Valor tamanho="md" decimais={2}>{total}</Valor>
         </div>
       </div>
 
