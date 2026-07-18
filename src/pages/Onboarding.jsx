@@ -163,8 +163,14 @@ export default function Onboarding() {
   async function handleFinalizar() {
     salvarPerfilLocal({
       nome,
-      perfil: (tipoMei || "MEI").toLowerCase(),
+      perfil: tipoCanonico.toLowerCase(),
       limite: limiteFinal,
+    });
+    setUserState({
+      nome,
+      tipo: tipoCanonico,
+      mesAbertura: meiEsseAno && mesMei ? parseInt(mesMei) : null,
+      anoAbertura: meiEsseAno && mesMei ? anoAtual : null,
     });
     try {
       const { data } = await supabase.auth.getUser();
