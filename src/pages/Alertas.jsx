@@ -87,7 +87,41 @@ export default function Alertas() {
         </h1>
       </header>
 
-      <div className="px-5 pb-10">
+      <div className="px-5 pb-10 space-y-3">
+        {/* Card permanente: faturamento inicial */}
+        <div
+          className="rounded-2xl p-4"
+          style={{ ...cardStyle, borderLeft: "4px solid var(--primary)" }}
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+              style={{ backgroundColor: "rgba(34,197,94,0.15)" }}
+            >
+              <BarChart3 size={18} style={{ color: "var(--primary)" }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                Comece com o velocímetro certo
+              </p>
+              <p className="text-sm mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                Já faturou este ano antes de instalar o app? Adicione o total para
+                calibrar o velocímetro.
+              </p>
+              <button
+                onClick={() => setModalFaturamento(true)}
+                className="mt-3 py-2 px-4 rounded-xl text-xs font-semibold"
+                style={{
+                  backgroundColor: "var(--primary)",
+                  color: "var(--primary-contrast)",
+                }}
+              >
+                Adicionar faturamento
+              </button>
+            </div>
+          </div>
+        </div>
+
         {alertas.length === 0 ? (
           <div
             className="rounded-2xl py-14 flex flex-col items-center gap-3"
