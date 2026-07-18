@@ -207,7 +207,7 @@ export default function Dashboard() {
 
           {/* Card Faturado / Limite / Faltam */}
           <div
-            className="w-full rounded-2xl py-4 px-4"
+            className="w-full rounded-2xl py-4 px-2"
             style={{
               backgroundColor: "var(--surface)",
               border: "1px solid var(--border)",
@@ -215,21 +215,19 @@ export default function Dashboard() {
           >
             <div className="grid grid-cols-3">
               {[
-                { valor: fmtBRL(faturado), label: "Faturado" },
-                { valor: fmtBRL(limite), label: "Limite" },
-                { valor: fmtBRL(faltam), label: "Faltam" },
+                { valor: faturado, label: "Faturado" },
+                { valor: limite, label: "Limite" },
+                { valor: faltam, label: "Faltam" },
               ].map((c, i) => (
                 <div
                   key={c.label}
                   className={
-                    "flex flex-col items-center text-center px-2 " +
+                    "flex flex-col items-center text-center px-1 min-w-0 " +
                     (i > 0 ? "border-l" : "")
                   }
                   style={i > 0 ? { borderColor: "var(--border)" } : undefined}
                 >
-                  <span className="font-bold text-sm" style={{ color: "var(--text)" }}>
-                    {c.valor}
-                  </span>
+                  <Valor tamanho="sm">{c.valor}</Valor>
                   <span
                     className="text-xs mt-1"
                     style={{ color: "var(--text-secondary)" }}
