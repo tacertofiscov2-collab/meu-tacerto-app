@@ -113,7 +113,7 @@ function Velocimetro({ percentual }) {
           {Math.round(percentual)}%
         </span>
         <span
-          className="text-sm font-semibold mt-1 flex items-center gap-1.5"
+          className="text-sm font-semibold mt-5 mb-3 flex items-center gap-1.5"
           style={{ color: faixa.cor }}
         >
           {faixa.chave === "critico" && <AlertTriangle size={14} style={{ color: faixa.cor }} />}
