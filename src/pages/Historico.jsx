@@ -176,20 +176,6 @@ export default function Historico() {
             />
           </div>
 
-          {/* Novo lançamento (opção discreta) */}
-          <button
-            onClick={() => navigate("/lancar")}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm active:scale-[0.99] transition"
-            style={{
-              backgroundColor: "var(--surface)",
-              border: "1px solid var(--border)",
-              color: "var(--text)",
-            }}
-          >
-            <Plus size={18} style={{ color: "var(--primary)" }} />
-            Fazer novo lançamento
-          </button>
-
           {/* Filtro de mês */}
           <div className="relative">
             <select
@@ -219,6 +205,20 @@ export default function Historico() {
             </div>
           </div>
 
+          {/* Novo lançamento (opção discreta) */}
+          <button
+            onClick={() => navigate("/lancar")}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm active:scale-[0.99] transition"
+            style={{
+              backgroundColor: "var(--surface)",
+              border: "1px solid var(--border)",
+              color: "var(--text)",
+            }}
+          >
+            <Plus size={18} style={{ color: "var(--primary)" }} />
+            Fazer novo lançamento
+          </button>
+
           {/* Lista */}
           {filtrados.length === 0 ? (
             <div
@@ -238,29 +238,41 @@ export default function Historico() {
           ) : (
             <ul className="space-y-2">
               {filtrados.map((l) => (
-                <li key={l.id}>
-                  <button
-                    onClick={() => setEditando({ ...l, _dataInput: isoDateOnly(l.data) })}
-                    className="w-full rounded-xl p-4 flex items-center gap-3 text-left transition-transform active:scale-[0.99]"
-                    style={cardStyle}
+                <li
+                  key={l.id}
+                  className="w-full rounded-xl p-4 flex items-center gap-3"
+                  style={cardStyle}
+                >
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: "var(--field)" }}
                   >
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: "var(--field)" }}
-                    >
-                      <TrendingUp size={18} style={{ color: "var(--primary)" }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>
-                        {l.descricao}
-                      </p>
-                      <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                        {labelData(l.data)}
-                      </p>
-                    </div>
-                    <span className="shrink-0">
-                      <Valor tamanho="sm" sinal="+">{l.valor}</Valor>
-                    </span>
+                    <TrendingUp size={18} style={{ color: "var(--primary)" }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>
+                      {l.descricao}
+                    </p>
+                    <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                      {labelData(l.data)}
+                    </p>
+                  </div>
+                  <span className="shrink-0">
+                    <Valor tamanho="sm" sinal="+">{l.valor}</Valor>
+                  </span>
+                  <button
+                    onClick={() => navigate(`/lancar?id=${l.id}`)}
+                    aria-label="Editar lançamento"
+                    className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
+                  >
+                    <Pencil size={18} style={{ color: "var(--text-secondary)" }} />
+                  </button>
+                  <button
+                    onClick={() => setExcluirId(l.id)}
+                    aria-label="Excluir lançamento"
+                    className="w-10 h-10 -ml-1 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
+                  >
+                    <Trash2 size={18} style={{ color: "var(--text-secondary)" }} />
                   </button>
                 </li>
               ))}
@@ -269,108 +281,8 @@ export default function Historico() {
         </div>
       </div>
 
-
-      {/* Modal edição */}
-      {editando && (
-        <div
-          className="fixed inset-0 z-30 flex items-end sm:items-center justify-center p-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
-          onClick={() => setEditando(null)}
-        >
-          <div
-            className="w-full max-w-md rounded-2xl p-5 space-y-4"
-            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>
-                Editar lançamento
-              </h2>
-              <button
-                onClick={() => setEditando(null)}
-                aria-label="Fechar"
-                className="w-9 h-9 rounded-full flex items-center justify-center hover:opacity-80"
-                style={{ backgroundColor: "var(--field)" }}
-              >
-                <X size={18} style={{ color: "var(--text)" }} />
-              </button>
-            </div>
-
-            <form onSubmit={salvarEdicao} className="space-y-3">
-              <div>
-                <label className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                  Valor
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={editando.valor}
-                  onChange={(e) =>
-                    setEditando({ ...editando, valor: Number(e.target.value) || 0 })
-                  }
-                  className="w-full mt-1 px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  style={fieldStyle}
-                />
-              </div>
-              <div>
-                <label className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                  Descrição
-                </label>
-                <input
-                  type="text"
-                  value={editando.descricao}
-                  onChange={(e) =>
-                    setEditando({ ...editando, descricao: e.target.value })
-                  }
-                  className="w-full mt-1 px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  style={fieldStyle}
-                />
-              </div>
-              <div>
-                <label className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                  Data
-                </label>
-                <input
-                  type="date"
-                  value={editando._dataInput}
-                  onChange={(e) =>
-                    setEditando({ ...editando, _dataInput: e.target.value })
-                  }
-                  className="w-full mt-1 px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  style={fieldStyle}
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl font-semibold"
-                style={{
-                  backgroundColor: "var(--primary)",
-                  color: "var(--primary-contrast)",
-                }}
-              >
-                Salvar
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirmarExcluir(true)}
-                className="w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
-                style={{
-                  backgroundColor: "transparent",
-                  color: "#ef4444",
-                  border: "1px solid rgba(239,68,68,0.35)",
-                }}
-              >
-                <Trash2 size={16} />
-                Excluir
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
       {/* Confirmação de exclusão */}
-      {confirmarExcluir && (
+      {excluirId && (
         <div
           className="fixed inset-0 z-40 flex items-center justify-center p-4"
           style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
@@ -380,21 +292,21 @@ export default function Historico() {
             style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
           >
             <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
-              Excluir lançamento?
+              Excluir este lançamento?
             </h3>
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              Essa ação não pode ser desfeita.
+              Esta ação não pode ser desfeita.
             </p>
             <div className="flex gap-2">
               <button
-                onClick={() => setConfirmarExcluir(false)}
+                onClick={() => setExcluirId(null)}
                 className="flex-1 py-3 rounded-xl font-semibold"
                 style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
               >
                 Cancelar
               </button>
               <button
-                onClick={excluir}
+                onClick={confirmarExcluir}
                 className="flex-1 py-3 rounded-xl font-semibold"
                 style={{ backgroundColor: "#ef4444", color: "#fff" }}
               >
@@ -404,8 +316,6 @@ export default function Historico() {
           </div>
         </div>
       )}
-
-
 
       <ModalFaturamentoInicial
         aberto={modalFaturamento}
@@ -421,3 +331,4 @@ export default function Historico() {
     </div>
   );
 }
+
