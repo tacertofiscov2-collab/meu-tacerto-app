@@ -323,12 +323,7 @@ function SimuladorDesenquadramento() {
         <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
           Se mantiver o ritmo atual, projeção anual:
         </p>
-        <p
-          className="text-2xl font-bold mt-1"
-          style={{ color: projecaoEstoura ? faixaProjecao.cor : "var(--text)" }}
-        >
-          {fmtBRL0(projecaoAnual)}
-        </p>
+        <div className="mt-1"><Valor tamanho="xl">{projecaoAnual}</Valor></div>
         {projecaoEstoura && (
           <div className="flex items-start gap-2 mt-2">
             <AlertTriangle
