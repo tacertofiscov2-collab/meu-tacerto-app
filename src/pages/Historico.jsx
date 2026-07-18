@@ -224,12 +224,9 @@ export default function Historico() {
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               Total de {mes.split(" ")[0]}
             </p>
-            <p
-              className="text-3xl font-bold mt-1"
-              style={{ color: "var(--primary)" }}
-            >
-              {fmtBRL(total)}
-            </p>
+            <div className="mt-1">
+              <Valor tamanho="xl">{total}</Valor>
+            </div>
           </div>
 
           {/* Lista */}
