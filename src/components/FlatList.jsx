@@ -67,6 +67,7 @@ export function FlatItem({
   iconCor,
   semChevron = false,
   as = "button",
+  withDivider = false,
   className = "",
 }) {
   const Root = as;
@@ -76,7 +77,10 @@ export function FlatItem({
     <Root
       {...rootProps}
       className={`w-full flex items-center gap-3 py-3.5 text-left active:opacity-70 ${className}`}
-      style={{ backgroundColor: "transparent" }}
+      style={{
+        backgroundColor: "transparent",
+        borderTop: withDivider ? "1px solid var(--border)" : undefined,
+      }}
     >
       {Icon && (
         <Icon
