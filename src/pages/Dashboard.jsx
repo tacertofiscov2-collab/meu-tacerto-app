@@ -11,13 +11,10 @@ import {
   fmtBRL,
 } from "@/lib/fiscal";
 
-const COR_VERDE = "#22c55e";
-const COR_LARANJA = "#f59e0b";
-const COR_VERMELHO = "#ef4444";
-
 function faixaDoPercentual(p) {
-  const info = FAIXA_INFO[faixaDoVelocimetro(p)];
-  return { cor: info.cor, label: info.label };
+  const chave = faixaDoVelocimetro(p);
+  const info = FAIXA_INFO[chave];
+  return { chave, cor: info.cor, label: info.label };
 }
 
 function saudacaoPorHora() {
