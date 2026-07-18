@@ -99,10 +99,10 @@ export default function Perfil() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-bold truncate" style={{ color: "var(--text)" }}>
-                {usuario.nome}
+                {nome}
               </p>
               <p className="text-xs truncate mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                {usuario.email}
+                {EMAIL_MOCK}
               </p>
               <span
                 className="inline-block mt-2 text-xs font-semibold px-2.5 py-1 rounded-full"
@@ -111,7 +111,7 @@ export default function Perfil() {
                   color: "var(--primary)",
                 }}
               >
-                {LABEL_PERFIL[usuario.perfil]}
+                {LABEL_TIPO[tipo]}
               </span>
             </div>
             <ChevronRight size={18} style={{ color: "var(--text-secondary)" }} />
