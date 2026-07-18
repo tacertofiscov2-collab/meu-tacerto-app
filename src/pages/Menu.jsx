@@ -7,12 +7,8 @@ import {
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
-// TODO: buscar do backend
-const USUARIO = {
-  perfil: "MEI", // "MEI" | "MEI_CAMINHONEIRO"
-  faturado: 48600,
-};
-const LIMITES = { MEI: 81000, MEI_CAMINHONEIRO: 251600 };
+import { useUserState } from "@/lib/userState";
+import { LIMITES_ANUAIS } from "@/lib/fiscal";
 
 // TODO: tabela oficial atualizada
 const INSS_MEI = 75.90;             // mock 5% s/ salário mínimo
