@@ -77,9 +77,11 @@ function Velocimetro({ percentual }) {
       >
         <defs>
           <linearGradient id="velocimetroGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={COR_VERDE} />
-            <stop offset="60%" stopColor={COR_LARANJA} />
-            <stop offset="100%" stopColor={COR_VERMELHO} />
+            <stop offset="0%" stopColor={FAIXA_INFO.tranquilo.cor} />
+            <stop offset="50%" stopColor={FAIXA_INFO.fique_de_olho.cor} />
+            <stop offset="75%" stopColor={FAIXA_INFO.atencao.cor} />
+            <stop offset="90%" stopColor={FAIXA_INFO.perto_do_limite.cor} />
+            <stop offset="100%" stopColor={FAIXA_INFO.estourou.cor} />
           </linearGradient>
         </defs>
 
