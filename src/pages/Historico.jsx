@@ -209,7 +209,7 @@ export default function Historico() {
               style={fieldStyle}
             >
               {MESES.map((m) => (
-                <option key={m} value={`${m} 2026`}>{`${m} 2026`}</option>
+                <option key={m} value={`${m} ${anoAtual}`}>{`${m} ${anoAtual}`}</option>
               ))}
             </select>
             <ChevronDown
