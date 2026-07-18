@@ -269,9 +269,11 @@ export default function Onboarding() {
               <div className="space-y-2.5">
                 {[
                   { v: "MEI", Icon: Briefcase, titulo: "MEI (outras atividades)",
-                    desc: `Comércio, serviços · limite R$ ${LIMITES_ANUAIS.MEI.toLocaleString("pt-BR")}/ano` },
+                    prefixo: "Comércio, serviços · limite ", sufixo: "/ano",
+                    limite: LIMITES_ANUAIS.MEI },
                   { v: "MEI_CAMINHONEIRO", Icon: Truck, titulo: "MEI Caminhoneiro",
-                    desc: `Transporte de cargas · limite R$ ${LIMITES_ANUAIS.MEI_CAMINHONEIRO.toLocaleString("pt-BR")}/ano` },
+                    prefixo: "Transporte de cargas · limite ", sufixo: "/ano",
+                    limite: LIMITES_ANUAIS.MEI_CAMINHONEIRO },
                 ].map((o) => {
                   const sel = tipoMei === o.v;
                   const Ico = o.Icon;
@@ -299,7 +301,9 @@ export default function Onboarding() {
                           {o.titulo}
                         </div>
                         <div className="text-[11px] mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                          {o.desc}
+                          {o.prefixo}
+                          <Valor tamanho="sm">{o.limite}</Valor>
+                          {o.sufixo}
                         </div>
                       </div>
                     </button>

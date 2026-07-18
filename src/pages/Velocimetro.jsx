@@ -9,7 +9,6 @@ import {
   calcularFaltam,
   faixaDoVelocimetro,
   FAIXA_INFO,
-  fmtBRL,
 } from "@/lib/fiscal";
 
 const COR_VERDE = "#22c55e";
@@ -22,12 +21,17 @@ function faixaDoPercentual(p) {
   return { cor: info.cor, label: info.label, chave, mensagem: info.mensagem };
 }
 
-function textoAviso(p, faturado, limite) {
-  const faixa = faixaDoPercentual(p);
-  const pct = Math.round(p);
-  if (p > 100) {
+function TextoAviso({ percentual, faturado, limite }) {
+  const faixa = faixaDoPercentual(percentual);
+  const pct = Math.round(percentual);
+  if (percentual > 100) {
     const excesso = faturado - limite;
-    return `Com base nos lançamentos registrados, você ultrapassou o limite anual em ${fmtBRL(excesso)}. ${faixa.mensagem}`;
+    return (
+      <>
+        Com base nos lançamentos registrados, você ultrapassou o limite anual em{" "}
+        <Valor tamanho="sm">{excesso}</Valor>. {faixa.mensagem}
+      </>
+    );
   }
   return `Com base nos lançamentos registrados, você utilizou ${pct}% do seu limite anual. ${faixa.mensagem}`;
 }
@@ -221,7 +225,7 @@ export default function Velocimetro() {
           }}
         >
           <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>
-            {textoAviso(percentual, faturado, limite)}
+            <TextoAviso percentual={percentual} faturado={faturado} limite={limite} />
           </p>
         </div>
 
@@ -242,7 +246,8 @@ export default function Velocimetro() {
                 Projeção para dezembro
               </p>
               <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                No ritmo atual, você deve fechar o ano em {fmtBRL(projecaoAnual)}
+                No ritmo atual, você deve fechar o ano em{" "}
+                <Valor tamanho="sm">{projecaoAnual}</Valor>
                 {ultrapassa
                   ? " — atenção, isso ultrapassaria o limite anual."
                   : " — dentro do limite anual."}

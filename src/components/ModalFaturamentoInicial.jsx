@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { X } from "lucide-react";
+import Valor from "./Valor.jsx";
 
 /**
  * Modal de faturamento inicial com 2 abas:
@@ -202,11 +203,8 @@ export default function ModalFaturamentoInicial({ aberto, onClose, onSalvar }) {
                 <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
                   {valores.length} {valores.length === 1 ? "valor encontrado" : "valores encontrados"}
                 </span>
-                <span
-                  className="text-lg font-bold"
-                  style={{ color: "var(--primary)" }}
-                >
-                  R$ {totalFmt}
+                <span className="text-lg font-bold">
+                  <Valor tamanho="md">{valorFinal}</Valor>
                 </span>
               </div>
 
@@ -232,7 +230,7 @@ export default function ModalFaturamentoInicial({ aberto, onClose, onSalvar }) {
               color: "var(--primary-contrast)",
             }}
           >
-            Salvar R$ {totalFmt} e atualizar
+            Salvar <Valor tamanho="sm" style={{ color: "var(--primary-contrast)" }}>{valorFinal}</Valor> e atualizar
           </button>
           <p className="text-[11px] leading-relaxed text-center" style={{ color: "var(--text-secondary)" }}>
             Os valores informados são de sua responsabilidade. O TaCerto! não
