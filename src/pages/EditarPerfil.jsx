@@ -182,8 +182,8 @@ export default function EditarPerfil() {
                       <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
                         {opt === "MEI" ? "MEI" : "MEI Caminhoneiro"}
                       </p>
-                      <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                        Limite anual {fmtBRL(LIMITES_ANUAIS[opt])}
+                      <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: "var(--text-secondary)" }}>
+                        Limite anual <Valor tamanho="sm">{LIMITES_ANUAIS[opt]}</Valor>
                       </p>
                     </div>
                     {ativo && <Check size={18} style={{ color: "var(--primary)" }} />}
