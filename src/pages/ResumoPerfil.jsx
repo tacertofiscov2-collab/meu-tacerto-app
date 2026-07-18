@@ -2,14 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 
-// TODO: buscar do backend/Supabase
-const USUARIO_MOCK = {
-  faturado2026: 48600,
-  lancamentos2026: 12,
-};
+import { useUserState } from "@/lib/userState";
+import { fmtBRL } from "@/lib/fiscal";
 
-const fmtBRL = (v) =>
-  "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+// TODO: buscar quantidade de lançamentos do backend
+const LANCAMENTOS_MOCK = 12;
 
 export default function ResumoPerfil() {
   const navigate = useNavigate();
