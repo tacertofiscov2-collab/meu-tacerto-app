@@ -157,8 +157,62 @@ export default function EditarPerfil() {
         </button>
       </div>
 
+      {/* Modal seleção de tipo */}
+      {selecionarTipo && (
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center p-4"
+          style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+          onClick={() => setSelecionarTipo(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl p-5 space-y-4"
+            style={cardStyle}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
+              Escolha o tipo de MEI
+            </h3>
+            <div className="space-y-2">
+              {["MEI", "MEI_CAMINHONEIRO"].map((opt) => {
+                const ativo = perfil === opt;
+                return (
+                  <button
+                    key={opt}
+                    onClick={() => escolherTipo(opt)}
+                    className="w-full rounded-xl p-4 flex items-center gap-3 text-left"
+                    style={{
+                      backgroundColor: "var(--field)",
+                      border: ativo
+                        ? "1px solid var(--primary)"
+                        : "1px solid var(--border)",
+                    }}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                        {opt === "MEI" ? "MEI" : "MEI Caminhoneiro"}
+                      </p>
+                      <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                        Limite anual {fmtBRL(LIMITES[opt])}
+                      </p>
+                    </div>
+                    {ativo && <Check size={18} style={{ color: "var(--primary)" }} />}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => setSelecionarTipo(false)}
+              className="w-full py-3 rounded-xl font-semibold"
+              style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Modal confirmação */}
-      {confirmarTroca && (
+      {confirmarTroca && perfilPendente && (
         <div
           className="fixed inset-0 z-40 flex items-center justify-center p-4"
           style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
@@ -173,22 +227,23 @@ export default function EditarPerfil() {
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               O limite anual será recalculado para{" "}
               <strong style={{ color: "var(--text)" }}>
-                {fmtBRL(
-                  perfil === "MEI" ? LIMITES.MEI_CAMINHONEIRO : LIMITES.MEI,
-                )}
+                {fmtBRL(LIMITES[perfilPendente])}
               </strong>
               .
             </p>
             <div className="flex gap-2">
               <button
-                onClick={() => setConfirmarTroca(false)}
+                onClick={() => {
+                  setConfirmarTroca(false);
+                  setPerfilPendente(null);
+                }}
                 className="flex-1 py-3 rounded-xl font-semibold"
                 style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
               >
                 Cancelar
               </button>
               <button
-                onClick={alternarPerfil}
+                onClick={confirmarAlteracao}
                 className="flex-1 py-3 rounded-xl font-semibold"
                 style={{ backgroundColor: "var(--primary)", color: "var(--primary-contrast)" }}
               >
