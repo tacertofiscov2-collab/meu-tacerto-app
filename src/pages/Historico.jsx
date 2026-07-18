@@ -253,7 +253,7 @@ export default function Historico() {
               {filtrados.map((l) => (
                 <li key={l.id}>
                   <button
-                    onClick={() => setEditando({ ...l })}
+                    onClick={() => setEditando({ ...l, _dataInput: isoDateOnly(l.data) })}
                     className="w-full rounded-xl p-4 flex items-center gap-3 text-left transition-transform active:scale-[0.99]"
                     style={cardStyle}
                   >
