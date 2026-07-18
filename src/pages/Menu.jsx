@@ -321,7 +321,10 @@ export default function Menu() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="flex-1 overflow-y-auto pb-[130px]">
+      <div
+        className="flex-1 overflow-y-auto"
+        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
+      >
         <header className="px-5 pt-6 pb-4 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
@@ -336,44 +339,43 @@ export default function Menu() {
           </h1>
         </header>
 
-        <div className="px-5 space-y-4">
-          {/* Atalhos */}
-          <div className="grid grid-cols-3 gap-2.5">
-            <Atalho Icon={Bell} label="Notificações" onClick={() => navigate("/alertas")} />
-            <Atalho Icon={HelpCircle} label="Dúvidas" onClick={() => navigate("/faq")} />
-            <Atalho
+        <div className="px-5">
+          <SectionTitle className="mt-2">Atalhos</SectionTitle>
+          <div>
+            <FlatItem
+              Icon={Bell}
+              label="Notificações"
+              onClick={() => navigate("/alertas")}
+            />
+            <FlatItem
+              Icon={HelpCircle}
+              label="Dúvidas"
+              onClick={() => navigate("/faq")}
+              withDivider
+            />
+            <FlatItem
               Icon={MessageCircle}
               label="Chat IA"
               sub="Sua assistente fiscal"
               onClick={() => navigate("/chat")}
+              withDivider
+            />
+            <FlatItem
+              Icon={BarChart3}
+              label="Adicionar faturamento do ano"
+              onClick={() => setModalFaturamento(true)}
+              withDivider
             />
           </div>
 
-          {/* Item permanente: adicionar faturamento */}
-          <button
-            onClick={() => setModalFaturamento(true)}
-            className="w-full rounded-2xl p-4 flex items-center gap-3 text-left transition-transform active:scale-[0.99]"
-            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
-          >
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-              style={{ backgroundColor: "var(--field)" }}
-            >
-              <BarChart3 size={18} style={{ color: "var(--primary)" }} />
-            </div>
-            <span className="flex-1 text-sm font-semibold" style={{ color: "var(--text)" }}>
-              Adicionar faturamento do ano
-            </span>
-            <ChevronRight size={18} style={{ color: "var(--text-secondary)" }} />
-          </button>
-
-          {/* Accordion */}
-          <div className="space-y-2">
+          <SectionTitle>Ferramentas</SectionTitle>
+          <div>
             <AccordionItem
               Icon={Calculator}
               titulo="Calculadora DAS"
               aberto={aberto === "das"}
               onToggle={() => toggle("das")}
+              primeiro
             >
               <CalculadoraDAS />
             </AccordionItem>
