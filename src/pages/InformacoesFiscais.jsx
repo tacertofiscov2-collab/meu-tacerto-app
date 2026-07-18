@@ -63,9 +63,10 @@ export default function InformacoesFiscais() {
             Informações fiscais
           </h1>
         </header>
-
-        <div className="px-5 space-y-4">
           {/* Perfil + Limite */}
+          <div className="rounded-2xl p-5 space-y-3" style={cardStyle}>
+            <Linha rotulo="Tipo de perfil" valor={LABEL_TIPO[tipo]} />
+            <Linha rotulo="Limite anual" valor={<Valor tamanho="sm">{limiteAnual}</Valor>} />
           <div className="rounded-2xl p-5 space-y-3" style={cardStyle}>
             <Linha rotulo="Tipo de perfil" valor={LABEL_TIPO[tipo]} />
             <Linha rotulo="Limite anual" valor={fmtBRL(limiteAnual)} />
