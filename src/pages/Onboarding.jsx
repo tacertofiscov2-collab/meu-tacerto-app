@@ -302,7 +302,8 @@ export default function Onboarding() {
                           className="text-[12px] mt-0.5"
                           style={{ color: "var(--text-secondary)", whiteSpace: "nowrap" }}
                         >
-                          Limite: <Valor tamanho="sm">{o.limite}</Valor> / ano
+                          Limite: <Valor tamanho="sm">{o.limite}</Valor>{" "}
+                          <span style={{ color: "var(--text)" }}>/ ano</span>
                         </div>
                       </div>
                     </button>
