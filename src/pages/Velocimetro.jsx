@@ -139,10 +139,9 @@ function VelocimetroGrande({ percentual }) {
 export default function Velocimetro() {
   const navigate = useNavigate();
 
-  const limite = LIMITES[USUARIO.perfil] ?? LIMITES.MEI;
-  const faturado = USUARIO.faturado;
-  const faltam = Math.max(0, limite - faturado);
-  const percentual = 60; // TODO: calcular a partir de faturado real
+  const { faturado, limite } = useUserState();
+  const faltam = calcularFaltam(faturado, limite);
+  const percentual = calcularPercentual(faturado, limite);
 
   const faixa = faixaDoPercentual(percentual);
 
@@ -152,8 +151,9 @@ export default function Velocimetro() {
     border: "1px solid var(--border)",
   };
 
-  // TODO: cálculo real de projeção
-  const projecaoAnual = 83200;
+  // Projeção linear até dezembro com base no mês atual
+  const mesAtual = new Date().getMonth() + 1; // 1-12
+  const projecaoAnual = Math.round((faturado / mesAtual) * 12);
   const ultrapassa = projecaoAnual > limite;
 
   return (
