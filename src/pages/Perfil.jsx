@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
 import {
   ArrowLeft, Settings, Info, Shield, Users, Lock, LogOut, ChevronRight,
+  BarChart3, FileText,
 } from "lucide-react";
 
 // TODO: buscar do backend/Supabase
@@ -126,55 +127,20 @@ export default function Perfil() {
             <ChevronRight size={18} style={{ color: "var(--text-secondary)" }} />
           </button>
 
-          {/* Resumo 2026 */}
-          <div className="rounded-2xl p-5" style={cardStyle}>
-            <p className="text-sm mb-3" style={{ color: "var(--text-secondary)" }}>
-              Resumo de 2026
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                  Faturado
-                </p>
-                <p className="text-base font-bold mt-1" style={{ color: "var(--text)" }}>
-                  {fmtBRL(usuario.faturado2026)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                  Lançamentos
-                </p>
-                <p className="text-base font-bold mt-1" style={{ color: "var(--text)" }}>
-                  {usuario.lancamentos2026}
-                </p>
-              </div>
-            </div>
+          {/* Resumo & Informações fiscais como itens clicáveis */}
+          <div className="rounded-2xl px-5 py-2" style={cardStyle}>
+            <ListaItem
+              Icon={BarChart3}
+              label="Resumo de 2026"
+              onClick={() => navigate("/perfil/resumo")}
+            />
+            <ListaItem
+              Icon={FileText}
+              label="Informações fiscais"
+              onClick={() => navigate("/perfil/informacoes-fiscais")}
+            />
           </div>
 
-          {/* Informações fiscais */}
-          <div className="rounded-2xl p-5 space-y-3" style={cardStyle}>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              Informações fiscais
-            </p>
-            <div className="flex justify-between text-sm">
-              <span style={{ color: "var(--text-secondary)" }}>Tipo de perfil</span>
-              <span className="font-semibold" style={{ color: "var(--text)" }}>
-                {LABEL_PERFIL[usuario.perfil]}
-              </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span style={{ color: "var(--text-secondary)" }}>Limite anual</span>
-              <span className="font-semibold" style={{ color: "var(--text)" }}>
-                {fmtBRL(limite)}
-              </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span style={{ color: "var(--text-secondary)" }}>Vencimento do DAS</span>
-              <span className="font-semibold" style={{ color: "var(--text)" }}>
-                Dia {usuario.vencimentoDAS}
-              </span>
-            </div>
-          </div>
 
           {/* Geral */}
           <div className="rounded-2xl px-5 py-2" style={cardStyle}>
