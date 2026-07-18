@@ -95,10 +95,11 @@ function AccordionItem({ Icon, titulo, aberto, onToggle, children }) {
 }
 
 function CalculadoraDAS() {
+  const { tipo } = useUserState();
   const [uf, setUf] = useState("SP");
   const [tipoAtividade, setTipoAtividade] = useState("comercio"); // comercio(ICMS) | servicos(ISS)
 
-  const inss = USUARIO.perfil === "MEI_CAMINHONEIRO" ? INSS_MEI_CAMINHONEIRO : INSS_MEI;
+  const inss = tipo === "MEI_CAMINHONEIRO" ? INSS_MEI_CAMINHONEIRO : INSS_MEI;
   const imposto = tipoAtividade === "servicos" ? ISS : ICMS;
   const total = inss + imposto;
 
