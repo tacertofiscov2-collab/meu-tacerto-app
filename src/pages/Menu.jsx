@@ -156,12 +156,12 @@ function CalculadoraDAS() {
       <div
         className="flex items-start gap-2 rounded-xl p-3 text-xs"
         style={{
-          backgroundColor: "rgba(245,158,11,0.10)",
-          border: "1px solid rgba(245,158,11,0.25)",
-          color: "#f59e0b",
+          backgroundColor: "var(--field)",
+          border: "1px solid var(--border)",
+          color: "var(--text-secondary)",
         }}
       >
-        <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+        <AlertTriangle size={14} className="mt-0.5 shrink-0" style={{ color: "var(--primary)" }} />
         <span>Valores estimados. Consulte gov.br/mei para o boleto oficial.</span>
       </div>
     </div>
