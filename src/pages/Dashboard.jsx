@@ -15,7 +15,7 @@ import {
 function faixaDoPercentual(p) {
   const chave = faixaDoVelocimetro(p);
   const info = FAIXA_INFO[chave];
-  return { chave, cor: info.cor, label: info.label };
+  return { chave, cor: info.cor, principal: info.principal, apoio: info.apoio };
 }
 
 function saudacaoPorHora() {
