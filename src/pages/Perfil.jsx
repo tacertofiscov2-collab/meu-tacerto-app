@@ -6,20 +6,11 @@ import {
   BarChart3, FileText,
 } from "lucide-react";
 
-// TODO: buscar do backend/Supabase
-const USUARIO_MOCK = {
-  nome: "Fernando",
-  email: "fernando@email.com",
-  perfil: "MEI", // "MEI" | "MEI_CAMINHONEIRO"
-  faturado2026: 48600,
-  lancamentos2026: 12,
-  vencimentoDAS: 20,
-};
-const LIMITES = { MEI: 81000, MEI_CAMINHONEIRO: 251600 };
-const LABEL_PERFIL = { MEI: "MEI", MEI_CAMINHONEIRO: "MEI Caminhoneiro" };
+import { useUserState } from "@/lib/userState";
+import { LABEL_TIPO } from "@/lib/fiscal";
 
-const fmtBRL = (v) =>
-  "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+// TODO: buscar email do backend
+const EMAIL_MOCK = "fernando@email.com";
 
 function Brand({ className = "" }) {
   return (
