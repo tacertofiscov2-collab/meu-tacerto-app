@@ -14,9 +14,9 @@ const LABEL_PERFIL = {
 export default function EditarPerfil() {
   const navigate = useNavigate();
 
-  // TODO: carregar do backend
-  const [nome, setNome] = useState("Fernando");
-  const [perfil, setPerfil] = useState("MEI");
+  const { nome: nomeSalvo, tipo, setNome: salvarNome, setTipo } = useUserState();
+  const [nome, setNome] = useState(nomeSalvo);
+  const perfil = tipo;
   const [selecionarTipo, setSelecionarTipo] = useState(false);
   const [perfilPendente, setPerfilPendente] = useState(null);
   const [confirmarTroca, setConfirmarTroca] = useState(false);
@@ -41,12 +41,13 @@ export default function EditarPerfil() {
   }
 
   function confirmarAlteracao() {
-    if (perfilPendente) setPerfil(perfilPendente);
+    if (perfilPendente) setTipo(perfilPendente);
     setConfirmarTroca(false);
     setPerfilPendente(null);
   }
 
   function salvar() {
+    salvarNome(nome);
     // TODO: persistir no Supabase
     navigate(-1);
   }
