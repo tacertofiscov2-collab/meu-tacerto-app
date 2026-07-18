@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { X } from "lucide-react";
+import Valor from "./Valor.jsx";
 
 /**
  * Modal de faturamento inicial com 2 abas:
