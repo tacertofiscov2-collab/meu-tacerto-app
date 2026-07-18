@@ -268,7 +268,7 @@ export default function Historico() {
                         {l.descricao}
                       </p>
                       <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                        {l.data}
+                        {labelData(l.data)}
                       </p>
                     </div>
                     <span
