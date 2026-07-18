@@ -43,9 +43,9 @@ export default function ResumoPerfil() {
                 <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
                   Faturado
                 </p>
-                <p className="text-lg font-bold mt-1" style={{ color: "var(--text)" }}>
-                  {fmtBRL(faturado)}
-                </p>
+                <div className="mt-1">
+                  <Valor tamanho="lg">{faturado}</Valor>
+                </div>
               </div>
               <div>
                 <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
