@@ -97,7 +97,7 @@ export default function InformacoesFiscais() {
                     {DAS_LABELS[tipo]?.[chave] ?? chave}
                   </span>
                   <span className="text-sm font-bold" style={{ color: "var(--text)" }}>
-                    {fmtBRL2(valor)}
+                    <Valor tamanho="sm" decimais={2}>{valor}</Valor>
                   </span>
                 </div>
               ))}
