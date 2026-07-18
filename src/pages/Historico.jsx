@@ -268,11 +268,8 @@ export default function Historico() {
                         {labelData(l.data)}
                       </p>
                     </div>
-                    <span
-                      className="font-bold text-sm shrink-0"
-                      style={{ color: "var(--primary)" }}
-                    >
-                      + {fmtBRL(l.valor)}
+                    <span className="shrink-0">
+                      <Valor tamanho="sm" sinal="+">{l.valor}</Valor>
                     </span>
                   </button>
                 </li>
