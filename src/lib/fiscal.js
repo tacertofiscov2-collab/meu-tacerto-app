@@ -67,6 +67,13 @@ export const FAIXA_INFO = {
   },
 };
 
+// Aliases retro-compatíveis para telas que ainda consomem `label`/`mensagem`.
+for (const chave of Object.keys(FAIXA_INFO)) {
+  const f = FAIXA_INFO[chave];
+  f.label = f.principal;
+  f.mensagem = f.apoio;
+}
+
 // DAS mensal 2026
 export const DAS_2026 = {
   MEI: {
