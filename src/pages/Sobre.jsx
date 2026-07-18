@@ -23,7 +23,10 @@ export default function Sobre() {
         </button>
       </div>
 
-      <div className="flex-1 px-6 pb-[130px]">
+      <div
+        className="flex-1 px-6"
+        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
+      >
         <div className="max-w-md mx-auto">
           <div className="flex justify-center mb-4">
             <Gauge size={52} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
