@@ -15,7 +15,7 @@ import {
 function faixaDoPercentual(p) {
   const chave = faixaDoVelocimetro(p);
   const info = FAIXA_INFO[chave];
-  return { chave, cor: info.cor, label: info.label };
+  return { chave, cor: info.cor, principal: info.principal, apoio: info.apoio };
 }
 
 function saudacaoPorHora() {
@@ -69,7 +69,7 @@ function Velocimetro({ percentual }) {
   const faixa = faixaDoPercentual(percentual);
 
   return (
-    <div className="w-full flex flex-col items-center">
+    <div className="w-full h-full flex flex-col items-center">
       <svg
         viewBox="0 0 200 120"
         className="block mx-auto w-full max-w-[220px]"
@@ -108,17 +108,27 @@ function Velocimetro({ percentual }) {
         <circle cx={cx} cy={cy} r={3.5} fill="var(--bg)" />
       </svg>
 
-      <div className="mt-2 flex flex-col items-center">
+      <div className="mt-2 flex-1 flex flex-col items-center w-full">
         <span className="text-5xl font-bold" style={{ color: "var(--text)" }}>
           {Math.round(percentual)}%
         </span>
-        <span
-          className="text-sm font-semibold mt-5 mb-3 flex items-center gap-1.5"
-          style={{ color: faixa.cor }}
-        >
-          {faixa.chave === "critico" && <AlertTriangle size={14} style={{ color: faixa.cor }} />}
-          {faixa.label}
-        </span>
+        <div className="flex-1 flex flex-col items-center justify-center gap-1.5 px-3 py-3 w-full">
+          <span
+            className="text-base font-bold text-center flex items-center gap-1.5"
+            style={{ color: faixa.cor }}
+          >
+            {faixa.chave === "critico" && (
+              <AlertTriangle size={16} style={{ color: faixa.cor }} />
+            )}
+            {faixa.principal}
+          </span>
+          <span
+            className="text-sm font-normal text-center leading-snug"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            {faixa.apoio}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -141,7 +151,7 @@ export default function Dashboard() {
     >
       <div
         className="flex-1 flex flex-col"
-        style={{ paddingBottom: "calc(130px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
       >
         {/* Header */}
         <header className="px-5 pt-4 pb-2 flex items-start justify-between">
