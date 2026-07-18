@@ -16,15 +16,9 @@ const MESES = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
 
-const fmtBRL = (v) =>
-  "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-
 function labelData(iso) {
   const d = new Date(iso);
   return `${String(d.getDate()).padStart(2, "0")} de ${MESES[d.getMonth()]}`;
-}
-function isoDateOnly(iso) {
-  return new Date(iso).toISOString().slice(0, 10);
 }
 
 export default function Historico() {
