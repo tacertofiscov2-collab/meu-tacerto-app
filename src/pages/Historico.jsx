@@ -93,7 +93,7 @@ export default function Historico() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="flex-1 overflow-y-auto pb-[110px]">
+      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: "calc(180px + env(safe-area-inset-bottom))" }}>
         {/* Header */}
         <header className="px-5 pt-6 pb-4 flex items-center gap-3">
           <button
@@ -393,20 +393,24 @@ export default function Historico() {
         </div>
       )}
 
-      {/* FAB — novo lançamento */}
-      <button
-        onClick={() => navigate("/lancar")}
-        aria-label="Novo lançamento"
-        className="fixed right-5 z-20 w-14 h-14 rounded-full flex items-center justify-center active:scale-95 transition"
-        style={{
-          bottom: "calc(20px + env(safe-area-inset-bottom))",
-          backgroundColor: "var(--primary)",
-          color: "var(--primary-contrast)",
-          boxShadow: "0 10px 28px rgba(34,197,94,0.5), 0 0 0 1px rgba(34,197,94,0.35)",
-        }}
+      {/* Botão fixo — novo lançamento */}
+      <div
+        className="fixed left-0 right-0 z-20 px-5"
+        style={{ bottom: "calc(90px + env(safe-area-inset-bottom))" }}
       >
-        <Plus size={26} strokeWidth={2.6} />
-      </button>
+        <button
+          onClick={() => navigate("/lancar")}
+          className="w-full py-3.5 rounded-xl font-semibold active:scale-[0.99] transition"
+          style={{
+            backgroundColor: "var(--primary)",
+            color: "var(--primary-contrast)",
+            boxShadow: "0 10px 28px rgba(34,197,94,0.35)",
+          }}
+        >
+          Fazer novo lançamento
+        </button>
+      </div>
+
 
       <ModalFaturamentoInicial
         aberto={modalFaturamento}

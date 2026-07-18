@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Bell, HelpCircle, Calculator, FileText, Calendar, TrendingUp,
-  ChevronDown, ChevronRight, AlertTriangle, BarChart3,
+  ChevronDown, ChevronRight, AlertTriangle, BarChart3, MessageCircle,
 } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
@@ -30,22 +30,29 @@ const fmtBRL = (v) =>
 const fmtBRL0 = (v) =>
   "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
-function Atalho({ Icon, label, onClick }) {
+function Atalho({ Icon, label, sub, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="rounded-2xl p-4 flex flex-col items-start gap-3 transition-transform active:scale-[0.99]"
+      className="rounded-2xl p-3 flex flex-col items-start gap-2 transition-transform active:scale-[0.99] text-left"
       style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
     >
       <div
-        className="w-11 h-11 rounded-xl flex items-center justify-center"
+        className="w-10 h-10 rounded-xl flex items-center justify-center"
         style={{ backgroundColor: "var(--field)" }}
       >
-        <Icon size={22} style={{ color: "var(--primary)" }} />
+        <Icon size={20} style={{ color: "var(--primary)" }} />
       </div>
-      <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-        {label}
-      </span>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold leading-tight" style={{ color: "var(--text)" }}>
+          {label}
+        </p>
+        {sub && (
+          <p className="text-[11px] mt-0.5 leading-tight" style={{ color: "var(--text-secondary)" }}>
+            {sub}
+          </p>
+        )}
+      </div>
     </button>
   );
 }
@@ -333,9 +340,15 @@ export default function Menu() {
 
         <div className="px-5 space-y-4">
           {/* Atalhos */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-2.5">
             <Atalho Icon={Bell} label="Notificações" onClick={() => navigate("/alertas")} />
             <Atalho Icon={HelpCircle} label="Dúvidas" onClick={() => navigate("/faq")} />
+            <Atalho
+              Icon={MessageCircle}
+              label="Chat IA"
+              sub="Sua assistente fiscal"
+              onClick={() => navigate("/chat")}
+            />
           </div>
 
           {/* Item permanente: adicionar faturamento */}
