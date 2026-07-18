@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
 import { ArrowLeft } from "lucide-react";
+import { useAppState } from "@/context/AppStateContext";
 
 // TODO: adaptar termo ao perfil (MEI_CAMINHONEIRO => "frete")
 // TODO: salvar no Supabase/localStorage
