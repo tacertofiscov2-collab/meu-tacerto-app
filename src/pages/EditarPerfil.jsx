@@ -84,29 +84,16 @@ export default function EditarPerfil() {
         {/* Avatar */}
         <div className="flex flex-col items-center gap-2 pt-2">
           <div
-            className="w-24 h-24 rounded-full flex items-center justify-center relative"
+            className="w-24 h-24 rounded-full flex items-center justify-center"
             style={{ backgroundColor: "var(--field)", border: "1px solid var(--border)" }}
           >
             <span className="text-4xl font-bold" style={{ color: "var(--primary)" }}>
               {inicial}
             </span>
-            <div
-              className="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: "var(--primary)" }}
-            >
-              <Camera size={14} style={{ color: "var(--primary-contrast)" }} />
-            </div>
           </div>
-          <button
-            className="text-sm font-semibold"
-            style={{ color: "var(--primary)" }}
-            onClick={() => {
-              // TODO: abrir seletor de imagem
-            }}
-          >
-            Alterar foto
-          </button>
         </div>
+
+
 
         {/* Nome */}
         <div className="space-y-2">
