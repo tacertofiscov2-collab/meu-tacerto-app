@@ -29,13 +29,12 @@ function isoDateOnly(iso) {
 
 export default function Historico() {
   const navigate = useNavigate();
-  const { lancamentos, atualizarLancamento, removerLancamento } = useAppState();
+  const { lancamentos, removerLancamento } = useAppState();
   const anoAtual = new Date().getFullYear();
   const mesAtual = new Date().getMonth();
   const [busca, setBusca] = useState("");
   const [mes, setMes] = useState(`${MESES[mesAtual]} ${anoAtual}`);
-  const [editando, setEditando] = useState(null);
-  const [confirmarExcluir, setConfirmarExcluir] = useState(false);
+  const [excluirId, setExcluirId] = useState(null);
   const [modalFaturamento, setModalFaturamento] = useState(false);
   const [mostrarFaturamento, setMostrarFaturamento] = useState(true);
 
@@ -86,21 +85,11 @@ export default function Historico() {
     color: "var(--text)",
   };
 
-  function salvarEdicao(e) {
-    e.preventDefault();
-    atualizarLancamento(editando.id, {
-      descricao: editando.descricao,
-      valor: Number(editando.valor) || 0,
-      data: new Date(editando._dataInput + "T12:00:00").toISOString(),
-    });
-    setEditando(null);
+  function confirmarExcluir() {
+    if (excluirId) removerLancamento(excluirId);
+    setExcluirId(null);
   }
 
-  function excluir() {
-    removerLancamento(editando.id);
-    setConfirmarExcluir(false);
-    setEditando(null);
-  }
 
 
   return (
