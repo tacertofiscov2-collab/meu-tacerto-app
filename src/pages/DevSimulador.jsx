@@ -33,10 +33,12 @@ export default function DevSimulador() {
     limiteAtual: limite,
     mesAnoAbertura,
     modoSimulacao,
+    lancamentos,
     setTipoMEI,
     setFaturamentoSimulado,
     setMesAnoAbertura,
     setModoSimulacao,
+    removerTodosLancamentos,
   } = useAppState();
   const mesAbertura = mesAnoAbertura?.mes ?? null;
   const anoAbertura = mesAnoAbertura?.ano ?? null;
@@ -136,15 +138,32 @@ export default function DevSimulador() {
               className="w-full px-4 py-4 rounded-xl text-2xl font-bold outline-none focus:ring-2 focus:ring-[var(--primary)]"
               style={fieldStyle}
             />
-            <button
-              onClick={() => setModoSimulacao(!modoSimulacao)}
-              className="text-xs underline"
-              style={{ color: "var(--text-secondary)" }}
+            <div
+              className="flex items-center justify-between rounded-xl px-3 py-2.5"
+              style={{ backgroundColor: "var(--field)", border: "1px solid var(--border)" }}
             >
-              {modoSimulacao
-                ? "Desativar simulação (usar soma real dos lançamentos)"
-                : "Ativar simulação (ignorar lançamentos)"}
-            </button>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                  Modo simulação
+                </p>
+                <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                  {modoSimulacao ? "ON — usando valor acima" : "OFF — somando lançamentos reais"}
+                </p>
+              </div>
+              <button
+                onClick={() => setModoSimulacao(!modoSimulacao)}
+                aria-pressed={modoSimulacao}
+                className="relative w-12 h-7 rounded-full transition-colors"
+                style={{
+                  backgroundColor: modoSimulacao ? "var(--primary)" : "var(--border)",
+                }}
+              >
+                <span
+                  className="absolute top-0.5 w-6 h-6 rounded-full bg-white transition-all"
+                  style={{ left: modoSimulacao ? "22px" : "2px" }}
+                />
+              </button>
+            </div>
             <div className="grid grid-cols-1 gap-2 pt-1">
               {PRESETS.map((p) => (
                 <button
@@ -227,6 +246,31 @@ export default function DevSimulador() {
             <p className="text-sm leading-relaxed pt-1" style={{ color: "var(--text)" }}>
               {faixa.mensagem}
             </p>
+          </div>
+
+          {/* Ações destrutivas */}
+          <div className="rounded-2xl p-4 space-y-3" style={cardStyle}>
+            <p className="text-xs uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
+              Dados
+            </p>
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              {lancamentos.length} lançamento(s) registrado(s).
+            </p>
+            <button
+              onClick={() => {
+                if (confirm("Apagar todos os lançamentos? Esta ação não pode ser desfeita.")) {
+                  removerTodosLancamentos();
+                }
+              }}
+              className="w-full py-2.5 rounded-xl text-sm font-semibold"
+              style={{
+                backgroundColor: "rgba(239,68,68,0.12)",
+                border: "1px solid rgba(239,68,68,0.4)",
+                color: "#ef4444",
+              }}
+            >
+              Limpar todos os lançamentos (teste)
+            </button>
           </div>
         </div>
       </div>

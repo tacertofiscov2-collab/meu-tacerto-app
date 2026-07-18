@@ -50,7 +50,7 @@ export default function Lancar() {
     });
     await new Promise((r) => setTimeout(r, 200));
     setSalvando(false);
-    navigate("/dashboard");
+    navigate("/historico");
   }
 
   const fieldStyle = {
