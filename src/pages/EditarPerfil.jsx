@@ -43,9 +43,17 @@ export default function EditarPerfil() {
     color: "var(--text)",
   };
 
-  function alternarPerfil() {
-    setPerfil((p) => (p === "MEI" ? "MEI_CAMINHONEIRO" : "MEI"));
+  function escolherTipo(novo) {
+    setSelecionarTipo(false);
+    if (novo === perfil) return;
+    setPerfilPendente(novo);
+    setConfirmarTroca(true);
+  }
+
+  function confirmarAlteracao() {
+    if (perfilPendente) setPerfil(perfilPendente);
     setConfirmarTroca(false);
+    setPerfilPendente(null);
   }
 
   function salvar() {
