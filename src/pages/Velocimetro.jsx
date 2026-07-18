@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, TrendingUp } from "lucide-react";
 
 import BottomNav from "../components/BottomNav.jsx";
+import Valor from "../components/Valor.jsx";
 import { useUserState } from "@/lib/userState";
 import {
   calcularPercentual,
