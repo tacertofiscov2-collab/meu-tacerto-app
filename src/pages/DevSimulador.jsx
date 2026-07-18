@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, FlaskConical } from "lucide-react";
-import { useUserState, setUserState } from "@/lib/userState";
+import { useAppState } from "@/context/AppStateContext";
 import {
   LIMITES_ANUAIS,
   LABEL_TIPO,
@@ -27,7 +27,19 @@ const MESES = [
 
 export default function DevSimulador() {
   const navigate = useNavigate();
-  const { tipo, faturado, limite, mesAbertura, anoAbertura } = useUserState();
+  const {
+    tipoMEI: tipo,
+    faturamentoAtual: faturado,
+    limiteAtual: limite,
+    mesAnoAbertura,
+    modoSimulacao,
+    setTipoMEI,
+    setFaturamentoSimulado,
+    setMesAnoAbertura,
+    setModoSimulacao,
+  } = useAppState();
+  const mesAbertura = mesAnoAbertura?.mes ?? null;
+  const anoAbertura = mesAnoAbertura?.ano ?? null;
   const anoAtual = new Date().getFullYear();
 
   const percentual = calcularPercentual(faturado, limite);
@@ -45,8 +57,9 @@ export default function DevSimulador() {
   };
 
   function aplicarPreset(pct) {
-    setUserState({ faturado: Math.round((limite * pct) / 100) });
+    setFaturamentoSimulado(Math.round((limite * pct) / 100));
   }
+
 
   return (
     <div
@@ -95,7 +108,7 @@ export default function DevSimulador() {
                 return (
                   <button
                     key={t}
-                    onClick={() => setUserState({ tipo: t })}
+                    onClick={() => setTipoMEI(t)}
                     className="py-2.5 rounded-xl text-sm font-semibold"
                     style={{
                       backgroundColor: sel ? "var(--primary)" : "var(--field)",
@@ -119,10 +132,19 @@ export default function DevSimulador() {
               type="number"
               min="0"
               value={faturado}
-              onChange={(e) => setUserState({ faturado: Number(e.target.value) || 0 })}
+              onChange={(e) => setFaturamentoSimulado(Number(e.target.value) || 0)}
               className="w-full px-4 py-4 rounded-xl text-2xl font-bold outline-none focus:ring-2 focus:ring-[var(--primary)]"
               style={fieldStyle}
             />
+            <button
+              onClick={() => setModoSimulacao(!modoSimulacao)}
+              className="text-xs underline"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              {modoSimulacao
+                ? "Desativar simulação (usar soma real dos lançamentos)"
+                : "Ativar simulação (ignorar lançamentos)"}
+            </button>
             <div className="grid grid-cols-1 gap-2 pt-1">
               {PRESETS.map((p) => (
                 <button
@@ -150,10 +172,10 @@ export default function DevSimulador() {
               <select
                 value={mesAbertura ?? ""}
                 onChange={(e) =>
-                  setUserState({
-                    mesAbertura: e.target.value ? Number(e.target.value) : null,
-                    anoAbertura: anoAbertura ?? anoAtual,
-                  })
+                  setMesAnoAbertura(
+                    e.target.value ? Number(e.target.value) : null,
+                    e.target.value ? (anoAbertura ?? anoAtual) : null,
+                  )
                 }
                 className="w-full px-3 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 style={fieldStyle}
@@ -170,16 +192,17 @@ export default function DevSimulador() {
                 value={anoAbertura ?? ""}
                 placeholder="Ano"
                 onChange={(e) =>
-                  setUserState({
-                    anoAbertura: e.target.value ? Number(e.target.value) : null,
-                  })
+                  setMesAnoAbertura(
+                    mesAbertura,
+                    e.target.value ? Number(e.target.value) : null,
+                  )
                 }
                 className="w-full px-3 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 style={fieldStyle}
               />
             </div>
             <button
-              onClick={() => setUserState({ mesAbertura: null, anoAbertura: null })}
+              onClick={() => setMesAnoAbertura(null, null)}
               className="text-xs underline"
               style={{ color: "var(--text-secondary)" }}
             >

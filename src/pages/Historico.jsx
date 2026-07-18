@@ -7,17 +7,8 @@ import {
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
+import { useAppState } from "@/context/AppStateContext";
 const DISMISS_KEY = "tacerto:hist_faturamento_dismissed";
-
-// TODO: buscar do backend
-const LANCAMENTOS_MOCK = [
-  { id: 1, descricao: "1º Frete de Julho", data: "10 de Julho", dataISO: "2026-07-10", valor: 3500 },
-  { id: 2, descricao: "Frete São Paulo → Rio", data: "08 de Julho", dataISO: "2026-07-08", valor: 2800 },
-  { id: 3, descricao: "Serviço avulso", data: "05 de Julho", dataISO: "2026-07-05", valor: 1200 },
-  { id: 4, descricao: "Frete Curitiba → Joinville", data: "03 de Julho", dataISO: "2026-07-03", valor: 2400 },
-  { id: 5, descricao: "Entrega expressa", data: "02 de Julho", dataISO: "2026-07-02", valor: 900 },
-  { id: 6, descricao: "Frete BH → Vitória", data: "01 de Julho", dataISO: "2026-07-01", valor: 1600 },
-];
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -27,11 +18,21 @@ const MESES = [
 const fmtBRL = (v) =>
   "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
+function labelData(iso) {
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2, "0")} de ${MESES[d.getMonth()]}`;
+}
+function isoDateOnly(iso) {
+  return new Date(iso).toISOString().slice(0, 10);
+}
+
 export default function Historico() {
   const navigate = useNavigate();
-  const [lancamentos, setLancamentos] = useState(LANCAMENTOS_MOCK);
+  const { lancamentos, atualizarLancamento, removerLancamento } = useAppState();
+  const anoAtual = new Date().getFullYear();
+  const mesAtual = new Date().getMonth();
   const [busca, setBusca] = useState("");
-  const [mes, setMes] = useState("Julho 2026"); // TODO: filtrar por mês real
+  const [mes, setMes] = useState(`${MESES[mesAtual]} ${anoAtual}`);
   const [editando, setEditando] = useState(null);
   const [confirmarExcluir, setConfirmarExcluir] = useState(false);
   const [modalFaturamento, setModalFaturamento] = useState(false);
@@ -44,21 +45,33 @@ export default function Historico() {
   }, []);
 
   function dispensarFaturamento() {
-    // TODO: persistir preferência no backend/Supabase
     try {
       localStorage.setItem(DISMISS_KEY, "1");
     } catch {}
     setMostrarFaturamento(false);
   }
 
+  const [mesNome, anoStr] = mes.split(" ");
+  const mesIdx = MESES.indexOf(mesNome);
+  const anoNum = Number(anoStr);
+
+  const doMes = useMemo(
+    () =>
+      lancamentos.filter((l) => {
+        const d = new Date(l.data);
+        return d.getMonth() === mesIdx && d.getFullYear() === anoNum;
+      }),
+    [lancamentos, mesIdx, anoNum],
+  );
+
   const filtrados = useMemo(() => {
     const q = busca.trim().toLowerCase();
-    if (!q) return lancamentos;
-    return lancamentos.filter((l) => l.descricao.toLowerCase().includes(q));
-  }, [busca, lancamentos]);
+    const base = q ? doMes.filter((l) => l.descricao.toLowerCase().includes(q)) : doMes;
+    return [...base].sort((a, b) => new Date(b.data) - new Date(a.data));
+  }, [busca, doMes]);
 
   const total = useMemo(
-    () => filtrados.reduce((s, l) => s + l.valor, 0),
+    () => filtrados.reduce((s, l) => s + (Number(l.valor) || 0), 0),
     [filtrados],
   );
 
@@ -74,19 +87,20 @@ export default function Historico() {
 
   function salvarEdicao(e) {
     e.preventDefault();
-    // TODO: persistir no backend
-    setLancamentos((prev) =>
-      prev.map((l) => (l.id === editando.id ? { ...editando } : l)),
-    );
+    atualizarLancamento(editando.id, {
+      descricao: editando.descricao,
+      valor: Number(editando.valor) || 0,
+      data: new Date(editando._dataInput + "T12:00:00").toISOString(),
+    });
     setEditando(null);
   }
 
   function excluir() {
-    // TODO: excluir no backend
-    setLancamentos((prev) => prev.filter((l) => l.id !== editando.id));
+    removerLancamento(editando.id);
     setConfirmarExcluir(false);
     setEditando(null);
   }
+
 
   return (
     <div
@@ -195,7 +209,7 @@ export default function Historico() {
               style={fieldStyle}
             >
               {MESES.map((m) => (
-                <option key={m} value={`${m} 2026`}>{`${m} 2026`}</option>
+                <option key={m} value={`${m} ${anoAtual}`}>{`${m} ${anoAtual}`}</option>
               ))}
             </select>
             <ChevronDown
@@ -239,7 +253,7 @@ export default function Historico() {
               {filtrados.map((l) => (
                 <li key={l.id}>
                   <button
-                    onClick={() => setEditando({ ...l })}
+                    onClick={() => setEditando({ ...l, _dataInput: isoDateOnly(l.data) })}
                     className="w-full rounded-xl p-4 flex items-center gap-3 text-left transition-transform active:scale-[0.99]"
                     style={cardStyle}
                   >
@@ -254,7 +268,7 @@ export default function Historico() {
                         {l.descricao}
                       </p>
                       <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                        {l.data}
+                        {labelData(l.data)}
                       </p>
                     </div>
                     <span
@@ -334,9 +348,9 @@ export default function Historico() {
                 </label>
                 <input
                   type="date"
-                  value={editando.dataISO}
+                  value={editando._dataInput}
                   onChange={(e) =>
-                    setEditando({ ...editando, dataISO: e.target.value })
+                    setEditando({ ...editando, _dataInput: e.target.value })
                   }
                   className="w-full mt-1 px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   style={fieldStyle}
