@@ -33,6 +33,22 @@ export default function Historico() {
   const [mes, setMes] = useState("Julho 2026"); // TODO: filtrar por mês real
   const [editando, setEditando] = useState(null);
   const [confirmarExcluir, setConfirmarExcluir] = useState(false);
+  const [modalFaturamento, setModalFaturamento] = useState(false);
+  const [mostrarFaturamento, setMostrarFaturamento] = useState(true);
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(DISMISS_KEY) === "1") setMostrarFaturamento(false);
+    } catch {}
+  }, []);
+
+  function dispensarFaturamento() {
+    // TODO: persistir preferência no backend/Supabase
+    try {
+      localStorage.setItem(DISMISS_KEY, "1");
+    } catch {}
+    setMostrarFaturamento(false);
+  }
 
   const filtrados = useMemo(() => {
     const q = busca.trim().toLowerCase();
