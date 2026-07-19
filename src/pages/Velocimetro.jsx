@@ -3,6 +3,7 @@ import { ArrowLeft, TrendingUp } from "lucide-react";
 
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
+import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
 import { useUserState } from "@/lib/userState";
 import {
   calcularPercentual,
@@ -10,6 +11,7 @@ import {
   faixaDoVelocimetro,
   FAIXA_INFO,
 } from "@/lib/fiscal";
+
 
 const COR_VERDE = "#22c55e";
 const COR_LARANJA = "#f59e0b";
