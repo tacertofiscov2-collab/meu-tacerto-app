@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, MessageCircle, HelpCircle, FileText, ListChecks, Sparkles,
+  ArrowLeft, Sparkles, HelpCircle, FileText, ListChecks, Wand2,
   Paperclip, Send,
 } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
@@ -10,7 +10,7 @@ const VANTAGENS = [
   { Icon: HelpCircle, texto: "Tire dúvidas sobre MEI, DAS e imposto na hora" },
   { Icon: FileText, texto: "Envie foto ou PDF do extrato e a IA calcula pra você" },
   { Icon: ListChecks, texto: "Passo a passo pra pagar o DAS sem erro" },
-  { Icon: Sparkles, texto: "Explicações simples, sem juridiquês" },
+  { Icon: Wand2, texto: "Explicações simples, sem juridiquês" },
 ];
 
 export default function Chat() {
@@ -41,11 +41,16 @@ export default function Chat() {
 
   return (
     <div
-      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
-      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
+      className="w-full flex flex-col"
+      style={{
+        backgroundColor: "var(--bg)",
+        color: "var(--text)",
+        height: "100dvh",
+        overflow: "hidden",
+      }}
     >
-      {/* Header */}
-      <header className="px-5 pt-6 pb-4 flex items-center gap-3 shrink-0">
+      {/* Header — só botão voltar, sem título */}
+      <header className="px-5 pt-6 pb-2 flex items-center gap-3 shrink-0">
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
@@ -54,24 +59,21 @@ export default function Chat() {
         >
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
         </button>
-        <h1 className="text-xl font-bold flex-1 text-center pr-10" style={{ color: "var(--text)" }}>
-          Chat IA
-        </h1>
       </header>
 
       {/* Área principal */}
       <div
         ref={listaRef}
         className="flex-1 overflow-y-auto px-5"
-        style={{ paddingBottom: "calc(130px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}
       >
         {vazio ? (
-          <div className="flex flex-col items-center text-center pt-4">
+          <div className="flex flex-col items-center text-center pt-1">
             <div
               className="w-20 h-20 rounded-2xl flex items-center justify-center"
               style={{ backgroundColor: "var(--field)", border: "1px solid var(--border)" }}
             >
-              <MessageCircle size={40} style={{ color: "var(--primary)" }} />
+              <Sparkles size={40} style={{ color: "var(--primary)" }} />
             </div>
             <h2 className="mt-5 text-2xl font-bold" style={{ color: "var(--text)" }}>
               Sua assistente fiscal
@@ -138,11 +140,17 @@ export default function Chat() {
         )}
       </div>
 
-      {/* Input fixo acima da navbar */}
+      {/* Input fixo no rodapé (sem BottomNav nessa tela, então cola no fundo) */}
       <form
         onSubmit={enviar}
         className="fixed left-0 right-0 z-20 px-4"
-        style={{ bottom: "calc(90px + env(safe-area-inset-bottom))" }}
+        style={{
+          bottom: 0,
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)",
+          paddingTop: 8,
+          backgroundColor: "var(--bg)",
+          borderTop: "1px solid var(--border)",
+        }}
       >
         <div
           className="flex items-center gap-2 rounded-full pl-2 pr-1.5 py-1.5"
