@@ -43,7 +43,6 @@ export default function App() {
         <Route path="/lancar" element={<Lancar />} />
         <Route path="/lancar/limite-atingido" element={<LimiteAtingido />} />
         <Route path="/historico" element={<Historico />} />
-        <Route path="/menu" element={<Menu />} />
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/alertas" element={<Alertas />} />
         <Route path="/preferencias" element={<Preferencias />} />
@@ -56,12 +55,7 @@ export default function App() {
         <Route path="/perfil/informacoes-fiscais" element={<InformacoesFiscais />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/dev/simulador" element={<DevSimulador />} />
-        <Route path="/dev/simulador" element={<DevSimulador />} />
         <Route path="/excluir-conta" element={<ExcluirConta />} />
-        <Route path="/menu/calculadora-das" element={<CalculadoraDASPage />} />
-        <Route path="/menu/guia-das" element={<GuiaDAS />} />
-        <Route path="/menu/calendario-fiscal" element={<CalendarioFiscalPage />} />
-        <Route path="/menu/simulador-desenquadramento" element={<SimuladorDesenquadramentoPage />} />
         <Route path="*" element={<EmConstrucao />} />
       </Routes>
       <Toaster
