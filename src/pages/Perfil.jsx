@@ -44,8 +44,8 @@ export default function Perfil() {
   const totalContas = contas.length;
   const temMultiplas = !visitante && totalContas >= 2;
 
-  const nomeExibido = visitante ? "Visitante" : (nome || "Usuário");
-  const inicial = (nome || "").trim().charAt(0).toUpperCase();
+  const nomeExibido = (nome && nome.trim()) ? nome : "Visitante";
+  const inicial = (nomeExibido || "?").trim().charAt(0).toUpperCase();
 
   function handleFoto(e) {
     const file = e.target.files?.[0];
