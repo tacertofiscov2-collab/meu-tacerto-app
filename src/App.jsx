@@ -15,7 +15,6 @@ import LimiteAtingido from "./pages/LimiteAtingido.jsx";
 import EmConstrucao from "./pages/EmConstrucao.jsx";
 import Historico from "./pages/Historico.jsx";
 import Perfil from "./pages/Perfil.jsx";
-import Menu from "./pages/Menu.jsx";
 import Alertas from "./pages/Alertas.jsx";
 import Preferencias from "./pages/Preferencias.jsx";
 import Faq from "./pages/Faq.jsx";
@@ -27,10 +26,6 @@ import ResumoPerfil from "./pages/ResumoPerfil.jsx";
 import InformacoesFiscais from "./pages/InformacoesFiscais.jsx";
 import Chat from "./pages/Chat.jsx";
 import DevSimulador from "./pages/DevSimulador.jsx";
-import CalculadoraDASPage from "./pages/CalculadoraDAS.jsx";
-import GuiaDAS from "./pages/GuiaDAS.jsx";
-import CalendarioFiscalPage from "./pages/CalendarioFiscal.jsx";
-import SimuladorDesenquadramentoPage from "./pages/SimuladorDesenquadramento.jsx";
 
 export default function App() {
   return (
@@ -48,7 +43,6 @@ export default function App() {
         <Route path="/lancar" element={<Lancar />} />
         <Route path="/lancar/limite-atingido" element={<LimiteAtingido />} />
         <Route path="/historico" element={<Historico />} />
-        <Route path="/menu" element={<Menu />} />
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/alertas" element={<Alertas />} />
         <Route path="/preferencias" element={<Preferencias />} />
@@ -61,12 +55,7 @@ export default function App() {
         <Route path="/perfil/informacoes-fiscais" element={<InformacoesFiscais />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/dev/simulador" element={<DevSimulador />} />
-        <Route path="/dev/simulador" element={<DevSimulador />} />
         <Route path="/excluir-conta" element={<ExcluirConta />} />
-        <Route path="/menu/calculadora-das" element={<CalculadoraDASPage />} />
-        <Route path="/menu/guia-das" element={<GuiaDAS />} />
-        <Route path="/menu/calendario-fiscal" element={<CalendarioFiscalPage />} />
-        <Route path="/menu/simulador-desenquadramento" element={<SimuladorDesenquadramentoPage />} />
         <Route path="*" element={<EmConstrucao />} />
       </Routes>
       <Toaster

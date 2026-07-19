@@ -130,12 +130,6 @@ function VelocimetroGrande({ percentual }) {
         <span className="text-5xl font-bold" style={{ color: "var(--text)" }}>
           {Math.round(percentual)}%
         </span>
-        <span
-          className="text-base font-semibold mt-1"
-          style={{ color: faixa.cor }}
-        >
-          {faixa.label}
-        </span>
       </div>
     </div>
   );
@@ -203,15 +197,19 @@ export default function Velocimetro() {
               <div
                 key={c.label}
                 className={
-                  "flex flex-col items-center text-center px-1 min-w-0 " +
+                  "flex flex-col items-center text-center min-w-0 " +
                   (i > 0 ? "border-l" : "")
                 }
-                style={i > 0 ? { borderColor: "var(--border)" } : undefined}
+                style={{
+                  paddingLeft: 8,
+                  paddingRight: 8,
+                  ...(i > 0 ? { borderColor: "var(--border)" } : {}),
+                }}
               >
-                <Valor tamanho="sm" cor={c.cor}>{c.valor}</Valor>
+                <Valor tamanho="sm" cor={c.cor} autoAjustar>{c.valor}</Valor>
                 <span
                   className="text-xs mt-1"
-                  style={{ color: "var(--text-secondary)" }}
+                  style={{ color: c.cor || "var(--text-secondary)" }}
                 >
                   {c.label}
                 </span>

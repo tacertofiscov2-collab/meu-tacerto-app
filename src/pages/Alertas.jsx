@@ -101,7 +101,7 @@ export default function Alertas() {
           </div>
         </div>
 
-        {alertaFaixa ? (
+        {alertaFaixa && (
           <div
             className="rounded-2xl p-4"
             style={{ ...cardStyle, borderLeft: `4px solid ${alertaFaixa.cor}` }}
@@ -122,24 +122,6 @@ export default function Alertas() {
                 </p>
               </div>
             </div>
-          </div>
-        ) : (
-          <div
-            className="rounded-2xl py-16 px-6 flex flex-col items-center gap-3 text-center"
-            style={cardStyle}
-          >
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: "var(--field)" }}
-            >
-              <Bell size={30} style={{ color: "var(--text-secondary)" }} />
-            </div>
-            <p className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-              Nenhuma notificação por enquanto
-            </p>
-            <p className="text-xs max-w-xs" style={{ color: "var(--text-secondary)" }}>
-              Seus alertas aparecerão aqui conforme você usar o app.
-            </p>
           </div>
         )}
       </div>

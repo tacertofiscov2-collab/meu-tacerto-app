@@ -1,11 +1,11 @@
 import { useLocation } from "react-router-dom";
 import BottomNav from "./BottomNav.jsx";
 
-const ROTAS_COM_NAVBAR = ["/dashboard", "/menu"];
+const ROTAS_COM_NAVBAR = ["/dashboard"];
 
 /**
  * PageLayout — wrapper canônico das telas internas do TaCerto!.
- * A navbar (e o padding-bottom pra ela) só aparece em /dashboard e /menu.
+ * A navbar (e o padding-bottom pra ela) só aparece em /dashboard.
  */
 export default function PageLayout({
   children,

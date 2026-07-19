@@ -4,8 +4,9 @@ import BottomNav from "../components/BottomNav.jsx";
 import { SectionTitle, FlatGroup, FlatItem } from "../components/FlatList.jsx";
 import {
   ArrowLeft, User, Settings, Info, Shield, Users, Lock, LogOut,
-  ChevronDown, UserPlus, Pencil, X, Check,
+  ChevronDown, UserPlus, Pencil, X, Check, Receipt, TrendingUp, BarChart3,
 } from "lucide-react";
+import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import { useUserState, setUserState } from "@/lib/userState";
 import { lerContas, lerContaAtivaId, ativarConta } from "@/lib/contas";
@@ -25,6 +26,7 @@ export default function Perfil() {
   const [contaAtivaId, setContaAtivaId] = useState(lerContaAtivaId);
   const [seletorAberto, setSeletorAberto] = useState(false);
   const [confirmarSair, setConfirmarSair] = useState(false);
+  const [modalFaturamento, setModalFaturamento] = useState(false);
 
   useEffect(() => {
     const handler = () => {
@@ -103,8 +105,8 @@ export default function Perfil() {
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       <div
-        className="flex-1 overflow-y-auto"
-        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
+        className="flex-1 overflow-y-auto flex flex-col"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <header className="px-5 pt-6 pb-4 flex items-center gap-3">
           <button
@@ -183,7 +185,7 @@ export default function Perfil() {
           </button>
         </div>
 
-        <div className="px-5">
+        <div className="px-5 flex-1 flex flex-col">
           <SectionTitle>Geral</SectionTitle>
           <FlatGroup>
             <FlatItem
@@ -203,27 +205,50 @@ export default function Perfil() {
             />
           </FlatGroup>
 
-          <SectionTitle>Segurança e Privacidade</SectionTitle>
-          <FlatGroup>
-            <FlatItem
-              Icon={Lock}
-              label="Alterar senha"
-              onClick={() => navigate("/alterar-senha")}
-            />
-            <FlatItem
-              Icon={Shield}
-              label="Termos e Privacidade"
-              onClick={() => navigate("/termos")}
-            />
-            <FlatItem
-              Icon={Info}
-              label="Sobre o TaCerto!"
-              onClick={() => navigate("/sobre")}
-            />
-          </FlatGroup>
+          <div style={{ marginTop: 24 }}>
+            <SectionTitle>Meu MEI</SectionTitle>
+            <FlatGroup>
+              <FlatItem
+                Icon={Receipt}
+                label="Histórico de lançamentos"
+                onClick={() => navigate("/historico")}
+              />
+              <FlatItem
+                Icon={TrendingUp}
+                label="Adicionar faturamento do ano 2026"
+                onClick={() => setModalFaturamento(true)}
+              />
+              <FlatItem
+                Icon={BarChart3}
+                label="Resumo 2026"
+                onClick={() => navigate("/perfil/resumo")}
+              />
+            </FlatGroup>
+          </div>
 
-          {/* Rodapé — apenas Sair */}
-          <div style={{ marginTop: 32 }}>
+          <div style={{ marginTop: 24 }}>
+            <SectionTitle>Segurança e Privacidade</SectionTitle>
+            <FlatGroup>
+              <FlatItem
+                Icon={Lock}
+                label="Alterar senha"
+                onClick={() => navigate("/alterar-senha")}
+              />
+              <FlatItem
+                Icon={Shield}
+                label="Termos e Privacidade"
+                onClick={() => navigate("/termos")}
+              />
+              <FlatItem
+                Icon={Info}
+                label="Sobre o TaCerto!"
+                onClick={() => navigate("/sobre")}
+              />
+            </FlatGroup>
+          </div>
+
+          {/* Rodapé — Sair + versão, empurrado para o fim */}
+          <div style={{ marginTop: "auto", paddingTop: 40 }}>
             <FlatGroup>
               <FlatItem
                 Icon={LogOut}
@@ -234,22 +259,28 @@ export default function Perfil() {
                 onClick={() => setConfirmarSair(true)}
               />
             </FlatGroup>
+            <p
+              className="text-center"
+              style={{
+                color: "var(--text-secondary)",
+                opacity: 0.6,
+                fontSize: 11,
+                marginTop: 16,
+                marginBottom: 8,
+              }}
+            >
+              v0.1
+            </p>
           </div>
-
-          {/* Versão discreta */}
-          <p
-            className="text-center"
-            style={{
-              color: "var(--text-secondary)",
-              opacity: 0.6,
-              fontSize: 11,
-              marginTop: 24,
-            }}
-          >
-            v0.1
-          </p>
         </div>
       </div>
+
+      <ModalFaturamentoInicial
+        aberto={modalFaturamento}
+        onClose={() => setModalFaturamento(false)}
+        onSalvar={() => setModalFaturamento(false)}
+      />
+
 
       {/* Bottom sheet: seletor de contas */}
       {seletorAberto && (

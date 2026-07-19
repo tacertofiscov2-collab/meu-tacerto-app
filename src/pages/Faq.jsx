@@ -5,6 +5,12 @@ import { ArrowLeft, Search, ChevronDown } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 const PERGUNTAS = [
   {
+    id: 0,
+    pergunta: "Preciso lançar recebimentos em dinheiro?",
+    resposta:
+      "Sim. Como MEI, você precisa registrar TODA receita que entrar pela sua atividade — dinheiro, Pix, cartão, transferência, boleto ou cheque. Não importa se você emitiu nota fiscal ou não: o que conta é o valor recebido. A obrigação vem da Lei Complementar 123/2006, e a soma de todas essas receitas é o que define seu faturamento anual do MEI.",
+  },
+  {
     id: 1,
     pergunta: "Qual o limite de faturamento do MEI?",
     resposta:
