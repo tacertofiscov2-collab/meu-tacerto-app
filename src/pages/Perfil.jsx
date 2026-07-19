@@ -179,7 +179,7 @@ export default function Perfil() {
             <span
               className="font-bold"
               style={{
-                color: visitante ? "var(--text-secondary)" : "var(--text)",
+                color: "var(--text)",
                 fontSize: 22,
               }}
             >
