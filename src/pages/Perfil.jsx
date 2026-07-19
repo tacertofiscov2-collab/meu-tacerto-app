@@ -127,16 +127,18 @@ export default function Perfil() {
           <div className="relative">
             <button
               type="button"
-              onClick={() => fileRef.current?.click()}
+              onClick={() => { if (!visitante) fileRef.current?.click(); }}
               className="block w-24 h-24 rounded-full overflow-hidden active:opacity-80"
-              style={{ backgroundColor: "var(--field)" }}
-              aria-label="Alterar foto"
+              style={{ backgroundColor: "var(--field)", cursor: visitante ? "default" : "pointer" }}
+              aria-label={visitante ? "Avatar" : "Alterar foto"}
             >
-              {foto ? (
+              {foto && !visitante ? (
                 <img src={foto} alt="" className="w-full h-full object-cover" />
               ) : visitante ? (
                 <div className="w-full h-full flex items-center justify-center">
-                  <User size={40} style={{ color: "var(--text-secondary)" }} />
+                  <span className="font-bold" style={{ color: "var(--primary)", fontSize: 40 }}>
+                    {inicial || "?"}
+                  </span>
                 </div>
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
@@ -146,22 +148,26 @@ export default function Perfil() {
                 </div>
               )}
             </button>
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              aria-label="Editar foto"
-              className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center shadow"
-              style={{ backgroundColor: "var(--primary)" }}
-            >
-              <Pencil size={14} style={{ color: "#0f0f11" }} />
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFoto}
-            />
+            {!visitante && (
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                aria-label="Editar foto"
+                className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center shadow"
+                style={{ backgroundColor: "var(--primary)" }}
+              >
+                <Pencil size={14} style={{ color: "#0f0f11" }} />
+              </button>
+            )}
+            {!visitante && (
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFoto}
+              />
+            )}
           </div>
 
           <button
