@@ -284,7 +284,7 @@ function CardChatIA({ onClick }) {
   return (
     <button
       onClick={onClick}
-      className="relative w-full flex-1 rounded-3xl px-5 text-left flex items-center gap-4 transition-transform active:scale-[0.99]"
+      className="relative w-full shrink-0 rounded-3xl px-5 text-left flex items-center gap-4 transition-transform active:scale-[0.99]"
       style={{
         backgroundColor: "var(--surface)",
         border: "1px solid var(--border)",
