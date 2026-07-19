@@ -137,33 +137,6 @@ export default function Velocimetro() {
       </div>
 
 
-        {/* Projeção */}
-        <div className={cardBase + " p-4"} style={cardStyle}>
-          <div className="flex items-start gap-3">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-              style={{ backgroundColor: "var(--field)" }}
-            >
-              <TrendingUp size={20} style={{ color: "var(--primary)" }} />
-            </div>
-            <div className="flex-1">
-              <p
-                className="text-sm font-semibold mb-1"
-                style={{ color: "var(--text)" }}
-              >
-                Projeção para dezembro
-              </p>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                No ritmo atual, você deve fechar o ano em{" "}
-                <Valor tamanho="sm">{projecaoAnual}</Valor>
-                {ultrapassa
-                  ? " — atenção, isso ultrapassaria o limite anual."
-                  : " — dentro do limite anual."}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <BottomNav />
     </div>
