@@ -106,7 +106,7 @@ export default function Perfil() {
     >
       <div
         className="flex-1 overflow-y-auto flex flex-col"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        style={{ paddingBottom: "calc(90px + env(safe-area-inset-bottom))" }}
       >
         <header className="px-5 pt-6 pb-4 flex items-center gap-3">
           <button
