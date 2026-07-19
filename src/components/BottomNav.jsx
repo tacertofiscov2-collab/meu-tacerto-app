@@ -1,15 +1,15 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, LayoutGrid, Plus, Receipt, User } from "lucide-react";
+import { Home, Plus, Receipt, User } from "lucide-react";
 import { useUserState } from "@/lib/userState";
 
-const ROTAS_COM_NAVBAR = ["/dashboard", "/menu"];
+const ROTAS_COM_NAVBAR = ["/dashboard"];
 
 /**
  * Navbar inferior — barra reta fosca (glass).
- * Visível APENAS em /dashboard e /menu.
+ * Visível APENAS em /dashboard.
  *
  * Props:
- * - ativo: "inicio" | "menu" | "lancar" | "historico" | "perfil" | undefined
+ * - ativo: "inicio" | "lancar" | "historico" | "perfil" | undefined
  */
 export default function BottomNav({ ativo }) {
   const navigate = useNavigate();
@@ -33,9 +33,8 @@ export default function BottomNav({ ativo }) {
 
   const itens = [
     { key: "inicio", label: "Início", Icon: Home, route: "/dashboard" },
-    { key: "menu", label: "Menu", Icon: LayoutGrid, route: "/menu" },
-    { key: "lancar", label: "Lançar", Icon: Plus, route: "/lancar", center: true },
     { key: "historico", label: "Histórico", Icon: Receipt, route: "/historico" },
+    { key: "lancar", label: "Lançar", Icon: Plus, route: "/lancar", center: true },
     { key: "perfil", label: "Perfil", Icon: User, route: "/perfil", avatar: true },
   ];
 
