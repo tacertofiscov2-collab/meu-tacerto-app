@@ -15,7 +15,6 @@ import LimiteAtingido from "./pages/LimiteAtingido.jsx";
 import EmConstrucao from "./pages/EmConstrucao.jsx";
 import Historico from "./pages/Historico.jsx";
 import Perfil from "./pages/Perfil.jsx";
-import Menu from "./pages/Menu.jsx";
 import Alertas from "./pages/Alertas.jsx";
 import Preferencias from "./pages/Preferencias.jsx";
 import Faq from "./pages/Faq.jsx";
@@ -27,10 +26,6 @@ import ResumoPerfil from "./pages/ResumoPerfil.jsx";
 import InformacoesFiscais from "./pages/InformacoesFiscais.jsx";
 import Chat from "./pages/Chat.jsx";
 import DevSimulador from "./pages/DevSimulador.jsx";
-import CalculadoraDASPage from "./pages/CalculadoraDAS.jsx";
-import GuiaDAS from "./pages/GuiaDAS.jsx";
-import CalendarioFiscalPage from "./pages/CalendarioFiscal.jsx";
-import SimuladorDesenquadramentoPage from "./pages/SimuladorDesenquadramento.jsx";
 
 export default function App() {
   return (
