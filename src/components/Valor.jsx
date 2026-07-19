@@ -39,6 +39,8 @@ function partes(valor, decimais = 2) {
   return { inteiro, centavos, negativo };
 }
 
+import { useLayoutEffect, useRef, useState } from "react";
+
 export default function Valor({
   children,
   decimais = 2,
@@ -47,20 +49,54 @@ export default function Valor({
   cor,
   className = "",
   style,
+  autoAjustar = false,
 }) {
   const { inteiro, centavos } = partes(children, decimais);
   const baseSize = TAMANHOS[tamanho] || TAMANHOS.md;
   const peso = PESOS[tamanho] || PESOS.md;
   const corValor = cor || "var(--text)";
 
+  const ref = useRef(null);
+  const [fontSize, setFontSize] = useState(baseSize);
+
+  useLayoutEffect(() => {
+    if (!autoAjustar) {
+      setFontSize(baseSize);
+      return;
+    }
+    const el = ref.current;
+    const parent = el?.parentElement;
+    if (!el || !parent) return;
+    const measure = () => {
+      const basePx =
+        typeof baseSize === "string" && baseSize.endsWith("rem")
+          ? parseFloat(baseSize) * 16
+          : parseFloat(baseSize);
+      let size = basePx;
+      el.style.fontSize = size + "px";
+      const available = parent.clientWidth - 4;
+      let guard = 40;
+      while (el.scrollWidth > available && size > 9 && guard-- > 0) {
+        size -= 0.5;
+        el.style.fontSize = size + "px";
+      }
+      setFontSize(size + "px");
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, [autoAjustar, baseSize, children, decimais]);
+
   return (
     <span
+      ref={ref}
       className={className}
       style={{
         display: "inline-flex",
         alignItems: "baseline",
         whiteSpace: "nowrap",
-        fontSize: baseSize,
+        fontSize,
         lineHeight: 1.1,
         fontVariantNumeric: "tabular-nums",
         fontWeight: peso,
