@@ -27,6 +27,10 @@ import ResumoPerfil from "./pages/ResumoPerfil.jsx";
 import InformacoesFiscais from "./pages/InformacoesFiscais.jsx";
 import Chat from "./pages/Chat.jsx";
 import DevSimulador from "./pages/DevSimulador.jsx";
+import AdicionarFaturamento from "./pages/AdicionarFaturamento.jsx";
+import AdicionarFaturamentoDigitar from "./pages/AdicionarFaturamentoDigitar.jsx";
+import AdicionarFaturamentoEnviar from "./pages/AdicionarFaturamentoEnviar.jsx";
+import AdicionarFaturamentoColar from "./pages/AdicionarFaturamentoColar.jsx";
 
 export default function App() {
   return (
@@ -58,6 +62,10 @@ export default function App() {
         <Route path="/chat" element={<Chat />} />
         <Route path="/dev/simulador" element={<DevSimulador />} />
         <Route path="/excluir-conta" element={<ExcluirConta />} />
+        <Route path="/adicionar-faturamento" element={<AdicionarFaturamento />} />
+        <Route path="/adicionar-faturamento/digitar" element={<AdicionarFaturamentoDigitar />} />
+        <Route path="/adicionar-faturamento/enviar" element={<AdicionarFaturamentoEnviar />} />
+        <Route path="/adicionar-faturamento/colar" element={<AdicionarFaturamentoColar />} />
         <Route path="*" element={<EmConstrucao />} />
       </Routes>
       <Toaster

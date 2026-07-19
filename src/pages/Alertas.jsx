@@ -88,7 +88,7 @@ export default function Alertas() {
                 calibrar o velocímetro.
               </p>
               <button
-                onClick={() => setModalFaturamento(true)}
+                onClick={() => navigate("/adicionar-faturamento")}
                 className="mt-3 py-2 px-4 rounded-xl text-xs font-semibold"
                 style={{
                   backgroundColor: "var(--primary)",

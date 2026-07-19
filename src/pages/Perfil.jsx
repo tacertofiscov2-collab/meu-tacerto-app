@@ -222,7 +222,7 @@ export default function Perfil() {
               <FlatItem
                 Icon={TrendingUp}
                 label="Adicionar faturamento do ano 2026"
-                onClick={() => setModalFaturamento(true)}
+                onClick={() => navigate("/adicionar-faturamento")}
               />
               <FlatItem
                 Icon={BarChart3}
