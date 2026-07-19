@@ -37,9 +37,11 @@ export default function Cadastro() {
 
     // Multi-conta: sempre APPEND ao array, nunca sobrescreve.
     const contasAntes = lerContas();
-    const nomeInicial = contato.split("@")[0];
-    adicionarConta({ nome: nomeInicial, email: contato });
-    setUserState({ nome: nomeInicial, email: contato, visitante: false });
+    // Preserva o nome já digitado (ex.: visitante que passou pelo onboarding).
+    const nomeExistente = (typeof window !== "undefined" ? localStorage.getItem("tacerto_nome") : "") || "";
+    const nomeFinal = nomeExistente.trim() || contato.split("@")[0];
+    adicionarConta({ nome: nomeFinal, email: contato });
+    setUserState({ nome: nomeFinal, email: contato, visitante: false });
 
     setLoading(false);
     // Primeira conta → onboarding. Adição de conta → dashboard.

@@ -1,15 +1,16 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Plus, Receipt, User } from "lucide-react";
+import { Home, Plus, User } from "lucide-react";
 import { useUserState } from "@/lib/userState";
 
-const ROTAS_COM_NAVBAR = ["/dashboard"];
+const ROTAS_COM_NAVBAR = ["/dashboard", "/perfil"];
 
 /**
  * Navbar inferior — barra reta fosca (glass).
- * Visível APENAS em /dashboard.
+ * Visível APENAS em /dashboard e /perfil.
+ * 3 itens: Início | Lançar (botão verde central) | Perfil.
  *
  * Props:
- * - ativo: "inicio" | "lancar" | "historico" | "perfil" | undefined
+ * - ativo: "inicio" | "perfil" | undefined
  */
 export default function BottomNav({ ativo }) {
   const navigate = useNavigate();
@@ -18,7 +19,6 @@ export default function BottomNav({ ativo }) {
   const { nome, visitante } = useUserState();
 
   if (!ROTAS_COM_NAVBAR.includes(location.pathname)) return null;
-
 
   const foto =
     typeof window !== "undefined"
@@ -31,12 +31,10 @@ export default function BottomNav({ ativo }) {
       ? String(nome).trim().charAt(0).toUpperCase()
       : null;
 
-  const itens = [
-    { key: "inicio", label: "Início", Icon: Home, route: "/dashboard" },
-    { key: "historico", label: "Histórico", Icon: Receipt, route: "/historico" },
-    { key: "lancar", label: "Lançar", Icon: Plus, route: "/lancar", center: true },
-    { key: "perfil", label: "Perfil", Icon: User, route: "/perfil", avatar: true },
-  ];
+  const ICON_SIZE = 28;
+
+  const corTexto = (isAtivo) =>
+    isAtivo ? "var(--primary)" : "var(--text-secondary)";
 
   return (
     <nav
@@ -56,96 +54,115 @@ export default function BottomNav({ ativo }) {
         paddingLeft: 16,
         paddingRight: 16,
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-end",
         justifyContent: "space-around",
       }}
     >
-      {itens.map(({ key, label, Icon, route, center, avatar }) => {
-        const ehAtivo = key === ativo;
-        const cor = center
-          ? "var(--primary)"
-          : ehAtivo
-          ? "var(--primary)"
-          : "var(--text-secondary)";
+      {/* Início */}
+      <button
+        onClick={() => navigate("/dashboard")}
+        aria-label="Início"
+        className="flex flex-col items-center gap-1 active:scale-95 transition"
+        style={{ background: "none", border: "none", padding: 0 }}
+      >
+        <Home
+          size={ICON_SIZE}
+          strokeWidth={ativo === "inicio" ? 2.5 : 2}
+          style={{ color: corTexto(ativo === "inicio") }}
+        />
+        <span
+          className="font-medium leading-none"
+          style={{ color: corTexto(ativo === "inicio"), fontSize: 11 }}
+        >
+          Início
+        </span>
+      </button>
 
-        return (
-          <button
-            key={key}
-            onClick={() => navigate(route)}
-            aria-label={label}
-            className="flex flex-col items-center justify-end gap-1 active:scale-95 transition"
-            style={{ background: "none", border: "none", padding: 0 }}
-          >
-            {center ? (
-              <span
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: "50%",
-                  backgroundColor: "var(--primary)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Plus
-                  size={26}
-                  strokeWidth={2.8}
-                  style={{ color: "var(--primary-contrast, #000)" }}
-                />
-              </span>
-            ) : avatar ? (
-              <span
-                style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: "50%",
-                  backgroundColor: "var(--field)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  overflow: "hidden",
-                  border: ehAtivo ? "1.5px solid var(--primary)" : "1.5px solid transparent",
-                }}
-              >
-                {foto ? (
-                  <img
-                    src={foto}
-                    alt=""
-                    style={{
-                      width: 24,
-                      height: 24,
-                      objectFit: "cover",
-                      borderRadius: "50%",
-                    }}
-                  />
-                ) : inicial ? (
-                  <span
-                    style={{
-                      color: "var(--primary)",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      lineHeight: 1,
-                    }}
-                  >
-                    {inicial}
-                  </span>
-                ) : (
-                  <User size={14} style={{ color: "var(--text-secondary)" }} />
-                )}
-              </span>
-            ) : (
-              <Icon size={24} strokeWidth={ehAtivo ? 2.5 : 2} style={{ color: cor }} />
-            )}
+      {/* Lançar — botão central, sem label, base alinhada com labels laterais */}
+      <button
+        onClick={() => navigate("/lancar")}
+        aria-label="Lançar"
+        className="flex flex-col items-center active:scale-95 transition"
+        style={{ background: "none", border: "none", padding: 0 }}
+      >
+        <span
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: "50%",
+            backgroundColor: "var(--primary)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Plus
+            size={ICON_SIZE}
+            strokeWidth={2.8}
+            style={{ color: "#0f0f11" }}
+          />
+        </span>
+      </button>
+
+      {/* Perfil */}
+      <button
+        onClick={() => navigate("/perfil")}
+        aria-label="Perfil"
+        className="flex flex-col items-center gap-1 active:scale-95 transition"
+        style={{ background: "none", border: "none", padding: 0 }}
+      >
+        <span
+          style={{
+            width: ICON_SIZE,
+            height: ICON_SIZE,
+            borderRadius: "50%",
+            backgroundColor: "var(--field)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+            border:
+              ativo === "perfil"
+                ? "1.5px solid var(--primary)"
+                : "1.5px solid transparent",
+          }}
+        >
+          {foto ? (
+            <img
+              src={foto}
+              alt=""
+              style={{
+                width: ICON_SIZE,
+                height: ICON_SIZE,
+                objectFit: "cover",
+                borderRadius: "50%",
+              }}
+            />
+          ) : inicial ? (
             <span
-              className="text-[10px] font-medium leading-none"
-              style={{ color: cor }}
+              style={{
+                color: "var(--primary)",
+                fontSize: 13,
+                fontWeight: 700,
+                lineHeight: 1,
+              }}
             >
-              {label}
+              {inicial}
             </span>
-          </button>
-        );
-      })}
+          ) : (
+            <User
+              size={18}
+              style={{ color: corTexto(ativo === "perfil") }}
+            />
+          )}
+        </span>
+        <span
+          className="font-medium leading-none"
+          style={{ color: corTexto(ativo === "perfil"), fontSize: 11 }}
+        >
+          Perfil
+        </span>
+      </button>
     </nav>
   );
 }
