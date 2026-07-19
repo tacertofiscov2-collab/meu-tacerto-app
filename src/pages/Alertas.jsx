@@ -101,7 +101,7 @@ export default function Alertas() {
           </div>
         </div>
 
-        {alertaFaixa ? (
+        {alertaFaixa && (
           <div
             className="rounded-2xl p-4"
             style={{ ...cardStyle, borderLeft: `4px solid ${alertaFaixa.cor}` }}
@@ -123,7 +123,7 @@ export default function Alertas() {
               </div>
             </div>
           </div>
-        ) : (
+        )}
           <div
             className="rounded-2xl py-16 px-6 flex flex-col items-center gap-3 text-center"
             style={cardStyle}
