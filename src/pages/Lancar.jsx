@@ -1,11 +1,17 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useMemo, useEffect, useRef } from "react";
-import { ArrowLeft, Calendar as CalendarIcon } from "lucide-react";
+import { ArrowLeft, Calendar as CalendarIcon, TrendingUp } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
 import { getUserState } from "@/lib/userState";
+import Valor from "../components/Valor.jsx";
 
 const MAX_CENTAVOS = 99999999; // R$ 999.999,99
 const LIMITE_VISITANTE = 8;
+
+const MESES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
 
 function formatBRLFromCentavos(centavos) {
   const reais = Math.floor(centavos / 100);
@@ -67,6 +73,11 @@ function validarDataBR(br) {
   return true;
 }
 
+function labelDataCurta(iso) {
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2, "0")} de ${MESES[d.getMonth()]}`;
+}
+
 export default function Lancar() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -83,6 +94,17 @@ export default function Lancar() {
     [editId, lancamentos],
   );
   const modoEdicao = Boolean(lancamentoAtual);
+
+  // Último lançamento (mais recente por data)
+  const ultimoLancamento = useMemo(() => {
+    if (!lancamentos || lancamentos.length === 0) return null;
+    // Se estiver editando, não mostra o próprio card como "último"
+    const lista = modoEdicao
+      ? lancamentos.filter((l) => l.id !== editId)
+      : lancamentos;
+    if (lista.length === 0) return null;
+    return [...lista].sort((a, b) => new Date(b.data) - new Date(a.data))[0];
+  }, [lancamentos, modoEdicao, editId]);
 
   // Bloqueio de visitante ao abrir para NOVO lançamento
   useEffect(() => {
@@ -170,7 +192,7 @@ export default function Lancar() {
     }
     await new Promise((r) => setTimeout(r, 200));
     setSalvando(false);
-    navigate("/historico");
+    navigate("/dashboard");
   }
 
   const fieldStyle = {
@@ -303,6 +325,68 @@ export default function Lancar() {
               <p className="mt-2" style={{ color: "#ef4444", fontSize: 12 }}>
                 Data inválida
               </p>
+            )}
+          </div>
+
+          {/* Último lançamento (só leitura) */}
+          <div className="pt-4">
+            <p
+              className="text-xs mb-2"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Último lançamento
+            </p>
+            {ultimoLancamento ? (
+              <div
+                className="w-full rounded-xl px-4 py-3 flex items-center gap-3"
+                style={{
+                  backgroundColor: "var(--surface)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <TrendingUp
+                  size={20}
+                  strokeWidth={1.75}
+                  style={{ color: "var(--primary)" }}
+                  className="shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p
+                    className="text-[14px] leading-tight"
+                    style={{
+                      color: "var(--text)",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {ultimoLancamento.descricao}
+                  </p>
+                  <p
+                    className="text-xs mt-0.5"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    {labelDataCurta(ultimoLancamento.data)}
+                  </p>
+                </div>
+                <div className="shrink-0">
+                  <Valor tamanho="sm" sinal="+">
+                    {ultimoLancamento.valor}
+                  </Valor>
+                </div>
+              </div>
+            ) : (
+              <div
+                className="w-full rounded-xl px-4 py-4 text-center"
+                style={{
+                  backgroundColor: "var(--surface)",
+                  border: "1px dashed var(--border)",
+                }}
+              >
+                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                  Nenhum lançamento ainda
+                </p>
+              </div>
             )}
           </div>
         </div>
