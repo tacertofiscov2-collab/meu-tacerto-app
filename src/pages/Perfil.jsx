@@ -26,6 +26,7 @@ export default function Perfil() {
   const [contaAtivaId, setContaAtivaId] = useState(lerContaAtivaId);
   const [seletorAberto, setSeletorAberto] = useState(false);
   const [confirmarSair, setConfirmarSair] = useState(false);
+  const [modalFaturamento, setModalFaturamento] = useState(false);
 
   useEffect(() => {
     const handler = () => {
