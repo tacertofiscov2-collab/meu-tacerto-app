@@ -4,8 +4,9 @@ import BottomNav from "../components/BottomNav.jsx";
 import { SectionTitle, FlatGroup, FlatItem } from "../components/FlatList.jsx";
 import {
   ArrowLeft, User, Settings, Info, Shield, Users, Lock, LogOut,
-  ChevronDown, UserPlus, Pencil, X, Check,
+  ChevronDown, UserPlus, Pencil, X, Check, Receipt, TrendingUp, BarChart3,
 } from "lucide-react";
+import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import { useUserState, setUserState } from "@/lib/userState";
 import { lerContas, lerContaAtivaId, ativarConta } from "@/lib/contas";
