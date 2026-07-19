@@ -235,11 +235,13 @@ export default function Perfil() {
           <div style={{ marginTop: 24 }}>
             <SectionTitle>Segurança e Privacidade</SectionTitle>
             <FlatGroup>
-              <FlatItem
-                Icon={Lock}
-                label="Alterar senha"
-                onClick={() => navigate("/alterar-senha")}
-              />
+              {!visitante && (
+                <FlatItem
+                  Icon={Lock}
+                  label="Alterar senha"
+                  onClick={() => navigate("/alterar-senha")}
+                />
+              )}
               <FlatItem
                 Icon={Shield}
                 label="Termos e Privacidade"
