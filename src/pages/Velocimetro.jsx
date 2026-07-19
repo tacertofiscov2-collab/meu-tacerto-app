@@ -130,12 +130,6 @@ function VelocimetroGrande({ percentual }) {
         <span className="text-5xl font-bold" style={{ color: "var(--text)" }}>
           {Math.round(percentual)}%
         </span>
-        <span
-          className="text-base font-semibold mt-1"
-          style={{ color: faixa.cor }}
-        >
-          {faixa.label}
-        </span>
       </div>
     </div>
   );
