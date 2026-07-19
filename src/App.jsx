@@ -31,6 +31,7 @@ import DevSimulador from "./pages/DevSimulador.jsx";
 export default function App() {
   return (
     <BrowserRouter>
+      <SwipeBack />
       <Routes>
         <Route path="/" element={<Welcome />} />
         <Route path="/onboarding" element={<Onboarding />} />
