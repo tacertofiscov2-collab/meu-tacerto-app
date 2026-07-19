@@ -39,25 +39,25 @@ export const FAIXA_INFO = {
     cor: "#22c55e",
     mensagem: "Continua no seu ritmo.",
     textoDetalhado: (percentual) =>
-      `Você usou ${Number(percentual).toFixed(0)}% do seu limite anual. Ainda tem bastante espaço pra faturar até o fim do ano — continue registrando seus lançamentos pra manter o controle.`,
+      `Você usou ${Number(percentual).toFixed(0)}% do seu limite anual. Está tranquilo — ainda tem bastante espaço pra faturar até dezembro. Continue registrando cada recebimento pra manter o velocímetro sempre certo e não ter surpresa depois. O segredo é lançar tudo: dinheiro, Pix, cartão, transferência. Não importa se emitiu nota fiscal ou não.`,
   },
   fique_de_olho: {
     cor: "#84cc16",
     mensagem: "Vale começar a acompanhar de perto.",
     textoDetalhado: (percentual) =>
-      `Você já usou ${Number(percentual).toFixed(0)}% do seu limite anual. Ainda está tudo dentro do previsto, mas vale começar a acompanhar mês a mês pra não ter surpresa.`,
+      `Você já usou ${Number(percentual).toFixed(0)}% do seu limite anual. Ainda está dentro do previsto, mas já passou da metade — vale começar a acompanhar mês a mês pra não ter surpresa no fim do ano. Um bom hábito nessa faixa é olhar o app antes de fechar cada mês e comparar com o mesmo período do ano passado. Assim você antecipa qualquer ajuste.`,
   },
   atencao: {
     cor: "#f59e0b",
     mensagem: "Bora planejar os próximos meses.",
     textoDetalhado: (percentual) =>
-      `Você já usou ${Number(percentual).toFixed(0)}% do seu limite anual. Está chegando perto do teto. Vale planejar seus próximos recebimentos com cuidado até dezembro.`,
+      `Você já usou ${Number(percentual).toFixed(0)}% do seu limite anual. Está chegando perto do teto — hora de planejar os próximos recebimentos com cuidado até dezembro. Se você tem previsão de receber um valor grande, vale considerar dividir em parcelas que caiam no ano que vem. E se der pra falar com um contador antes de qualquer decisão maior, melhor ainda.`,
   },
   perto_do_limite: {
     cor: "#f97316",
     mensagem: "Segura a mão até janeiro pra não estourar.",
     textoDetalhado: (percentual) =>
-      `Você já usou ${Number(percentual).toFixed(0)}% do seu limite anual — está muito próximo do teto. Se possível, evite receber grandes valores nos próximos meses pra não ultrapassar.`,
+      `Você já usou ${Number(percentual).toFixed(0)}% do seu limite anual — está muito próximo do teto. Se possível, evite receber grandes valores nos próximos meses pra não ultrapassar. A regra é: se passar de 100%, você ainda pode continuar MEI até dezembro (pagando um DAS complementar), desde que não passe de 20% acima do limite. Acima disso, o desenquadramento é retroativo. Fala com um contador antes de fechar qualquer contrato grande agora.`,
   },
   estourou: {
     cor: "#ef4444",

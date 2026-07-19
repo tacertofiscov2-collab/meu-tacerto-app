@@ -31,7 +31,9 @@ export default function BottomNav({ ativo }) {
       ? String(nome).trim().charAt(0).toUpperCase()
       : null;
 
-  const ICON_SIZE = 28;
+  const ICON_SIZE = 32;
+  const AVATAR_SIZE = 34;
+  const LABEL_SIZE = 13;
 
   const corTexto = (isAtivo) =>
     isAtivo ? "var(--primary)" : "var(--text-secondary)";
@@ -72,13 +74,13 @@ export default function BottomNav({ ativo }) {
         />
         <span
           className="font-medium leading-none"
-          style={{ color: corTexto(ativo === "inicio"), fontSize: 11 }}
+          style={{ color: corTexto(ativo === "inicio"), fontSize: LABEL_SIZE }}
         >
           Início
         </span>
       </button>
 
-      {/* Lançar — botão central, sem label, base alinhada com labels laterais */}
+      {/* Lançar — botão central, sem label */}
       <button
         onClick={() => navigate("/lancar")}
         aria-label="Lançar"
@@ -87,8 +89,8 @@ export default function BottomNav({ ativo }) {
       >
         <span
           style={{
-            width: 56,
-            height: 56,
+            width: 58,
+            height: 58,
             borderRadius: "50%",
             backgroundColor: "var(--primary)",
             display: "flex",
@@ -113,8 +115,8 @@ export default function BottomNav({ ativo }) {
       >
         <span
           style={{
-            width: ICON_SIZE,
-            height: ICON_SIZE,
+            width: AVATAR_SIZE,
+            height: AVATAR_SIZE,
             borderRadius: "50%",
             backgroundColor: "var(--field)",
             display: "flex",
@@ -132,8 +134,8 @@ export default function BottomNav({ ativo }) {
               src={foto}
               alt=""
               style={{
-                width: ICON_SIZE,
-                height: ICON_SIZE,
+                width: AVATAR_SIZE,
+                height: AVATAR_SIZE,
                 objectFit: "cover",
                 borderRadius: "50%",
               }}
@@ -142,7 +144,7 @@ export default function BottomNav({ ativo }) {
             <span
               style={{
                 color: "var(--primary)",
-                fontSize: 13,
+                fontSize: 15,
                 fontWeight: 700,
                 lineHeight: 1,
               }}
@@ -151,14 +153,14 @@ export default function BottomNav({ ativo }) {
             </span>
           ) : (
             <User
-              size={18}
+              size={20}
               style={{ color: corTexto(ativo === "perfil") }}
             />
           )}
         </span>
         <span
           className="font-medium leading-none"
-          style={{ color: corTexto(ativo === "perfil"), fontSize: 11 }}
+          style={{ color: corTexto(ativo === "perfil"), fontSize: LABEL_SIZE }}
         >
           Perfil
         </span>
