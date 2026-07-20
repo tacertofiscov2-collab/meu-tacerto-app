@@ -1,21 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Sparkles, HelpCircle, FileText, ListChecks, Wand2,
-  Paperclip, Send,
+  ArrowLeft, HelpCircle, FileText, ListChecks, Wand2, Paperclip, Send,
 } from "lucide-react";
-import BottomNav from "../components/BottomNav.jsx";
+import Fisco from "../components/Fisco.jsx";
 
 const VANTAGENS = [
   { Icon: HelpCircle, texto: "Tire dúvidas sobre MEI, DAS e imposto na hora" },
-  { Icon: FileText, texto: "Envie foto ou PDF do extrato e a IA calcula pra você" },
+  { Icon: FileText, texto: "Envie foto ou PDF do extrato e o Fisco calcula pra você" },
   { Icon: ListChecks, texto: "Passo a passo pra pagar o DAS sem erro" },
   { Icon: Wand2, texto: "Explicações simples, sem juridiquês" },
 ];
 
 export default function Chat() {
   const navigate = useNavigate();
-  const [mensagens, setMensagens] = useState([]); // { id, autor: 'user'|'ia', texto }
+  const [mensagens, setMensagens] = useState([]);
   const [texto, setTexto] = useState("");
   const listaRef = useRef(null);
 
@@ -29,11 +28,7 @@ export default function Chat() {
     e?.preventDefault?.();
     const t = texto.trim();
     if (!t) return;
-    // TODO: integrar com IA (fora da Lovable)
-    setMensagens((prev) => [
-      ...prev,
-      { id: Date.now(), autor: "user", texto: t },
-    ]);
+    setMensagens((prev) => [...prev, { id: Date.now(), autor: "user", texto: t }]);
     setTexto("");
   }
 
@@ -49,8 +44,7 @@ export default function Chat() {
         overflow: "hidden",
       }}
     >
-      {/* Header — só botão voltar, sem título */}
-      <header className="px-5 pt-6 pb-2 flex items-center gap-3 shrink-0">
+      <header className="px-5 pt-5 pb-1 flex items-center gap-3 shrink-0">
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
@@ -61,32 +55,36 @@ export default function Chat() {
         </button>
       </header>
 
-      {/* Área principal */}
       <div
         ref={listaRef}
-        className="flex-1 overflow-y-auto px-5"
-        style={{ paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}
+        className="flex-1 overflow-y-auto px-5 hide-scrollbar"
+        style={{ paddingBottom: "calc(84px + env(safe-area-inset-bottom))" }}
       >
         {vazio ? (
-          <div className="flex flex-col items-center text-center pt-1">
+          <div className="flex flex-col items-center text-center">
             <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center"
-              style={{ backgroundColor: "var(--field)", border: "1px solid var(--border)" }}
+              className="rounded-3xl flex items-center justify-center"
+              style={{
+                width: 96,
+                height: 96,
+                backgroundColor: "var(--field)",
+                border: "1px solid var(--border)",
+              }}
             >
-              <Sparkles size={40} style={{ color: "var(--primary)" }} />
+              <Fisco size={78} />
             </div>
-            <h2 className="mt-5 text-2xl font-bold" style={{ color: "var(--text)" }}>
-              Sua assistente fiscal
+            <h2 className="mt-4 text-2xl font-bold" style={{ color: "var(--text)" }}>
+              Fisco
             </h2>
-            <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>
-              Como posso te ajudar hoje?
+            <p className="mt-0.5 text-sm" style={{ color: "var(--text-secondary)" }}>
+              Seu amigo fiscal. Como posso te ajudar hoje?
             </p>
 
-            <ul className="w-full mt-6 space-y-2.5">
+            <ul className="w-full mt-5 space-y-2.5">
               {VANTAGENS.map(({ Icon, texto }, i) => (
                 <li
                   key={i}
-                  className="flex items-start gap-3 rounded-2xl p-3.5 text-left"
+                  className="flex items-center gap-3 rounded-2xl p-3.5 text-left"
                   style={{
                     backgroundColor: "var(--surface)",
                     border: "1px solid var(--border)",
@@ -98,7 +96,10 @@ export default function Chat() {
                   >
                     <Icon size={18} style={{ color: "var(--primary)" }} />
                   </div>
-                  <span className="text-sm leading-relaxed pt-1" style={{ color: "var(--text)" }}>
+                  <span
+                    className="text-sm leading-snug"
+                    style={{ color: "var(--text)" }}
+                  >
                     {texto}
                   </span>
                 </li>
@@ -140,30 +141,23 @@ export default function Chat() {
         )}
       </div>
 
-      {/* Input fixo no rodapé (sem BottomNav nessa tela, então cola no fundo) */}
       <form
         onSubmit={enviar}
         className="fixed left-0 right-0 z-20 px-4"
-        style={{
-          bottom: 0,
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)",
-          paddingTop: 8,
-          backgroundColor: "var(--bg)",
-          borderTop: "1px solid var(--border)",
-        }}
+        style={{ bottom: "calc(env(safe-area-inset-bottom) + 20px)" }}
       >
         <div
           className="flex items-center gap-2 rounded-full pl-2 pr-1.5 py-1.5"
           style={{
             backgroundColor: "var(--surface)",
             border: "1px solid var(--border)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.28)",
           }}
         >
           <button
             type="button"
             aria-label="Anexar"
             className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 hover:opacity-80"
-            // TODO: implementar anexo (foto/PDF)
           >
             <Paperclip size={18} style={{ color: "var(--text-secondary)" }} />
           </button>
@@ -171,7 +165,7 @@ export default function Chat() {
             type="text"
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
-            placeholder="Pergunte alguma coisa..."
+            placeholder="Pergunte ao Fisco..."
             className="flex-1 bg-transparent outline-none text-sm py-2"
             style={{ color: "var(--text)" }}
           />
@@ -189,8 +183,6 @@ export default function Chat() {
           </button>
         </div>
       </form>
-
-      <BottomNav />
     </div>
   );
 }
