@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
 import { SectionTitle, FlatGroup, FlatItem } from "../components/FlatList.jsx";
 import {
   ArrowLeft, User, Settings, Info, Shield, Users, Lock, LogOut,
-  ChevronDown, UserPlus, Pencil, X, Check, Receipt, TrendingUp, BarChart3,
+  ChevronDown, UserPlus, X, Check, Receipt, TrendingUp, BarChart3,
 } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
@@ -16,7 +16,6 @@ const FOTO_KEY = "tacerto_foto_usuario";
 export default function Perfil() {
   const navigate = useNavigate();
   const { nome, visitante } = useUserState();
-  const fileRef = useRef(null);
 
   const [foto, setFoto] = useState(() => {
     if (typeof window === "undefined") return null;
@@ -32,6 +31,9 @@ export default function Perfil() {
     const handler = () => {
       setContas(lerContas());
       setContaAtivaId(lerContaAtivaId());
+      try {
+        setFoto(localStorage.getItem(FOTO_KEY) || null);
+      } catch {}
     };
     window.addEventListener("storage", handler);
     window.addEventListener("tacerto-user-changed", handler);
@@ -44,20 +46,8 @@ export default function Perfil() {
   const totalContas = contas.length;
   const temMultiplas = !visitante && totalContas >= 2;
 
-  const nomeExibido = (nome && nome.trim()) ? nome : "Visitante";
+  const nomeExibido = nome && nome.trim() ? nome : "Visitante";
   const inicial = (nomeExibido || "?").trim().charAt(0).toUpperCase();
-
-  function handleFoto(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = String(reader.result || "");
-      try { localStorage.setItem(FOTO_KEY, base64); } catch {}
-      setFoto(base64);
-    };
-    reader.readAsDataURL(file);
-  }
 
   function trocarConta(id) {
     const conta = ativarConta(id);
@@ -77,7 +67,6 @@ export default function Perfil() {
     navigate("/");
   }
 
-  // Item dinâmico de conta
   let contaItem;
   if (visitante) {
     contaItem = {
@@ -122,51 +111,22 @@ export default function Perfil() {
           </h1>
         </header>
 
-        {/* Topo — avatar grande centralizado */}
         <div className="px-5 pt-2 pb-6 flex flex-col items-center">
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => { if (!visitante) fileRef.current?.click(); }}
-              className="block w-24 h-24 rounded-full overflow-hidden active:opacity-80"
-              style={{ backgroundColor: "var(--field)", cursor: visitante ? "default" : "pointer" }}
-              aria-label={visitante ? "Avatar" : "Alterar foto"}
-            >
-              {foto && !visitante ? (
-                <img src={foto} alt="" className="w-full h-full object-cover" />
-              ) : visitante ? (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="font-bold" style={{ color: "var(--primary)", fontSize: 40 }}>
-                    {inicial || "?"}
-                  </span>
-                </div>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="font-bold" style={{ color: "var(--primary)", fontSize: 40 }}>
-                    {inicial || "?"}
-                  </span>
-                </div>
-              )}
-            </button>
-            {!visitante && (
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                aria-label="Editar foto"
-                className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center shadow"
-                style={{ backgroundColor: "var(--primary)" }}
-              >
-                <Pencil size={14} style={{ color: "#0f0f11" }} />
-              </button>
-            )}
-            {!visitante && (
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFoto}
-              />
+          <div
+            className="w-24 h-24 rounded-full overflow-hidden"
+            style={{ backgroundColor: "var(--field)" }}
+          >
+            {foto && !visitante ? (
+              <img src={foto} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <span
+                  className="font-bold"
+                  style={{ color: "var(--primary)", fontSize: 40 }}
+                >
+                  {inicial || "?"}
+                </span>
+              </div>
             )}
           </div>
 
@@ -176,13 +136,7 @@ export default function Perfil() {
             onClick={() => temMultiplas && setSeletorAberto(true)}
             className="mt-4 flex items-center gap-1.5"
           >
-            <span
-              className="font-bold"
-              style={{
-                color: "var(--text)",
-                fontSize: 22,
-              }}
-            >
+            <span className="font-bold" style={{ color: "var(--text)", fontSize: 22 }}>
               {nomeExibido}
             </span>
             {temMultiplas && (
@@ -255,7 +209,6 @@ export default function Perfil() {
             </FlatGroup>
           </div>
 
-          {/* Rodapé — Sair + versão, empurrado para o fim */}
           <div style={{ marginTop: "auto", paddingTop: 40 }}>
             <FlatGroup>
               <FlatItem
@@ -289,8 +242,6 @@ export default function Perfil() {
         onSalvar={() => setModalFaturamento(false)}
       />
 
-
-      {/* Bottom sheet: seletor de contas */}
       {seletorAberto && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
@@ -342,11 +293,17 @@ export default function Perfil() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0 text-left">
-                      <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>
+                      <p
+                        className="text-sm font-semibold truncate"
+                        style={{ color: "var(--text)" }}
+                      >
                         {c.nome || "Conta"}
                       </p>
                       {c.email && (
-                        <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>
+                        <p
+                          className="text-xs truncate"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
                           {c.email}
                         </p>
                       )}
@@ -368,7 +325,10 @@ export default function Perfil() {
                 >
                   <UserPlus size={18} style={{ color: "var(--primary)" }} />
                 </div>
-                <span className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
+                <span
+                  className="text-sm font-semibold"
+                  style={{ color: "var(--primary)" }}
+                >
                   Adicionar nova conta
                 </span>
               </button>
@@ -377,7 +337,6 @@ export default function Perfil() {
         </div>
       )}
 
-      {/* Confirmar sair */}
       {confirmarSair && (
         <div
           className="fixed inset-0 z-40 flex items-center justify-center p-4"
@@ -385,7 +344,10 @@ export default function Perfil() {
         >
           <div
             className="w-full max-w-sm rounded-2xl p-5 space-y-4"
-            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
+            style={{
+              backgroundColor: "var(--surface)",
+              border: "1px solid var(--border)",
+            }}
           >
             <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
               Deseja sair da sua conta?
