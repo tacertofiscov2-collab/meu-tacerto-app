@@ -1,14 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { useRef, useState } from "react";
-import { Bell, Gauge, Sparkles, ChevronRight } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { Bell, Gauge, ArrowUp } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
+import Fisco from "../components/Fisco.jsx";
 import { useUserState } from "@/lib/userState";
 import {
   LABEL_TIPO,
   calcularPercentual,
-  calcularFaltamOuExcedeu,
   faixaDoVelocimetro,
   FAIXA_INFO,
 } from "@/lib/fiscal";
@@ -20,7 +20,6 @@ function saudacaoPorHora() {
   return "Boa noite,";
 }
 
-// Aplica opacidade a uma cor hex #rrggbb → rgba(r,g,b,alpha)
 function hexToRgba(hex, alpha) {
   const h = String(hex).replace("#", "");
   const r = parseInt(h.substring(0, 2), 16);
@@ -29,7 +28,7 @@ function hexToRgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-function BolinhasIndicadoras({ pagina, setPagina, corAtiva }) {
+function BolinhasIndicadoras({ pagina, irPara, corAtiva }) {
   return (
     <div className="flex items-center gap-1.5">
       {[0, 1].map((i) => (
@@ -37,7 +36,7 @@ function BolinhasIndicadoras({ pagina, setPagina, corAtiva }) {
           key={i}
           onClick={(e) => {
             e.stopPropagation();
-            setPagina(i);
+            irPara(i);
           }}
           aria-label={`Ir para tela ${i + 1}`}
           className="rounded-full transition-colors"
@@ -53,106 +52,112 @@ function BolinhasIndicadoras({ pagina, setPagina, corAtiva }) {
   );
 }
 
-function CardVelocimetroCarrossel({
-  rotuloPerfil,
-  percentual,
-  faturado,
-  limite,
-  restante,
-}) {
+function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }) {
   const [pagina, setPagina] = useState(0);
+  const [dragPx, setDragPx] = useState(0);
+  const [arrastando, setArrastando] = useState(false);
+
   const containerRef = useRef(null);
-  const startX = useRef(null);
-  const startY = useRef(null);
+  const startX = useRef(0);
+  const startY = useRef(0);
   const startTime = useRef(0);
-  const dragging = useRef(false);
-  const eixo = useRef(null); // 'x' ou 'y' após primeiro delta
-  const [dragOffset, setDragOffset] = useState(0);
+  const ativo = useRef(false);
+  const eixo = useRef(null);
+  const paginaRef = useRef(0);
+
+  useEffect(() => {
+    paginaRef.current = pagina;
+  }, [pagina]);
 
   const chaveFaixa = faixaDoVelocimetro(percentual);
-  const info = FAIXA_INFO[chaveFaixa];
-  const corFaixa = info.cor;
+  const corFaixa = FAIXA_INFO[chaveFaixa].cor;
 
-  // Largura do container pra converter delta em % de translate
-  const larguraCont = () =>
-    containerRef.current ? containerRef.current.clientWidth : 1;
+  function largura() {
+    return containerRef.current?.clientWidth || 1;
+  }
 
-  const onStart = (x, y) => {
+  function inicio(x, y) {
     startX.current = x;
     startY.current = y;
     startTime.current = Date.now();
-    dragging.current = true;
+    ativo.current = true;
     eixo.current = null;
-    setDragOffset(0);
-  };
-  const onMove = (x, y) => {
-    if (!dragging.current || startX.current == null) return;
+    setArrastando(true);
+    setDragPx(0);
+  }
+
+  function mover(x, y) {
+    if (!ativo.current) return;
     const dx = x - startX.current;
     const dy = y - startY.current;
-    // Detecta eixo após ~8px de movimento; se for vertical, cancela drag horizontal
-    if (eixo.current == null) {
-      if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
-        eixo.current = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
-        if (eixo.current === "y") dragging.current = false;
+
+    if (eixo.current === null) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      eixo.current = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      if (eixo.current === "y") {
+        ativo.current = false;
+        setArrastando(false);
+        setDragPx(0);
+        return;
       }
     }
+
     if (eixo.current === "x") {
-      // Bloqueia arrasto além dos limites: bounce parcial se já está no extremo
+      const p = paginaRef.current;
       let d = dx;
-      if (pagina === 0 && d > 0) d = d * 0.25;
-      if (pagina === 1 && d < 0) d = d * 0.25;
-      setDragOffset(d);
+      if (p === 0 && d > 0) d = d * 0.25;
+      if (p === 1 && d < 0) d = d * 0.25;
+      setDragPx(d);
     }
-  };
-  const onEnd = (x) => {
-    if (!dragging.current || startX.current == null) {
-      // Reset visual mesmo se drag foi cancelado (eixo=y)
-      setDragOffset(0);
-      dragging.current = false;
-      startX.current = null;
-      startY.current = null;
+  }
+
+  function fim(x) {
+    if (!ativo.current) {
+      setArrastando(false);
+      setDragPx(0);
       eixo.current = null;
       return;
     }
     const dx = x - startX.current;
     const dt = Date.now() - startTime.current;
-    const velocidade = Math.abs(dx) / Math.max(1, dt); // px/ms
-    const threshold = larguraCont() * 0.5; // passou do meio
-    const isFlick = velocidade > 0.5 && Math.abs(dx) > 30; // gesto rápido
+    const velocidade = Math.abs(dx) / Math.max(1, dt);
+    const passouMeio = Math.abs(dx) > largura() * 0.35;
+    const flick = velocidade > 0.4 && Math.abs(dx) > 30;
+    const p = paginaRef.current;
 
-    let novaPagina = pagina;
-    if (dx < 0 && (Math.abs(dx) > threshold || isFlick) && pagina === 0) {
-      novaPagina = 1;
-    } else if (dx > 0 && (Math.abs(dx) > threshold || isFlick) && pagina === 1) {
-      novaPagina = 0;
-    }
-    setPagina(novaPagina);
-    setDragOffset(0);
-    dragging.current = false;
-    startX.current = null;
-    startY.current = null;
+    let nova = p;
+    if ((passouMeio || flick) && dx < 0 && p === 0) nova = 1;
+    if ((passouMeio || flick) && dx > 0 && p === 1) nova = 0;
+
+    ativo.current = false;
     eixo.current = null;
-  };
+    setArrastando(false);
+    setDragPx(0);
+    setPagina(nova);
+  }
 
-  // Estilo do card: fundo neutro na tela A, tematizado na tela B
+  function irPara(i) {
+    setDragPx(0);
+    setArrastando(false);
+    setPagina(i);
+  }
+
   const naTelaB = pagina === 1;
   const bgCard = naTelaB
     ? {
-        // Fundo suave tematizado + halo do topo
         background: `linear-gradient(160deg, ${hexToRgba(corFaixa, 0.18)} 0%, ${hexToRgba(corFaixa, 0.08)} 55%, ${hexToRgba(corFaixa, 0.04)} 100%), var(--surface)`,
         border: `1px solid ${hexToRgba(corFaixa, 0.35)}`,
       }
     : {
         background:
           "linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 55%, rgba(255,255,255,0) 100%), var(--surface)",
-        border: "1px solid rgba(63,63,70,0.6)",
+        border: "1px solid var(--border)",
       };
 
-  // Translate: se está arrastando, mistura pagina base + offset em %
-  const larg = larguraCont();
-  const offsetPct = larg ? (dragOffset / larg) * 50 : 0; // 50 porque wrapper é 200%
-  const translateX = pagina === 0 ? offsetPct : -50 + offsetPct;
-  const usarTransicao = !dragging.current;
+  const larg = largura();
+  const basePct = pagina === 0 ? 0 : -50;
+  const dragPct = larg ? (dragPx / larg) * 50 : 0;
+  const translate = basePct + dragPct;
 
   return (
     <div
@@ -164,20 +169,17 @@ function CardVelocimetroCarrossel({
         boxShadow:
           "0 10px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)",
         transition: "background 300ms ease, border-color 300ms ease",
+        touchAction: "pan-y",
       }}
-      onTouchStart={(e) => onStart(e.touches[0].clientX, e.touches[0].clientY)}
-      onTouchMove={(e) => onMove(e.touches[0].clientX, e.touches[0].clientY)}
-      onTouchEnd={(e) => onEnd(e.changedTouches[0].clientX)}
-      onMouseDown={(e) => onStart(e.clientX, e.clientY)}
-      onMouseMove={(e) => {
-        if (dragging.current) onMove(e.clientX, e.clientY);
-      }}
-      onMouseUp={(e) => onEnd(e.clientX)}
-      onMouseLeave={(e) => {
-        if (dragging.current) onEnd(e.clientX);
-      }}
+      onTouchStart={(e) => inicio(e.touches[0].clientX, e.touches[0].clientY)}
+      onTouchMove={(e) => mover(e.touches[0].clientX, e.touches[0].clientY)}
+      onTouchEnd={(e) => fim(e.changedTouches[0].clientX)}
+      onTouchCancel={() => fim(startX.current)}
+      onMouseDown={(e) => inicio(e.clientX, e.clientY)}
+      onMouseMove={(e) => ativo.current && mover(e.clientX, e.clientY)}
+      onMouseUp={(e) => fim(e.clientX)}
+      onMouseLeave={(e) => ativo.current && fim(e.clientX)}
     >
-      {/* Topo comum — só na tela A mostra "MEI/MEI Caminhoneiro"; na tela B fica só as bolinhas */}
       <div className="flex items-center justify-between px-5 pt-4 shrink-0">
         <span
           className="text-sm"
@@ -188,42 +190,29 @@ function CardVelocimetroCarrossel({
         >
           {rotuloPerfil}
         </span>
-        <BolinhasIndicadoras
-          pagina={pagina}
-          setPagina={setPagina}
-          corAtiva={corFaixa}
-        />
+        <BolinhasIndicadoras pagina={pagina} irPara={irPara} corAtiva={corFaixa} />
       </div>
 
-      {/* Carrossel */}
       <div className="flex-1 overflow-hidden">
         <div
           className="flex h-full"
           style={{
             width: "200%",
-            transform: `translateX(${translateX}%)`,
-            transition: usarTransicao
-              ? "transform 300ms ease-in-out"
-              : "none",
+            transform: `translateX(${translate}%)`,
+            transition: arrastando ? "none" : "transform 300ms ease-in-out",
           }}
         >
-          {/* Tela A */}
           <div className="w-1/2 h-full flex flex-col px-5 pb-4">
             <div className="flex-1 flex items-center justify-center">
               <VelocimetroAnimado percentual={percentual} maxWidth={220} />
             </div>
             <div
-              className="grid grid-cols-3 pt-3 mt-auto"
+              className="grid grid-cols-2 pt-3 mt-auto"
               style={{ borderTop: "1px solid var(--border)" }}
             >
               {[
-                { valor: faturado, label: "Faturado", cor: undefined },
-                { valor: limite, label: "Limite", cor: undefined },
-                {
-                  valor: restante.valor,
-                  label: restante.tipo === "excedeu" ? "Excedeu" : "Faltam",
-                  cor: restante.tipo === "excedeu" ? "#ef4444" : undefined,
-                },
+                { valor: faturado, label: "Faturado" },
+                { valor: limite, label: "Limite" },
               ].map((c, i) => (
                 <div
                   key={c.label}
@@ -232,17 +221,17 @@ function CardVelocimetroCarrossel({
                     (i > 0 ? "border-l" : "")
                   }
                   style={{
-                    paddingLeft: 8,
-                    paddingRight: 8,
+                    paddingLeft: 12,
+                    paddingRight: 12,
                     ...(i > 0 ? { borderColor: "var(--border)" } : {}),
                   }}
                 >
-                  <Valor tamanho="sm" cor={c.cor} autoAjustar>
+                  <Valor tamanho="md" autoAjustar>
                     {c.valor}
                   </Valor>
                   <span
                     className="text-xs mt-1"
-                    style={{ color: c.cor || "var(--text-secondary)" }}
+                    style={{ color: "var(--text-secondary)" }}
                   >
                     {c.label}
                   </span>
@@ -251,66 +240,38 @@ function CardVelocimetroCarrossel({
             </div>
           </div>
 
-          {/* Tela B — sem "MEI...", título com cor da faixa, texto ocupa o card */}
-          <div className="w-1/2 h-full flex flex-col px-5 pb-4 pt-1">
-            <h3
-              className="text-center font-bold"
-              style={{ color: corFaixa, fontSize: 20 }}
-            >
-              Sua situação hoje
-            </h3>
-            <div className="flex-1 flex items-center justify-center">
-              <p
-                className="text-center text-[15px] leading-relaxed px-1"
-                style={{ color: "var(--text)" }}
-              >
-                {info.textoDetalhado(percentual)}
-              </p>
-            </div>
-            <p
-              className="text-center text-xs px-2 pb-1"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Se ainda houver alguma dúvida sobre sua situação atual, consulte no Assistente IA.
-            </p>
-          </div>
+          <div className="w-1/2 h-full flex flex-col px-5 pb-4" />
         </div>
       </div>
     </div>
   );
 }
 
-function CardChatIA({ onClick }) {
+function BarraFisco({ onClick }) {
   return (
     <button
       onClick={onClick}
-      className="relative w-full shrink-0 rounded-3xl px-5 text-left flex items-center gap-4 transition-transform active:scale-[0.99]"
+      className="w-full rounded-full px-3 py-2 flex items-center gap-3 text-left active:scale-[0.99] transition-transform shrink-0"
       style={{
         backgroundColor: "var(--surface)",
         border: "1px solid var(--border)",
-        minHeight: 96,
       }}
     >
-      <ChevronRight
-        size={20}
-        className="absolute top-1/2 right-4 -translate-y-1/2"
-        style={{ color: "var(--text-secondary)" }}
-        aria-hidden
-      />
-      <div
-        className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
-        style={{ backgroundColor: "var(--field)" }}
+      <span
+        className="rounded-full flex items-center justify-center shrink-0"
+        style={{ width: 40, height: 40, backgroundColor: "var(--field)" }}
       >
-        <Sparkles size={30} style={{ color: "var(--primary)" }} strokeWidth={2} />
-      </div>
-      <div className="flex-1 min-w-0 pr-6 flex items-center">
-        <p
-          className="font-semibold"
-          style={{ color: "var(--text)", fontSize: 18 }}
-        >
-          Assistente Fiscal IA
-        </p>
-      </div>
+        <Fisco size={34} />
+      </span>
+      <span className="flex-1 text-sm" style={{ color: "var(--text-secondary)" }}>
+        Pergunte ao Fisco...
+      </span>
+      <span
+        className="rounded-full flex items-center justify-center shrink-0"
+        style={{ width: 34, height: 34, backgroundColor: "var(--primary)" }}
+      >
+        <ArrowUp size={18} style={{ color: "var(--primary-contrast)" }} />
+      </span>
     </button>
   );
 }
@@ -319,7 +280,6 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { nome, tipo, faturado, limite } = useUserState();
 
-  const restante = calcularFaltamOuExcedeu(faturado, limite);
   const percentual = calcularPercentual(faturado, limite);
   const rotuloPerfil = LABEL_TIPO[tipo];
   const saudacao = saudacaoPorHora();
@@ -342,14 +302,21 @@ export default function Dashboard() {
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2.5">
               <Gauge size={34} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
-              <span className="font-bold text-2xl leading-none" style={{ color: "var(--text)" }}>
+              <span
+                className="font-bold text-2xl leading-none"
+                style={{ color: "var(--text)" }}
+              >
                 Ta<span style={{ color: "var(--primary)" }}>Certo!</span>
               </span>
             </div>
             <div className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
-              {saudacao}{nome ? " " : "!"}
+              {saudacao}
+              {nome ? " " : "!"}
               {nome && (
-                <span className="text-base font-semibold" style={{ color: "var(--text)" }}>
+                <span
+                  className="text-base font-semibold"
+                  style={{ color: "var(--text)" }}
+                >
                   {nome}
                 </span>
               )}
@@ -360,7 +327,10 @@ export default function Dashboard() {
             onClick={() => navigate("/alertas")}
             aria-label="Notificações"
             className="relative w-11 h-11 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
-            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
+            style={{
+              backgroundColor: "var(--surface)",
+              border: "1px solid var(--border)",
+            }}
           >
             <Bell size={20} style={{ color: "var(--text)" }} />
             <span
@@ -371,16 +341,14 @@ export default function Dashboard() {
           </button>
         </header>
 
-        {/* 2 cards com altura livre, sem rolagem */}
         <div className="px-5 pt-3 flex-1 flex flex-col gap-3 min-h-0">
           <CardVelocimetroCarrossel
             rotuloPerfil={rotuloPerfil}
             percentual={percentual}
             faturado={faturado}
             limite={limite}
-            restante={restante}
           />
-          <CardChatIA onClick={() => navigate("/chat")} />
+          <BarraFisco onClick={() => navigate("/chat")} />
         </div>
       </div>
 
