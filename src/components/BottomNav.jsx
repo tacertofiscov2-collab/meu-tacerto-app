@@ -4,14 +4,6 @@ import { useUserState } from "@/lib/userState";
 
 const ROTAS_COM_NAVBAR = ["/dashboard", "/perfil"];
 
-/**
- * Navbar inferior — barra reta fosca (glass).
- * Visível APENAS em /dashboard e /perfil.
- * 3 itens: Início | Lançar (botão verde central) | Perfil.
- *
- * Props:
- * - ativo: "inicio" | "perfil" | undefined
- */
 export default function BottomNav({ ativo }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -47,10 +39,10 @@ export default function BottomNav({ ativo }) {
         left: 0,
         right: 0,
         zIndex: 50,
-        background: "rgba(15, 15, 17, 0.6)",
+        background: "var(--nav-bg)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        borderTop: "1px solid rgba(63, 63, 70, 0.15)",
+        borderTop: "1px solid var(--nav-border)",
         paddingTop: 10,
         paddingBottom: "env(safe-area-inset-bottom, 12px)",
         paddingLeft: 16,
@@ -60,7 +52,6 @@ export default function BottomNav({ ativo }) {
         justifyContent: "space-around",
       }}
     >
-      {/* Início */}
       <button
         onClick={() => navigate("/dashboard")}
         aria-label="Início"
@@ -80,7 +71,6 @@ export default function BottomNav({ ativo }) {
         </span>
       </button>
 
-      {/* Lançar — botão central, sem label */}
       <button
         onClick={() => navigate("/lancar")}
         aria-label="Lançar"
@@ -101,12 +91,11 @@ export default function BottomNav({ ativo }) {
           <Plus
             size={ICON_SIZE}
             strokeWidth={2.8}
-            style={{ color: "#0f0f11" }}
+            style={{ color: "var(--primary-contrast)" }}
           />
         </span>
       </button>
 
-      {/* Perfil */}
       <button
         onClick={() => navigate("/perfil")}
         aria-label="Perfil"
@@ -152,10 +141,7 @@ export default function BottomNav({ ativo }) {
               {inicial}
             </span>
           ) : (
-            <User
-              size={20}
-              style={{ color: corTexto(ativo === "perfil") }}
-            />
+            <User size={20} style={{ color: corTexto(ativo === "perfil") }} />
           )}
         </span>
         <span
