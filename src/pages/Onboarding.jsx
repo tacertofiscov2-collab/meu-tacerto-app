@@ -112,10 +112,11 @@ function MonthPicker({ value, onChange }) {
                   onClick={() => { onChange(val); setOpen(false); }}
                   className="w-full h-[44px] px-4 flex items-center border-l-4 text-left focus:outline-none text-sm"
                   style={{
-                    borderLeftColor: sel ? "var(--primary)" : "transparent",
-                    backgroundColor: sel ? "rgba(34,197,94,0.12)" : "transparent",
-                    color: sel ? "var(--primary)" : "var(--text)",
+                    borderLeftColor: sel ? "var(--text)" : "transparent",
+                    backgroundColor: "transparent",
+                    color: "var(--text)",
                     fontWeight: sel ? 600 : 500,
+                    opacity: sel ? 1 : 0.5,
                     borderBottom: "1px solid var(--border)",
                   }}
                 >
@@ -281,8 +282,9 @@ export default function Onboarding() {
                       onClick={() => setTipoMei(o.v)}
                       className="w-full flex items-center gap-3 p-3.5 rounded-xl text-left transition"
                       style={{
-                        backgroundColor: sel ? "rgba(34,197,94,0.10)" : "var(--field)",
-                        border: `2px solid ${sel ? "var(--primary)" : "var(--border)"}`,
+                        backgroundColor: "var(--field)",
+                        border: `2px solid ${sel ? "var(--text)" : "var(--border)"}`,
+                        opacity: sel ? 1 : 0.5,
                       }}
                     >
                       <div
@@ -294,7 +296,7 @@ export default function Onboarding() {
                       <div className="flex-1 min-w-0">
                         <div
                           className="text-sm font-semibold"
-                          style={{ color: sel ? "var(--primary)" : "var(--text)" }}
+                          style={{ color: "var(--text)" }}
                         >
                           {o.titulo}
                         </div>
@@ -342,9 +344,10 @@ export default function Onboarding() {
                       onClick={() => { setMeiEsseAno(o.v); if (!o.v) setMesMei(""); }}
                       className="py-3 rounded-xl text-xs font-medium transition inline-flex items-center justify-center gap-1.5"
                       style={{
-                        backgroundColor: sel ? "rgba(34,197,94,0.10)" : "var(--field)",
-                        border: `1.5px solid ${sel ? "var(--primary)" : "var(--border)"}`,
-                        color: sel ? "var(--primary)" : "var(--text-secondary)",
+                        backgroundColor: "var(--field)",
+                        border: `1.5px solid ${sel ? "var(--text)" : "var(--border)"}`,
+                        color: "var(--text)",
+                        opacity: sel ? 1 : 0.5,
                       }}
                     >
                       <Ico size={14} strokeWidth={1.75} />
