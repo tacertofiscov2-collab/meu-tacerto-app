@@ -1,9 +1,33 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 
 import BottomNav from "../components/BottomNav.jsx";
 import { SectionTitle } from "../components/FlatList.jsx";
+
+const KEY_TEMA = "tacerto_tema"; // "claro" | "escuro" | "auto"
+const KEY_FONTE = "tacerto_fonte"; // "small" | "medium" | "large"
+
+function aplicarTema(valor) {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  let modo = valor;
+  if (valor === "auto") {
+    const prefereEscuro = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    modo = prefereEscuro ? "escuro" : "claro";
+  }
+  root.classList.remove("theme-light");
+  if (modo === "claro") root.classList.add("theme-light");
+}
+
+function aplicarFonte(valor) {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  root.classList.remove("font-small", "font-medium", "font-large");
+  if (valor === "small") root.classList.add("font-small");
+  else if (valor === "large") root.classList.add("font-large");
+  else root.classList.add("font-medium");
+}
 
 function Segmented({ opcoes, valor, onChange }) {
   return (
@@ -55,10 +79,37 @@ function Switch({ ativo, onChange, label }) {
 export default function Preferencias() {
   const navigate = useNavigate();
 
-  const [tema, setTema] = useState("escuro");
-  const [fonte, setFonte] = useState("padrao");
+  const [tema, setTema] = useState(() => {
+    if (typeof window === "undefined") return "escuro";
+    return localStorage.getItem(KEY_TEMA) || "escuro";
+  });
+  const [fonte, setFonte] = useState(() => {
+    if (typeof window === "undefined") return "medium";
+    return localStorage.getItem(KEY_FONTE) || "medium";
+  });
   const [push, setPush] = useState(true);
   const [lembreteDas, setLembreteDas] = useState("3");
+
+  // Aplica e persiste TEMA
+  useEffect(() => {
+    aplicarTema(tema);
+    try { localStorage.setItem(KEY_TEMA, tema); } catch {}
+  }, [tema]);
+
+  // Se estiver em "auto", observa mudanças do sistema
+  useEffect(() => {
+    if (tema !== "auto" || typeof window === "undefined") return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => aplicarTema("auto");
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, [tema]);
+
+  // Aplica e persiste FONTE
+  useEffect(() => {
+    aplicarFonte(fonte);
+    try { localStorage.setItem(KEY_FONTE, fonte); } catch {}
+  }, [fonte]);
 
   const selectStyle = {
     backgroundColor: "var(--field)",
@@ -111,8 +162,9 @@ export default function Preferencias() {
             </p>
             <Segmented
               opcoes={[
-                { value: "padrao", label: "Padrão" },
-                { value: "grande", label: "Grande" },
+                { value: "small", label: "Pequena" },
+                { value: "medium", label: "Média" },
+                { value: "large", label: "Grande" },
               ]}
               valor={fonte}
               onChange={setFonte}

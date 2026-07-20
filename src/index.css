@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  /* Tema ESCURO (ativo) */
+  /* Tema ESCURO (padrão) */
   --bg: #0f0f11;
   --surface: #18181b;
   --field: #27272a;
@@ -14,19 +14,31 @@
   --text-tertiary: #71717a;
   --border: #3f3f46;
   --danger: #f87171;
+
+  /* Escala global de fonte — controlada pelas Preferências */
+  --font-scale: 1;
 }
 
 .theme-light {
-  --bg: #f9fafb;
-  --surface: #ffffff;
-  --field: #f3f4f6;
+  /* Tema CLARO — paleta espelhada, mantendo as mesmas tonalidades de cinza do escuro */
+  --bg: #ffffff;
+  --surface: #f4f4f5;
+  --field: #e4e4e7;
   --primary: #16a34a;
   --primary-contrast: #ffffff;
-  --text: #111827;
-  --text-secondary: #6b7280;
-  --text-tertiary: #9ca3af;
-  --border: #e5e7eb;
+  --text: #0f0f11;
+  --text-secondary: #52525b;
+  --text-tertiary: #71717a;
+  --border: #d4d4d8;
   --danger: #dc2626;
+}
+
+.font-small { --font-scale: 0.92; }
+.font-medium { --font-scale: 1; }
+.font-large { --font-scale: 1.12; }
+
+html {
+  font-size: calc(16px * var(--font-scale));
 }
 
 html, body, #root {
