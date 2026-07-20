@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 :root {
-  /* Tema ESCURO (padrão) */
   --bg: #0f0f11;
   --surface: #18181b;
   --field: #27272a;
@@ -15,12 +14,13 @@
   --border: #3f3f46;
   --danger: #f87171;
 
-  /* Escala global de fonte — controlada pelas Preferências */
+  --nav-bg: rgba(15, 15, 17, 0.6);
+  --nav-border: rgba(63, 63, 70, 0.15);
+
   --font-scale: 1;
 }
 
 .theme-light {
-  /* Tema CLARO — paleta espelhada, mantendo as mesmas tonalidades de cinza do escuro */
   --bg: #ffffff;
   --surface: #f4f4f5;
   --field: #e4e4e7;
@@ -31,6 +31,9 @@
   --text-tertiary: #71717a;
   --border: #d4d4d8;
   --danger: #dc2626;
+
+  --nav-bg: rgba(255, 255, 255, 0.72);
+  --nav-border: rgba(212, 212, 216, 0.6);
 }
 
 .font-small { --font-scale: 0.92; }
