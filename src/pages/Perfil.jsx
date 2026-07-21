@@ -165,7 +165,7 @@ export default function Perfil() {
             />
           </FlatGroup>
 
-          <div style={{ marginTop: 24 }}>
+          <div style={{ marginTop: 14 }}>
             <SectionTitle>Meu MEI</SectionTitle>
             <FlatGroup>
               <FlatItem
@@ -186,7 +186,7 @@ export default function Perfil() {
             </FlatGroup>
           </div>
 
-          <div style={{ marginTop: 24 }}>
+          <div style={{ marginTop: 14 }}>
             <SectionTitle>Segurança e Privacidade</SectionTitle>
             <FlatGroup>
               {!visitante && (
@@ -209,7 +209,7 @@ export default function Perfil() {
             </FlatGroup>
           </div>
 
-          <div style={{ marginTop: "auto", paddingTop: 40 }}>
+          <div style={{ marginTop: "auto", paddingTop: 24 }}>
             <FlatGroup>
               <FlatItem
                 Icon={LogOut}
