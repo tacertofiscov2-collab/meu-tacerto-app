@@ -2,9 +2,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useMemo, useEffect } from "react";
 import { ArrowLeft, Calendar as CalendarIcon, TrendingUp } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
-import { getUserState } from "@/lib/userState";
 import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
+import { dataMinimaLancamento } from "@/lib/fiscal";
 
 const MAX_CENTAVOS = 99999999;
 const LIMITE_VISITANTE = 8;
@@ -17,8 +17,7 @@ const MESES = [
 function formatBRLFromCentavos(centavos) {
   const reais = Math.floor(centavos / 100);
   const cents = centavos % 100;
-  const reaisStr = reais.toLocaleString("pt-BR");
-  return `${reaisStr},${String(cents).padStart(2, "0")}`;
+  return `${reais.toLocaleString("pt-BR")},${String(cents).padStart(2, "0")}`;
 }
 
 function pad2(n) {
@@ -59,21 +58,6 @@ function diasNoMes(mes, ano) {
   return new Date(ano, mes, 0).getDate();
 }
 
-function validarDataBR(br) {
-  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(br);
-  if (!m) return false;
-  const dia = Number(m[1]);
-  const mes = Number(m[2]);
-  const ano = Number(m[3]);
-  const anoAtual = new Date().getFullYear();
-  if (mes < 1 || mes > 12) return false;
-  if (ano < 2020 || ano > anoAtual) return false;
-  if (dia < 1 || dia > diasNoMes(mes, ano)) return false;
-  const iso = `${m[3]}-${m[2]}-${m[1]}`;
-  if (iso > hojeISO()) return false;
-  return true;
-}
-
 function labelDataCurta(iso) {
   const d = new Date(iso);
   return `${String(d.getDate()).padStart(2, "0")} de ${MESES[d.getMonth()]}`;
@@ -88,7 +72,14 @@ export default function Lancar() {
     adicionarLancamento,
     atualizarLancamento,
     setModoSimulacao,
+    mesAnoAbertura,
+    visitante,
   } = useAppState();
+
+  const dataMin = dataMinimaLancamento(
+    mesAnoAbertura?.mes,
+    mesAnoAbertura?.ano,
+  );
 
   const lancamentoAtual = useMemo(
     () => (editId ? lancamentos.find((l) => l.id === editId) : null),
@@ -107,11 +98,10 @@ export default function Lancar() {
 
   useEffect(() => {
     if (modoEdicao) return;
-    const { visitante } = getUserState();
     if (visitante && lancamentos.length >= LIMITE_VISITANTE) {
       navigate("/lancar/limite-atingido", { replace: true });
     }
-  }, [modoEdicao, lancamentos.length, navigate]);
+  }, [modoEdicao, lancamentos.length, visitante, navigate]);
 
   const [centavos, setCentavos] = useState(0);
   const [descricao, setDescricao] = useState("");
@@ -125,11 +115,24 @@ export default function Lancar() {
       setCentavos(Math.round((Number(lancamentoAtual.valor) || 0) * 100));
       setDescricao(lancamentoAtual.descricao || "");
       const d = new Date(lancamentoAtual.data);
-      const iso = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-      setDataBR(isoToBR(iso));
+      setDataBR(isoToBR(`${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`));
       setPreenchido(true);
     }
   }, [lancamentoAtual, preenchido]);
+
+  function validarDataBR(br) {
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(br);
+    if (!m) return false;
+    const dia = Number(m[1]);
+    const mes = Number(m[2]);
+    const ano = Number(m[3]);
+    if (mes < 1 || mes > 12) return false;
+    if (dia < 1 || dia > diasNoMes(mes, ano)) return false;
+    const iso = `${m[3]}-${m[2]}-${m[1]}`;
+    if (iso > hojeISO()) return false;
+    if (iso < dataMin) return false;
+    return true;
+  }
 
   const valorFmt = useMemo(() => formatBRLFromCentavos(centavos), [centavos]);
   const digitando = centavos > 0;
@@ -138,25 +141,29 @@ export default function Lancar() {
   const dataValida = dataCompleta && validarDataBR(dataBR);
   const mostrarErroData = dataCompleta && !dataValida;
 
+  const msgErroData = (() => {
+    if (!mostrarErroData) return "";
+    const iso = brToISO(dataBR);
+    if (iso && iso > hojeISO()) return "Não dá pra lançar uma data futura";
+    if (iso && iso < dataMin) {
+      const [y, m] = dataMin.split("-");
+      return `Seu MEI abriu em ${MESES[Number(m) - 1]} de ${y} — escolha uma data a partir daí`;
+    }
+    return "Data inválida";
+  })();
+
   function handleValor(e) {
     const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
     const n = digits ? parseInt(digits, 10) : 0;
     setCentavos(Math.min(n, MAX_CENTAVOS));
   }
 
-  function handleDataChange(e) {
-    setDataBR(mascararData(e.target.value));
-  }
-
   async function handleSalvar() {
     if (centavos <= 0 || !dataValida || salvando) return;
 
-    if (!modoEdicao) {
-      const { visitante } = getUserState();
-      if (visitante && lancamentos.length >= LIMITE_VISITANTE) {
-        navigate("/lancar/limite-atingido", { replace: true });
-        return;
-      }
+    if (!modoEdicao && visitante && lancamentos.length >= LIMITE_VISITANTE) {
+      navigate("/lancar/limite-atingido", { replace: true });
+      return;
     }
 
     setSalvando(true);
@@ -211,20 +218,11 @@ export default function Lancar() {
       <div className="flex-1 overflow-y-auto px-5 pb-32">
         <div className="max-w-md mx-auto mt-4 space-y-5">
           <div>
-            <label
-              className="block text-xs mb-2"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <label className="block text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
               Valor
             </label>
-            <div
-              className="flex items-center rounded-xl overflow-hidden"
-              style={fieldStyle}
-            >
-              <span
-                className="pl-4 pr-2 text-2xl font-bold"
-                style={{ color: "var(--text)" }}
-              >
+            <div className="flex items-center rounded-xl overflow-hidden" style={fieldStyle}>
+              <span className="pl-4 pr-2 text-2xl font-bold" style={{ color: "var(--text)" }}>
                 R$
               </span>
               <input
@@ -243,10 +241,7 @@ export default function Lancar() {
           </div>
 
           <div>
-            <label
-              className="block text-xs mb-2"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <label className="block text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
               Descrição
             </label>
             <input
@@ -260,10 +255,7 @@ export default function Lancar() {
           </div>
 
           <div>
-            <label
-              className="block text-xs mb-2"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <label className="block text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
               Data
             </label>
             <div
@@ -274,7 +266,7 @@ export default function Lancar() {
                 type="text"
                 inputMode="numeric"
                 value={dataBR}
-                onChange={handleDataChange}
+                onChange={(e) => setDataBR(mascararData(e.target.value))}
                 placeholder="dd/mm/aaaa"
                 maxLength={10}
                 className="flex-1 bg-transparent text-sm focus:outline-none placeholder:opacity-70"
@@ -291,7 +283,7 @@ export default function Lancar() {
             </div>
             {mostrarErroData && (
               <p className="mt-2" style={{ color: "#ef4444", fontSize: 12 }}>
-                Data inválida
+                {msgErroData}
               </p>
             )}
           </div>
@@ -326,17 +318,12 @@ export default function Lancar() {
                   >
                     {ultimoLancamento.descricao}
                   </p>
-                  <p
-                    className="text-xs mt-0.5"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
+                  <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
                     {labelDataCurta(ultimoLancamento.data)}
                   </p>
                 </div>
                 <div className="shrink-0">
-                  <Valor tamanho="sm" sinal="+">
-                    {ultimoLancamento.valor}
-                  </Valor>
+                  <Valor tamanho="sm" sinal="+">{ultimoLancamento.valor}</Valor>
                 </div>
               </div>
             ) : (
@@ -360,6 +347,7 @@ export default function Lancar() {
         aberto={calendarioAberto}
         modo="dia"
         valorISO={brToISO(dataBR) || hojeISO()}
+        minISO={dataMin}
         onFechar={() => setCalendarioAberto(false)}
         onSelecionar={(iso) => {
           setDataBR(isoToBR(iso));
