@@ -1,16 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
-import { Bell, Gauge, ArrowUp } from "lucide-react";
+import { Bell, Gauge, ArrowUp, TrendingUp } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
 import Fisco from "../components/Fisco.jsx";
-import { useUserState } from "@/lib/userState";
+import { useAppState } from "@/context/AppStateContext";
 import {
   LABEL_TIPO,
-  calcularPercentual,
   faixaDoVelocimetro,
   FAIXA_INFO,
+  FAIXAS_ORDEM,
+  FAIXA_RANGE_LABEL,
 } from "@/lib/fiscal";
 
 function saudacaoPorHora() {
@@ -34,10 +35,10 @@ function poseDaFaixa(faixa) {
   return "alerta";
 }
 
-function frasePose(pose) {
-  if (pose === "joinha") return "Tá tudo certo por aqui!";
-  if (pose === "ok") return "Fica de olho, hein?";
-  return "Precisamos conversar...";
+function palavraDaFaixa(faixa) {
+  if (faixa === "tranquilo" || faixa === "fique_de_olho") return "Tá de boa";
+  if (faixa === "atencao" || faixa === "perto_do_limite") return "Atenção";
+  return "Cuidado";
 }
 
 function BolinhasIndicadoras({ pagina, irPara, corAtiva }) {
@@ -64,7 +65,106 @@ function BolinhasIndicadoras({ pagina, irPara, corAtiva }) {
   );
 }
 
-function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }) {
+function TelaLegenda({ faixaAtiva, corFaixa, mediaMensal, projecao }) {
+  const info = FAIXA_INFO[faixaAtiva];
+
+  return (
+    <div className="w-1/2 h-full flex flex-col px-4 pb-4 pt-1 gap-2.5 overflow-hidden">
+      {/* Legenda das faixas */}
+      <div
+        className="rounded-2xl px-3 py-2.5 shrink-0"
+        style={{ backgroundColor: "var(--bg)", opacity: 0.55 }}
+      >
+        <p
+          className="text-[10px] mb-1.5 uppercase tracking-wide"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          Faixas de risco
+        </p>
+        <div className="flex rounded-full overflow-hidden mb-1.5" style={{ height: 6 }}>
+          {FAIXAS_ORDEM.map((f) => (
+            <div
+              key={f}
+              style={{
+                flex: 1,
+                backgroundColor: FAIXA_INFO[f].cor,
+                opacity: f === faixaAtiva ? 1 : 0.35,
+              }}
+            />
+          ))}
+        </div>
+        <div className="flex justify-between">
+          {FAIXAS_ORDEM.map((f) => (
+            <span
+              key={f}
+              className="text-[8px] leading-none"
+              style={{
+                color: f === faixaAtiva ? FAIXA_INFO[f].cor : "var(--text-secondary)",
+                fontWeight: f === faixaAtiva ? 700 : 400,
+              }}
+            >
+              {FAIXA_RANGE_LABEL[f]}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Situação atual */}
+      <div
+        className="rounded-2xl px-3.5 py-3 shrink-0"
+        style={{
+          backgroundColor: hexToRgba(corFaixa, 0.12),
+          border: `1px solid ${hexToRgba(corFaixa, 0.3)}`,
+        }}
+      >
+        <p
+          className="text-[10px] uppercase tracking-wide mb-1"
+          style={{ color: corFaixa }}
+        >
+          Sua situação
+        </p>
+        <p
+          className="text-[13px] leading-snug"
+          style={{ color: "var(--text)" }}
+        >
+          {info.resumo}
+        </p>
+      </div>
+
+      {/* Média mensal + projeção */}
+      <div
+        className="rounded-2xl px-3.5 py-3 flex-1 min-h-0 flex flex-col justify-center"
+        style={{ backgroundColor: "var(--bg)", opacity: 0.55 }}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <TrendingUp size={14} style={{ color: "var(--primary)" }} />
+          <p
+            className="text-[10px] uppercase tracking-wide"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            Seu ritmo
+          </p>
+        </div>
+        <div className="flex items-baseline justify-between gap-2 mb-1.5">
+          <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
+            Média por mês
+          </span>
+          <Valor tamanho="sm" autoAjustar>{mediaMensal}</Valor>
+        </div>
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
+            Fecha o ano em
+          </span>
+          <Valor tamanho="sm" autoAjustar>{projecao}</Valor>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CardVelocimetroCarrossel({
+  rotuloPerfil, percentual, faturado, limite, mediaMensal, projecao,
+}) {
   const [pagina, setPagina] = useState(0);
   const [dragPx, setDragPx] = useState(0);
   const [arrastando, setArrastando] = useState(false);
@@ -75,11 +175,6 @@ function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }
   const startTime = useRef(0);
   const ativo = useRef(false);
   const eixo = useRef(null);
-  const paginaRef = useRef(0);
-
-  useEffect(() => {
-    paginaRef.current = pagina;
-  }, [pagina]);
 
   const chaveFaixa = faixaDoVelocimetro(percentual);
   const corFaixa = FAIXA_INFO[chaveFaixa].cor;
@@ -135,9 +230,7 @@ function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }
     setArrastando(false);
     setDragPx(0);
 
-    if (passouMeio || flick) {
-      setPagina((p) => (p === 0 ? 1 : 0));
-    }
+    if (passouMeio || flick) setPagina((p) => (p === 0 ? 1 : 0));
   }
 
   function irPara(i) {
@@ -149,8 +242,8 @@ function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }
   const naTelaB = pagina === 1;
   const bgCard = naTelaB
     ? {
-        background: `linear-gradient(160deg, ${hexToRgba(corFaixa, 0.18)} 0%, ${hexToRgba(corFaixa, 0.08)} 55%, ${hexToRgba(corFaixa, 0.04)} 100%), var(--surface)`,
-        border: `1px solid ${hexToRgba(corFaixa, 0.35)}`,
+        background: `linear-gradient(160deg, ${hexToRgba(corFaixa, 0.16)} 0%, ${hexToRgba(corFaixa, 0.07)} 55%, ${hexToRgba(corFaixa, 0.03)} 100%), var(--surface)`,
+        border: `1px solid ${hexToRgba(corFaixa, 0.3)}`,
       }
     : {
         background:
@@ -167,11 +260,10 @@ function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }
     <div
       ref={containerRef}
       data-carrossel-velocimetro
-      className="relative w-full flex-1 rounded-3xl overflow-hidden flex flex-col"
+      className="relative w-full flex-1 min-h-0 rounded-3xl overflow-hidden flex flex-col"
       style={{
         ...bgCard,
-        boxShadow:
-          "0 10px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
         transition: "background 300ms ease, border-color 300ms ease",
         touchAction: "pan-y",
       }}
@@ -184,7 +276,7 @@ function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }
       onMouseUp={(e) => fim(e.clientX)}
       onMouseLeave={(e) => ativo.current && fim(e.clientX)}
     >
-      <div className="flex items-center justify-between px-5 pt-4 shrink-0">
+      <div className="flex items-center justify-between px-5 pt-3.5 pb-1 shrink-0">
         <span
           className="text-sm"
           style={{
@@ -197,7 +289,7 @@ function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }
         <BolinhasIndicadoras pagina={pagina} irPara={irPara} corAtiva={corFaixa} />
       </div>
 
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden">
         <div
           className="flex h-full"
           style={{
@@ -206,12 +298,12 @@ function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }
             transition: arrastando ? "none" : "transform 300ms ease-in-out",
           }}
         >
-          <div className="w-1/2 h-full flex flex-col px-5 pb-4">
-            <div className="flex-1 flex items-center justify-center">
-              <VelocimetroAnimado percentual={percentual} maxWidth={220} />
+          <div className="w-1/2 h-full flex flex-col px-5 pb-4 min-h-0">
+            <div className="flex-1 min-h-0 flex items-center justify-center">
+              <VelocimetroAnimado percentual={percentual} maxWidth={210} />
             </div>
             <div
-              className="grid grid-cols-2 pt-3 mt-auto"
+              className="grid grid-cols-2 pt-3 shrink-0"
               style={{ borderTop: "1px solid var(--border)" }}
             >
               {[
@@ -230,9 +322,7 @@ function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }
                     ...(i > 0 ? { borderColor: "var(--border)" } : {}),
                   }}
                 >
-                  <Valor tamanho="md" autoAjustar>
-                    {c.valor}
-                  </Valor>
+                  <Valor tamanho="md" autoAjustar>{c.valor}</Valor>
                   <span
                     className="text-xs mt-1"
                     style={{ color: "var(--text-secondary)" }}
@@ -244,7 +334,12 @@ function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }
             </div>
           </div>
 
-          <div className="w-1/2 h-full flex flex-col px-5 pb-4" />
+          <TelaLegenda
+            faixaAtiva={chaveFaixa}
+            corFaixa={corFaixa}
+            mediaMensal={mediaMensal}
+            projecao={projecao}
+          />
         </div>
       </div>
     </div>
@@ -253,20 +348,17 @@ function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { nome, tipo, faturado, limite } = useUserState();
-  const [animarFisco, setAnimarFisco] = useState(false);
+  const {
+    nome, tipoMEI, faturamentoAtual, limiteAtual, percentualAtual,
+    mediaMensal, projecaoFimDoAno,
+  } = useAppState();
 
-  const percentual = calcularPercentual(faturado, limite);
-  const rotuloPerfil = LABEL_TIPO[tipo];
+  const rotuloPerfil = LABEL_TIPO[tipoMEI];
   const saudacao = saudacaoPorHora();
-  const faixa = faixaDoVelocimetro(percentual);
+  const faixa = faixaDoVelocimetro(percentualAtual);
   const pose = poseDaFaixa(faixa);
-
-  useEffect(() => {
-    setAnimarFisco(false);
-    const t = setTimeout(() => setAnimarFisco(true), 400);
-    return () => clearTimeout(t);
-  }, []);
+  const palavra = palavraDaFaixa(faixa);
+  const corFaixa = FAIXA_INFO[faixa].cor;
 
   return (
     <div
@@ -280,12 +372,12 @@ export default function Dashboard() {
     >
       <div
         className="flex-1 flex flex-col min-h-0"
-        style={{ paddingBottom: "calc(108px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
       >
         <header className="px-5 pt-4 pb-1 flex items-start justify-between shrink-0">
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col">
             <div className="flex items-center gap-2.5">
-              <Gauge size={32} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
+              <Gauge size={30} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
               <span
                 className="font-bold text-2xl leading-none"
                 style={{ color: "var(--text)" }}
@@ -293,7 +385,7 @@ export default function Dashboard() {
                 Ta<span style={{ color: "var(--primary)" }}>Certo!</span>
               </span>
             </div>
-            <div className="text-sm mt-0.5" style={{ color: "var(--text-secondary)" }}>
+            <div className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
               {saudacao}
               {nome ? " " : "!"}
               {nome && (
@@ -328,53 +420,55 @@ export default function Dashboard() {
         <div className="px-5 pt-2 flex-1 flex flex-col gap-2 min-h-0">
           <CardVelocimetroCarrossel
             rotuloPerfil={rotuloPerfil}
-            percentual={percentual}
-            faturado={faturado}
-            limite={limite}
+            percentual={percentualAtual}
+            faturado={faturamentoAtual}
+            limite={limiteAtual}
+            mediaMensal={mediaMensal}
+            projecao={projecaoFimDoAno}
           />
 
           <button
             onClick={() => navigate("/chat")}
-            className="shrink-0 flex items-end gap-2 active:opacity-90 transition"
+            className="shrink-0 flex items-end gap-1 active:opacity-90 transition"
             style={{ background: "none", border: "none", padding: 0 }}
           >
-            <Fisco size={92} pose={pose} animar={animarFisco} />
-            <div className="flex-1 flex flex-col items-start gap-1.5 pb-2 min-w-0">
+            <div className="relative shrink-0">
+              <Fisco size={86} pose={pose} />
               <span
-                className="text-xs px-3 py-1.5 rounded-2xl rounded-bl-sm"
+                className="absolute px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap"
                 style={{
-                  backgroundColor: "var(--surface)",
-                  border: "1px solid var(--border)",
-                  color: "var(--text-secondary)",
+                  top: 2,
+                  right: -6,
+                  backgroundColor: hexToRgba(corFaixa, 0.18),
+                  color: corFaixa,
+                  border: `1px solid ${hexToRgba(corFaixa, 0.35)}`,
+                  backdropFilter: "blur(4px)",
                 }}
               >
-                {frasePose(pose)}
-              </span>
-              <span
-                className="w-full rounded-full px-4 py-2.5 flex items-center gap-2 text-left"
-                style={{
-                  backgroundColor: "var(--surface)",
-                  border: "1px solid var(--border)",
-                }}
-              >
-                <span
-                  className="flex-1 text-sm truncate"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Pergunte ao Fisco...
-                </span>
-                <span
-                  className="rounded-full flex items-center justify-center shrink-0"
-                  style={{
-                    width: 30,
-                    height: 30,
-                    backgroundColor: "var(--primary)",
-                  }}
-                >
-                  <ArrowUp size={16} style={{ color: "var(--primary-contrast)" }} />
-                </span>
+                {palavra}
               </span>
             </div>
+
+            <span
+              className="flex-1 rounded-full px-4 py-3 flex items-center gap-2 text-left mb-3 min-w-0"
+              style={{
+                backgroundColor: "var(--surface)",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <span
+                className="flex-1 text-sm truncate"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Pergunte ao Fisco...
+              </span>
+              <span
+                className="rounded-full flex items-center justify-center shrink-0"
+                style={{ width: 32, height: 32, backgroundColor: "var(--primary)" }}
+              >
+                <ArrowUp size={17} style={{ color: "var(--primary-contrast)" }} />
+              </span>
+            </span>
           </button>
         </div>
       </div>
