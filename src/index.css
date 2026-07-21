@@ -5,6 +5,7 @@
 :root {
   --bg: #0f0f11;
   --surface: #18181b;
+  --surface-selected: #2f2f35;
   --field: #27272a;
   --primary: #22c55e;
   --primary-contrast: #0a0a0a;
@@ -23,6 +24,7 @@
 .theme-light {
   --bg: #ffffff;
   --surface: #f4f4f5;
+  --surface-selected: #e0e0e4;
   --field: #e4e4e7;
   --primary: #16a34a;
   --primary-contrast: #ffffff;
@@ -52,6 +54,7 @@ html, body, #root {
 body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
 }
 
 .snap-y::-webkit-scrollbar { display: none; }
