@@ -1,11 +1,12 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ArrowLeft, Calendar as CalendarIcon, TrendingUp } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
 import { getUserState } from "@/lib/userState";
 import Valor from "../components/Valor.jsx";
+import Calendario from "../components/Calendario.jsx";
 
-const MAX_CENTAVOS = 99999999; // R$ 999.999,99
+const MAX_CENTAVOS = 99999999;
 const LIMITE_VISITANTE = 8;
 
 const MESES = [
@@ -95,10 +96,8 @@ export default function Lancar() {
   );
   const modoEdicao = Boolean(lancamentoAtual);
 
-  // Último lançamento (mais recente por data)
   const ultimoLancamento = useMemo(() => {
     if (!lancamentos || lancamentos.length === 0) return null;
-    // Se estiver editando, não mostra o próprio card como "último"
     const lista = modoEdicao
       ? lancamentos.filter((l) => l.id !== editId)
       : lancamentos;
@@ -106,7 +105,6 @@ export default function Lancar() {
     return [...lista].sort((a, b) => new Date(b.data) - new Date(a.data))[0];
   }, [lancamentos, modoEdicao, editId]);
 
-  // Bloqueio de visitante ao abrir para NOVO lançamento
   useEffect(() => {
     if (modoEdicao) return;
     const { visitante } = getUserState();
@@ -120,7 +118,7 @@ export default function Lancar() {
   const [dataBR, setDataBR] = useState(isoToBR(hojeISO()));
   const [salvando, setSalvando] = useState(false);
   const [preenchido, setPreenchido] = useState(false);
-  const nativoRef = useRef(null);
+  const [calendarioAberto, setCalendarioAberto] = useState(false);
 
   useEffect(() => {
     if (lancamentoAtual && !preenchido) {
@@ -150,25 +148,9 @@ export default function Lancar() {
     setDataBR(mascararData(e.target.value));
   }
 
-  function abrirPickerNativo() {
-    const el = nativoRef.current;
-    if (!el) return;
-    if (typeof el.showPicker === "function") {
-      try { el.showPicker(); return; } catch { /* fallback */ }
-    }
-    el.focus();
-    el.click();
-  }
-
-  function handleNativoChange(e) {
-    const iso = e.target.value;
-    if (iso) setDataBR(isoToBR(iso));
-  }
-
   async function handleSalvar() {
     if (centavos <= 0 || !dataValida || salvando) return;
 
-    // Regra de negócio: visitante limitado a 8 lançamentos
     if (!modoEdicao) {
       const { visitante } = getUserState();
       if (visitante && lancamentos.length >= LIMITE_VISITANTE) {
@@ -228,7 +210,6 @@ export default function Lancar() {
 
       <div className="flex-1 overflow-y-auto px-5 pb-32">
         <div className="max-w-md mx-auto mt-4 space-y-5">
-          {/* Campo VALOR */}
           <div>
             <label
               className="block text-xs mb-2"
@@ -261,7 +242,6 @@ export default function Lancar() {
             </p>
           </div>
 
-          {/* Campo DESCRIÇÃO */}
           <div>
             <label
               className="block text-xs mb-2"
@@ -279,7 +259,6 @@ export default function Lancar() {
             />
           </div>
 
-          {/* Campo DATA */}
           <div>
             <label
               className="block text-xs mb-2"
@@ -303,23 +282,12 @@ export default function Lancar() {
               />
               <button
                 type="button"
-                onClick={abrirPickerNativo}
+                onClick={() => setCalendarioAberto(true)}
                 aria-label="Selecionar data"
                 className="ml-2 shrink-0 flex items-center justify-center hover:opacity-80"
               >
                 <CalendarIcon size={18} style={{ color: "var(--text-secondary)" }} />
               </button>
-              {/* input date invisível para acionar o picker nativo */}
-              <input
-                ref={nativoRef}
-                type="date"
-                max={hojeISO()}
-                onChange={handleNativoChange}
-                className="sr-only"
-                tabIndex={-1}
-                aria-hidden="true"
-                style={{ colorScheme: "dark" }}
-              />
             </div>
             {mostrarErroData && (
               <p className="mt-2" style={{ color: "#ef4444", fontSize: 12 }}>
@@ -328,12 +296,8 @@ export default function Lancar() {
             )}
           </div>
 
-          {/* Último lançamento (só leitura) */}
           <div className="pt-4">
-            <p
-              className="text-xs mb-2"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
               Último lançamento
             </p>
             {ultimoLancamento ? (
@@ -392,7 +356,17 @@ export default function Lancar() {
         </div>
       </div>
 
-      {/* Botão Salvar fixado */}
+      <Calendario
+        aberto={calendarioAberto}
+        modo="dia"
+        valorISO={brToISO(dataBR) || hojeISO()}
+        onFechar={() => setCalendarioAberto(false)}
+        onSelecionar={(iso) => {
+          setDataBR(isoToBR(iso));
+          setCalendarioAberto(false);
+        }}
+      />
+
       <div
         className="fixed bottom-0 left-0 right-0 px-5 pt-3 pb-5 z-10"
         style={{

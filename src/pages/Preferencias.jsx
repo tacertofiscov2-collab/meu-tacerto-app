@@ -1,26 +1,32 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ChevronDown } from "lucide-react";
+import {
+  ArrowLeft, Sun, Moon, Wand2, Type, Bell, CalendarClock, Check,
+} from "lucide-react";
 
 import BottomNav from "../components/BottomNav.jsx";
-import { SectionTitle } from "../components/FlatList.jsx";
 
-const KEY_TEMA = "tacerto_tema"; // "claro" | "escuro" | "auto"
-const KEY_FONTE = "tacerto_fonte"; // "small" | "medium" | "large"
+const KEY_TEMA = "tacerto_tema";
+const KEY_FONTE = "tacerto_fonte";
+const KEY_PUSH = "tacerto_push";
+const KEY_LEMBRETE = "tacerto_lembrete_das";
 
-function aplicarTema(valor) {
+export function temaEfetivo(escolha) {
+  if (escolha === "claro") return "claro";
+  if (escolha === "escuro") return "escuro";
+  const h = new Date().getHours();
+  return h >= 6 && h < 18 ? "claro" : "escuro";
+}
+
+export function aplicarTema(escolha) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
-  let modo = valor;
-  if (valor === "auto") {
-    const prefereEscuro = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    modo = prefereEscuro ? "escuro" : "claro";
-  }
+  const modo = temaEfetivo(escolha);
   root.classList.remove("theme-light");
   if (modo === "claro") root.classList.add("theme-light");
 }
 
-function aplicarFonte(valor) {
+export function aplicarFonte(valor) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
   root.classList.remove("font-small", "font-medium", "font-large");
@@ -29,29 +35,36 @@ function aplicarFonte(valor) {
   else root.classList.add("font-medium");
 }
 
-function Segmented({ opcoes, valor, onChange }) {
+function CardOpcao({ Icon, label, sub, ativo, onClick }) {
   return (
-    <div
-      className="flex p-1 rounded-xl"
-      style={{ backgroundColor: "var(--field)" }}
+    <button
+      onClick={onClick}
+      className="flex-1 rounded-2xl px-3 py-4 flex flex-col items-center gap-1.5 transition active:scale-[0.98]"
+      style={{
+        backgroundColor: ativo ? "var(--surface-selected)" : "var(--field)",
+        opacity: ativo ? 1 : 0.55,
+      }}
     >
-      {opcoes.map((op) => {
-        const ativo = valor === op.value;
-        return (
-          <button
-            key={op.value}
-            onClick={() => onChange(op.value)}
-            className="flex-1 py-2 text-xs font-semibold rounded-lg transition"
-            style={{
-              backgroundColor: ativo ? "var(--primary)" : "transparent",
-              color: ativo ? "var(--primary-contrast)" : "var(--text-secondary)",
-            }}
-          >
-            {op.label}
-          </button>
-        );
-      })}
-    </div>
+      <Icon
+        size={22}
+        strokeWidth={ativo ? 2.3 : 1.9}
+        style={{ color: ativo ? "var(--primary)" : "var(--text-secondary)" }}
+      />
+      <span
+        className="text-[13px] leading-none"
+        style={{ color: "var(--text)", fontWeight: ativo ? 700 : 500 }}
+      >
+        {label}
+      </span>
+      {sub && (
+        <span
+          className="text-[10px] leading-tight text-center"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          {sub}
+        </span>
+      )}
+    </button>
   );
 }
 
@@ -62,11 +75,11 @@ function Switch({ ativo, onChange, label }) {
       role="switch"
       aria-checked={ativo}
       aria-label={label}
-      className="relative w-11 h-6 rounded-full transition-colors shrink-0"
+      className="relative w-12 h-7 rounded-full transition-colors shrink-0"
       style={{ backgroundColor: ativo ? "var(--primary)" : "var(--field)" }}
     >
       <span
-        className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform"
+        className="absolute top-1 left-1 w-5 h-5 rounded-full transition-transform"
         style={{
           backgroundColor: "#fff",
           transform: ativo ? "translateX(20px)" : "translateX(0)",
@@ -76,52 +89,82 @@ function Switch({ ativo, onChange, label }) {
   );
 }
 
+const OPCOES_LEMBRETE = [
+  { valor: "5", label: "5 dias antes" },
+  { valor: "3", label: "3 dias antes" },
+  { valor: "1", label: "1 dia antes" },
+  { valor: "0", label: "No dia" },
+];
+
 export default function Preferencias() {
   const navigate = useNavigate();
 
   const [tema, setTema] = useState(() => {
-    if (typeof window === "undefined") return "escuro";
-    return localStorage.getItem(KEY_TEMA) || "escuro";
+    if (typeof window === "undefined") return "auto";
+    return localStorage.getItem(KEY_TEMA) || "auto";
   });
   const [fonte, setFonte] = useState(() => {
     if (typeof window === "undefined") return "medium";
     return localStorage.getItem(KEY_FONTE) || "medium";
   });
-  const [push, setPush] = useState(true);
-  const [lembreteDas, setLembreteDas] = useState("3");
+  const [push, setPush] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return localStorage.getItem(KEY_PUSH) !== "0";
+  });
+  const [lembrete, setLembrete] = useState(() => {
+    if (typeof window === "undefined") return "3";
+    return localStorage.getItem(KEY_LEMBRETE) || "3";
+  });
 
-  // Aplica e persiste TEMA
   useEffect(() => {
     aplicarTema(tema);
-    try { localStorage.setItem(KEY_TEMA, tema); } catch {}
+    try {
+      localStorage.setItem(KEY_TEMA, tema);
+    } catch {}
   }, [tema]);
 
-  // Se estiver em "auto", observa mudanças do sistema
   useEffect(() => {
-    if (tema !== "auto" || typeof window === "undefined") return;
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => aplicarTema("auto");
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
+    if (tema !== "auto") return;
+    const id = setInterval(() => aplicarTema("auto"), 60000);
+    return () => clearInterval(id);
   }, [tema]);
 
-  // Aplica e persiste FONTE
   useEffect(() => {
     aplicarFonte(fonte);
-    try { localStorage.setItem(KEY_FONTE, fonte); } catch {}
+    try {
+      localStorage.setItem(KEY_FONTE, fonte);
+    } catch {}
   }, [fonte]);
 
-  const selectStyle = {
-    backgroundColor: "var(--field)",
-    color: "var(--text)",
-  };
+  useEffect(() => {
+    try {
+      localStorage.setItem(KEY_PUSH, push ? "1" : "0");
+    } catch {}
+  }, [push]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(KEY_LEMBRETE, lembrete);
+    } catch {}
+  }, [lembrete]);
+
+  const subAuto =
+    tema === "auto"
+      ? temaEfetivo("auto") === "claro"
+        ? "Claro agora"
+        : "Escuro agora"
+      : "6h às 18h claro";
 
   return (
     <div
-      className="min-h-screen min-h-[100dvh] w-full"
-      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
+      className="w-full flex flex-col"
+      style={{
+        backgroundColor: "var(--bg)",
+        color: "var(--text)",
+        minHeight: "100dvh",
+      }}
     >
-      <header className="px-5 pt-6 pb-4 flex items-center gap-3">
+      <header className="px-5 pt-6 pb-3 flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
@@ -136,80 +179,176 @@ export default function Preferencias() {
       </header>
 
       <div
-        className="px-5"
-        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
+        className="px-5 flex-1 flex flex-col gap-7"
+        style={{ paddingBottom: "calc(40px + env(safe-area-inset-bottom))" }}
       >
-        <SectionTitle>Aparência</SectionTitle>
-        <div className="space-y-5 pt-1">
-          <div>
-            <p className="text-[15px] mb-2" style={{ color: "var(--text)" }}>
-              Tema
-            </p>
-            <Segmented
-              opcoes={[
-                { value: "claro", label: "Claro" },
-                { value: "escuro", label: "Escuro" },
-                { value: "auto", label: "Automático" },
-              ]}
-              valor={tema}
-              onChange={setTema}
+        <section>
+          <p
+            className="text-[13px] mb-3"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            Tema do app
+          </p>
+          <div className="flex gap-2">
+            <CardOpcao
+              Icon={Sun}
+              label="Claro"
+              ativo={tema === "claro"}
+              onClick={() => setTema("claro")}
+            />
+            <CardOpcao
+              Icon={Moon}
+              label="Escuro"
+              ativo={tema === "escuro"}
+              onClick={() => setTema("escuro")}
+            />
+            <CardOpcao
+              Icon={Wand2}
+              label="Automático"
+              sub={subAuto}
+              ativo={tema === "auto"}
+              onClick={() => setTema("auto")}
             />
           </div>
+        </section>
 
-          <div>
-            <p className="text-[15px] mb-2" style={{ color: "var(--text)" }}>
-              Tamanho da fonte
-            </p>
-            <Segmented
-              opcoes={[
-                { value: "small", label: "Pequena" },
-                { value: "medium", label: "Média" },
-                { value: "large", label: "Grande" },
-              ]}
-              valor={fonte}
-              onChange={setFonte}
-            />
+        <section>
+          <p
+            className="text-[13px] mb-3"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            Tamanho da fonte
+          </p>
+          <div
+            className="rounded-2xl px-4 py-4"
+            style={{ backgroundColor: "var(--field)" }}
+          >
+            <div className="flex items-end justify-between gap-2">
+              {[
+                { v: "small", label: "Pequena", tam: 13 },
+                { v: "medium", label: "Média", tam: 16 },
+                { v: "large", label: "Grande", tam: 20 },
+              ].map((op) => {
+                const ativo = fonte === op.v;
+                return (
+                  <button
+                    key={op.v}
+                    onClick={() => setFonte(op.v)}
+                    className="flex-1 flex flex-col items-center gap-2 py-2 rounded-xl transition active:scale-[0.98]"
+                    style={{
+                      backgroundColor: ativo
+                        ? "var(--surface-selected)"
+                        : "transparent",
+                      opacity: ativo ? 1 : 0.5,
+                    }}
+                  >
+                    <Type
+                      size={op.tam}
+                      strokeWidth={ativo ? 2.3 : 1.9}
+                      style={{
+                        color: ativo ? "var(--primary)" : "var(--text-secondary)",
+                      }}
+                    />
+                    <span
+                      className="text-[12px] leading-none"
+                      style={{
+                        color: "var(--text)",
+                        fontWeight: ativo ? 700 : 500,
+                      }}
+                    >
+                      {op.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        </section>
 
-        <SectionTitle>Notificações</SectionTitle>
-        <div className="space-y-5 pt-1">
-          <div className="flex items-center gap-3 py-1">
+        <section>
+          <p
+            className="text-[13px] mb-3"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            Notificações
+          </p>
+
+          <div
+            className="rounded-2xl px-4 py-3.5 flex items-center gap-3"
+            style={{ backgroundColor: "var(--field)" }}
+          >
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ backgroundColor: "var(--surface)" }}
+            >
+              <Bell size={19} style={{ color: "var(--primary)" }} />
+            </div>
             <div className="flex-1 min-w-0">
               <p className="text-[15px]" style={{ color: "var(--text)" }}>
-                Notificações push
+                Alertas do Fisco
               </p>
-              <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                Receber alertas do app
+              <p
+                className="text-xs mt-0.5"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Avisos sobre seu MEI
               </p>
             </div>
             <Switch ativo={push} onChange={setPush} label="Notificações push" />
           </div>
 
-          <div>
-            <p className="text-[15px] mb-2" style={{ color: "var(--text)" }}>
-              Lembrete do DAS
-            </p>
-            <div className="relative">
-              <select
-                value={lembreteDas}
-                onChange={(e) => setLembreteDas(e.target.value)}
-                className="w-full appearance-none pl-4 pr-10 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                style={selectStyle}
+          <div
+            className="rounded-2xl px-4 pt-3.5 pb-4 mt-2"
+            style={{
+              backgroundColor: "var(--field)",
+              opacity: push ? 1 : 0.45,
+              pointerEvents: push ? "auto" : "none",
+            }}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style={{ backgroundColor: "var(--surface)" }}
               >
-                <option value="5">5 dias antes</option>
-                <option value="3">3 dias antes</option>
-                <option value="1">1 dia antes</option>
-                <option value="0">No dia do vencimento</option>
-              </select>
-              <ChevronDown
-                size={18}
-                className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                style={{ color: "var(--text-secondary)" }}
-              />
+                <CalendarClock size={19} style={{ color: "var(--primary)" }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px]" style={{ color: "var(--text)" }}>
+                  Lembrete do DAS
+                </p>
+                <p
+                  className="text-xs mt-0.5"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Vence todo dia 20
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {OPCOES_LEMBRETE.map((op) => {
+                const ativo = lembrete === op.valor;
+                return (
+                  <button
+                    key={op.valor}
+                    onClick={() => setLembrete(op.valor)}
+                    className="py-2.5 rounded-xl text-[13px] flex items-center justify-center gap-1.5 transition active:scale-[0.98]"
+                    style={{
+                      backgroundColor: ativo
+                        ? "var(--surface-selected)"
+                        : "var(--surface)",
+                      color: "var(--text)",
+                      fontWeight: ativo ? 700 : 500,
+                      opacity: ativo ? 1 : 0.6,
+                    }}
+                  >
+                    {ativo && <Check size={14} style={{ color: "var(--primary)" }} />}
+                    {op.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        </div>
+        </section>
       </div>
 
       <BottomNav />
