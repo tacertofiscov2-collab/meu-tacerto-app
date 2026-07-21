@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Gauge, X } from "lucide-react";
 
 const MESES = [
@@ -28,67 +28,6 @@ function primeiroDiaSemana(mes, ano) {
   return new Date(ano, mes - 1, 1).getDay();
 }
 
-function Cabecalho({ titulo, onFechar }) {
-  return (
-    <div className="flex items-center justify-between px-5 pt-4 pb-1">
-      <div className="flex items-center gap-2">
-        <Gauge size={20} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
-        <span className="font-bold text-sm" style={{ color: "var(--text)" }}>
-          {titulo}
-        </span>
-      </div>
-      <button
-        onClick={onFechar}
-        aria-label="Fechar"
-        className="w-8 h-8 rounded-full flex items-center justify-center active:opacity-70"
-        style={{ backgroundColor: "var(--field)" }}
-      >
-        <X size={15} style={{ color: "var(--text-secondary)" }} />
-      </button>
-    </div>
-  );
-}
-
-function NavegadorMes({ label, onAnterior, onProximo, podeProximo }) {
-  return (
-    <div className="flex items-center justify-between px-5 py-3">
-      <button
-        onClick={onAnterior}
-        aria-label="Mês anterior"
-        className="w-9 h-9 rounded-full flex items-center justify-center active:scale-95 transition"
-        style={{ backgroundColor: "var(--field)" }}
-      >
-        <ChevronLeft size={18} style={{ color: "var(--text)" }} />
-      </button>
-      <span className="text-[15px] font-semibold" style={{ color: "var(--text)" }}>
-        {label}
-      </span>
-      <button
-        onClick={onProximo}
-        disabled={!podeProximo}
-        aria-label="Próximo mês"
-        className="w-9 h-9 rounded-full flex items-center justify-center active:scale-95 transition disabled:opacity-30"
-        style={{ backgroundColor: "var(--field)" }}
-      >
-        <ChevronRight size={18} style={{ color: "var(--text)" }} />
-      </button>
-    </div>
-  );
-}
-
-/**
- * Calendário do TaCerto! — modo "dia" (data completa) ou "mesAno".
- *
- * Props:
- * - aberto: boolean
- * - modo: "dia" | "mesAno"
- * - valorISO: "aaaa-mm-dd" (modo dia)
- * - mes / ano: números (modo mesAno)
- * - maxHoje: bloqueia datas futuras (padrão true)
- * - onFechar(): fecha sem salvar
- * - onSelecionar(iso) — modo dia
- * - onSelecionarMesAno(mes, ano) — modo mesAno
- */
 export default function Calendario({
   aberto,
   modo = "dia",
@@ -96,12 +35,13 @@ export default function Calendario({
   mes,
   ano,
   maxHoje = true,
+  minISO = null,
   onFechar,
   onSelecionar,
   onSelecionarMesAno,
 }) {
   const hoje = hojeISO();
-  const [ay, am, ad] = (valorISO || hoje).split("-").map(Number);
+  const [ay, am] = (valorISO || hoje).split("-").map(Number);
 
   const [mesVisivel, setMesVisivel] = useState(am || new Date().getMonth() + 1);
   const [anoVisivel, setAnoVisivel] = useState(ay || new Date().getFullYear());
@@ -120,13 +60,6 @@ export default function Calendario({
     }
   }, [aberto, modo, valorISO, mes, ano, hoje]);
 
-  const anosLista = useMemo(() => {
-    const atual = new Date().getFullYear();
-    const arr = [];
-    for (let a = atual; a >= atual - 25; a--) arr.push(a);
-    return arr;
-  }, []);
-
   if (!aberto) return null;
 
   const celulas = [];
@@ -137,31 +70,30 @@ export default function Calendario({
     for (let d = 1; d <= total; d++) celulas.push(d);
   }
 
-  const [hy, hm, hd] = hoje.split("-").map(Number);
+  const [hy, hm] = hoje.split("-").map(Number);
   const podeAvancarMes =
     !maxHoje || anoVisivel < hy || (anoVisivel === hy && mesVisivel < hm);
+
+  const ultimoDiaVisivel = isoDe(
+    anoVisivel, mesVisivel, diasNoMes(mesVisivel, anoVisivel),
+  );
+  const podeVoltarMes = !minISO || ultimoDiaVisivel > minISO;
+
+  const anosLista = (() => {
+    const atual = new Date().getFullYear();
+    const arr = [];
+    for (let a = atual; a >= atual - 25; a--) arr.push(a);
+    return arr;
+  })();
 
   function irMes(delta) {
     let m = mesVisivel + delta;
     let a = anoVisivel;
-    if (m < 1) {
-      m = 12;
-      a -= 1;
-    }
-    if (m > 12) {
-      m = 1;
-      a += 1;
-    }
+    if (m < 1) { m = 12; a -= 1; }
+    if (m > 12) { m = 1; a += 1; }
     setMesVisivel(m);
     setAnoVisivel(a);
   }
-
-  const painelStyle = {
-    backgroundColor: "var(--surface)",
-    border: "1px solid var(--border)",
-    borderRadius: 24,
-    boxShadow: "0 20px 50px rgba(0,0,0,0.45)",
-  };
 
   return (
     <div
@@ -171,22 +103,56 @@ export default function Calendario({
     >
       <div
         className="w-full max-w-sm overflow-hidden"
-        style={painelStyle}
+        style={{
+          backgroundColor: "var(--surface)",
+          border: "1px solid var(--border)",
+          borderRadius: 24,
+          boxShadow: "0 20px 50px rgba(0,0,0,0.45)",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        <Cabecalho
-          titulo={modo === "dia" ? "Escolha a data" : "Abertura do MEI"}
-          onFechar={onFechar}
-        />
+        <div className="flex items-center justify-between px-5 pt-4 pb-1">
+          <div className="flex items-center gap-2">
+            <Gauge size={20} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
+            <span className="font-bold text-sm" style={{ color: "var(--text)" }}>
+              {modo === "dia" ? "Escolha a data" : "Abertura do MEI"}
+            </span>
+          </div>
+          <button
+            onClick={onFechar}
+            aria-label="Fechar"
+            className="w-8 h-8 rounded-full flex items-center justify-center active:opacity-70"
+            style={{ backgroundColor: "var(--field)" }}
+          >
+            <X size={15} style={{ color: "var(--text-secondary)" }} />
+          </button>
+        </div>
 
         {modo === "dia" ? (
           <>
-            <NavegadorMes
-              label={`${MESES[mesVisivel - 1]} ${anoVisivel}`}
-              onAnterior={() => irMes(-1)}
-              onProximo={() => irMes(1)}
-              podeProximo={podeAvancarMes}
-            />
+            <div className="flex items-center justify-between px-5 py-3">
+              <button
+                onClick={() => irMes(-1)}
+                disabled={!podeVoltarMes}
+                aria-label="Mês anterior"
+                className="w-9 h-9 rounded-full flex items-center justify-center active:scale-95 transition disabled:opacity-30"
+                style={{ backgroundColor: "var(--field)" }}
+              >
+                <ChevronLeft size={18} style={{ color: "var(--text)" }} />
+              </button>
+              <span className="text-[15px] font-semibold" style={{ color: "var(--text)" }}>
+                {`${MESES[mesVisivel - 1]} ${anoVisivel}`}
+              </span>
+              <button
+                onClick={() => irMes(1)}
+                disabled={!podeAvancarMes}
+                aria-label="Próximo mês"
+                className="w-9 h-9 rounded-full flex items-center justify-center active:scale-95 transition disabled:opacity-30"
+                style={{ backgroundColor: "var(--field)" }}
+              >
+                <ChevronRight size={18} style={{ color: "var(--text)" }} />
+              </button>
+            </div>
 
             <div className="grid grid-cols-7 px-4 pb-1">
               {DIAS.map((d, i) => (
@@ -204,24 +170,21 @@ export default function Calendario({
               {celulas.map((d, i) => {
                 if (d === null) return <div key={`v${i}`} />;
                 const iso = isoDe(anoVisivel, mesVisivel, d);
-                const selecionado =
-                  valorISO && iso === valorISO;
+                const selecionado = valorISO && iso === valorISO;
                 const ehHoje = iso === hoje;
                 const futuro = maxHoje && iso > hoje;
+                const anterior = minISO && iso < minISO;
+                const bloqueado = futuro || anterior;
 
                 return (
                   <button
                     key={iso}
-                    disabled={futuro}
+                    disabled={bloqueado}
                     onClick={() => onSelecionar?.(iso)}
                     className="aspect-square rounded-xl flex items-center justify-center text-sm transition active:scale-95 disabled:opacity-25"
                     style={{
-                      backgroundColor: selecionado
-                        ? "var(--primary)"
-                        : "transparent",
-                      color: selecionado
-                        ? "var(--primary-contrast)"
-                        : "var(--text)",
+                      backgroundColor: selecionado ? "var(--primary)" : "transparent",
+                      color: selecionado ? "var(--primary-contrast)" : "var(--text)",
                       fontWeight: selecionado || ehHoje ? 700 : 400,
                       border: ehHoje && !selecionado
                         ? "1.5px solid var(--primary)"
@@ -254,8 +217,7 @@ export default function Calendario({
                 {MESES_CURTO.map((m, i) => {
                   const num = i + 1;
                   const ativo = mesSel === num;
-                  const bloqueado =
-                    maxHoje && anoSel === hy && num > hm;
+                  const bloqueado = maxHoje && anoSel === hy && num > hm;
                   return (
                     <button
                       key={m}
@@ -279,10 +241,7 @@ export default function Calendario({
               <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
                 Ano
               </p>
-              <div
-                className="flex gap-2 overflow-x-auto hide-scrollbar pb-1"
-                style={{ scrollSnapType: "x mandatory" }}
-              >
+              <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
                 {anosLista.map((a) => {
                   const ativo = anoSel === a;
                   return (
@@ -290,16 +249,13 @@ export default function Calendario({
                       key={a}
                       onClick={() => {
                         setAnoSel(a);
-                        if (maxHoje && a === hy && mesSel && mesSel > hm) {
-                          setMesSel(hm);
-                        }
+                        if (maxHoje && a === hy && mesSel && mesSel > hm) setMesSel(hm);
                       }}
                       className="px-4 py-2.5 rounded-xl text-[13px] shrink-0 transition active:scale-95"
                       style={{
                         backgroundColor: ativo ? "var(--primary)" : "var(--field)",
                         color: ativo ? "var(--primary-contrast)" : "var(--text)",
                         fontWeight: ativo ? 700 : 400,
-                        scrollSnapAlign: "center",
                       }}
                     >
                       {a}
