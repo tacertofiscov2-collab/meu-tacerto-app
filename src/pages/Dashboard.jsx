@@ -28,6 +28,18 @@ function hexToRgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+function poseDaFaixa(faixa) {
+  if (faixa === "tranquilo" || faixa === "fique_de_olho") return "joinha";
+  if (faixa === "atencao" || faixa === "perto_do_limite") return "ok";
+  return "alerta";
+}
+
+function frasePose(pose) {
+  if (pose === "joinha") return "Tá tudo certo por aqui!";
+  if (pose === "ok") return "Fica de olho, hein?";
+  return "Precisamos conversar...";
+}
+
 function BolinhasIndicadoras({ pagina, irPara, corAtiva }) {
   return (
     <div className="flex items-center gap-1.5">
@@ -102,13 +114,7 @@ function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }
       }
     }
 
-    if (eixo.current === "x") {
-      const p = paginaRef.current;
-      let d = dx;
-      if (p === 0 && d > 0) d = d * 0.25;
-      if (p === 1 && d < 0) d = d * 0.25;
-      setDragPx(d);
-    }
+    if (eixo.current === "x") setDragPx(dx);
   }
 
   function fim(x) {
@@ -121,19 +127,17 @@ function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }
     const dx = x - startX.current;
     const dt = Date.now() - startTime.current;
     const velocidade = Math.abs(dx) / Math.max(1, dt);
-    const passouMeio = Math.abs(dx) > largura() * 0.35;
+    const passouMeio = Math.abs(dx) > largura() * 0.3;
     const flick = velocidade > 0.4 && Math.abs(dx) > 30;
-    const p = paginaRef.current;
-
-    let nova = p;
-    if ((passouMeio || flick) && dx < 0 && p === 0) nova = 1;
-    if ((passouMeio || flick) && dx > 0 && p === 1) nova = 0;
 
     ativo.current = false;
     eixo.current = null;
     setArrastando(false);
     setDragPx(0);
-    setPagina(nova);
+
+    if (passouMeio || flick) {
+      setPagina((p) => (p === 0 ? 1 : 0));
+    }
   }
 
   function irPara(i) {
@@ -247,42 +251,22 @@ function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }
   );
 }
 
-function BarraFisco({ onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full rounded-full px-3 py-2 flex items-center gap-3 text-left active:scale-[0.99] transition-transform shrink-0"
-      style={{
-        backgroundColor: "var(--surface)",
-        border: "1px solid var(--border)",
-      }}
-    >
-      <span
-        className="rounded-full flex items-center justify-center shrink-0"
-        style={{ width: 40, height: 40, backgroundColor: "var(--field)" }}
-      >
-        <Fisco size={34} />
-      </span>
-      <span className="flex-1 text-sm" style={{ color: "var(--text-secondary)" }}>
-        Pergunte ao Fisco...
-      </span>
-      <span
-        className="rounded-full flex items-center justify-center shrink-0"
-        style={{ width: 34, height: 34, backgroundColor: "var(--primary)" }}
-      >
-        <ArrowUp size={18} style={{ color: "var(--primary-contrast)" }} />
-      </span>
-    </button>
-  );
-}
-
 export default function Dashboard() {
   const navigate = useNavigate();
   const { nome, tipo, faturado, limite } = useUserState();
+  const [animarFisco, setAnimarFisco] = useState(false);
 
   const percentual = calcularPercentual(faturado, limite);
   const rotuloPerfil = LABEL_TIPO[tipo];
   const saudacao = saudacaoPorHora();
+  const faixa = faixaDoVelocimetro(percentual);
+  const pose = poseDaFaixa(faixa);
+
+  useEffect(() => {
+    setAnimarFisco(false);
+    const t = setTimeout(() => setAnimarFisco(true), 400);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <div
@@ -296,12 +280,12 @@ export default function Dashboard() {
     >
       <div
         className="flex-1 flex flex-col min-h-0"
-        style={{ paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(108px + env(safe-area-inset-bottom))" }}
       >
-        <header className="px-5 pt-4 pb-2 flex items-start justify-between shrink-0">
+        <header className="px-5 pt-4 pb-1 flex items-start justify-between shrink-0">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2.5">
-              <Gauge size={34} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
+              <Gauge size={32} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
               <span
                 className="font-bold text-2xl leading-none"
                 style={{ color: "var(--text)" }}
@@ -309,7 +293,7 @@ export default function Dashboard() {
                 Ta<span style={{ color: "var(--primary)" }}>Certo!</span>
               </span>
             </div>
-            <div className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+            <div className="text-sm mt-0.5" style={{ color: "var(--text-secondary)" }}>
               {saudacao}
               {nome ? " " : "!"}
               {nome && (
@@ -341,14 +325,57 @@ export default function Dashboard() {
           </button>
         </header>
 
-        <div className="px-5 pt-3 flex-1 flex flex-col gap-3 min-h-0">
+        <div className="px-5 pt-2 flex-1 flex flex-col gap-2 min-h-0">
           <CardVelocimetroCarrossel
             rotuloPerfil={rotuloPerfil}
             percentual={percentual}
             faturado={faturado}
             limite={limite}
           />
-          <BarraFisco onClick={() => navigate("/chat")} />
+
+          <button
+            onClick={() => navigate("/chat")}
+            className="shrink-0 flex items-end gap-2 active:opacity-90 transition"
+            style={{ background: "none", border: "none", padding: 0 }}
+          >
+            <Fisco size={92} pose={pose} animar={animarFisco} />
+            <div className="flex-1 flex flex-col items-start gap-1.5 pb-2 min-w-0">
+              <span
+                className="text-xs px-3 py-1.5 rounded-2xl rounded-bl-sm"
+                style={{
+                  backgroundColor: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                {frasePose(pose)}
+              </span>
+              <span
+                className="w-full rounded-full px-4 py-2.5 flex items-center gap-2 text-left"
+                style={{
+                  backgroundColor: "var(--surface)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <span
+                  className="flex-1 text-sm truncate"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Pergunte ao Fisco...
+                </span>
+                <span
+                  className="rounded-full flex items-center justify-center shrink-0"
+                  style={{
+                    width: 30,
+                    height: 30,
+                    backgroundColor: "var(--primary)",
+                  }}
+                >
+                  <ArrowUp size={16} style={{ color: "var(--primary-contrast)" }} />
+                </span>
+              </span>
+            </div>
+          </button>
         </div>
       </div>
 
