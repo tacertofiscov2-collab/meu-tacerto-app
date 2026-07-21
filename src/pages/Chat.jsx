@@ -4,6 +4,8 @@ import {
   ArrowLeft, HelpCircle, FileText, ListChecks, Wand2, Paperclip, Send,
 } from "lucide-react";
 import Fisco from "../components/Fisco.jsx";
+import { useAppState } from "@/context/AppStateContext";
+import { faixaDoVelocimetro } from "@/lib/fiscal";
 
 const VANTAGENS = [
   { Icon: HelpCircle, texto: "Tire dúvidas sobre MEI, DAS e imposto na hora" },
@@ -12,11 +14,20 @@ const VANTAGENS = [
   { Icon: Wand2, texto: "Explicações simples, sem juridiquês" },
 ];
 
+function poseDaFaixa(faixa) {
+  if (faixa === "tranquilo" || faixa === "fique_de_olho") return "joinha";
+  if (faixa === "atencao" || faixa === "perto_do_limite") return "ok";
+  return "alerta";
+}
+
 export default function Chat() {
   const navigate = useNavigate();
+  const { percentualAtual } = useAppState();
   const [mensagens, setMensagens] = useState([]);
   const [texto, setTexto] = useState("");
   const listaRef = useRef(null);
+
+  const pose = poseDaFaixa(faixaDoVelocimetro(percentualAtual));
 
   useEffect(() => {
     if (listaRef.current) {
@@ -55,58 +66,50 @@ export default function Chat() {
         </button>
       </header>
 
-      <div
-        ref={listaRef}
-        className="flex-1 overflow-y-auto px-5 hide-scrollbar"
-        style={{ paddingBottom: "calc(84px + env(safe-area-inset-bottom))" }}
-      >
-        {vazio ? (
-          <div className="flex flex-col items-center text-center">
-            <div
-              className="rounded-3xl flex items-center justify-center"
-              style={{
-                width: 96,
-                height: 96,
-                backgroundColor: "var(--field)",
-                border: "1px solid var(--border)",
-              }}
-            >
-              <Fisco size={78} />
-            </div>
-            <h2 className="mt-4 text-2xl font-bold" style={{ color: "var(--text)" }}>
+      {vazio ? (
+        <div className="flex-1 min-h-0 flex flex-col px-5 overflow-hidden">
+          <div className="flex flex-col items-center text-center shrink-0">
+            <Fisco size={104} pose={pose} />
+            <h2 className="mt-1 text-2xl font-bold" style={{ color: "var(--text)" }}>
               Fisco
             </h2>
             <p className="mt-0.5 text-sm" style={{ color: "var(--text-secondary)" }}>
               Seu amigo fiscal. Como posso te ajudar hoje?
             </p>
-
-            <ul className="w-full mt-5 space-y-2.5">
-              {VANTAGENS.map(({ Icon, texto }, i) => (
-                <li
-                  key={i}
-                  className="flex items-center gap-3 rounded-2xl p-3.5 text-left"
-                  style={{
-                    backgroundColor: "var(--surface)",
-                    border: "1px solid var(--border)",
-                  }}
-                >
-                  <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: "var(--field)" }}
-                  >
-                    <Icon size={18} style={{ color: "var(--primary)" }} />
-                  </div>
-                  <span
-                    className="text-sm leading-snug"
-                    style={{ color: "var(--text)" }}
-                  >
-                    {texto}
-                  </span>
-                </li>
-              ))}
-            </ul>
           </div>
-        ) : (
+
+          <ul className="w-full mt-4 space-y-2 shrink-0">
+            {VANTAGENS.map(({ Icon, texto }, i) => (
+              <li
+                key={i}
+                className="flex items-center gap-3 rounded-2xl p-3 text-left"
+                style={{
+                  backgroundColor: "var(--surface)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "var(--field)" }}
+                >
+                  <Icon size={18} style={{ color: "var(--primary)" }} />
+                </div>
+                <span
+                  className="text-[13px] leading-snug"
+                  style={{ color: "var(--text)" }}
+                >
+                  {texto}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <div
+          ref={listaRef}
+          className="flex-1 min-h-0 overflow-y-auto px-5 hide-scrollbar"
+          style={{ paddingBottom: "calc(84px + env(safe-area-inset-bottom))" }}
+        >
           <div className="space-y-3 pt-2">
             {mensagens.map((m) => {
               const isUser = m.autor === "user";
@@ -138,20 +141,20 @@ export default function Chat() {
               );
             })}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <form
         onSubmit={enviar}
-        className="fixed left-0 right-0 z-20 px-4"
-        style={{ bottom: "calc(env(safe-area-inset-bottom) + 20px)" }}
+        className="shrink-0 px-4"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)", paddingTop: 10 }}
       >
         <div
           className="flex items-center gap-2 rounded-full pl-2 pr-1.5 py-1.5"
           style={{
             backgroundColor: "var(--surface)",
             border: "1px solid var(--border)",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.28)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.22)",
           }}
         >
           <button
