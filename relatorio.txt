@@ -1,0 +1,33 @@
+﻿=== COMMITS ===
+d417b17 feat: lancamento usa calendario proprio do TaCerto
+7c88470 feat: salvar alteracoes, remover foto, calendario proprio, sem rolagem
+67d7bb3 feat: Fisco grande fora da barra com pose reativa, carrossel em loop
+f48ab3f style: navbar com mais respiro na base
+3b8a7ba fix: swipe sem faixa branca, fundo garantido durante arrasto
+189b7f5 feat: variavel --surface-selected para novo padrao de selecao
+7804319 feat: Fisco com maos e poses reativas (joinha, ok, alerta)
+e20d168 feat: calendario proprio do TaCerto (modo dia e mes/ano)
+f59bc4a fix: restaura Perfil.jsx (foi sobrescrito por engano com EditarPerfil)
+b398720 fix: padrao de selecao sem verde forte no Onboarding (tipo MEI, sim/nao, MonthPicker)
+133cca4 feat: remover foto, sem rolagem, selecao sem verde forte
+9b18050 fix: remove lapis de editar foto da tela Perfil
+
+=== STATUS ===
+
+=== ARQUIVOS ===
+
+Name             Length LastWriteTime      
+----             ------ -------------      
+Calendario.jsx    11481 20/07/2026 22:55:19
+Fisco.jsx          6855 20/07/2026 23:01:58
+SwipeBack.jsx      5808 20/07/2026 23:13:32
+BottomNav.jsx      4608 20/07/2026 23:15:11
+Dashboard.jsx     12699 20/07/2026 23:16:29
+EditarPerfil.jsx  15363 20/07/2026 23:17:36
+Preferencias.jsx  11554 20/07/2026 23:19:57
+Lancar.jsx        13288 20/07/2026 23:24:23
+main.jsx           1020 20/07/2026 23:20:33
+index.css          1396 20/07/2026 23:11:05
+
+
+

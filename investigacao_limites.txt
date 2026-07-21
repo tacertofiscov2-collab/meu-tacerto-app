@@ -1,0 +1,1603 @@
+﻿
+
+========== src\lib\fiscal.js ==========
+
+// Fonte ÃšNICA da verdade para regras fiscais do TaCerto!
+// Nenhuma tela deve ter esses valores hard-coded fora deste arquivo.
+
+export const LIMITES_ANUAIS = {
+  MEI: 81000,
+  MEI_CAMINHONEIRO: 251600,
+};
+
+export const LABEL_TIPO = {
+  MEI: "MEI",
+  MEI_CAMINHONEIRO: "MEI Caminhoneiro",
+};
+
+// Regra dos 20% â€” LC 123/2006, art. 18-A, Â§5Âº-IV
+export const MARGEM_20 = 0.2;
+export const limiteAte20Percent = (tipo) => LIMITES_ANUAIS[tipo] * (1 + MARGEM_20);
+
+// Limite proporcional para MEI aberto no meio do ano.
+// Base: limite anual / 12 * meses de atividade no ano de abertura (inclui o mÃªs de abertura).
+export function limiteProporcional(tipo, mesAbertura, anoAbertura, anoCorrente) {
+  const cheio = LIMITES_ANUAIS[tipo] ?? LIMITES_ANUAIS.MEI;
+  if (!mesAbertura || !anoAbertura) return cheio;
+  if (anoCorrente > anoAbertura) return cheio;
+  const mesesRestantes = 12 - mesAbertura + 1;
+  return Math.round((cheio / 12) * mesesRestantes);
+}
+
+export function faixaDoVelocimetro(percentual) {
+  if (percentual < 50) return "tranquilo";
+  if (percentual < 75) return "fique_de_olho";
+  if (percentual < 90) return "atencao";
+  if (percentual < 100) return "perto_do_limite";
+  if (percentual <= 120) return "estourou";
+  return "critico";
+}
+
+export const FAIXA_INFO = {
+  tranquilo: {
+    cor: "#22c55e",
+    mensagem: "Continua no seu ritmo.",
+    textoDetalhado: (percentual) =>
+      `VocÃª usou ${Number(percentual).toFixed(0)}% do seu limite anual. EstÃ¡ tranquilo â€” ainda tem bastante espaÃ§o pra faturar atÃ© dezembro. Continue registrando cada recebimento pra manter o velocÃ­metro sempre certo e nÃ£o ter surpresa depois. O segredo Ã© lanÃ§ar tudo: dinheiro, Pix, cartÃ£o, transferÃªncia. NÃ£o importa se emitiu nota fiscal ou nÃ£o.`,
+  },
+  fique_de_olho: {
+    cor: "#84cc16",
+    mensagem: "Vale comeÃ§ar a acompanhar de perto.",
+    textoDetalhado: (percentual) =>
+      `VocÃª jÃ¡ usou ${Number(percentual).toFixed(0)}% do seu limite anual. Ainda estÃ¡ dentro do previsto, mas jÃ¡ passou da metade â€” vale comeÃ§ar a acompanhar mÃªs a mÃªs pra nÃ£o ter surpresa no fim do ano. Um bom hÃ¡bito nessa faixa Ã© olhar o app antes de fechar cada mÃªs e comparar com o mesmo perÃ­odo do ano passado. Assim vocÃª antecipa qualquer ajuste.`,
+  },
+  atencao: {
+    cor: "#f59e0b",
+    mensagem: "Bora planejar os prÃ³ximos meses.",
+    textoDetalhado: (percentual) =>
+      `VocÃª jÃ¡ usou ${Number(percentual).toFixed(0)}% do seu limite anual. EstÃ¡ chegando perto do teto â€” hora de planejar os prÃ³ximos recebimentos com cuidado atÃ© dezembro. Se vocÃª tem previsÃ£o de receber um valor grande, vale considerar dividir em parcelas que caiam no ano que vem. E se der pra falar com um contador antes de qualquer decisÃ£o maior, melhor ainda.`,
+  },
+  perto_do_limite: {
+    cor: "#f97316",
+    mensagem: "Segura a mÃ£o atÃ© janeiro pra nÃ£o estourar.",
+    textoDetalhado: (percentual) =>
+      `VocÃª jÃ¡ usou ${Number(percentual).toFixed(0)}% do seu limite anual â€” estÃ¡ muito prÃ³ximo do teto. Se possÃ­vel, evite receber grandes valores nos prÃ³ximos meses pra nÃ£o ultrapassar. A regra Ã©: se passar de 100%, vocÃª ainda pode continuar MEI atÃ© dezembro (pagando um DAS complementar), desde que nÃ£o passe de 20% acima do limite. Acima disso, o desenquadramento Ã© retroativo. Fala com um contador antes de fechar qualquer contrato grande agora.`,
+  },
+  estourou: {
+    cor: "#ef4444",
+    mensagem: "VocÃª paga DAS complementar e ajusta em janeiro.",
+    textoDetalhado: (_percentual) =>
+      `VocÃª passou do seu limite anual, mas ainda dentro dos 20% que a lei permite. VocÃª vai continuar sendo MEI atÃ© 31 de dezembro, mas vai precisar pagar um DAS complementar sobre o valor que passou. A partir de 1Âº de janeiro do prÃ³ximo ano vocÃª deixa de ser MEI. Recomendamos falar com um contador pra se planejar.`,
+  },
+  critico: {
+    cor: "#dc2626",
+    mensagem: "Fala com um contador o quanto antes.",
+    textoDetalhado: (_percentual) =>
+      `VocÃª passou mais de 20% do seu limite anual. Pela lei, vocÃª deixa de ser MEI com efeito retroativo desde 1Âº de janeiro deste ano â€” ou seja, todos os impostos sÃ£o recalculados como se vocÃª jÃ¡ fosse Simples Nacional. Ã‰ importante falar com um contador o quanto antes pra regularizar sua situaÃ§Ã£o e evitar problemas.`,
+  },
+};
+
+// Aliases de compatibilidade â€” todas as chaves antigas apontam para `mensagem`.
+for (const chave of Object.keys(FAIXA_INFO)) {
+  const f = FAIXA_INFO[chave];
+  f.label = f.mensagem;
+  f.principal = f.mensagem;
+  f.apoio = f.mensagem;
+}
+
+// DAS mensal 2026
+export const DAS_2026 = {
+  MEI: {
+    comercio_industria: 82.05,
+    servicos: 86.05,
+    comercio_e_servicos: 87.05,
+  },
+  MEI_CAMINHONEIRO: {
+    intermunicipal_interestadual: 195.52,
+    municipal: 199.52,
+    produtos_perigosos_mudancas: 200.52,
+  },
+};
+
+// Datas fiscais
+export const DAS_VENCIMENTO_DIA = 20; // Antecipa se cair em fim de semana/feriado
+export const DAS_VENCIMENTO_LABEL =
+  "Dia 20 (antecipa se cair em fim de semana ou feriado)";
+export const DASN_PRAZO = { dia: 31, mes: 5 }; // 31 de maio
+
+export function calcularPercentual(faturado, limite) {
+  if (limite <= 0) return 0;
+  return (faturado / limite) * 100;
+}
+
+export function calcularFaltam(faturado, limite) {
+  return Math.max(0, limite - faturado);
+}
+
+export function calcularFaltamOuExcedeu(faturado, limite) {
+  const diff = Number(limite) - Number(faturado);
+  if (diff >= 0) return { tipo: "faltam", valor: diff };
+  return { tipo: "excedeu", valor: Math.abs(diff) };
+}
+
+export const fmtBRL = (v) =>
+  "R$ " +
+  Number(v || 0).toLocaleString("pt-BR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+
+========== src\lib\userState.js ==========
+
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { LIMITES_ANUAIS, limiteProporcional } from "./fiscal.js";
+
+// Fonte Ãºnica do estado do usuÃ¡rio (tipo de MEI, faturamento, abertura, visitante).
+// Persistido em localStorage, com sincronizaÃ§Ã£o entre telas via evento custom.
+
+const EVT = "tacerto-user-changed";
+
+const KEYS = {
+  nome: "tacerto_nome",
+  email: "tacerto_email",
+  tipo: "tacerto_tipo",
+  faturado: "tacerto_faturado",
+  mesAbertura: "tacerto_mes_abertura",
+  anoAbertura: "tacerto_ano_abertura",
+  visitante: "tacerto_visitante",
+  // legado
+  perfilLegado: "tacerto_perfil",
+};
+
+function isBrowser() {
+  return typeof window !== "undefined";
+}
+
+function normalizarTipo(v) {
+  if (!v) return "MEI";
+  const s = String(v).toUpperCase();
+  return s === "MEI_CAMINHONEIRO" ? "MEI_CAMINHONEIRO" : "MEI";
+}
+
+function lerVisitante() {
+  if (!isBrowser()) return true;
+  const raw = localStorage.getItem(KEYS.visitante);
+  if (raw === "false") return false;
+  if (raw === "true") return true;
+  // default: visitante enquanto flag nÃ£o foi setada explicitamente
+  return true;
+}
+
+function ler() {
+  if (!isBrowser()) {
+    return {
+      nome: "",
+      email: null,
+      visitante: true,
+      tipo: "MEI",
+      faturado: 0,
+      mesAbertura: null,
+      anoAbertura: null,
+    };
+  }
+  let tipoRaw = localStorage.getItem(KEYS.tipo);
+  if (!tipoRaw) {
+    const legado = localStorage.getItem(KEYS.perfilLegado);
+    if (legado) tipoRaw = legado;
+  }
+  const tipo = normalizarTipo(tipoRaw);
+  const faturadoRaw = localStorage.getItem(KEYS.faturado);
+  const mesRaw = localStorage.getItem(KEYS.mesAbertura);
+  const anoRaw = localStorage.getItem(KEYS.anoAbertura);
+  const nomeRaw = localStorage.getItem(KEYS.nome);
+  const emailRaw = localStorage.getItem(KEYS.email);
+  return {
+    nome: nomeRaw || "",
+    email: emailRaw || null,
+    visitante: lerVisitante(),
+    tipo,
+    faturado: faturadoRaw != null ? Number(faturadoRaw) : 0,
+    mesAbertura: mesRaw ? Number(mesRaw) : null,
+    anoAbertura: anoRaw ? Number(anoRaw) : null,
+  };
+}
+
+function emit() {
+  if (isBrowser()) window.dispatchEvent(new Event(EVT));
+}
+
+export function setUserState(patch) {
+  if (!isBrowser()) return;
+  if (patch.nome != null) localStorage.setItem(KEYS.nome, String(patch.nome));
+  if (patch.email != null) localStorage.setItem(KEYS.email, String(patch.email));
+  if (patch.tipo != null) localStorage.setItem(KEYS.tipo, normalizarTipo(patch.tipo));
+  if (patch.faturado != null) localStorage.setItem(KEYS.faturado, String(patch.faturado));
+  if (patch.mesAbertura != null) localStorage.setItem(KEYS.mesAbertura, String(patch.mesAbertura));
+  if (patch.anoAbertura != null) localStorage.setItem(KEYS.anoAbertura, String(patch.anoAbertura));
+  if (patch.visitante != null) localStorage.setItem(KEYS.visitante, patch.visitante ? "true" : "false");
+  emit();
+}
+
+export function setVisitante(v) {
+  if (!isBrowser()) return;
+  localStorage.setItem(KEYS.visitante, v ? "true" : "false");
+  emit();
+}
+
+export function getUserState() {
+  return ler();
+}
+
+function subscribe(cb) {
+  if (!isBrowser()) return () => {};
+  const handler = () => cb();
+  window.addEventListener(EVT, handler);
+  window.addEventListener("storage", handler);
+  return () => {
+    window.removeEventListener(EVT, handler);
+    window.removeEventListener("storage", handler);
+  };
+}
+
+// Retorna um snapshot estÃ¡vel entre notificaÃ§Ãµes â€” evita loop do useSyncExternalStore.
+let cache = null;
+let cacheKey = "";
+function snapshot() {
+  const s = ler();
+  const key = `${s.nome}|${s.email}|${s.tipo}|${s.faturado}|${s.mesAbertura}|${s.anoAbertura}|${s.visitante}`;
+  if (key !== cacheKey) {
+    cacheKey = key;
+    cache = s;
+  }
+  return cache;
+}
+function ssrSnapshot() {
+  return {
+    nome: "",
+    email: null,
+    visitante: true,
+    tipo: "MEI",
+    faturado: 0,
+    mesAbertura: null,
+    anoAbertura: null,
+  };
+}
+
+export function useUserState() {
+  const state = useSyncExternalStore(subscribe, snapshot, ssrSnapshot);
+  const anoCorrente = new Date().getFullYear();
+  const limite = limiteProporcional(
+    state.tipo,
+    state.mesAbertura,
+    state.anoAbertura,
+    anoCorrente
+  );
+  return {
+    ...state,
+    limite,
+    limiteCheio: LIMITES_ANUAIS[state.tipo],
+    setTipo: (tipo) => setUserState({ tipo }),
+    setFaturado: (faturado) => setUserState({ faturado }),
+    setNome: (nome) => setUserState({ nome }),
+    setEmail: (email) => setUserState({ email }),
+    setVisitante: (v) => setVisitante(v),
+    setAbertura: (mes, ano) => setUserState({ mesAbertura: mes, anoAbertura: ano }),
+  };
+}
+
+// UtilitÃ¡rio para telas legadas que ainda usam apenas useState.
+export function useUserStateBasic() {
+  const [s, setS] = useState(ler);
+  useEffect(() => subscribe(() => setS(ler())), []);
+  return s;
+}
+
+
+========== src\context\AppStateContext.jsx ==========
+
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  LIMITES_ANUAIS,
+  limiteProporcional,
+  calcularPercentual,
+  faixaDoVelocimetro,
+} from "@/lib/fiscal";
+
+const STORAGE_KEY = "tacerto_app_state";
+const EVT = "tacerto-user-changed"; // mantÃ©m compat com useUserState
+
+const MESES = [
+  "Janeiro", "Fevereiro", "MarÃ§o", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
+function uuid() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  return "id-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+function ordinal(n) {
+  return `${n}Âº`;
+}
+
+function normalizarTipo(v) {
+  return String(v || "MEI").toUpperCase() === "MEI_CAMINHONEIRO"
+    ? "MEI_CAMINHONEIRO"
+    : "MEI";
+}
+
+const DEFAULT_STATE = {
+  lancamentos: [],
+  tipoMEI: "MEI",
+  mesAnoAbertura: null,
+  modoSimulacao: false,
+  faturamentoSimulado: 0,
+};
+
+function hidratar() {
+  if (typeof window === "undefined") return DEFAULT_STATE;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        ...DEFAULT_STATE,
+        ...parsed,
+        tipoMEI: normalizarTipo(parsed.tipoMEI),
+        lancamentos: Array.isArray(parsed.lancamentos) ? parsed.lancamentos : [],
+      };
+    }
+    // migraÃ§Ã£o das chaves antigas do useUserState
+    const tipoLeg = localStorage.getItem("tacerto_tipo") || localStorage.getItem("tacerto_perfil");
+    const mes = localStorage.getItem("tacerto_mes_abertura");
+    const ano = localStorage.getItem("tacerto_ano_abertura");
+    const fatLeg = localStorage.getItem("tacerto_faturado");
+    return {
+      ...DEFAULT_STATE,
+      tipoMEI: normalizarTipo(tipoLeg),
+      mesAnoAbertura: mes && ano ? { mes: Number(mes), ano: Number(ano) } : null,
+      // se havia um faturado legado, iniciamos em modo simulaÃ§Ã£o para nÃ£o perder o cenÃ¡rio
+      modoSimulacao: fatLeg != null && Number(fatLeg) > 0,
+      faturamentoSimulado: fatLeg != null ? Number(fatLeg) : 0,
+    };
+  } catch {
+    return DEFAULT_STATE;
+  }
+}
+
+const AppStateContext = createContext(null);
+
+export function AppStateProvider({ children }) {
+  const [state, setState] = useState(hidratar);
+  const first = useRef(true);
+
+  // MigraÃ§Ã£o Ãºnica: descriÃ§Ãµes antigas "XÂº Recebimento/Frete de MÃªs" â†’ "XÂº LanÃ§amento de MÃªs".
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (localStorage.getItem("tacerto_migracao_descricoes") === "true") return;
+    const re = /^(\d+Âº) (Recebimento|Frete) de /;
+    setState((s) => {
+      let mudou = false;
+      const novos = s.lancamentos.map((l) => {
+        if (l.descricao && re.test(l.descricao)) {
+          mudou = true;
+          return { ...l, descricao: l.descricao.replace(re, "$1 LanÃ§amento de ") };
+        }
+        return l;
+      });
+      if (mudou) return { ...s, lancamentos: novos };
+      return s;
+    });
+    localStorage.setItem("tacerto_migracao_descricoes", "true");
+  }, []);
+
+
+  // PersistÃªncia + bridge para as chaves antigas (useUserState continua reativo)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+      const anoCorrente = new Date().getFullYear();
+      const faturamento = state.modoSimulacao
+        ? Number(state.faturamentoSimulado) || 0
+        : state.lancamentos
+            .filter((l) => new Date(l.data).getFullYear() === anoCorrente)
+            .reduce((s, l) => s + (Number(l.valor) || 0), 0);
+
+      localStorage.setItem("tacerto_tipo", state.tipoMEI);
+      localStorage.setItem("tacerto_faturado", String(faturamento));
+      if (state.mesAnoAbertura) {
+        localStorage.setItem("tacerto_mes_abertura", String(state.mesAnoAbertura.mes));
+        localStorage.setItem("tacerto_ano_abertura", String(state.mesAnoAbertura.ano));
+      } else {
+        localStorage.removeItem("tacerto_mes_abertura");
+        localStorage.removeItem("tacerto_ano_abertura");
+      }
+      window.dispatchEvent(new Event(EVT));
+    } catch {}
+    first.current = false;
+  }, [state]);
+
+  // Sincroniza com escritas legadas (Onboarding/EditarPerfil via userState.js)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sync = () => {
+      const tipoLeg = localStorage.getItem("tacerto_tipo");
+      const mes = localStorage.getItem("tacerto_mes_abertura");
+      const ano = localStorage.getItem("tacerto_ano_abertura");
+      setState((s) => {
+        const novoTipo = normalizarTipo(tipoLeg || s.tipoMEI);
+        const novaAb = mes && ano ? { mes: Number(mes), ano: Number(ano) } : null;
+        const mesmoTipo = novoTipo === s.tipoMEI;
+        const mesmaAb =
+          (novaAb && s.mesAnoAbertura &&
+            novaAb.mes === s.mesAnoAbertura.mes &&
+            novaAb.ano === s.mesAnoAbertura.ano) ||
+          (novaAb == null && s.mesAnoAbertura == null);
+        if (mesmoTipo && mesmaAb) return s;
+        return { ...s, tipoMEI: novoTipo, mesAnoAbertura: novaAb };
+      });
+    };
+    window.addEventListener("tacerto-user-changed", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("tacerto-user-changed", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const adicionarLancamento = useCallback((l) => {
+    setState((s) => {
+      const data = l.data || new Date().toISOString();
+      const d = new Date(data);
+      const mesmoMes = s.lancamentos.filter((x) => {
+        const dx = new Date(x.data);
+        return dx.getMonth() === d.getMonth() && dx.getFullYear() === d.getFullYear();
+      }).length;
+      const descricao =
+        (l.descricao && l.descricao.trim()) ||
+        `${ordinal(mesmoMes + 1)} LanÃ§amento de ${MESES[d.getMonth()]}`;
+      const novo = {
+        id: uuid(),
+        descricao,
+        valor: Number(l.valor) || 0,
+        data,
+      };
+      return { ...s, lancamentos: [novo, ...s.lancamentos] };
+    });
+  }, []);
+
+  const atualizarLancamento = useCallback((id, dados) => {
+    setState((s) => ({
+      ...s,
+      lancamentos: s.lancamentos.map((l) => (l.id === id ? { ...l, ...dados } : l)),
+    }));
+  }, []);
+
+  const removerLancamento = useCallback((id) => {
+    setState((s) => ({ ...s, lancamentos: s.lancamentos.filter((l) => l.id !== id) }));
+  }, []);
+
+  const removerTodosLancamentos = useCallback(() => {
+    setState((s) => ({ ...s, lancamentos: [] }));
+  }, []);
+
+  const setTipoMEI = useCallback((t) => {
+    setState((s) => ({ ...s, tipoMEI: normalizarTipo(t) }));
+  }, []);
+
+  const setMesAnoAbertura = useCallback((mes, ano) => {
+    setState((s) => ({
+      ...s,
+      mesAnoAbertura: mes && ano ? { mes: Number(mes), ano: Number(ano) } : null,
+    }));
+  }, []);
+
+  const setModoSimulacao = useCallback((b) => {
+    setState((s) => ({ ...s, modoSimulacao: !!b }));
+  }, []);
+
+  const setFaturamentoSimulado = useCallback((v) => {
+    setState((s) => ({ ...s, faturamentoSimulado: Number(v) || 0, modoSimulacao: true }));
+  }, []);
+
+  const resetarConta = useCallback(() => {
+    setState(DEFAULT_STATE);
+  }, []);
+
+  // Selectors
+  const anoCorrente = new Date().getFullYear();
+
+  const faturamentoReal = useMemo(
+    () =>
+      state.lancamentos
+        .filter((l) => new Date(l.data).getFullYear() === anoCorrente)
+        .reduce((s, l) => s + (Number(l.valor) || 0), 0),
+    [state.lancamentos, anoCorrente],
+  );
+
+  const faturamentoAtual = state.modoSimulacao
+    ? Number(state.faturamentoSimulado) || 0
+    : faturamentoReal;
+
+  const limiteAtual = state.mesAnoAbertura
+    ? limiteProporcional(
+        state.tipoMEI,
+        state.mesAnoAbertura.mes,
+        state.mesAnoAbertura.ano,
+        anoCorrente,
+      )
+    : LIMITES_ANUAIS[state.tipoMEI];
+
+  const percentualAtual = calcularPercentual(faturamentoAtual, limiteAtual);
+  const faltamAtual = Math.max(0, limiteAtual - faturamentoAtual);
+  const faixaAtual = faixaDoVelocimetro(percentualAtual);
+
+  const faturamentoDoMes = useCallback(
+    (mes, ano) =>
+      state.lancamentos
+        .filter((l) => {
+          const d = new Date(l.data);
+          return d.getMonth() + 1 === mes && d.getFullYear() === ano;
+        })
+        .reduce((s, l) => s + (Number(l.valor) || 0), 0),
+    [state.lancamentos],
+  );
+
+  const value = {
+    ...state,
+    adicionarLancamento,
+    atualizarLancamento,
+    removerLancamento,
+    removerTodosLancamentos,
+    setTipoMEI,
+    setMesAnoAbertura,
+    setModoSimulacao,
+    setFaturamentoSimulado,
+    resetarConta,
+    // selectors
+    faturamentoReal,
+    faturamentoAtual,
+    limiteAtual,
+    percentualAtual,
+    faltamAtual,
+    faixaAtual,
+    faturamentoDoMes,
+  };
+
+  return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
+}
+
+export function useAppState() {
+  const ctx = useContext(AppStateContext);
+  if (!ctx) throw new Error("useAppState precisa estar dentro de <AppStateProvider>");
+  return ctx;
+}
+
+
+========== src\pages\Dashboard.jsx ==========
+
+import { useNavigate } from "react-router-dom";
+import { useRef, useState, useEffect } from "react";
+import { Bell, Gauge, ArrowUp } from "lucide-react";
+import BottomNav from "../components/BottomNav.jsx";
+import Valor from "../components/Valor.jsx";
+import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
+import Fisco from "../components/Fisco.jsx";
+import { useUserState } from "@/lib/userState";
+import {
+  LABEL_TIPO,
+  calcularPercentual,
+  faixaDoVelocimetro,
+  FAIXA_INFO,
+} from "@/lib/fiscal";
+
+function saudacaoPorHora() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return "Bom dia,";
+  if (h >= 12 && h < 18) return "Boa tarde,";
+  return "Boa noite,";
+}
+
+function hexToRgba(hex, alpha) {
+  const h = String(hex).replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function poseDaFaixa(faixa) {
+  if (faixa === "tranquilo" || faixa === "fique_de_olho") return "joinha";
+  if (faixa === "atencao" || faixa === "perto_do_limite") return "ok";
+  return "alerta";
+}
+
+function frasePose(pose) {
+  if (pose === "joinha") return "TÃ¡ tudo certo por aqui!";
+  if (pose === "ok") return "Fica de olho, hein?";
+  return "Precisamos conversar...";
+}
+
+function BolinhasIndicadoras({ pagina, irPara, corAtiva }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      {[0, 1].map((i) => (
+        <button
+          key={i}
+          onClick={(e) => {
+            e.stopPropagation();
+            irPara(i);
+          }}
+          aria-label={`Ir para tela ${i + 1}`}
+          className="rounded-full transition-colors"
+          style={{
+            width: 8,
+            height: 8,
+            backgroundColor: pagina === i ? corAtiva : "var(--text-secondary)",
+            opacity: pagina === i ? 1 : 0.6,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function CardVelocimetroCarrossel({ rotuloPerfil, percentual, faturado, limite }) {
+  const [pagina, setPagina] = useState(0);
+  const [dragPx, setDragPx] = useState(0);
+  const [arrastando, setArrastando] = useState(false);
+
+  const containerRef = useRef(null);
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const startTime = useRef(0);
+  const ativo = useRef(false);
+  const eixo = useRef(null);
+  const paginaRef = useRef(0);
+
+  useEffect(() => {
+    paginaRef.current = pagina;
+  }, [pagina]);
+
+  const chaveFaixa = faixaDoVelocimetro(percentual);
+  const corFaixa = FAIXA_INFO[chaveFaixa].cor;
+
+  function largura() {
+    return containerRef.current?.clientWidth || 1;
+  }
+
+  function inicio(x, y) {
+    startX.current = x;
+    startY.current = y;
+    startTime.current = Date.now();
+    ativo.current = true;
+    eixo.current = null;
+    setArrastando(true);
+    setDragPx(0);
+  }
+
+  function mover(x, y) {
+    if (!ativo.current) return;
+    const dx = x - startX.current;
+    const dy = y - startY.current;
+
+    if (eixo.current === null) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      eixo.current = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      if (eixo.current === "y") {
+        ativo.current = false;
+        setArrastando(false);
+        setDragPx(0);
+        return;
+      }
+    }
+
+    if (eixo.current === "x") setDragPx(dx);
+  }
+
+  function fim(x) {
+    if (!ativo.current) {
+      setArrastando(false);
+      setDragPx(0);
+      eixo.current = null;
+      return;
+    }
+    const dx = x - startX.current;
+    const dt = Date.now() - startTime.current;
+    const velocidade = Math.abs(dx) / Math.max(1, dt);
+    const passouMeio = Math.abs(dx) > largura() * 0.3;
+    const flick = velocidade > 0.4 && Math.abs(dx) > 30;
+
+    ativo.current = false;
+    eixo.current = null;
+    setArrastando(false);
+    setDragPx(0);
+
+    if (passouMeio || flick) {
+      setPagina((p) => (p === 0 ? 1 : 0));
+    }
+  }
+
+  function irPara(i) {
+    setDragPx(0);
+    setArrastando(false);
+    setPagina(i);
+  }
+
+  const naTelaB = pagina === 1;
+  const bgCard = naTelaB
+    ? {
+        background: `linear-gradient(160deg, ${hexToRgba(corFaixa, 0.18)} 0%, ${hexToRgba(corFaixa, 0.08)} 55%, ${hexToRgba(corFaixa, 0.04)} 100%), var(--surface)`,
+        border: `1px solid ${hexToRgba(corFaixa, 0.35)}`,
+      }
+    : {
+        background:
+          "linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 55%, rgba(255,255,255,0) 100%), var(--surface)",
+        border: "1px solid var(--border)",
+      };
+
+  const larg = largura();
+  const basePct = pagina === 0 ? 0 : -50;
+  const dragPct = larg ? (dragPx / larg) * 50 : 0;
+  const translate = basePct + dragPct;
+
+  return (
+    <div
+      ref={containerRef}
+      data-carrossel-velocimetro
+      className="relative w-full flex-1 rounded-3xl overflow-hidden flex flex-col"
+      style={{
+        ...bgCard,
+        boxShadow:
+          "0 10px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)",
+        transition: "background 300ms ease, border-color 300ms ease",
+        touchAction: "pan-y",
+      }}
+      onTouchStart={(e) => inicio(e.touches[0].clientX, e.touches[0].clientY)}
+      onTouchMove={(e) => mover(e.touches[0].clientX, e.touches[0].clientY)}
+      onTouchEnd={(e) => fim(e.changedTouches[0].clientX)}
+      onTouchCancel={() => fim(startX.current)}
+      onMouseDown={(e) => inicio(e.clientX, e.clientY)}
+      onMouseMove={(e) => ativo.current && mover(e.clientX, e.clientY)}
+      onMouseUp={(e) => fim(e.clientX)}
+      onMouseLeave={(e) => ativo.current && fim(e.clientX)}
+    >
+      <div className="flex items-center justify-between px-5 pt-4 shrink-0">
+        <span
+          className="text-sm"
+          style={{
+            color: "var(--text-secondary)",
+            visibility: naTelaB ? "hidden" : "visible",
+          }}
+        >
+          {rotuloPerfil}
+        </span>
+        <BolinhasIndicadoras pagina={pagina} irPara={irPara} corAtiva={corFaixa} />
+      </div>
+
+      <div className="flex-1 overflow-hidden">
+        <div
+          className="flex h-full"
+          style={{
+            width: "200%",
+            transform: `translateX(${translate}%)`,
+            transition: arrastando ? "none" : "transform 300ms ease-in-out",
+          }}
+        >
+          <div className="w-1/2 h-full flex flex-col px-5 pb-4">
+            <div className="flex-1 flex items-center justify-center">
+              <VelocimetroAnimado percentual={percentual} maxWidth={220} />
+            </div>
+            <div
+              className="grid grid-cols-2 pt-3 mt-auto"
+              style={{ borderTop: "1px solid var(--border)" }}
+            >
+              {[
+                { valor: faturado, label: "Faturado" },
+                { valor: limite, label: "Limite" },
+              ].map((c, i) => (
+                <div
+                  key={c.label}
+                  className={
+                    "flex flex-col items-center text-center min-w-0 " +
+                    (i > 0 ? "border-l" : "")
+                  }
+                  style={{
+                    paddingLeft: 12,
+                    paddingRight: 12,
+                    ...(i > 0 ? { borderColor: "var(--border)" } : {}),
+                  }}
+                >
+                  <Valor tamanho="md" autoAjustar>
+                    {c.valor}
+                  </Valor>
+                  <span
+                    className="text-xs mt-1"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    {c.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="w-1/2 h-full flex flex-col px-5 pb-4" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Dashboard() {
+  const navigate = useNavigate();
+  const { nome, tipo, faturado, limite } = useUserState();
+  const [animarFisco, setAnimarFisco] = useState(false);
+
+  const percentual = calcularPercentual(faturado, limite);
+  const rotuloPerfil = LABEL_TIPO[tipo];
+  const saudacao = saudacaoPorHora();
+  const faixa = faixaDoVelocimetro(percentual);
+  const pose = poseDaFaixa(faixa);
+
+  useEffect(() => {
+    setAnimarFisco(false);
+    const t = setTimeout(() => setAnimarFisco(true), 400);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div
+      className="w-full flex flex-col"
+      style={{
+        backgroundColor: "var(--bg)",
+        color: "var(--text)",
+        height: "100dvh",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        className="flex-1 flex flex-col min-h-0"
+        style={{ paddingBottom: "calc(108px + env(safe-area-inset-bottom))" }}
+      >
+        <header className="px-5 pt-4 pb-1 flex items-start justify-between shrink-0">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2.5">
+              <Gauge size={32} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
+              <span
+                className="font-bold text-2xl leading-none"
+                style={{ color: "var(--text)" }}
+              >
+                Ta<span style={{ color: "var(--primary)" }}>Certo!</span>
+              </span>
+            </div>
+            <div className="text-sm mt-0.5" style={{ color: "var(--text-secondary)" }}>
+              {saudacao}
+              {nome ? " " : "!"}
+              {nome && (
+                <span
+                  className="text-base font-semibold"
+                  style={{ color: "var(--text)" }}
+                >
+                  {nome}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <button
+            onClick={() => navigate("/alertas")}
+            aria-label="NotificaÃ§Ãµes"
+            className="relative w-11 h-11 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
+            style={{
+              backgroundColor: "var(--surface)",
+              border: "1px solid var(--border)",
+            }}
+          >
+            <Bell size={20} style={{ color: "var(--text)" }} />
+            <span
+              className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full"
+              style={{ backgroundColor: "var(--danger)" }}
+              aria-hidden
+            />
+          </button>
+        </header>
+
+        <div className="px-5 pt-2 flex-1 flex flex-col gap-2 min-h-0">
+          <CardVelocimetroCarrossel
+            rotuloPerfil={rotuloPerfil}
+            percentual={percentual}
+            faturado={faturado}
+            limite={limite}
+          />
+
+          <button
+            onClick={() => navigate("/chat")}
+            className="shrink-0 flex items-end gap-2 active:opacity-90 transition"
+            style={{ background: "none", border: "none", padding: 0 }}
+          >
+            <Fisco size={92} pose={pose} animar={animarFisco} />
+            <div className="flex-1 flex flex-col items-start gap-1.5 pb-2 min-w-0">
+              <span
+                className="text-xs px-3 py-1.5 rounded-2xl rounded-bl-sm"
+                style={{
+                  backgroundColor: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                {frasePose(pose)}
+              </span>
+              <span
+                className="w-full rounded-full px-4 py-2.5 flex items-center gap-2 text-left"
+                style={{
+                  backgroundColor: "var(--surface)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <span
+                  className="flex-1 text-sm truncate"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Pergunte ao Fisco...
+                </span>
+                <span
+                  className="rounded-full flex items-center justify-center shrink-0"
+                  style={{
+                    width: 30,
+                    height: 30,
+                    backgroundColor: "var(--primary)",
+                  }}
+                >
+                  <ArrowUp size={16} style={{ color: "var(--primary-contrast)" }} />
+                </span>
+              </span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <BottomNav ativo="inicio" />
+    </div>
+  );
+}
+
+========== src\pages\ResumoPerfil.jsx ==========
+
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import BottomNav from "../components/BottomNav.jsx";
+import Valor from "../components/Valor.jsx";
+import { SectionTitle } from "../components/FlatList.jsx";
+
+import { useAppState } from "@/context/AppStateContext";
+import {
+  faixaDoVelocimetro,
+  FAIXA_INFO,
+  calcularFaltamOuExcedeu,
+} from "@/lib/fiscal";
+
+const MESES_ABREV = [
+  "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+  "Jul", "Ago", "Set", "Out", "Nov", "Dez",
+];
+
+export default function ResumoPerfil() {
+  const navigate = useNavigate();
+  const {
+    lancamentos,
+    faturamentoAtual,
+    limiteAtual,
+    percentualAtual,
+    faturamentoDoMes,
+  } = useAppState();
+
+  const anoCorrente = new Date().getFullYear();
+
+  // Conta TODOS os lanÃ§amentos do ano corrente (feitos em /lancar + Adicionar faturamento)
+  const totalLancamentos = useMemo(
+    () =>
+      lancamentos.filter(
+        (l) => new Date(l.data).getFullYear() === anoCorrente,
+      ).length,
+    [lancamentos, anoCorrente],
+  );
+
+  const restante = calcularFaltamOuExcedeu(faturamentoAtual, limiteAtual);
+  const faixa = faixaDoVelocimetro(percentualAtual);
+  const corFaixa = FAIXA_INFO[faixa].cor;
+
+  // Faturamento por mÃªs (Jan â†’ Dez do ano corrente)
+  const dadosMensais = useMemo(() => {
+    const arr = [];
+    for (let m = 1; m <= 12; m++) {
+      arr.push({
+        mes: MESES_ABREV[m - 1],
+        valor: faturamentoDoMes(m, anoCorrente),
+      });
+    }
+    return arr;
+  }, [faturamentoDoMes, anoCorrente]);
+
+  const maxMes = Math.max(1, ...dadosMensais.map((d) => d.valor));
+
+  const percFmt = Math.round(percentualAtual);
+
+  return (
+    <div
+      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
+      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
+    >
+      <div
+        className="flex-1 overflow-y-auto"
+        style={{ paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
+      >
+        <header className="px-5 pt-6 pb-4 flex items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            aria-label="Voltar"
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+            style={{ backgroundColor: "var(--field)" }}
+          >
+            <ArrowLeft size={20} style={{ color: "var(--text)" }} />
+          </button>
+          <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
+            Resumo de {anoCorrente}
+          </h1>
+        </header>
+
+        <div className="px-5">
+          {/* Bloco superior â€” flat estilo Pierre */}
+          <SectionTitle className="mt-2">Este ano</SectionTitle>
+
+          {/* Faturado + % lado a lado */}
+          <div className="grid grid-cols-2 gap-4 pt-1">
+            <div>
+              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                Faturado
+              </p>
+              <div className="mt-1">
+                <Valor tamanho="lg" autoAjustar>
+                  {faturamentoAtual}
+                </Valor>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                Do limite
+              </p>
+              <p
+                className="mt-1 font-bold"
+                style={{ color: corFaixa, fontSize: "1.5rem", lineHeight: 1.1 }}
+              >
+                {percFmt}%
+              </p>
+            </div>
+          </div>
+
+          {/* Limite + Faltam/Excedeu */}
+          <div className="grid grid-cols-2 gap-4 pt-5">
+            <div>
+              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                Limite
+              </p>
+              <div className="mt-1">
+                <Valor tamanho="md" autoAjustar>{limiteAtual}</Valor>
+              </div>
+            </div>
+            <div>
+              <p
+                className="text-xs"
+                style={{
+                  color:
+                    restante.tipo === "excedeu"
+                      ? "#ef4444"
+                      : "var(--text-secondary)",
+                }}
+              >
+                {restante.tipo === "excedeu" ? "Excedeu" : "Faltam"}
+              </p>
+              <div className="mt-1">
+                <Valor
+                  tamanho="md"
+                  autoAjustar
+                  cor={restante.tipo === "excedeu" ? "#ef4444" : undefined}
+                >
+                  {restante.valor}
+                </Valor>
+              </div>
+            </div>
+          </div>
+
+          {/* Total de lanÃ§amentos â€” discreto */}
+          <div className="pt-5">
+            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+              Total de lanÃ§amentos no ano
+            </p>
+            <p className="mt-1 text-lg font-bold" style={{ color: "var(--text)" }}>
+              {totalLancamentos}
+            </p>
+          </div>
+
+          {/* GrÃ¡fico de barras por mÃªs */}
+          <SectionTitle className="mt-8">Por mÃªs</SectionTitle>
+
+          <div
+            className="pt-3"
+            style={{
+              borderTop: "1px solid var(--border)",
+              opacity: 1,
+            }}
+          >
+            <div
+              className="flex items-end justify-between gap-1"
+              style={{ height: 160 }}
+              role="img"
+              aria-label="Faturamento mÃªs a mÃªs"
+            >
+              {dadosMensais.map((d) => {
+                const altura = d.valor > 0 ? (d.valor / maxMes) * 140 : 0;
+                const mesAtualIdx = new Date().getMonth() + 1;
+                const idxMes = MESES_ABREV.indexOf(d.mes) + 1;
+                const isFuturo = idxMes > mesAtualIdx;
+                const cor = isFuturo
+                  ? "var(--border)"
+                  : d.valor > 0
+                    ? "var(--primary)"
+                    : "var(--field)";
+                return (
+                  <div
+                    key={d.mes}
+                    className="flex-1 flex flex-col items-center justify-end gap-1.5"
+                    style={{ minWidth: 0 }}
+                  >
+                    <div
+                      className="w-full rounded-t-md"
+                      style={{
+                        height: Math.max(altura, d.valor > 0 ? 4 : 2),
+                        backgroundColor: cor,
+                        opacity: isFuturo ? 0.4 : 1,
+                        transition: "height 400ms ease-out",
+                      }}
+                      title={
+                        d.valor > 0
+                          ? `${d.mes}: R$ ${d.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+                          : `${d.mes}: sem lanÃ§amentos`
+                      }
+                    />
+                    <span
+                      className="text-[10px]"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      {d.mes}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <BottomNav ativo="perfil" />
+    </div>
+  );
+}
+
+========== src\pages\Onboarding.jsx ==========
+
+import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import {
+  ArrowLeft, Briefcase, Truck, ClipboardList, CalendarDays,
+  CheckCircle2, Clock, Info, Pencil, ChevronDown, Gauge,
+} from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { salvarPerfilLocal } from "@/lib/localData";
+import { setUserState } from "@/lib/userState";
+import { LIMITES_ANUAIS, limiteProporcional } from "@/lib/fiscal";
+import AuthError from "@/components/AuthError";
+import Valor from "@/components/Valor";
+
+const MESES = [
+  "Janeiro", "Fevereiro", "MarÃ§o", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
+function Progress({ step }) {
+  return (
+    <div className="flex justify-center gap-2 mb-6">
+      {[1, 2, 3].map((s) => (
+        <div
+          key={s}
+          className="h-1.5 rounded-full transition-all"
+          style={{
+            width: s === step ? 28 : 8,
+            backgroundColor: s <= step ? "var(--primary)" : "var(--border)",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function StepTitle({ Icon, children }) {
+  return (
+    <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-2 mb-6">
+      <Icon size={26} strokeWidth={2} style={{ color: "var(--primary)" }} />
+      {children}
+    </h1>
+  );
+}
+
+function MonthPicker({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+  const listRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  useEffect(() => {
+    if (open && listRef.current && value) {
+      const idx = parseInt(value) - 1;
+      listRef.current.scrollTop = Math.max(0, idx * 44 - 44);
+    }
+  }, [open, value]);
+
+  const label = value
+    ? `MÃªs ${String(value).padStart(2, "0")} Â· ${MESES[parseInt(value) - 1]}`
+    : "Selecione o mÃªs";
+
+  const selected = !!value;
+
+  return (
+    <div className="relative mb-3" ref={wrapRef}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full h-[48px] px-4 flex items-center justify-between rounded-xl text-sm transition"
+        style={{
+          backgroundColor: "var(--field)",
+          border: `1px solid ${open ? "var(--primary)" : "var(--border)"}`,
+          color: selected ? "var(--text)" : "var(--text-secondary)",
+          fontWeight: selected ? 600 : 400,
+        }}
+      >
+        <span>{label}</span>
+        <ChevronDown
+          size={18}
+          strokeWidth={2}
+          className={`transition-transform ${open ? "rotate-180" : ""}`}
+          style={{ color: open ? "var(--primary)" : "var(--text-secondary)" }}
+        />
+      </button>
+      {open && (
+        <div
+          className="absolute left-0 right-0 top-full mt-1 z-20 rounded-xl overflow-hidden shadow-lg"
+          style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
+        >
+          <div
+            ref={listRef}
+            className="max-h-[220px] overflow-y-auto overscroll-contain hide-scrollbar"
+          >
+            {MESES.map((mes, i) => {
+              const val = String(i + 1);
+              const sel = value === val;
+              const item = `MÃªs ${String(i + 1).padStart(2, "0")} Â· ${mes}`;
+              return (
+                <button
+                  key={mes}
+                  type="button"
+                  tabIndex={-1}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => { onChange(val); setOpen(false); }}
+                  className="w-full h-[44px] px-4 flex items-center border-l-4 text-left focus:outline-none text-sm"
+                  style={{
+                    borderLeftColor: sel ? "var(--text)" : "transparent",
+                    backgroundColor: "transparent",
+                    color: "var(--text)",
+                    fontWeight: sel ? 600 : 500,
+                    opacity: sel ? 1 : 0.5,
+                    borderBottom: "1px solid var(--border)",
+                  }}
+                >
+                  {item}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Onboarding() {
+  const navigate = useNavigate();
+  const [step, setStep] = useState(1);
+  const [erro, setErro] = useState("");
+
+  const [nome, setNome] = useState("");
+  const [tipoMei, setTipoMei] = useState("");
+  const [meiEsseAno, setMeiEsseAno] = useState(null);
+  const [mesMei, setMesMei] = useState("");
+
+  const anoAtual = new Date().getFullYear();
+  const tipoCanonico = tipoMei === "MEI_CAMINHONEIRO" ? "MEI_CAMINHONEIRO" : "MEI";
+  const limiteCheio = LIMITES_ANUAIS[tipoCanonico];
+  const limiteFinal = (() => {
+    if (meiEsseAno && mesMei) {
+      return limiteProporcional(tipoCanonico, parseInt(mesMei), anoAtual, anoAtual);
+    }
+    return limiteCheio;
+  })();
+
+  const progressStep =
+    step === 3
+      ? meiEsseAno === false || (meiEsseAno === true && mesMei) ? 3 : 2
+      : step;
+
+  const fieldStyle = {
+    backgroundColor: "var(--field)",
+    border: "1px solid var(--border)",
+    color: "var(--text)",
+  };
+
+  async function handleFinalizar() {
+    salvarPerfilLocal({
+      nome,
+      perfil: tipoCanonico.toLowerCase(),
+      limite: limiteFinal,
+    });
+    setUserState({
+      nome,
+      tipo: tipoCanonico,
+      mesAbertura: meiEsseAno && mesMei ? parseInt(mesMei) : null,
+      anoAbertura: meiEsseAno && mesMei ? anoAtual : null,
+    });
+    try {
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        await supabase.from("perfis").upsert({
+          id: data.user.id,
+          nome,
+          perfil: tipoMei,
+          plano: "gratuito",
+          mei_esse_ano: meiEsseAno,
+          mes_abertura_mei: mesMei ? parseInt(mesMei) : null,
+          limite_personalizado: limiteFinal,
+        });
+      }
+    } catch { /* visitante */ }
+    navigate("/dashboard");
+  }
+
+  function handleBack() {
+    if (step > 1) setStep(step - 1);
+    else navigate(-1);
+  }
+
+  const primaryBtn = "w-full py-3.5 rounded-xl font-medium text-sm hover:opacity-90 disabled:opacity-40 transition-opacity";
+  const primaryStyle = { backgroundColor: "var(--primary)", color: "var(--primary-contrast)" };
+
+  return (
+    <div
+      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
+      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
+    >
+      {/* Top bar: back arrow only */}
+      <div className="px-4 pt-5 shrink-0 relative flex items-center">
+        <button
+          onClick={handleBack}
+          aria-label="Voltar"
+          className="w-10 h-10 flex items-center justify-center rounded-lg hover:opacity-80"
+          style={{ color: "var(--text)" }}
+        >
+          <ArrowLeft size={22} strokeWidth={2} />
+        </button>
+      </div>
+
+      <div className="flex-1 flex flex-col justify-center px-6 pb-6">
+        <div className="max-w-sm w-full mx-auto">
+          {/* Gauge above progress */}
+          <div className="flex justify-center mb-8">
+            <Gauge size={52} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
+          </div>
+
+          <Progress step={progressStep} />
+
+          {step === 1 && (
+            <>
+              <StepTitle Icon={Pencil}>Como posso te chamar?</StepTitle>
+
+              <div className="space-y-5">
+                <input
+                  type="text"
+                  placeholder="Digite seu nome ou apelido"
+                  value={nome}
+                  maxLength={30}
+                  autoFocus
+                  onChange={(e) => setNome(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      if (!nome.trim()) setErro("Por favor, diga como podemos te chamar!");
+                      else { setErro(""); setStep(2); }
+                    }
+                  }}
+                  className="w-full px-4 py-4 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
+                  style={fieldStyle}
+                />
+
+                {erro && <AuthError>{erro}</AuthError>}
+
+                <button
+                  onClick={() => {
+                    if (!nome.trim()) setErro("Por favor, diga como podemos te chamar!");
+                    else { setErro(""); setStep(2); }
+                  }}
+                  className={primaryBtn}
+                  style={primaryStyle}
+                >
+                  Continuar
+                </button>
+              </div>
+            </>
+          )}
+
+          {step === 2 && (
+            <>
+              <StepTitle Icon={ClipboardList}>Qual Ã© o seu MEI?</StepTitle>
+
+              <div className="space-y-2.5">
+                {[
+                  { v: "MEI", Icon: Briefcase, titulo: "MEI (outras atividades)",
+                    limite: LIMITES_ANUAIS.MEI },
+                  { v: "MEI_CAMINHONEIRO", Icon: Truck, titulo: "MEI Caminhoneiro",
+                    limite: LIMITES_ANUAIS.MEI_CAMINHONEIRO },
+                ].map((o) => {
+                  const sel = tipoMei === o.v;
+                  const Ico = o.Icon;
+                  return (
+                    <button
+                      key={o.v}
+                      onClick={() => setTipoMei(o.v)}
+                      className="w-full flex items-center gap-3 p-3.5 rounded-xl text-left transition"
+                      style={{
+                        backgroundColor: "var(--field)",
+                        border: `2px solid ${sel ? "var(--text)" : "var(--border)"}`,
+                        opacity: sel ? 1 : 0.5,
+                      }}
+                    >
+                      <div
+                        className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: "rgba(34,197,94,0.12)" }}
+                      >
+                        <Ico size={20} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className="text-sm font-semibold"
+                          style={{ color: "var(--text)" }}
+                        >
+                          {o.titulo}
+                        </div>
+                        <div
+                          className="text-[12px] mt-0.5"
+                          style={{ color: "var(--text-secondary)", whiteSpace: "nowrap" }}
+                        >
+                          Limite: <Valor tamanho="sm">{o.limite}</Valor>{" "}
+                          <span style={{ color: "var(--text)" }}>/ ano</span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => setStep(3)}
+                disabled={!tipoMei}
+                className={primaryBtn + " mt-6"}
+                style={primaryStyle}
+              >
+                Continuar
+              </button>
+            </>
+          )}
+
+          {step === 3 && (
+            <>
+              <StepTitle Icon={CalendarDays}>Sobre seu MEI</StepTitle>
+              <p className="text-sm text-center -mt-3 mb-6" style={{ color: "var(--text-secondary)" }}>
+                VocÃª abriu seu MEI em {anoAtual}?
+              </p>
+
+              <div className="grid grid-cols-2 gap-2.5 mb-3">
+                {[
+                  { v: true, Icon: CheckCircle2, l: "Sim, esse ano" },
+                  { v: false, Icon: Clock, l: "NÃ£o, jÃ¡ faz tempo" },
+                ].map((o) => {
+                  const sel = meiEsseAno === o.v;
+                  const Ico = o.Icon;
+                  return (
+                    <button
+                      key={String(o.v)}
+                      onClick={() => { setMeiEsseAno(o.v); if (!o.v) setMesMei(""); }}
+                      className="py-3 rounded-xl text-xs font-medium transition inline-flex items-center justify-center gap-1.5"
+                      style={{
+                        backgroundColor: "var(--field)",
+                        border: `1.5px solid ${sel ? "var(--text)" : "var(--border)"}`,
+                        color: "var(--text)",
+                        opacity: sel ? 1 : 0.5,
+                      }}
+                    >
+                      <Ico size={14} strokeWidth={1.75} />
+                      {o.l}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {meiEsseAno === true && (
+                <>
+                  <p className="text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
+                    Qual mÃªs vocÃª abriu?
+                  </p>
+                  <MonthPicker value={mesMei} onChange={setMesMei} />
+                  {mesMei && (
+                    <div
+                      className="rounded-xl p-3"
+                      style={{
+                        backgroundColor: "var(--field)",
+                        border: "1px solid var(--border)",
+                      }}
+                    >
+                      <p className="text-xs font-medium inline-flex items-center gap-1.5" style={{ color: "var(--text)" }}>
+                        <Info size={14} strokeWidth={2} style={{ color: "var(--primary)" }} />
+                        Limite: <Valor tamanho="sm">{limiteFinal}</Valor>
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {meiEsseAno === false && (
+                <div
+                  className="rounded-xl p-3"
+                  style={{
+                    backgroundColor: "var(--field)",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  <p className="text-xs font-medium inline-flex items-center gap-1.5" style={{ color: "var(--text)" }}>
+                    <CheckCircle2 size={14} strokeWidth={2} style={{ color: "var(--primary)" }} />
+                    Limite cheio: <Valor tamanho="sm">{limiteCheio}</Valor> / ano
+                  </p>
+                </div>
+              )}
+
+              <button
+                onClick={handleFinalizar}
+                disabled={meiEsseAno === null || (meiEsseAno === true && !mesMei)}
+                className={primaryBtn + " mt-6"}
+                style={primaryStyle}
+              >
+                ComeÃ§ar a usar!
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
