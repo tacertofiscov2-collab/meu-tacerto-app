@@ -5,6 +5,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
+import SeletorMesAno from "../components/SeletorMesAno.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
@@ -26,8 +27,11 @@ export default function Historico() {
   const { lancamentos, removerLancamento } = useAppState();
   const anoAtual = new Date().getFullYear();
   const mesAtual = new Date().getMonth();
+
   const [busca, setBusca] = useState("");
-  const [mes, setMes] = useState(`${MESES[mesAtual]} ${anoAtual}`);
+  const [mesIdx, setMesIdx] = useState(mesAtual);
+  const [anoNum, setAnoNum] = useState(anoAtual);
+  const [seletorAberto, setSeletorAberto] = useState(false);
   const [excluirId, setExcluirId] = useState(null);
   const [modalFaturamento, setModalFaturamento] = useState(false);
   const [mostrarFaturamento, setMostrarFaturamento] = useState(true);
@@ -44,10 +48,6 @@ export default function Historico() {
     } catch {}
     setMostrarFaturamento(false);
   }
-
-  const [mesNome, anoStr] = mes.split(" ");
-  const mesIdx = MESES.indexOf(mesNome);
-  const anoNum = Number(anoStr);
 
   const doMes = useMemo(
     () =>
@@ -69,10 +69,6 @@ export default function Historico() {
     [filtrados],
   );
 
-  const cardStyle = {
-    backgroundColor: "var(--surface)",
-    border: "1px solid var(--border)",
-  };
   const fieldStyle = {
     backgroundColor: "var(--field)",
     border: "1px solid var(--border)",
@@ -84,15 +80,12 @@ export default function Historico() {
     setExcluirId(null);
   }
 
-
-
   return (
     <div
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       <div className="flex-1 overflow-y-auto" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-        {/* Header */}
         <header className="px-5 pt-6 pb-4 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
@@ -108,7 +101,6 @@ export default function Historico() {
         </header>
 
         <div className="px-5 space-y-4">
-          {/* Faturamento inicial (flat, com destaque à esquerda) */}
           {mostrarFaturamento && (
             <div className="py-3" style={{ borderLeft: "3px solid var(--primary)", paddingLeft: 12 }}>
               <div className="flex items-start gap-3">
@@ -141,7 +133,6 @@ export default function Historico() {
             </div>
           )}
 
-          {/* Busca */}
           <div className="relative">
             <Search
               size={18}
@@ -158,36 +149,25 @@ export default function Historico() {
             />
           </div>
 
-          {/* Filtro de mês */}
-          <div className="relative">
-            <select
-              value={mes}
-              onChange={(e) => setMes(e.target.value)}
-              className="w-full appearance-none pl-4 pr-10 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
-              style={fieldStyle}
-            >
-              {MESES.map((m) => (
-                <option key={m} value={`${m} ${anoAtual}`}>{`${m} ${anoAtual}`}</option>
-              ))}
-            </select>
-            <ChevronDown
-              size={18}
-              className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-              style={{ color: "var(--text-secondary)" }}
-            />
-          </div>
+          {/* Filtro de mês — abre SeletorMesAno */}
+          <button
+            onClick={() => setSeletorAberto(true)}
+            className="w-full flex items-center justify-between pl-4 pr-3 py-3 rounded-xl text-sm active:opacity-80"
+            style={fieldStyle}
+          >
+            <span>{`${MESES[mesIdx]} ${anoNum}`}</span>
+            <ChevronDown size={18} style={{ color: "var(--text-secondary)" }} />
+          </button>
 
-          {/* Total do período */}
           <div className="pt-1 pb-1">
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              Total de {mes.split(" ")[0]}
+              Total de {MESES[mesIdx]}
             </p>
             <div className="mt-1">
               <Valor tamanho="xl">{total}</Valor>
             </div>
           </div>
 
-          {/* Novo lançamento (opção discreta, flat) */}
           <button
             onClick={() => navigate("/lancar")}
             className="w-full flex items-center gap-3 py-3.5 text-[16px] active:opacity-70"
@@ -197,7 +177,6 @@ export default function Historico() {
             Fazer novo lançamento
           </button>
 
-          {/* Lista flat */}
           {filtrados.length === 0 ? (
             <div className="py-12 flex flex-col items-center gap-3">
               <div
@@ -272,7 +251,19 @@ export default function Historico() {
         </div>
       </div>
 
-      {/* Confirmação de exclusão */}
+      <SeletorMesAno
+        aberto={seletorAberto}
+        titulo="Filtrar por mês"
+        mes={mesIdx + 1}
+        ano={anoNum}
+        onFechar={() => setSeletorAberto(false)}
+        onSelecionar={(m, a) => {
+          setMesIdx(m - 1);
+          setAnoNum(a);
+          setSeletorAberto(false);
+        }}
+      />
+
       {excluirId && (
         <div
           className="fixed inset-0 z-40 flex items-center justify-center p-4"
@@ -312,7 +303,6 @@ export default function Historico() {
         aberto={modalFaturamento}
         onClose={() => setModalFaturamento(false)}
         onSalvar={() => {
-          // TODO: persistir faturamento inicial no Supabase
           setModalFaturamento(false);
           dispensarFaturamento();
         }}
@@ -322,4 +312,3 @@ export default function Historico() {
     </div>
   );
 }
-
