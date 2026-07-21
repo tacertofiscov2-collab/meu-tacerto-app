@@ -1,14 +1,13 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import {
-  ArrowLeft, Briefcase, Truck, ClipboardList, CalendarDays,
-  CheckCircle2, Clock, Info, Pencil, ChevronDown, Gauge,
+  ArrowLeft, Briefcase, Truck, CheckCircle2, Clock, Info, Gauge, ChevronDown,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
 import { setUserState } from "@/lib/userState";
 import { LIMITES_ANUAIS, limiteProporcional } from "@/lib/fiscal";
-import AuthError from "@/components/AuthError";
+import SeletorMesAno from "@/components/SeletorMesAno";
 import Valor from "@/components/Valor";
 
 const MESES = [
@@ -33,101 +32,14 @@ function Progress({ step }) {
   );
 }
 
-function StepTitle({ Icon, children }) {
+function StepTitle({ children }) {
   return (
-    <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-2 mb-6">
-      <Icon size={26} strokeWidth={2} style={{ color: "var(--primary)" }} />
+    <h1
+      className="text-2xl font-bold text-center mb-6"
+      style={{ color: "var(--text)" }}
+    >
       {children}
     </h1>
-  );
-}
-
-function MonthPicker({ value, onChange }) {
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef(null);
-  const listRef = useRef(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, [open]);
-
-  useEffect(() => {
-    if (open && listRef.current && value) {
-      const idx = parseInt(value) - 1;
-      listRef.current.scrollTop = Math.max(0, idx * 44 - 44);
-    }
-  }, [open, value]);
-
-  const label = value
-    ? `Mês ${String(value).padStart(2, "0")} · ${MESES[parseInt(value) - 1]}`
-    : "Selecione o mês";
-
-  const selected = !!value;
-
-  return (
-    <div className="relative mb-3" ref={wrapRef}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="w-full h-[48px] px-4 flex items-center justify-between rounded-xl text-sm transition"
-        style={{
-          backgroundColor: "var(--field)",
-          border: `1px solid ${open ? "var(--primary)" : "var(--border)"}`,
-          color: selected ? "var(--text)" : "var(--text-secondary)",
-          fontWeight: selected ? 600 : 400,
-        }}
-      >
-        <span>{label}</span>
-        <ChevronDown
-          size={18}
-          strokeWidth={2}
-          className={`transition-transform ${open ? "rotate-180" : ""}`}
-          style={{ color: open ? "var(--primary)" : "var(--text-secondary)" }}
-        />
-      </button>
-      {open && (
-        <div
-          className="absolute left-0 right-0 top-full mt-1 z-20 rounded-xl overflow-hidden shadow-lg"
-          style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
-        >
-          <div
-            ref={listRef}
-            className="max-h-[220px] overflow-y-auto overscroll-contain hide-scrollbar"
-          >
-            {MESES.map((mes, i) => {
-              const val = String(i + 1);
-              const sel = value === val;
-              const item = `Mês ${String(i + 1).padStart(2, "0")} · ${mes}`;
-              return (
-                <button
-                  key={mes}
-                  type="button"
-                  tabIndex={-1}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => { onChange(val); setOpen(false); }}
-                  className="w-full h-[44px] px-4 flex items-center border-l-4 text-left focus:outline-none text-sm"
-                  style={{
-                    borderLeftColor: sel ? "var(--text)" : "transparent",
-                    backgroundColor: "transparent",
-                    color: "var(--text)",
-                    fontWeight: sel ? 600 : 500,
-                    opacity: sel ? 1 : 0.5,
-                    borderBottom: "1px solid var(--border)",
-                  }}
-                >
-                  {item}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -140,16 +52,15 @@ export default function Onboarding() {
   const [tipoMei, setTipoMei] = useState("");
   const [meiEsseAno, setMeiEsseAno] = useState(null);
   const [mesMei, setMesMei] = useState("");
+  const [seletorMes, setSeletorMes] = useState(false);
 
   const anoAtual = new Date().getFullYear();
   const tipoCanonico = tipoMei === "MEI_CAMINHONEIRO" ? "MEI_CAMINHONEIRO" : "MEI";
   const limiteCheio = LIMITES_ANUAIS[tipoCanonico];
-  const limiteFinal = (() => {
-    if (meiEsseAno && mesMei) {
-      return limiteProporcional(tipoCanonico, parseInt(mesMei), anoAtual, anoAtual);
-    }
-    return limiteCheio;
-  })();
+  const limiteFinal =
+    meiEsseAno && mesMei
+      ? limiteProporcional(tipoCanonico, parseInt(mesMei), anoAtual, anoAtual)
+      : limiteCheio;
 
   const progressStep =
     step === 3
@@ -161,6 +72,25 @@ export default function Onboarding() {
     border: "1px solid var(--border)",
     color: "var(--text)",
   };
+
+  // Botão principal: pill estreita, transparente, palavra em verde
+  const btnPrincipal = {
+    backgroundColor: "transparent",
+    border: "1.5px solid var(--primary)",
+    color: "var(--primary)",
+  };
+  const btnPrincipalClasse =
+    "mx-auto block px-10 py-3 rounded-full font-semibold text-sm transition active:scale-[0.98] disabled:opacity-35";
+
+  // Estilo de card selecionável: nada selecionado = ambos claros
+  function estiloCard(selecionado, algoSelecionado) {
+    const claro = !algoSelecionado || selecionado;
+    return {
+      backgroundColor: claro ? "var(--surface-selected)" : "var(--field)",
+      border: "none",
+      opacity: claro ? 1 : 0.45,
+    };
+  }
 
   async function handleFinalizar() {
     salvarPerfilLocal({
@@ -196,16 +126,17 @@ export default function Onboarding() {
     else navigate(-1);
   }
 
-  const primaryBtn = "w-full py-3.5 rounded-xl font-medium text-sm hover:opacity-90 disabled:opacity-40 transition-opacity";
-  const primaryStyle = { backgroundColor: "var(--primary)", color: "var(--primary-contrast)" };
-
   return (
     <div
-      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
-      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
+      className="w-full flex flex-col"
+      style={{
+        backgroundColor: "var(--bg)",
+        color: "var(--text)",
+        height: "100dvh",
+        overflow: "hidden",
+      }}
     >
-      {/* Top bar: back arrow only */}
-      <div className="px-4 pt-5 shrink-0 relative flex items-center">
+      <div className="px-4 pt-5 shrink-0 flex items-center">
         <button
           onClick={handleBack}
           aria-label="Voltar"
@@ -216,20 +147,19 @@ export default function Onboarding() {
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center px-6 pb-6">
+      <div className="flex-1 min-h-0 flex flex-col justify-center px-6 pb-6 overflow-hidden">
         <div className="max-w-sm w-full mx-auto">
-          {/* Gauge above progress */}
-          <div className="flex justify-center mb-8">
-            <Gauge size={52} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
+          <div className="flex justify-center mb-7">
+            <Gauge size={50} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
           </div>
 
           <Progress step={progressStep} />
 
           {step === 1 && (
             <>
-              <StepTitle Icon={Pencil}>Como posso te chamar?</StepTitle>
+              <StepTitle>Como posso te chamar?</StepTitle>
 
-              <div className="space-y-5">
+              <div className="space-y-4">
                 <input
                   type="text"
                   placeholder="Digite seu nome ou apelido"
@@ -247,15 +177,19 @@ export default function Onboarding() {
                   style={fieldStyle}
                 />
 
-                {erro && <AuthError>{erro}</AuthError>}
+                {erro && (
+                  <p className="text-center text-[13px]" style={{ color: "#ef4444" }}>
+                    {erro}
+                  </p>
+                )}
 
                 <button
                   onClick={() => {
                     if (!nome.trim()) setErro("Por favor, diga como podemos te chamar!");
                     else { setErro(""); setStep(2); }
                   }}
-                  className={primaryBtn}
-                  style={primaryStyle}
+                  className={btnPrincipalClasse}
+                  style={btnPrincipal}
                 >
                   Continuar
                 </button>
@@ -265,7 +199,7 @@ export default function Onboarding() {
 
           {step === 2 && (
             <>
-              <StepTitle Icon={ClipboardList}>Qual é o seu MEI?</StepTitle>
+              <StepTitle>Qual é o seu MEI?</StepTitle>
 
               <div className="space-y-2.5">
                 {[
@@ -281,11 +215,7 @@ export default function Onboarding() {
                       key={o.v}
                       onClick={() => setTipoMei(o.v)}
                       className="w-full flex items-center gap-3 p-3.5 rounded-xl text-left transition"
-                      style={{
-                        backgroundColor: "var(--field)",
-                        border: `2px solid ${sel ? "var(--text)" : "var(--border)"}`,
-                        opacity: sel ? 1 : 0.5,
-                      }}
+                      style={estiloCard(sel, !!tipoMei)}
                     >
                       <div
                         className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
@@ -294,10 +224,7 @@ export default function Onboarding() {
                         <Ico size={20} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div
-                          className="text-sm font-semibold"
-                          style={{ color: "var(--text)" }}
-                        >
+                        <div className="text-sm font-semibold" style={{ color: "var(--text)" }}>
                           {o.titulo}
                         </div>
                         <div
@@ -313,23 +240,22 @@ export default function Onboarding() {
                 })}
               </div>
 
-              <button
-                onClick={() => setStep(3)}
-                disabled={!tipoMei}
-                className={primaryBtn + " mt-6"}
-                style={primaryStyle}
-              >
-                Continuar
-              </button>
+              <div className="mt-6">
+                <button
+                  onClick={() => setStep(3)}
+                  disabled={!tipoMei}
+                  className={btnPrincipalClasse}
+                  style={btnPrincipal}
+                >
+                  Continuar
+                </button>
+              </div>
             </>
           )}
 
           {step === 3 && (
             <>
-              <StepTitle Icon={CalendarDays}>Sobre seu MEI</StepTitle>
-              <p className="text-sm text-center -mt-3 mb-6" style={{ color: "var(--text-secondary)" }}>
-                Você abriu seu MEI em {anoAtual}?
-              </p>
+              <StepTitle>Você abriu seu MEI em {anoAtual}?</StepTitle>
 
               <div className="grid grid-cols-2 gap-2.5 mb-3">
                 {[
@@ -344,10 +270,8 @@ export default function Onboarding() {
                       onClick={() => { setMeiEsseAno(o.v); if (!o.v) setMesMei(""); }}
                       className="py-3 rounded-xl text-xs font-medium transition inline-flex items-center justify-center gap-1.5"
                       style={{
-                        backgroundColor: "var(--field)",
-                        border: `1.5px solid ${sel ? "var(--text)" : "var(--border)"}`,
+                        ...estiloCard(sel, meiEsseAno !== null),
                         color: "var(--text)",
-                        opacity: sel ? 1 : 0.5,
                       }}
                     >
                       <Ico size={14} strokeWidth={1.75} />
@@ -359,10 +283,27 @@ export default function Onboarding() {
 
               {meiEsseAno === true && (
                 <>
-                  <p className="text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
+                  <p
+                    className="text-xs font-medium mb-1.5"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
                     Qual mês você abriu?
                   </p>
-                  <MonthPicker value={mesMei} onChange={setMesMei} />
+                  <button
+                    onClick={() => setSeletorMes(true)}
+                    className="w-full h-[48px] px-4 flex items-center justify-between rounded-xl text-sm transition mb-3"
+                    style={{
+                      ...fieldStyle,
+                      fontWeight: mesMei ? 600 : 400,
+                      color: mesMei ? "var(--text)" : "var(--text-secondary)",
+                    }}
+                  >
+                    <span>
+                      {mesMei ? MESES[parseInt(mesMei) - 1] : "Selecione o mês"}
+                    </span>
+                    <ChevronDown size={18} style={{ color: "var(--text-secondary)" }} />
+                  </button>
+
                   {mesMei && (
                     <div
                       className="rounded-xl p-3"
@@ -371,7 +312,10 @@ export default function Onboarding() {
                         border: "1px solid var(--border)",
                       }}
                     >
-                      <p className="text-xs font-medium inline-flex items-center gap-1.5" style={{ color: "var(--text)" }}>
+                      <p
+                        className="text-xs font-medium inline-flex items-center gap-1.5"
+                        style={{ color: "var(--text)" }}
+                      >
                         <Info size={14} strokeWidth={2} style={{ color: "var(--primary)" }} />
                         Limite: <Valor tamanho="sm">{limiteFinal}</Valor>
                       </p>
@@ -388,25 +332,43 @@ export default function Onboarding() {
                     border: "1px solid var(--border)",
                   }}
                 >
-                  <p className="text-xs font-medium inline-flex items-center gap-1.5" style={{ color: "var(--text)" }}>
+                  <p
+                    className="text-xs font-medium inline-flex items-center gap-1.5"
+                    style={{ color: "var(--text)" }}
+                  >
                     <CheckCircle2 size={14} strokeWidth={2} style={{ color: "var(--primary)" }} />
                     Limite cheio: <Valor tamanho="sm">{limiteCheio}</Valor> / ano
                   </p>
                 </div>
               )}
 
-              <button
-                onClick={handleFinalizar}
-                disabled={meiEsseAno === null || (meiEsseAno === true && !mesMei)}
-                className={primaryBtn + " mt-6"}
-                style={primaryStyle}
-              >
-                Começar a usar!
-              </button>
+              <div className="mt-6">
+                <button
+                  onClick={handleFinalizar}
+                  disabled={meiEsseAno === null || (meiEsseAno === true && !mesMei)}
+                  className={btnPrincipalClasse}
+                  style={btnPrincipal}
+                >
+                  Começar a usar!
+                </button>
+              </div>
             </>
           )}
         </div>
       </div>
+
+      <SeletorMesAno
+        aberto={seletorMes}
+        titulo="Mês de abertura"
+        mes={mesMei ? parseInt(mesMei) : null}
+        ano={anoAtual}
+        comAno={false}
+        onFechar={() => setSeletorMes(false)}
+        onSelecionar={(m) => {
+          setMesMei(String(m));
+          setSeletorMes(false);
+        }}
+      />
     </div>
   );
 }
