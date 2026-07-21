@@ -4,146 +4,165 @@
  * Props:
  * - size: largura em px. Padrão 64.
  * - pose: "joinha" | "ok" | "alerta" | "neutro". Padrão "neutro".
- * - animar: boolean — anima na entrada. Padrão false.
  */
-export default function Fisco({
-    size = 64,
-    pose = "neutro",
-    animar = false,
-    className = "",
-    style,
-  }) {
-    const altura = (size / 380) * 360;
+export default function Fisco({ size = 64, pose = "neutro", className = "", style }) {
+    const altura = (size / 380) * 380;
+    const uid = `fisco-${pose}`;
   
+    const olhoY = pose === "alerta" ? 104 : 103;
     const boca =
       pose === "alerta"
-        ? "M178 122 Q190 114 202 122"
-        : "M178 116 Q190 124 202 116";
-  
-    const animBraco = animar
-      ? { animation: "fiscoBraco 900ms ease-out 200ms 1" }
-      : undefined;
-    const animCorpo = animar
-      ? { animation: "fiscoCorpo 1000ms ease-out 1" }
-      : undefined;
+        ? "M176 124 Q190 113 204 124"
+        : pose === "ok"
+          ? "M180 118 L200 118"
+          : "M177 116 Q190 126 203 116";
   
     return (
       <svg
         width={size}
         height={altura}
-        viewBox="0 0 380 360"
+        viewBox="0 0 380 380"
         role="img"
         aria-label="Fisco, seu amigo fiscal"
         className={className}
         style={style}
         xmlns="http://www.w3.org/2000/svg"
       >
-        <style>{`
-          @keyframes fiscoBraco {
-            0% { transform: rotate(0deg); }
-            35% { transform: rotate(-14deg); }
-            70% { transform: rotate(6deg); }
-            100% { transform: rotate(0deg); }
-          }
-          @keyframes fiscoCorpo {
-            0% { transform: translateY(0); }
-            40% { transform: translateY(-6px); }
-            100% { transform: translateY(0); }
-          }
-        `}</style>
+        <defs>
+          <linearGradient id={`${uid}-metal`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#71717a" />
+            <stop offset="45%" stopColor="#52525b" />
+            <stop offset="100%" stopColor="#3f3f46" />
+          </linearGradient>
+          <linearGradient id={`${uid}-metalClaro`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#a1a1aa" />
+            <stop offset="50%" stopColor="#71717a" />
+            <stop offset="100%" stopColor="#52525b" />
+          </linearGradient>
+          <linearGradient id={`${uid}-visor`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#18181b" />
+            <stop offset="100%" stopColor="#09090b" />
+          </linearGradient>
+          <radialGradient id={`${uid}-brilho`} cx="35%" cy="30%" r="60%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+          </radialGradient>
+        </defs>
   
-        <g style={animCorpo}>
-          <ellipse cx="190" cy="330" rx="72" ry="9" fill="var(--primary)" opacity="0.13" />
+        {/* sombra no chão */}
+        <ellipse cx="190" cy="348" rx="74" ry="10" fill="var(--primary)" opacity="0.12" />
   
-          <line x1="190" y1="62" x2="190" y2="44" stroke="var(--border)" strokeWidth="4" strokeLinecap="round" />
-          <circle cx="190" cy="38" r="9" fill="var(--primary)" />
-          <circle cx="187" cy="35" r="3" fill="#86efac" />
+        {/* antena */}
+        <line x1="190" y1="66" x2="190" y2="46" stroke="#52525b" strokeWidth="5" strokeLinecap="round" />
+        <circle cx="190" cy="40" r="10" fill="var(--primary)" />
+        <circle cx="186.5" cy="36.5" r="3.5" fill="#bbf7d0" />
   
-          <rect x="136" y="60" width="108" height="86" rx="26" fill="var(--border)" />
-          <rect x="140" y="64" width="100" height="78" rx="23" fill="#52525b" />
+        {/* orelhas */}
+        <rect x="120" y="96" width="14" height="30" rx="7" fill={`url(#${uid}-metal)`} />
+        <rect x="246" y="96" width="14" height="30" rx="7" fill={`url(#${uid}-metal)`} />
+        <circle cx="127" cy="111" r="3.5" fill="var(--primary)" opacity="0.6" />
+        <circle cx="253" cy="111" r="3.5" fill="var(--primary)" opacity="0.6" />
   
-          <rect x="151" y="82" width="78" height="44" rx="18" fill="var(--bg)" />
-          <circle cx="172" cy="103" r="8.5" fill="var(--primary)" />
-          <circle cx="169" cy="100" r="3" fill="#bbf7d0" />
-          <circle cx="208" cy="103" r="8.5" fill="var(--primary)" />
-          <circle cx="205" cy="100" r="3" fill="#bbf7d0" />
-          <path d={boca} stroke="var(--primary)" strokeWidth="3" fill="none" strokeLinecap="round" />
+        {/* cabeça */}
+        <rect x="132" y="64" width="116" height="90" rx="30" fill={`url(#${uid}-metalClaro)`} />
+        <rect x="137" y="69" width="106" height="80" rx="26" fill={`url(#${uid}-metal)`} />
+        <rect x="137" y="69" width="106" height="80" rx="26" fill={`url(#${uid}-brilho)`} />
   
-          <rect x="124" y="92" width="12" height="26" rx="6" fill="var(--border)" />
-          <rect x="244" y="92" width="12" height="26" rx="6" fill="var(--border)" />
+        {/* visor */}
+        <rect x="149" y="84" width="82" height="50" rx="20" fill={`url(#${uid}-visor)`} />
+        <rect x="153" y="88" width="74" height="20" rx="10" fill="#ffffff" opacity="0.05" />
   
-          <rect x="180" y="144" width="20" height="14" rx="5" fill="var(--border)" />
+        {/* olhos */}
+        <circle cx="171" cy={olhoY} r="9.5" fill="var(--primary)" />
+        <circle cx="167.5" cy={olhoY - 3} r="3.2" fill="#dcfce7" />
+        <circle cx="209" cy={olhoY} r="9.5" fill="var(--primary)" />
+        <circle cx="205.5" cy={olhoY - 3} r="3.2" fill="#dcfce7" />
   
-          <rect x="146" y="156" width="88" height="96" rx="26" fill="var(--border)" />
-          <rect x="150" y="160" width="80" height="88" rx="23" fill="#52525b" />
+        {/* boca */}
+        <path d={boca} stroke="var(--primary)" strokeWidth="3.2" fill="none" strokeLinecap="round" />
   
-          <circle cx="190" cy="196" r="26" fill="var(--bg)" />
-          <circle cx="190" cy="196" r="21" fill="var(--field)" />
-          <path d="M172 202 A21 21 0 0 1 208 202" stroke="var(--primary)" strokeWidth="4.5" fill="none" strokeLinecap="round" />
-          <line x1="190" y1="196" x2="200" y2="188" stroke="var(--text)" strokeWidth="3" strokeLinecap="round" />
-          <circle cx="190" cy="196" r="3.5" fill="var(--text)" />
+        {/* pescoço */}
+        <rect x="178" y="152" width="24" height="16" rx="6" fill="#3f3f46" />
   
-          <rect x="176" y="228" width="28" height="6" rx="3" fill="var(--primary)" opacity="0.55" />
+        {/* tronco */}
+        <rect x="140" y="166" width="100" height="104" rx="30" fill={`url(#${uid}-metalClaro)`} />
+        <rect x="145" y="171" width="90" height="94" rx="26" fill={`url(#${uid}-metal)`} />
+        <rect x="145" y="171" width="90" height="94" rx="26" fill={`url(#${uid}-brilho)`} />
   
-          {pose === "joinha" && (
-            <>
-              <g style={animBraco} transform="rotate(0 138 172)">
-                <rect x="126" y="166" width="24" height="34" rx="12" fill="var(--border)" transform="rotate(-28 138 183)" />
-                <circle cx="116" cy="152" r="15" fill="#52525b" />
-                <rect x="112" y="130" width="9" height="20" rx="4.5" fill="#52525b" />
-                <circle cx="116" cy="152" r="7" fill="var(--primary)" opacity="0.3" />
-              </g>
-              <rect x="236" y="166" width="24" height="60" rx="12" fill="var(--border)" />
-              <circle cx="248" cy="234" r="14" fill="#52525b" />
-              <circle cx="248" cy="234" r="7" fill="var(--primary)" opacity="0.3" />
-            </>
-          )}
+        {/* velocímetro no peito */}
+        <circle cx="190" cy="208" r="29" fill="#18181b" />
+        <circle cx="190" cy="208" r="24" fill="#27272a" />
+        <path d="M170 215 A20 20 0 0 1 210 215" stroke="var(--primary)" strokeWidth="5" fill="none" strokeLinecap="round" />
+        <line x1="190" y1="208" x2="201" y2="199" stroke="#ffffff" strokeWidth="3.2" strokeLinecap="round" />
+        <circle cx="190" cy="208" r="4" fill="#ffffff" />
   
-          {pose === "ok" && (
-            <>
-              <g style={animBraco} transform="rotate(0 138 172)">
-                <rect x="126" y="166" width="24" height="36" rx="12" fill="var(--border)" transform="rotate(-20 138 184)" />
-                <circle cx="118" cy="152" r="15" fill="#52525b" />
-                <circle cx="118" cy="150" r="7.5" fill="none" stroke="var(--primary)" strokeWidth="3" />
-                <rect x="123" y="138" width="7" height="13" rx="3.5" fill="#52525b" transform="rotate(20 126 144)" />
-              </g>
-              <rect x="236" y="166" width="24" height="60" rx="12" fill="var(--border)" />
-              <circle cx="248" cy="234" r="14" fill="#52525b" />
-              <circle cx="248" cy="234" r="7" fill="var(--primary)" opacity="0.3" />
-            </>
-          )}
+        {/* detalhe do tronco */}
+        <rect x="174" y="245" width="32" height="7" rx="3.5" fill="var(--primary)" opacity="0.5" />
   
-          {pose === "alerta" && (
-            <>
-              <g style={animBraco} transform="rotate(0 140 170)">
-                <rect x="124" y="130" width="24" height="46" rx="12" fill="var(--border)" transform="rotate(28 136 153)" />
-                <circle cx="152" cy="112" r="15" fill="#52525b" />
-                <circle cx="152" cy="112" r="7" fill="#ef4444" opacity="0.3" />
-              </g>
-              <g style={animBraco} transform="rotate(0 240 170)">
-                <rect x="232" y="130" width="24" height="46" rx="12" fill="var(--border)" transform="rotate(-28 244 153)" />
-                <circle cx="228" cy="112" r="15" fill="#52525b" />
-                <circle cx="228" cy="112" r="7" fill="#ef4444" opacity="0.3" />
-              </g>
-            </>
-          )}
+        {/* ===== BRAÇOS POR POSE ===== */}
   
-          {pose === "neutro" && (
-            <>
-              <rect x="120" y="166" width="24" height="60" rx="12" fill="var(--border)" />
-              <circle cx="132" cy="234" r="14" fill="#52525b" />
-              <circle cx="132" cy="234" r="7" fill="var(--primary)" opacity="0.3" />
-              <rect x="236" y="166" width="24" height="60" rx="12" fill="var(--border)" />
-              <circle cx="248" cy="234" r="14" fill="#52525b" />
-              <circle cx="248" cy="234" r="7" fill="var(--primary)" opacity="0.3" />
-            </>
-          )}
+        {pose === "joinha" && (
+          <>
+            {/* braço esquerdo levantado com polegar pra cima */}
+            <rect x="118" y="176" width="26" height="40" rx="13" fill={`url(#${uid}-metal)`} transform="rotate(-32 131 196)" />
+            <circle cx="112" cy="156" r="17" fill={`url(#${uid}-metalClaro)`} />
+            {/* polegar */}
+            <rect x="107" y="130" width="11" height="24" rx="5.5" fill={`url(#${uid}-metalClaro)`} />
+            <circle cx="112" cy="158" r="7" fill="var(--primary)" opacity="0.35" />
+            {/* braço direito relaxado */}
+            <rect x="236" y="176" width="26" height="64" rx="13" fill={`url(#${uid}-metal)`} />
+            <circle cx="249" cy="248" r="16" fill={`url(#${uid}-metalClaro)`} />
+            <circle cx="249" cy="248" r="7" fill="var(--primary)" opacity="0.3" />
+          </>
+        )}
   
-          <rect x="158" y="252" width="26" height="42" rx="12" fill="var(--border)" />
-          <rect x="196" y="252" width="26" height="42" rx="12" fill="var(--border)" />
-          <ellipse cx="171" cy="298" rx="19" ry="10" fill="#52525b" />
-          <ellipse cx="209" cy="298" rx="19" ry="10" fill="#52525b" />
-        </g>
+        {pose === "ok" && (
+          <>
+            {/* braço esquerdo com gesto de OK */}
+            <rect x="118" y="176" width="26" height="42" rx="13" fill={`url(#${uid}-metal)`} transform="rotate(-24 131 197)" />
+            <circle cx="115" cy="158" r="17" fill={`url(#${uid}-metalClaro)`} />
+            {/* círculo do OK */}
+            <circle cx="113" cy="155" r="8.5" fill="none" stroke="var(--primary)" strokeWidth="3.4" />
+            {/* dedos levantados */}
+            <rect x="121" y="138" width="7" height="15" rx="3.5" fill={`url(#${uid}-metalClaro)`} transform="rotate(16 124 145)" />
+            <rect x="129" y="141" width="7" height="13" rx="3.5" fill={`url(#${uid}-metalClaro)`} transform="rotate(24 132 147)" />
+            {/* braço direito relaxado */}
+            <rect x="236" y="176" width="26" height="64" rx="13" fill={`url(#${uid}-metal)`} />
+            <circle cx="249" cy="248" r="16" fill={`url(#${uid}-metalClaro)`} />
+            <circle cx="249" cy="248" r="7" fill="var(--primary)" opacity="0.3" />
+          </>
+        )}
+  
+        {pose === "alerta" && (
+          <>
+            {/* dois braços pra cima, mãos na cabeça */}
+            <rect x="122" y="138" width="26" height="52" rx="13" fill={`url(#${uid}-metal)`} transform="rotate(34 135 164)" />
+            <circle cx="150" cy="116" r="17" fill={`url(#${uid}-metalClaro)`} />
+            <circle cx="150" cy="116" r="7" fill="#ef4444" opacity="0.35" />
+            <rect x="232" y="138" width="26" height="52" rx="13" fill={`url(#${uid}-metal)`} transform="rotate(-34 245 164)" />
+            <circle cx="230" cy="116" r="17" fill={`url(#${uid}-metalClaro)`} />
+            <circle cx="230" cy="116" r="7" fill="#ef4444" opacity="0.35" />
+            {/* gotinha de suor */}
+            <path d="M244 88 Q248 96 244 99 Q240 96 244 88 Z" fill="#60a5fa" opacity="0.75" />
+          </>
+        )}
+  
+        {pose === "neutro" && (
+          <>
+            <rect x="118" y="176" width="26" height="64" rx="13" fill={`url(#${uid}-metal)`} />
+            <circle cx="131" cy="248" r="16" fill={`url(#${uid}-metalClaro)`} />
+            <circle cx="131" cy="248" r="7" fill="var(--primary)" opacity="0.3" />
+            <rect x="236" y="176" width="26" height="64" rx="13" fill={`url(#${uid}-metal)`} />
+            <circle cx="249" cy="248" r="16" fill={`url(#${uid}-metalClaro)`} />
+            <circle cx="249" cy="248" r="7" fill="var(--primary)" opacity="0.3" />
+          </>
+        )}
+  
+        {/* pernas */}
+        <rect x="156" y="270" width="28" height="46" rx="13" fill={`url(#${uid}-metal)`} />
+        <rect x="196" y="270" width="28" height="46" rx="13" fill={`url(#${uid}-metal)`} />
+        <ellipse cx="170" cy="322" rx="21" ry="11" fill={`url(#${uid}-metalClaro)`} />
+        <ellipse cx="210" cy="322" rx="21" ry="11" fill={`url(#${uid}-metalClaro)`} />
       </svg>
     );
   }
