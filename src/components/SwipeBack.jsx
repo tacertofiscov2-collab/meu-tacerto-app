@@ -1,20 +1,6 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-/**
- * SwipeBack — gestos horizontais globais.
- *
- * 1) /dashboard e /perfil: swipe em QUALQUER ponto da tela.
- *    - esquerda em /dashboard  -> /perfil
- *    - direita  em /perfil     -> /dashboard
- *    Nunca cai em /lancar por swipe.
- *
- * 2) Demais telas internas: swipe da borda esquerda -> voltar (navigate(-1)),
- *    com arrasto acompanhando o dedo, threshold no meio ou flick rápido.
- *
- * 3) Gestos que começam sobre [data-carrossel-velocimetro] são ignorados —
- *    o carrossel trata o próprio swipe.
- */
 const ROTAS_ABA = { "/dashboard": "inicio", "/perfil": "perfil" };
 const ROTAS_SEM_VOLTAR = new Set(["/", "/onboarding", "/dashboard", "/perfil"]);
 
@@ -40,16 +26,27 @@ export default function SwipeBack() {
     let tracking = false;
     let ativado = false;
     let cancelado = false;
-    let modo = null; // "aba" | "voltar"
+    let modo = null;
 
-    function limparTransform(comTransicao = true) {
-      root.style.transition = comTransicao
-        ? "transform 250ms cubic-bezier(0.2, 0.8, 0.2, 1)"
-        : "none";
+    function prepararArrasto() {
+      root.style.willChange = "transform";
+      root.style.backgroundColor = "var(--bg)";
+      root.style.minHeight = "100dvh";
+      document.body.style.backgroundColor = "var(--bg)";
+    }
+
+    function limparEstilos() {
+      root.style.willChange = "";
+      root.style.transform = "";
+    }
+
+    function voltarSuave() {
+      root.style.transition = "transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1)";
       root.style.transform = "";
       setTimeout(() => {
         root.style.transition = "";
-      }, 300);
+        limparEstilos();
+      }, 260);
     }
 
     function onTouchStart(e) {
@@ -96,19 +93,24 @@ export default function SwipeBack() {
         }
         ativado = true;
         root.style.transition = "none";
+        prepararArrasto();
       }
+
+      const limite = window.innerWidth * 0.55;
 
       if (modo === "voltar") {
         if (dx <= 0) {
           root.style.transform = "";
           return;
         }
-        root.style.transform = `translateX(${Math.min(dx, window.innerWidth)}px)`;
+        root.style.transform = `translateX(${Math.min(dx, limite)}px)`;
       } else if (modo === "aba") {
         const aba = ROTAS_ABA[path];
         const permitido =
           (aba === "inicio" && dx < 0) || (aba === "perfil" && dx > 0);
-        const d = permitido ? dx : dx * 0.2;
+        const d = permitido
+          ? Math.max(-limite, Math.min(dx, limite))
+          : dx * 0.15;
         root.style.transform = `translateX(${d}px)`;
       }
     }
@@ -126,34 +128,32 @@ export default function SwipeBack() {
       const dx = t ? t.clientX - startX : 0;
       const dt = Date.now() - startTime;
       const velocidade = Math.abs(dx) / Math.max(1, dt);
-      const threshold = window.innerWidth * 0.35;
-      const isFlick = velocidade > 0.5 && Math.abs(dx) > 30;
-      const passou = Math.abs(dx) > threshold || isFlick;
+      const threshold = window.innerWidth * 0.3;
+      const flick = velocidade > 0.45 && Math.abs(dx) > 30;
+      const passou = Math.abs(dx) > threshold || flick;
 
       if (ativado && modo === "voltar" && dx > 0 && passou) {
-        root.style.transition = "transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1)";
-        root.style.transform = `translateX(${window.innerWidth}px)`;
-        setTimeout(() => {
-          root.style.transition = "none";
-          root.style.transform = "";
-          navigate(-1);
-          setTimeout(() => {
-            root.style.transition = "";
-          }, 50);
-        }, 200);
+        root.style.transition = "none";
+        root.style.transform = "";
+        limparEstilos();
+        navigate(-1);
       } else if (ativado && modo === "aba" && passou) {
         const aba = ROTAS_ABA[path];
         if (aba === "inicio" && dx < 0) {
-          limparTransform(false);
+          root.style.transition = "none";
+          root.style.transform = "";
+          limparEstilos();
           navigate("/perfil");
         } else if (aba === "perfil" && dx > 0) {
-          limparTransform(false);
+          root.style.transition = "none";
+          root.style.transform = "";
+          limparEstilos();
           navigate("/dashboard");
         } else {
-          limparTransform(true);
+          voltarSuave();
         }
-      } else {
-        limparTransform(true);
+      } else if (ativado) {
+        voltarSuave();
       }
 
       startX = null;
@@ -164,7 +164,7 @@ export default function SwipeBack() {
     }
 
     function onTouchCancel() {
-      if (ativado) limparTransform(true);
+      if (ativado) voltarSuave();
       startX = null;
       startY = null;
       tracking = false;
@@ -185,6 +185,7 @@ export default function SwipeBack() {
       if (root) {
         root.style.transform = "";
         root.style.transition = "";
+        root.style.willChange = "";
       }
     };
   }, [location.pathname, navigate]);
