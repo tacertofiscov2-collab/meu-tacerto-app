@@ -226,7 +226,7 @@ export default function Preferencias() {
             <div className="flex items-end justify-between gap-2">
               {[
                 { v: "small", label: "Pequena", tam: 13 },
-                { v: "medium", label: "Média", tam: 16 },
+                { v: "medium", label: "Médio", tam: 16 },
                 { v: "large", label: "Grande", tam: 20 },
               ].map((op) => {
                 const ativo = fonte === op.v;
