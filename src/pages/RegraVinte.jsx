@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, MessageCircle } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Fisco from "../components/Fisco.jsx";
 import Valor from "../components/Valor.jsx";
 import { useAppState } from "@/context/AppStateContext";
@@ -82,7 +82,7 @@ export default function RegraVinte() {
       >
         <div className="flex flex-col items-center pt-1 pb-2">
           <Fisco
-            size={168}
+            size={200}
             pose="alerta"
             fala={passouDos20 ? "Atenção!" : "Calma!"}
             corFala={cor}
@@ -178,15 +178,17 @@ export default function RegraVinte() {
               className="rounded-2xl px-4 py-3.5 flex gap-3"
               style={{ backgroundColor: "var(--field)" }}
             >
+              {/* MUD 12 — numeração neutra, sem cor */}
               <span
                 className="rounded-full flex items-center justify-center shrink-0"
                 style={{
                   width: 26,
                   height: 26,
-                  backgroundColor: `${cor}22`,
-                  color: cor,
+                  backgroundColor: "var(--surface-raised)",
+                  border: "1px solid var(--border)",
+                  color: "var(--text-secondary)",
                   fontSize: 13,
-                  fontWeight: 800,
+                  fontWeight: 700,
                 }}
               >
                 {i + 1}
@@ -208,25 +210,6 @@ export default function RegraVinte() {
             </div>
           ))}
         </div>
-
-        <button
-          onClick={() => navigate("/chat?contexto=limite")}
-          className="w-full rounded-2xl px-4 py-3.5 flex items-center gap-3 mt-3 active:opacity-80"
-          style={{ backgroundColor: "var(--field)" }}
-        >
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-            style={{ backgroundColor: "var(--surface)" }}
-          >
-            <MessageCircle size={18} style={{ color: "var(--primary)" }} />
-          </div>
-          <span
-            className="flex-1 text-[15px] font-semibold text-left"
-            style={{ color: "var(--text)" }}
-          >
-            Tirar dúvidas com o Fisco
-          </span>
-        </button>
 
         <p
           className="text-[11px] leading-relaxed text-center mt-4 px-2"
