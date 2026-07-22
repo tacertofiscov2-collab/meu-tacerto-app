@@ -4,9 +4,12 @@ import { ArrowLeft, Calendar as CalendarIcon, TrendingUp } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
 import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
-import { dataMinimaLancamento } from "@/lib/fiscal";
+import { dataMinimaLancamento, LIMITE_VALOR_LANCAMENTO } from "@/lib/fiscal";
 
-const MAX_CENTAVOS = 99999999;
+// Teto em centavos, derivado da constante única em fiscal.js
+const MAX_CENTAVOS = Math.round(LIMITE_VALOR_LANCAMENTO * 100);
+const MAX_DIGITOS = String(MAX_CENTAVOS).length;
+const LIMITE_DESCRICAO = 60;
 const LIMITE_VISITANTE = 8;
 
 const MESES = [
@@ -109,11 +112,12 @@ export default function Lancar() {
   const [salvando, setSalvando] = useState(false);
   const [preenchido, setPreenchido] = useState(false);
   const [calendarioAberto, setCalendarioAberto] = useState(false);
+  const [atingiuTeto, setAtingiuTeto] = useState(false);
 
   useEffect(() => {
     if (lancamentoAtual && !preenchido) {
       setCentavos(Math.round((Number(lancamentoAtual.valor) || 0) * 100));
-      setDescricao(lancamentoAtual.descricao || "");
+      setDescricao((lancamentoAtual.descricao || "").slice(0, LIMITE_DESCRICAO));
       const d = new Date(lancamentoAtual.data);
       setDataBR(isoToBR(`${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`));
       setPreenchido(true);
@@ -153,9 +157,11 @@ export default function Lancar() {
   })();
 
   function handleValor(e) {
-    const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
+    const digits = e.target.value.replace(/\D/g, "").slice(0, MAX_DIGITOS);
     const n = digits ? parseInt(digits, 10) : 0;
-    setCentavos(Math.min(n, MAX_CENTAVOS));
+    const limitado = Math.min(n, MAX_CENTAVOS);
+    setAtingiuTeto(n > MAX_CENTAVOS);
+    setCentavos(limitado);
   }
 
   async function handleSalvar() {
@@ -169,7 +175,7 @@ export default function Lancar() {
     setSalvando(true);
     const iso = brToISO(dataBR);
     const payload = {
-      descricao,
+      descricao: descricao.trim().slice(0, LIMITE_DESCRICAO),
       valor: centavos / 100,
       data: new Date(iso + "T12:00:00").toISOString(),
     };
@@ -235,8 +241,13 @@ export default function Lancar() {
                 style={{ color: "var(--text)" }}
               />
             </div>
-            <p className="text-xs mt-2" style={{ color: "var(--text-secondary)" }}>
-              Digite o valor recebido
+            <p
+              className="text-xs mt-2"
+              style={{ color: atingiuTeto ? "#ef4444" : "var(--text-secondary)" }}
+            >
+              {atingiuTeto
+                ? `Valor máximo por lançamento: R$ ${formatBRLFromCentavos(MAX_CENTAVOS)}`
+                : "Digite o valor recebido"}
             </p>
           </div>
 
@@ -247,9 +258,10 @@ export default function Lancar() {
             <input
               type="text"
               value={descricao}
+              maxLength={LIMITE_DESCRICAO}
               onChange={(e) => setDescricao(e.target.value)}
               placeholder="Descrição (opcional)"
-              className="w-full px-4 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
+              className="campo-tacerto w-full px-4 rounded-xl text-sm placeholder:opacity-70"
               style={{ ...fieldStyle, minHeight: 52 }}
             />
           </div>
@@ -308,13 +320,8 @@ export default function Lancar() {
                 />
                 <div className="flex-1 min-w-0">
                   <p
-                    className="text-[14px] leading-tight"
-                    style={{
-                      color: "var(--text)",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
+                    className="text-[14px] leading-tight truncate"
+                    style={{ color: "var(--text)" }}
                   >
                     {ultimoLancamento.descricao}
                   </p>
