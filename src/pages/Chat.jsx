@@ -2,16 +2,34 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Paperclip, Send, Sparkles } from "lucide-react";
 import Fisco from "../components/Fisco.jsx";
+import FiscoComBalao from "../components/FiscoComBalao.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import { faixaDoVelocimetro, FAIXA_INFO, LIMITE_PERGUNTA_CHAT } from "@/lib/fiscal";
 import {
-  perguntasDaFaixa, perguntasGerais, contextoFaq, textoPergunta,
+  perguntasDaFaixa, contextoFaq, textoPergunta, buscarRespostaPorTexto,
 } from "@/lib/faqFisco";
 
 function poseDaFaixa(faixa) {
   if (faixa === "tranquilo" || faixa === "fique_de_olho") return "joinha";
   if (faixa === "atencao" || faixa === "perto_do_limite") return "ok";
   return "alerta";
+}
+
+function AvatarFisco() {
+  return (
+    <span
+      className="rounded-full flex items-center justify-center shrink-0 overflow-hidden"
+      style={{
+        width: 34,
+        height: 34,
+        marginBottom: 2,
+        backgroundColor: "var(--surface)",
+        border: "1px solid var(--border)",
+      }}
+    >
+      <Fisco size={30} pose="amigavel" apenasCabeca />
+    </span>
+  );
 }
 
 export default function Chat() {
@@ -25,12 +43,12 @@ export default function Chat() {
   const corFaixa = FAIXA_INFO[faixa].cor;
 
   const modoContextual = contexto === "situacao" || contexto === "limite";
-
-  // MUD 15 — no chat geral o Fisco não reflete a situação: pose amigável, sem balão.
   const pose = modoContextual ? poseDaFaixa(faixa) : "amigavel";
 
   const ctx = contextoFaq({ tipoMEI, limite: limiteAtual, faturado: faturamentoAtual });
-  const perguntas = modoContextual ? perguntasDaFaixa(faixa) : perguntasGerais();
+
+  // Cards de pergunta pronta: SÓ no chat contextual.
+  const perguntas = modoContextual ? perguntasDaFaixa(faixa) : [];
 
   const [mensagens, setMensagens] = useState([]);
   const [texto, setTexto] = useState("");
@@ -66,6 +84,9 @@ export default function Chat() {
     setMensagens((prev) => [...prev, { id: Date.now(), autor: "user", texto: t }]);
     setTexto("");
     setDigitando(true);
+
+    const achou = buscarRespostaPorTexto(t);
+
     setTimeout(() => {
       setDigitando(false);
       setMensagens((prev) => [
@@ -73,8 +94,9 @@ export default function Chat() {
         {
           id: Date.now() + 1,
           autor: "fisco",
-          texto:
-            "Essa eu ainda não sei responder sozinho — em breve vou conseguir buscar a resposta certa pra você.\n\nPor enquanto, toque em uma das perguntas prontas ou fale com um contador se for algo urgente.",
+          texto: achou
+            ? achou.resposta(ctx)
+            : "Me conta um pouco mais sobre o que você quer saber — pode ser sobre o DAS, seu limite de faturamento, nota fiscal, a declaração anual ou seus direitos como MEI.",
         },
       ]);
     }, 3000);
@@ -83,9 +105,6 @@ export default function Chat() {
   const vazio = mensagens.length === 0 && !digitando;
 
   const titulo = modoContextual ? "Sobre a sua situação" : "Fisco";
-  const subtitulo = modoContextual
-    ? FAIXA_INFO[faixa].resumo
-    : "Seu amigo fiscal. Como posso te ajudar hoje?";
 
   return (
     <div
@@ -112,24 +131,25 @@ export default function Chat() {
           <>
             {modoContextual ? (
               <div className="flex flex-col items-center text-center">
-                <Fisco
-                  size={150}
+                <FiscoComBalao
+                  size={118}
                   pose={pose}
                   fala={FAIXA_INFO[faixa].palavra}
                   corFala={corFaixa}
+                  offsetBalao={{ x: 52, y: 2 }}
                 />
-                <h2 className="text-xl font-bold mt-1" style={{ color: "var(--text)" }}>
+                <h2 className="text-lg font-bold mt-1" style={{ color: "var(--text)" }}>
                   {titulo}
                 </h2>
                 <p
                   className="mt-0.5 text-[13px] px-4"
                   style={{ color: "var(--text-secondary)" }}
                 >
-                  {subtitulo}
+                  {FAIXA_INFO[faixa].resumo}
                 </p>
               </div>
             ) : (
-              /* MUD 15 — header caprichado do chat geral */
+              /* Header do chat geral */
               <div
                 className="rounded-3xl px-5 pt-3 pb-4 flex items-center gap-3 overflow-hidden relative"
                 style={{
@@ -162,42 +182,47 @@ export default function Chat() {
                     className="mt-1.5 text-[13px] leading-snug"
                     style={{ color: "var(--text-secondary)" }}
                   >
-                    Seu amigo fiscal. Como posso te ajudar hoje?
+                    Seu amigo fiscal. Pode perguntar o que quiser.
                   </p>
                 </div>
               </div>
             )}
 
-            <p
-              className="text-[11px] font-semibold uppercase mt-4 mb-2"
-              style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
-            >
-              {modoContextual ? "Perguntas comuns nessa situação" : "Perguntas frequentes"}
-            </p>
-
-            <div className="space-y-2 pb-4">
-              {perguntas.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => responder(p)}
-                  className="w-full rounded-2xl px-4 py-3 flex items-center gap-3 text-left active:opacity-75"
-                  style={{ backgroundColor: "var(--field)" }}
+            {/* Cards de pergunta pronta: só no contextual */}
+            {modoContextual && (
+              <>
+                <p
+                  className="text-[11px] font-semibold uppercase mt-4 mb-2"
+                  style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
                 >
-                  <div
-                    className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: "var(--surface)" }}
-                  >
-                    <Sparkles size={16} style={{ color: "var(--primary)" }} />
-                  </div>
-                  <span
-                    className="flex-1 text-[14px] leading-snug font-medium"
-                    style={{ color: "var(--text)" }}
-                  >
-                    {textoPergunta(p, ctx)}
-                  </span>
-                </button>
-              ))}
-            </div>
+                  Perguntas comuns nessa situação
+                </p>
+
+                <div className="space-y-2 pb-4">
+                  {perguntas.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => responder(p)}
+                      className="w-full rounded-2xl px-4 py-3 flex items-center gap-3 text-left active:opacity-75"
+                      style={{ backgroundColor: "var(--field)" }}
+                    >
+                      <div
+                        className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: "var(--surface)" }}
+                      >
+                        <Sparkles size={16} style={{ color: "var(--primary)" }} />
+                      </div>
+                      <span
+                        className="flex-1 text-[14px] leading-snug font-medium"
+                        style={{ color: "var(--text)" }}
+                      >
+                        {textoPergunta(p, ctx)}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </>
         ) : (
           <div className="space-y-3 pt-2 pb-4">
@@ -220,21 +245,9 @@ export default function Chat() {
                   </div>
                 );
               }
-              /* MUD 18 — avatar do Fisco em toda resposta */
               return (
                 <div key={m.id} className="flex justify-start items-end gap-1.5">
-                  <span
-                    className="rounded-full flex items-center justify-center shrink-0 overflow-hidden"
-                    style={{
-                      width: 34,
-                      height: 34,
-                      marginBottom: 2,
-                      backgroundColor: "var(--surface)",
-                      border: "1px solid var(--border)",
-                    }}
-                  >
-                    <Fisco size={30} pose="amigavel" apenasCabeca />
-                  </span>
+                  <AvatarFisco />
                   <div
                     className="max-w-[80%] rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed"
                     style={{
@@ -252,18 +265,7 @@ export default function Chat() {
 
             {digitando && (
               <div className="flex justify-start items-end gap-1.5">
-                <span
-                  className="rounded-full flex items-center justify-center shrink-0 overflow-hidden"
-                  style={{
-                    width: 34,
-                    height: 34,
-                    marginBottom: 2,
-                    backgroundColor: "var(--surface)",
-                    border: "1px solid var(--border)",
-                  }}
-                >
-                  <Fisco size={30} pose="amigavel" apenasCabeca />
-                </span>
+                <AvatarFisco />
                 <div
                   className="rounded-2xl px-4 py-3 flex items-center gap-1.5"
                   style={{ backgroundColor: "var(--field)", borderBottomLeftRadius: 6 }}
@@ -287,7 +289,8 @@ export default function Chat() {
               </div>
             )}
 
-            {!digitando && mensagens.length > 0 && (
+            {/* Sugestões: só no contextual */}
+            {modoContextual && !digitando && mensagens.length > 0 && (
               <div className="pt-2 space-y-2">
                 <p
                   className="text-[11px] font-semibold uppercase"
@@ -327,7 +330,7 @@ export default function Chat() {
         `}</style>
       </div>
 
-      {/* MUD 10 e 13 — sem rodapé: barra flutuante translúcida sobre o conteúdo */}
+      {/* Barra flutuante translúcida, sem rodapé */}
       <form
         onSubmit={enviar}
         className="absolute left-0 right-0 bottom-0 px-4 pointer-events-none"
@@ -336,16 +339,7 @@ export default function Chat() {
           paddingTop: 6,
         }}
       >
-        <div
-          className="pointer-events-auto flex items-center gap-2 rounded-full pl-2 pr-1.5 py-1.5"
-          style={{
-            backgroundColor: "color-mix(in srgb, var(--surface) 62%, transparent)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            border: "1px solid var(--border)",
-            boxShadow: "var(--sombra-card)",
-          }}
-        >
+        <div className="barra-flutuante pointer-events-auto flex items-center gap-2 rounded-full pl-2 pr-1.5 py-1.5">
           <button
             type="button"
             aria-label="Anexar"
@@ -359,8 +353,8 @@ export default function Chat() {
             maxLength={LIMITE_PERGUNTA_CHAT}
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Pergunte ao Fisco..."
-            className="campo-tacerto flex-1 bg-transparent outline-none text-sm py-2"
-            style={{ color: "var(--text)", border: "none", boxShadow: "none" }}
+            className="flex-1 bg-transparent outline-none text-sm py-2"
+            style={{ color: "var(--text)" }}
           />
           <button
             type="submit"
