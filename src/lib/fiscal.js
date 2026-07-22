@@ -1,5 +1,4 @@
 // Fonte ÚNICA da verdade para regras fiscais do TaCerto!
-// Nenhuma tela deve ter esses valores hard-coded fora deste arquivo.
 
 export const LIMITES_ANUAIS = {
   MEI: 81000,
@@ -11,11 +10,31 @@ export const LABEL_TIPO = {
   MEI_CAMINHONEIRO: "MEI Caminhoneiro",
 };
 
-// Regra dos 20% — LC 123/2006, art. 18-A, §5º-IV
-export const MARGEM_20 = 0.2;
-export const limiteAte20Percent = (tipo) => LIMITES_ANUAIS[tipo] * (1 + MARGEM_20);
+// Vocabulário por tipo de MEI — usado em textos do app e do Fisco.
+export const VOCAB = {
+  MEI: {
+    receita: "recebimento",
+    receitas: "recebimentos",
+    receitaPlural: "seus recebimentos",
+    quemPaga: "clientes",
+    verbo: "receber",
+  },
+  MEI_CAMINHONEIRO: {
+    receita: "frete",
+    receitas: "fretes",
+    receitaPlural: "seus fretes",
+    quemPaga: "embarcadores",
+    verbo: "rodar",
+  },
+};
 
-// Limite proporcional para MEI aberto no meio do ano.
+export const vocab = (tipo) => VOCAB[tipo] || VOCAB.MEI;
+
+// Regra dos 20% — LC 123/2006, art. 18-A
+export const MARGEM_20 = 0.2;
+export const limiteAte20Percent = (tipo) =>
+  (LIMITES_ANUAIS[tipo] ?? LIMITES_ANUAIS.MEI) * (1 + MARGEM_20);
+
 export function limiteProporcional(tipo, mesAbertura, anoAbertura, anoCorrente) {
   const cheio = LIMITES_ANUAIS[tipo] ?? LIMITES_ANUAIS.MEI;
   if (!mesAbertura || !anoAbertura) return cheio;
@@ -51,47 +70,52 @@ export const FAIXA_INFO = {
     cor: "#22c55e",
     mensagem: "Continua no seu ritmo.",
     resumo: "Tudo tranquilo, dentro do esperado.",
-    textoDetalhado: (percentual) =>
-      `Você usou ${Number(percentual).toFixed(0)}% do seu limite anual. Está tranquilo — ainda tem bastante espaço pra faturar até dezembro. Continue registrando cada recebimento pra manter o velocímetro sempre certo e não ter surpresa depois. O segredo é lançar tudo: dinheiro, Pix, cartão, transferência. Não importa se emitiu nota fiscal ou não.`,
+    palavra: "Tá de boa",
+    textoDetalhado: (p) =>
+      `Você usou ${Number(p).toFixed(0)}% do seu limite anual. Está tranquilo — ainda tem bastante espaço até dezembro.`,
   },
   fique_de_olho: {
     cor: "#84cc16",
     mensagem: "Vale começar a acompanhar de perto.",
-    resumo: "Já passou da metade do limite — comece a acompanhar mês a mês.",
-    textoDetalhado: (percentual) =>
-      `Você já usou ${Number(percentual).toFixed(0)}% do seu limite anual. Ainda está dentro do previsto, mas já passou da metade — vale começar a acompanhar mês a mês pra não ter surpresa no fim do ano. Um bom hábito nessa faixa é olhar o app antes de fechar cada mês e comparar com o mesmo período do ano passado. Assim você antecipa qualquer ajuste.`,
+    resumo: "Já passou da metade do limite.",
+    palavra: "Tá de boa",
+    textoDetalhado: (p) =>
+      `Você já usou ${Number(p).toFixed(0)}% do seu limite anual. Ainda está dentro do previsto, mas vale acompanhar mês a mês.`,
   },
   atencao: {
     cor: "#f59e0b",
     mensagem: "Bora planejar os próximos meses.",
-    resumo: "Chegando perto do teto — planeje os próximos recebimentos.",
-    textoDetalhado: (percentual) =>
-      `Você já usou ${Number(percentual).toFixed(0)}% do seu limite anual. Está chegando perto do teto — hora de planejar os próximos recebimentos com cuidado até dezembro. Se você tem previsão de receber um valor grande, vale considerar dividir em parcelas que caiam no ano que vem. E se der pra falar com um contador antes de qualquer decisão maior, melhor ainda.`,
+    resumo: "Chegando perto do teto.",
+    palavra: "Atenção",
+    textoDetalhado: (p) =>
+      `Você já usou ${Number(p).toFixed(0)}% do seu limite anual. Hora de planejar os próximos meses com cuidado.`,
   },
   perto_do_limite: {
     cor: "#f97316",
-    mensagem: "Segura a mão até janeiro pra não estourar.",
-    resumo: "Muito próximo do teto — segure grandes valores até janeiro.",
-    textoDetalhado: (percentual) =>
-      `Você já usou ${Number(percentual).toFixed(0)}% do seu limite anual — está muito próximo do teto. Se possível, evite receber grandes valores nos próximos meses pra não ultrapassar. A regra é: se passar de 100%, você ainda pode continuar MEI até dezembro (pagando um DAS complementar), desde que não passe de 20% acima do limite. Acima disso, o desenquadramento é retroativo. Fala com um contador antes de fechar qualquer contrato grande agora.`,
+    mensagem: "Segura a mão até janeiro.",
+    resumo: "Muito próximo do teto.",
+    palavra: "Atenção",
+    textoDetalhado: (p) =>
+      `Você já usou ${Number(p).toFixed(0)}% do seu limite anual — está bem perto do teto.`,
   },
   estourou: {
     cor: "#ef4444",
-    mensagem: "Você paga DAS complementar e ajusta em janeiro.",
-    resumo: "Passou do limite, mas ainda dentro dos 20% permitidos por lei.",
-    textoDetalhado: (_percentual) =>
-      `Você passou do seu limite anual, mas ainda dentro dos 20% que a lei permite. Você vai continuar sendo MEI até 31 de dezembro, mas vai precisar pagar um DAS complementar sobre o valor que passou. A partir de 1º de janeiro do próximo ano você deixa de ser MEI. Recomendamos falar com um contador pra se planejar.`,
+    mensagem: "Passou do limite, mas dá pra ajustar.",
+    resumo: "Passou do limite, dentro dos 20% da lei.",
+    palavra: "Cuidado",
+    textoDetalhado: () =>
+      `Você passou do limite, mas ainda dentro dos 20% que a lei permite. Continua MEI até dezembro.`,
   },
   critico: {
     cor: "#dc2626",
     mensagem: "Fala com um contador o quanto antes.",
-    resumo: "Passou mais de 20% do limite — desenquadramento retroativo.",
-    textoDetalhado: (_percentual) =>
-      `Você passou mais de 20% do seu limite anual. Pela lei, você deixa de ser MEI com efeito retroativo desde 1º de janeiro deste ano — ou seja, todos os impostos são recalculados como se você já fosse Simples Nacional. É importante falar com um contador o quanto antes pra regularizar sua situação e evitar problemas.`,
+    resumo: "Passou mais de 20% do limite.",
+    palavra: "Cuidado",
+    textoDetalhado: () =>
+      `Você passou mais de 20% do limite. Pela lei, o desenquadramento é retroativo a janeiro deste ano.`,
   },
 };
 
-// Aliases de compatibilidade
 for (const chave of Object.keys(FAIXA_INFO)) {
   const f = FAIXA_INFO[chave];
   f.label = f.mensagem;
@@ -139,14 +163,27 @@ export const fmtBRL = (v) =>
     maximumFractionDigits: 0,
   });
 
-// Data mínima selecionável para lançamentos, conforme abertura do MEI.
-// Se abriu antes do ano corrente: 01/01 do ano corrente.
-// Se abriu durante o ano corrente: 01 do mês de abertura.
 export function dataMinimaLancamento(mesAbertura, anoAbertura) {
   const anoCorrente = new Date().getFullYear();
   if (mesAbertura && anoAbertura && Number(anoAbertura) === anoCorrente) {
-    const mm = String(mesAbertura).padStart(2, "0");
-    return `${anoCorrente}-${mm}-01`;
+    return `${anoCorrente}-${String(mesAbertura).padStart(2, "0")}-01`;
   }
   return `${anoCorrente}-01-01`;
+}
+
+/**
+ * Excedente acima de 100% do limite.
+ * Retorna null se ainda não passou.
+ * - percentualExcesso: quanto passou (ex: 12 = 12% acima)
+ * - dentroDos20: se ainda está na margem legal
+ */
+export function excedenteAcimaDoLimite(faturado, limite) {
+  if (!limite || faturado <= limite) return null;
+  const excesso = faturado - limite;
+  const percentualExcesso = (excesso / limite) * 100;
+  return {
+    valor: excesso,
+    percentualExcesso,
+    dentroDos20: percentualExcesso <= 20,
+  };
 }

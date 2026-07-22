@@ -1,0 +1,33 @@
+﻿=== COMMITS ===
+fde6bc9 feat: onboarding revisado (sem emojis, botoes pill, selecao clara)
+0cacb7a feat: calendario aceita data minima (minISO)
+f528eae feat: regra de data minima no lancamento conforme abertura do MEI
+05deaa0 feat: historico usa SeletorMesAno em pills
+032a466 feat: componente SeletorMesAno reutilizavel
+aad0065 fix: chat sem corte no topo, Fisco reage igual ao dashboard
+1fa7ef2 feat: dashboard com tela B informativa e balao compacto do Fisco
+89fa62b feat: Fisco mais realista com gradientes e poses legiveis
+49c8f6b style: reduz espacamento entre secoes do Perfil
+2418b2d fix: rotulo Media vira Medio no seletor de fonte
+17064d0 fix: AppStateContext absorve nome/email/visitante, adiciona media e projecao mensal
+9eca1e6 fix: unifica userState sobre AppStateContext (corrige limites divergentes)
+70877fa feat: resumo curto por faixa e data minima de lancamento
+d417b17 feat: lancamento usa calendario proprio do TaCerto
+
+=== STATUS ===
+
+=== ARQUIVOS ===
+src\lib\fiscal.js                              6855 bytes  21/07/2026 17:35:00
+src\lib\userState.js                           3939 bytes  21/07/2026 17:36:53
+src\context\AppStateContext.jsx               11649 bytes  21/07/2026 17:38:04
+src\components\Fisco.jsx                       8555 bytes  21/07/2026 18:01:19
+src\components\Calendario.jsx                 10831 bytes  21/07/2026 18:14:06
+src\components\SeletorMesAno.jsx               5485 bytes  21/07/2026 18:09:50
+src\pages\Dashboard.jsx                       15927 bytes  21/07/2026 18:04:17
+src\pages\Chat.jsx                             6809 bytes  21/07/2026 18:05:34
+src\pages\Perfil.jsx                          13225 bytes  21/07/2026 17:41:53
+src\pages\Preferencias.jsx                    11554 bytes  21/07/2026 17:39:33
+src\pages\Historico.jsx                       11888 bytes  21/07/2026 18:11:02
+src\pages\Lancar.jsx                          13287 bytes  21/07/2026 18:12:48
+src\pages\Onboarding.jsx                      13281 bytes  21/07/2026 18:16:17
+
