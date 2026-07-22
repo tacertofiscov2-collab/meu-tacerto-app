@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useMemo } from "react";
-import { Bell, Gauge, ArrowUp, TrendingUp, ChevronRight, Receipt } from "lucide-react";
+import { Bell, Gauge, TrendingUp, ChevronRight, Receipt } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
@@ -31,16 +31,38 @@ function hexToRgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-function poseDaFaixa(faixa) {
-  if (faixa === "tranquilo" || faixa === "fique_de_olho") return "joinha";
-  if (faixa === "atencao" || faixa === "perto_do_limite") return "ok";
-  return "alerta";
+/** Seta do botão de enviar — desenhada, não é ícone de biblioteca */
+function SetaEnviar({ tamanho = 16 }) {
+  return (
+    <svg
+      width={tamanho}
+      height={tamanho}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      style={{ display: "block" }}
+    >
+      <path
+        d="M12 20V5"
+        stroke="var(--primary-contrast)"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <path
+        d="M5.5 11.5L12 4.5L18.5 11.5"
+        stroke="var(--primary-contrast)"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 }
 
-/** Bolinhas do carrossel — sempre verdes, sempre no mesmo lugar, quase imperceptíveis */
+/** Bolinhas do carrossel — flutuam POR CIMA, sem ocupar espaço */
 function BolinhasIndicadoras({ pagina, irPara }) {
   return (
-    <div className="absolute top-4 right-5 z-20 flex items-center gap-1.5">
+    <div className="absolute top-3 right-4 z-30 flex items-center gap-1.5">
       {[0, 1].map((i) => {
         const ativa = pagina === i;
         return (
@@ -53,7 +75,7 @@ function BolinhasIndicadoras({ pagina, irPara }) {
               width: 6,
               height: 6,
               backgroundColor: "var(--primary)",
-              opacity: ativa ? 0.5 : 0.16,
+              opacity: ativa ? 0.45 : 0.15,
             }}
           />
         );
@@ -70,11 +92,11 @@ function TelaDetalhes({
   const temLancamento = ultimos.length > 0;
 
   return (
-    <div className="card-b-fonte-fixa w-1/2 h-full flex flex-col px-4 pt-4 pb-4 gap-2.5 overflow-hidden">
-      {/* 1 — Sua situação (clicável) */}
+    <div className="card-b-fonte-fixa w-1/2 h-full flex flex-col px-3.5 py-3.5 gap-2 overflow-hidden">
+      {/* 1 — Sua situação (clicável). As bolinhas passam POR CIMA dele. */}
       <button
         onClick={onSituacao}
-        className="relative rounded-2xl pl-4 pr-3 py-3.5 text-left shrink-0 active:scale-[0.985] active:opacity-90 transition overflow-hidden"
+        className="relative rounded-2xl pl-4 pr-3 py-3 text-left shrink-0 active:scale-[0.985] active:opacity-90 transition overflow-hidden"
         style={{
           backgroundColor: "var(--surface-raised)",
           boxShadow: `inset 3px 0 0 0 ${corFaixa}`,
@@ -88,15 +110,15 @@ function TelaDetalhes({
           }}
         />
         <div className="relative flex items-center gap-2.5">
-          <div className="flex-1 min-w-0" style={{ paddingRight: 34 }}>
+          <div className="flex-1 min-w-0" style={{ paddingRight: 30 }}>
             <p
-              className="text-[9px] font-bold uppercase mb-1"
+              className="cb-rotulo font-bold uppercase mb-1"
               style={{ color: corFaixa, letterSpacing: "0.09em" }}
             >
               Sua situação
             </p>
             <p
-              className="text-[13.5px] leading-snug font-semibold"
+              className="cb-titulo leading-snug font-semibold"
               style={{ color: "var(--text)" }}
             >
               {info.resumo}
@@ -105,12 +127,12 @@ function TelaDetalhes({
           <span
             className="rounded-full flex items-center justify-center shrink-0"
             style={{
-              width: 26,
-              height: 26,
+              width: 24,
+              height: 24,
               backgroundColor: hexToRgba(corFaixa, 0.16),
             }}
           >
-            <ChevronRight size={15} strokeWidth={2.6} style={{ color: corFaixa }} />
+            <ChevronRight size={14} strokeWidth={2.6} style={{ color: corFaixa }} />
           </span>
         </div>
       </button>
@@ -119,18 +141,18 @@ function TelaDetalhes({
       {temLancamento ? (
         <button
           onClick={onLancamentos}
-          className="rounded-2xl px-4 py-3 text-left shrink-0 active:opacity-80 transition"
+          className="rounded-2xl px-4 py-2.5 text-left shrink-0 active:opacity-80 transition"
           style={{ backgroundColor: "var(--surface-raised)" }}
         >
           <div className="flex items-center gap-2 mb-1.5">
             <Receipt size={12} style={{ color: "var(--text-tertiary)" }} />
             <p
-              className="text-[9px] font-bold uppercase flex-1"
+              className="cb-rotulo font-bold uppercase flex-1"
               style={{ color: "var(--text-secondary)", letterSpacing: "0.09em" }}
             >
               Últimos lançamentos
             </p>
-            <ChevronRight size={14} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+            <ChevronRight size={13} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
           </div>
           <div className="space-y-1">
             {ultimos.map((l) => {
@@ -138,12 +160,12 @@ function TelaDetalhes({
               return (
                 <div key={l.id} className="flex items-baseline justify-between gap-2">
                   <span
-                    className="text-[11.5px] truncate"
+                    className="cb-linha truncate"
                     style={{ color: "var(--text-secondary)" }}
                   >
                     {`${String(d.getDate()).padStart(2, "0")} ${MESES_CURTO[d.getMonth()]}`}
                   </span>
-                  <Valor tamanho="sm" sinal="+">{l.valor}</Valor>
+                  <Valor px={12.5} peso={700} sinal="+">{l.valor}</Valor>
                 </div>
               );
             })}
@@ -154,8 +176,8 @@ function TelaDetalhes({
           className="rounded-2xl px-4 py-3 shrink-0 flex items-center gap-2.5"
           style={{ backgroundColor: "var(--surface-raised)" }}
         >
-          <Receipt size={14} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
-          <p className="text-[12.5px]" style={{ color: "var(--text-secondary)" }}>
+          <Receipt size={13} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+          <p className="cb-linha" style={{ color: "var(--text-secondary)" }}>
             Nenhum lançamento ainda
           </p>
         </div>
@@ -163,42 +185,42 @@ function TelaDetalhes({
 
       {/* 3 — Seu ritmo */}
       <div
-        className="rounded-2xl px-4 py-3 shrink-0"
+        className="rounded-2xl px-4 py-2.5 shrink-0"
         style={{ backgroundColor: "var(--surface-raised)" }}
       >
         <div className="flex items-center gap-2 mb-1.5">
           <TrendingUp size={12} style={{ color: "var(--text-tertiary)" }} />
           <p
-            className="text-[9px] font-bold uppercase"
+            className="cb-rotulo font-bold uppercase"
             style={{ color: "var(--text-secondary)", letterSpacing: "0.09em" }}
           >
             Seu ritmo
           </p>
         </div>
         <div className="flex items-baseline justify-between gap-2 mb-1">
-          <span className="text-[11.5px]" style={{ color: "var(--text-secondary)" }}>
+          <span className="cb-linha" style={{ color: "var(--text-secondary)" }}>
             Média por mês
           </span>
-          <Valor tamanho="sm" autoAjustar>{mediaMensal}</Valor>
+          <Valor px={12.5} peso={700} autoAjustar>{mediaMensal}</Valor>
         </div>
         <div className="flex items-baseline justify-between gap-2">
-          <span className="text-[11.5px]" style={{ color: "var(--text-secondary)" }}>
+          <span className="cb-linha" style={{ color: "var(--text-secondary)" }}>
             Fecha o ano em
           </span>
-          <Valor tamanho="sm" autoAjustar cor={corFaixa}>{projecao}</Valor>
+          <Valor px={12.5} peso={700} autoAjustar cor={corFaixa}>{projecao}</Valor>
         </div>
       </div>
 
-      {/* Respiro elástico: absorve a sobra sem esticar os cards */}
+      {/* Respiro elástico: absorve a sobra */}
       <div className="flex-1 min-h-0" aria-hidden />
 
-      {/* 4 — Faixas de risco (fina, fixa, não clicável) */}
+      {/* 4 — Faixas de risco */}
       <div
-        className="rounded-2xl px-4 pt-2.5 pb-2.5 shrink-0"
+        className="rounded-2xl px-4 py-2.5 shrink-0"
         style={{ backgroundColor: "var(--surface-raised)" }}
       >
         <p
-          className="text-[9px] font-bold uppercase mb-1.5"
+          className="cb-rotulo font-bold uppercase mb-1.5"
           style={{ color: "var(--text-secondary)", letterSpacing: "0.09em" }}
         >
           Faixas de risco
@@ -219,7 +241,7 @@ function TelaDetalhes({
           {FAIXAS_ORDEM.map((f) => (
             <span
               key={f}
-              className="text-[7.5px] leading-none"
+              className="cb-mini leading-none"
               style={{
                 color: f === faixaAtiva ? FAIXA_INFO[f].cor : "var(--text-tertiary)",
                 fontWeight: f === faixaAtiva ? 800 : 500,
@@ -355,15 +377,14 @@ function CardVelocimetroCarrossel({
     >
       <BolinhasIndicadoras pagina={pagina} irPara={irPara} />
 
-      {/* Rótulo do perfil só na tela A */}
-      <div
-        className="px-5 pt-3.5 pb-1 shrink-0"
-        style={{ height: naTelaB ? 0 : "auto", overflow: "hidden" }}
-      >
-        <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          {rotuloPerfil}
-        </span>
-      </div>
+      {/* Rótulo do perfil: só existe na tela A. Na B nem é renderizado. */}
+      {!naTelaB && (
+        <div className="px-5 pt-3.5 pb-1 shrink-0">
+          <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+            {rotuloPerfil}
+          </span>
+        </div>
+      )}
 
       <div className="flex-1 min-h-0 overflow-hidden">
         <div
@@ -441,10 +462,6 @@ export default function Dashboard() {
 
   const rotuloPerfil = LABEL_TIPO[tipoMEI];
   const saudacao = saudacaoPorHora();
-  const faixa = faixaDoVelocimetro(percentualAtual);
-  const pose = poseDaFaixa(faixa);
-  const info = FAIXA_INFO[faixa];
-  const corFaixa = info.cor;
 
   const ultimos = useMemo(
     () =>
@@ -521,40 +538,34 @@ export default function Dashboard() {
             onExcedente={() => navigate("/regra-vinte")}
           />
 
-          {/* Fisco + barra translúcida */}
+          {/* Fisco NEUTRO, sem balão e sem reação à situação */}
           <button
             onClick={() => navigate("/chat")}
             className="shrink-0 flex items-end active:opacity-90 transition mt-1 w-full"
             style={{ background: "none", border: "none", padding: 0 }}
           >
             <Fisco
-              size={132}
-              pose={pose}
-              fala={info.palavra}
-              corFala={corFaixa}
+              size={116}
+              pose="neutro"
               className="shrink-0"
-              style={{ marginBottom: -12, marginLeft: -22, marginRight: -30 }}
+              style={{ marginBottom: -12, marginLeft: -16, marginRight: 2 }}
             />
 
             <span
-              className="barra-flutuante flex-1 rounded-full pl-4 pr-1.5 flex items-center gap-2 text-left min-w-0"
-              style={{ height: 46, marginBottom: 10 }}
+              className="barra-fisco flex-1 rounded-full pl-5 pr-1.5 flex items-center gap-2 text-left min-w-0"
+              style={{ height: 48, marginBottom: 12 }}
             >
               <span
-                className="flex-1 text-[13.5px] truncate"
+                className="flex-1 text-[14px] truncate"
                 style={{ color: "var(--text-secondary)" }}
               >
                 Pergunte ao Fisco...
               </span>
               <span
                 className="btn-enviar-fisco rounded-full flex items-center justify-center shrink-0"
-                style={{ width: 34, height: 34 }}
+                style={{ width: 36, height: 36 }}
               >
-                <ArrowUp
-                  size={18}
-                  strokeWidth={3}
-                  style={{ color: "var(--primary-contrast)" }}
-                />
+                <SetaEnviar tamanho={17} />
               </span>
             </span>
           </button>
