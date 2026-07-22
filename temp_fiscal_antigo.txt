@@ -1,4 +1,4 @@
-// Fonte ÚNICA da verdade para regras fiscais do TaCerto!
+﻿// Fonte ├ÜNICA da verdade para regras fiscais do TaCerto!
 
 export const LIMITES_ANUAIS = {
   MEI: 81000,
@@ -10,7 +10,7 @@ export const LABEL_TIPO = {
   MEI_CAMINHONEIRO: "MEI Caminhoneiro",
 };
 
-// Limites de caracteres — MUD 17
+// Limites de caracteres ÔÇö MUD 17
 export const LIMITE_NOME_INPUT = 20;
 export const LIMITE_NOME_EXIBICAO = 16;
 export const LIMITE_VALOR_LANCAMENTO = 9999999.99;
@@ -19,10 +19,10 @@ export const LIMITE_PERGUNTA_CHAT = 300;
 export function truncarNome(nome, max = LIMITE_NOME_EXIBICAO) {
   const n = String(nome || "").trim();
   if (n.length <= max) return n;
-  return n.slice(0, max).trimEnd() + "…";
+  return n.slice(0, max).trimEnd() + "ÔÇª";
 }
 
-// Vocabulário por tipo de MEI — usado em textos do app e do Fisco.
+// Vocabul├írio por tipo de MEI ÔÇö usado em textos do app e do Fisco.
 export const VOCAB = {
   MEI: {
     receita: "recebimento",
@@ -42,7 +42,7 @@ export const VOCAB = {
 
 export const vocab = (tipo) => VOCAB[tipo] || VOCAB.MEI;
 
-// Regra dos 20% — LC 123/2006, art. 18-A
+// Regra dos 20% ÔÇö LC 123/2006, art. 18-A
 export const MARGEM_20 = 0.2;
 export const limiteAte20Percent = (tipo) =>
   (LIMITES_ANUAIS[tipo] ?? LIMITES_ANUAIS.MEI) * (1 + MARGEM_20);
@@ -69,11 +69,11 @@ export const FAIXAS_ORDEM = [
 ];
 
 export const FAIXA_RANGE_LABEL = {
-  tranquilo: "0–50%",
-  fique_de_olho: "50–75%",
-  atencao: "75–90%",
-  perto_do_limite: "90–100%",
-  estourou: "100–120%",
+  tranquilo: "0ÔÇô50%",
+  fique_de_olho: "50ÔÇô75%",
+  atencao: "75ÔÇô90%",
+  perto_do_limite: "90ÔÇô100%",
+  estourou: "100ÔÇô120%",
   critico: "120%+",
 };
 
@@ -82,41 +82,41 @@ export const FAIXA_INFO = {
     cor: "#22c55e",
     mensagem: "Continua no seu ritmo.",
     resumo: "Tudo tranquilo, dentro do esperado.",
-    palavra: "Tá de boa",
+    palavra: "T├í de boa",
     textoDetalhado: (p) =>
-      `Você usou ${Number(p).toFixed(0)}% do seu limite anual. Está tranquilo — ainda tem bastante espaço até dezembro.`,
+      `Voc├¬ usou ${Number(p).toFixed(0)}% do seu limite anual. Est├í tranquilo ÔÇö ainda tem bastante espa├ºo at├® dezembro.`,
   },
   fique_de_olho: {
     cor: "#84cc16",
-    mensagem: "Vale começar a acompanhar de perto.",
-    resumo: "Já passou da metade do limite.",
-    palavra: "Tá de boa",
+    mensagem: "Vale come├ºar a acompanhar de perto.",
+    resumo: "J├í passou da metade do limite.",
+    palavra: "T├í de boa",
     textoDetalhado: (p) =>
-      `Você já usou ${Number(p).toFixed(0)}% do seu limite anual. Ainda está dentro do previsto, mas vale acompanhar mês a mês.`,
+      `Voc├¬ j├í usou ${Number(p).toFixed(0)}% do seu limite anual. Ainda est├í dentro do previsto, mas vale acompanhar m├¬s a m├¬s.`,
   },
   atencao: {
     cor: "#f59e0b",
-    mensagem: "Bora planejar os próximos meses.",
+    mensagem: "Bora planejar os pr├│ximos meses.",
     resumo: "Chegando perto do teto.",
-    palavra: "Atenção",
+    palavra: "Aten├º├úo",
     textoDetalhado: (p) =>
-      `Você já usou ${Number(p).toFixed(0)}% do seu limite anual. Hora de planejar os próximos meses com cuidado.`,
+      `Voc├¬ j├í usou ${Number(p).toFixed(0)}% do seu limite anual. Hora de planejar os pr├│ximos meses com cuidado.`,
   },
   perto_do_limite: {
     cor: "#f97316",
-    mensagem: "Segura a mão até janeiro.",
-    resumo: "Muito próximo do teto.",
-    palavra: "Atenção",
+    mensagem: "Segura a m├úo at├® janeiro.",
+    resumo: "Muito pr├│ximo do teto.",
+    palavra: "Aten├º├úo",
     textoDetalhado: (p) =>
-      `Você já usou ${Number(p).toFixed(0)}% do seu limite anual — está bem perto do teto.`,
+      `Voc├¬ j├í usou ${Number(p).toFixed(0)}% do seu limite anual ÔÇö est├í bem perto do teto.`,
   },
   estourou: {
     cor: "#ef4444",
-    mensagem: "Passou do limite, mas dá pra ajustar.",
+    mensagem: "Passou do limite, mas d├í pra ajustar.",
     resumo: "Passou do limite, dentro dos 20% da lei.",
     palavra: "Passou",
     textoDetalhado: () =>
-      `Você passou do limite, mas ainda dentro dos 20% que a lei permite. Continua MEI até dezembro.`,
+      `Voc├¬ passou do limite, mas ainda dentro dos 20% que a lei permite. Continua MEI at├® dezembro.`,
   },
   critico: {
     cor: "#dc2626",
@@ -124,7 +124,7 @@ export const FAIXA_INFO = {
     resumo: "Passou mais de 20% do limite.",
     palavra: "Cuidado",
     textoDetalhado: () =>
-      `Você passou mais de 20% do limite. Pela lei, o desenquadramento é retroativo a janeiro deste ano.`,
+      `Voc├¬ passou mais de 20% do limite. Pela lei, o desenquadramento ├® retroativo a janeiro deste ano.`,
   },
 };
 
@@ -185,9 +185,9 @@ export function dataMinimaLancamento(mesAbertura, anoAbertura) {
 
 /**
  * Excedente acima de 100% do limite.
- * Retorna null se ainda não passou.
+ * Retorna null se ainda n├úo passou.
  * - percentualExcesso: quanto passou (ex: 12 = 12% acima)
- * - dentroDos20: se ainda está na margem legal
+ * - dentroDos20: se ainda est├í na margem legal
  */
 export function excedenteAcimaDoLimite(faturado, limite) {
   if (!limite || faturado <= limite) return null;
@@ -198,20 +198,4 @@ export function excedenteAcimaDoLimite(faturado, limite) {
     percentualExcesso,
     dentroDos20: percentualExcesso <= 20,
   };
-}
-
-/* ===================================================================
-   COR DO BALÃO DO FISCO — apenas 3 cores (verde / amarelo / vermelho)
-   O velocímetro tem 6 cores; o balão simplifica em 3 níveis.
-   =================================================================== */
-export const BALAO_CORES = {
-  verde: "#22c55e",
-  amarelo: "#f59e0b",
-  vermelho: "#ef4444",
-};
-
-export function corBalaoDaFaixa(faixa) {
-  if (faixa === "tranquilo" || faixa === "fique_de_olho") return BALAO_CORES.verde;
-  if (faixa === "atencao" || faixa === "perto_do_limite") return BALAO_CORES.amarelo;
-  return BALAO_CORES.vermelho;
 }
