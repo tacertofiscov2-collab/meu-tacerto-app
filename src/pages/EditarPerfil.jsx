@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Briefcase, CalendarDays, Check, Pencil, Trash2, X,
+  ArrowLeft, Briefcase, CalendarDays, Check, Pencil, Trash2, X, ChevronRight,
 } from "lucide-react";
 
-import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
-import { FlatItem, FlatGroup } from "../components/FlatList.jsx";
 import { useUserState } from "@/lib/userState";
 import { LIMITES_ANUAIS } from "@/lib/fiscal";
 
@@ -23,24 +21,52 @@ const MESES = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
 
+function LinhaFiscal({ Icon, label, valor, onClick, perigo }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left active:opacity-75 transition"
+      style={{ backgroundColor: "var(--field)" }}
+    >
+      <Icon
+        size={20}
+        strokeWidth={2}
+        style={{ color: perigo ? "var(--danger)" : "var(--primary)" }}
+        className="shrink-0"
+      />
+      <div className="flex-1 min-w-0">
+        <p
+          className="text-[15px] font-semibold leading-tight"
+          style={{ color: perigo ? "var(--danger)" : "var(--text)" }}
+        >
+          {label}
+        </p>
+        {valor && (
+          <p
+            className="text-[12px] mt-0.5 truncate"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            {valor}
+          </p>
+        )}
+      </div>
+      {!perigo && (
+        <ChevronRight size={17} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+      )}
+    </button>
+  );
+}
+
 export default function EditarPerfil() {
   const navigate = useNavigate();
   const fileRef = useRef(null);
 
   const {
-    nome: nomeSalvo,
-    email,
-    visitante,
-    tipo,
-    mesAbertura,
-    anoAbertura,
-    setNome: salvarNome,
-    setTipo,
-    setAbertura,
+    nome: nomeSalvo, email, visitante, tipo, mesAbertura, anoAbertura,
+    setNome: salvarNome, setTipo, setAbertura,
   } = useUserState();
 
   const [nome, setNome] = useState(nomeSalvo || "");
-  const perfil = tipo;
   const [selecionarTipo, setSelecionarTipo] = useState(false);
   const [perfilPendente, setPerfilPendente] = useState(null);
   const [confirmarTroca, setConfirmarTroca] = useState(false);
@@ -55,9 +81,7 @@ export default function EditarPerfil() {
 
   const temMudanca = nome.trim() !== (nomeSalvo || "").trim() && nome.trim() !== "";
 
-  useEffect(() => {
-    setNome(nomeSalvo || "");
-  }, [nomeSalvo]);
+  useEffect(() => { setNome(nomeSalvo || ""); }, [nomeSalvo]);
 
   const inicial = (nome || "?").trim().charAt(0).toUpperCase();
 
@@ -67,8 +91,8 @@ export default function EditarPerfil() {
   };
   const fieldStyle = {
     backgroundColor: "var(--field)",
-    border: "1px solid var(--border)",
     color: "var(--text)",
+    border: "none",
   };
 
   const subAbertura =
@@ -109,28 +133,17 @@ export default function EditarPerfil() {
 
   function escolherTipo(novo) {
     setSelecionarTipo(false);
-    if (novo === perfil) return;
+    if (novo === tipo) return;
     setPerfilPendente(novo);
     setConfirmarTroca(true);
   }
 
-  function confirmarAlteracao() {
-    if (perfilPendente) setTipo(perfilPendente);
-    setConfirmarTroca(false);
-    setPerfilPendente(null);
-  }
-
   return (
     <div
-      className="w-full flex flex-col"
-      style={{
-        backgroundColor: "var(--bg)",
-        color: "var(--text)",
-        height: "100dvh",
-        overflow: "hidden",
-      }}
+      className="tela-rolavel w-full flex flex-col"
+      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <header className="px-5 pt-5 pb-1 flex items-center gap-3 shrink-0">
+      <header className="px-5 pt-5 pb-2 flex items-center gap-3 shrink-0">
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
@@ -148,17 +161,15 @@ export default function EditarPerfil() {
       </header>
 
       <div
-        className="flex-1 px-5 flex flex-col min-h-0"
-        style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom))" }}
+        className="conteudo-rolavel hide-scrollbar px-5"
+        style={{ paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
       >
-        <div className="flex flex-col items-center py-5 shrink-0">
+        <div className="flex flex-col items-center pt-3 pb-5">
           <div className="relative">
             <button
               type="button"
-              onClick={() => {
-                if (!visitante) setMenuFoto(true);
-              }}
-              className="block w-24 h-24 rounded-full overflow-hidden active:opacity-80"
+              onClick={() => { if (!visitante) setMenuFoto(true); }}
+              className="block w-20 h-20 rounded-full overflow-hidden active:opacity-80"
               style={{
                 backgroundColor: "var(--field)",
                 cursor: visitante ? "default" : "pointer",
@@ -169,46 +180,50 @@ export default function EditarPerfil() {
                 <img src={foto} alt="" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <span
-                    className="text-4xl font-bold"
-                    style={{ color: "var(--primary)" }}
-                  >
+                  <span className="font-bold" style={{ color: "var(--primary)", fontSize: 32 }}>
                     {inicial}
                   </span>
                 </div>
               )}
             </button>
             {!visitante && (
-              <button
-                type="button"
-                onClick={() => setMenuFoto(true)}
-                aria-label="Editar foto"
-                className="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center shadow"
-                style={{ backgroundColor: "var(--primary)" }}
-              >
-                <Pencil size={15} style={{ color: "var(--primary-contrast)" }} />
-              </button>
-            )}
-            {!visitante && (
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFoto}
-              />
+              <>
+                <button
+                  type="button"
+                  onClick={() => setMenuFoto(true)}
+                  aria-label="Editar foto"
+                  className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center shadow"
+                  style={{ backgroundColor: "var(--primary)" }}
+                >
+                  <Pencil size={14} style={{ color: "var(--primary-contrast)" }} />
+                </button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFoto}
+                />
+              </>
             )}
           </div>
         </div>
 
-        <p className="text-[13px] mb-2" style={{ color: "var(--text-secondary)" }}>
+        <p
+          className="text-[12px] font-semibold uppercase mb-2"
+          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
+        >
           Informações pessoais
         </p>
-        <div className="space-y-3">
-          <div>
+
+        <div className="space-y-2.5">
+          <div
+            className="rounded-2xl px-4 py-2.5"
+            style={{ backgroundColor: "var(--field)" }}
+          >
             <label
-              className="block text-xs mb-1.5"
-              style={{ color: "var(--text-secondary)" }}
+              className="block text-[11px] mb-0.5"
+              style={{ color: "var(--text-tertiary)" }}
             >
               Nome
             </label>
@@ -216,15 +231,18 @@ export default function EditarPerfil() {
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               placeholder="Seu nome"
-              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
-              style={fieldStyle}
+              className="w-full bg-transparent text-[15px] font-semibold outline-none"
+              style={{ color: "var(--text)" }}
             />
           </div>
 
-          <div>
+          <div
+            className="rounded-2xl px-4 py-2.5"
+            style={{ backgroundColor: "var(--field)", opacity: 0.75 }}
+          >
             <label
-              className="block text-xs mb-1.5"
-              style={{ color: "var(--text-secondary)" }}
+              className="block text-[11px] mb-0.5"
+              style={{ color: "var(--text-tertiary)" }}
             >
               E-mail
             </label>
@@ -232,17 +250,19 @@ export default function EditarPerfil() {
               value={visitante ? "" : email || ""}
               readOnly
               tabIndex={-1}
-              placeholder={visitante ? "Você não tem e-mail cadastrado" : "—"}
-              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none placeholder:opacity-70"
-              style={{ ...fieldStyle, opacity: 0.7, cursor: "default" }}
+              placeholder={visitante ? "Sem e-mail cadastrado" : "—"}
+              className="w-full bg-transparent text-[15px] outline-none placeholder:opacity-70"
+              style={{ color: "var(--text)", cursor: "default" }}
             />
           </div>
+        </div>
 
+        <div style={{ minHeight: 56 }} className="pt-3">
           {(temMudanca || salvo) && (
             <button
               onClick={salvarAlteracoes}
               disabled={salvo}
-              className="w-full py-3 rounded-xl font-semibold text-sm transition active:scale-[0.99]"
+              className="w-full py-3 rounded-2xl font-semibold text-sm transition active:scale-[0.99]"
               style={{
                 backgroundColor: salvo ? "var(--field)" : "var(--primary)",
                 color: salvo ? "var(--primary)" : "var(--primary-contrast)",
@@ -254,33 +274,35 @@ export default function EditarPerfil() {
         </div>
 
         <p
-          className="text-[13px] mt-6 mb-1"
-          style={{ color: "var(--text-secondary)" }}
+          className="text-[12px] font-semibold uppercase mb-2 mt-2"
+          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
         >
           Perfil fiscal
         </p>
-        <FlatGroup>
-          <FlatItem
+
+        <div className="space-y-2.5">
+          <LinhaFiscal
             Icon={Briefcase}
-            label="Alterar tipo de MEI"
-            sub={LABEL_PERFIL[perfil]}
+            label="Tipo de MEI"
+            valor={LABEL_PERFIL[tipo]}
             onClick={() => setSelecionarTipo(true)}
           />
-          <FlatItem
+          <LinhaFiscal
             Icon={CalendarDays}
-            label="Alterar data de abertura do MEI"
-            sub={subAbertura}
+            label="Data de abertura"
+            valor={subAbertura}
             onClick={() => setCalendarioAberto(true)}
           />
-          <FlatItem
+        </div>
+
+        <div className="pt-6">
+          <LinhaFiscal
             Icon={Trash2}
             label="Excluir conta"
-            cor="#ef4444"
-            iconCor="#ef4444"
-            semChevron
+            perigo
             onClick={() => navigate("/excluir-conta")}
           />
-        </FlatGroup>
+        </div>
       </div>
 
       <Calendario
@@ -289,10 +311,7 @@ export default function EditarPerfil() {
         mes={mesAbertura}
         ano={anoAbertura}
         onFechar={() => setCalendarioAberto(false)}
-        onSelecionarMesAno={(m, a) => {
-          setAbertura(m, a);
-          setCalendarioAberto(false);
-        }}
+        onSelecionarMesAno={(m, a) => { setAbertura(m, a); setCalendarioAberto(false); }}
       />
 
       {menuFoto && (
@@ -335,7 +354,7 @@ export default function EditarPerfil() {
               <button
                 onClick={removerFoto}
                 className="w-full py-3.5 rounded-xl font-semibold text-sm"
-                style={{ backgroundColor: "var(--field)", color: "#ef4444" }}
+                style={{ backgroundColor: "var(--field)", color: "var(--danger)" }}
               >
                 Remover foto
               </button>
@@ -360,27 +379,21 @@ export default function EditarPerfil() {
             </h3>
             <div className="space-y-2">
               {["MEI", "MEI_CAMINHONEIRO"].map((opt) => {
-                const ativo = perfil === opt;
+                const ativo = tipo === opt;
                 return (
                   <button
                     key={opt}
                     onClick={() => escolherTipo(opt)}
                     className="w-full rounded-xl p-4 flex items-center gap-3 text-left transition"
                     style={{
-                      backgroundColor: ativo
-                        ? "var(--surface-selected)"
-                        : "var(--field)",
-                      border: "none",
+                      backgroundColor: ativo ? "var(--surface-selected)" : "var(--field)",
                       opacity: ativo ? 1 : 0.55,
                     }}
                   >
                     <div className="flex-1 min-w-0">
                       <p
                         className="text-sm"
-                        style={{
-                          color: "var(--text)",
-                          fontWeight: ativo ? 700 : 500,
-                        }}
+                        style={{ color: "var(--text)", fontWeight: ativo ? 700 : 500 }}
                       >
                         {opt === "MEI" ? "MEI" : "MEI Caminhoneiro"}
                       </p>
@@ -422,22 +435,20 @@ export default function EditarPerfil() {
             </p>
             <div className="flex gap-2">
               <button
-                onClick={() => {
-                  setConfirmarTroca(false);
-                  setPerfilPendente(null);
-                }}
+                onClick={() => { setConfirmarTroca(false); setPerfilPendente(null); }}
                 className="flex-1 py-3 rounded-xl font-semibold"
                 style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
               >
                 Cancelar
               </button>
               <button
-                onClick={confirmarAlteracao}
-                className="flex-1 py-3 rounded-xl font-semibold"
-                style={{
-                  backgroundColor: "var(--primary)",
-                  color: "var(--primary-contrast)",
+                onClick={() => {
+                  if (perfilPendente) setTipo(perfilPendente);
+                  setConfirmarTroca(false);
+                  setPerfilPendente(null);
                 }}
+                className="flex-1 py-3 rounded-xl font-semibold"
+                style={{ backgroundColor: "var(--primary)", color: "var(--primary-contrast)" }}
               >
                 Confirmar
               </button>
@@ -445,8 +456,6 @@ export default function EditarPerfil() {
           </div>
         </div>
       )}
-
-      <BottomNav />
     </div>
   );
 }
