@@ -4,7 +4,7 @@ import { Bell, Gauge, ArrowUp, TrendingUp, ChevronRight, Receipt } from "lucide-
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
-import Fisco from "../components/Fisco.jsx";
+import FiscoComBalao from "../components/FiscoComBalao.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
   LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO, FAIXAS_ORDEM, FAIXA_RANGE_LABEL,
@@ -37,30 +37,33 @@ function poseDaFaixa(faixa) {
   return "alerta";
 }
 
-/** MUD 9 — bolinhas flutuando por cima, translúcidas, sem ocupar espaço */
-function BolinhasIndicadoras({ pagina, irPara, corAtiva, flutuante }) {
+/**
+ * Bolinhas do carrossel — MESMA posição nas duas telas (absolutas).
+ * Cor SEMPRE verde: forte no card A, bem fraca no card B.
+ */
+function BolinhasIndicadoras({ pagina, irPara }) {
+  const forte = pagina === 0;
   return (
-    <div
-      className={
-        "flex items-center gap-1.5 " +
-        (flutuante ? "absolute top-3 right-4 z-10" : "")
-      }
-      style={flutuante ? { opacity: 0.55 } : undefined}
-    >
-      {[0, 1].map((i) => (
-        <button
-          key={i}
-          onClick={(e) => { e.stopPropagation(); irPara(i); }}
-          aria-label={`Ir para tela ${i + 1}`}
-          className="rounded-full transition-colors"
-          style={{
-            width: 7,
-            height: 7,
-            backgroundColor: pagina === i ? corAtiva : "var(--text-secondary)",
-            opacity: pagina === i ? 1 : 0.5,
-          }}
-        />
-      ))}
+    <div className="absolute top-4 right-5 z-20 flex items-center gap-1.5">
+      {[0, 1].map((i) => {
+        const ativa = pagina === i;
+        return (
+          <button
+            key={i}
+            onClick={(e) => { e.stopPropagation(); irPara(i); }}
+            aria-label={`Ir para tela ${i + 1}`}
+            className="rounded-full transition-all"
+            style={{
+              width: 7,
+              height: 7,
+              backgroundColor: "var(--primary)",
+              opacity: forte
+                ? (ativa ? 1 : 0.3)
+                : (ativa ? 0.4 : 0.15),
+            }}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -74,13 +77,13 @@ function TelaDetalhes({
 
   return (
     <div className="card-b-fonte-fixa w-1/2 h-full flex flex-col px-3.5 pt-3.5 pb-3.5 gap-2 overflow-hidden">
-      {/* 1 — Sua situação (clicável) — MUD 8 */}
+      {/* 1 — Sua situação (clicável) */}
       <button
         onClick={onSituacao}
         className="relative rounded-2xl pl-4 pr-3 py-3 text-left shrink-0 active:scale-[0.985] active:opacity-90 transition overflow-hidden"
         style={{
           backgroundColor: "var(--surface-raised)",
-          boxShadow: `inset 3px 0 0 0 ${corFaixa}, 0 1px 0 0 ${hexToRgba(corFaixa, 0.12)}`,
+          boxShadow: `inset 3px 0 0 0 ${corFaixa}`,
         }}
       >
         <div
@@ -91,7 +94,7 @@ function TelaDetalhes({
           }}
         />
         <div className="relative flex items-center gap-2.5">
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0" style={{ paddingRight: 42 }}>
             <p
               className="text-[9px] font-bold uppercase mb-0.5"
               style={{ color: corFaixa, letterSpacing: "0.09em" }}
@@ -317,14 +320,12 @@ function CardVelocimetroCarrossel({
     setPagina(i);
   }
 
-  // Evita disparar clique dos cards logo após um arrasto
   function seNaoArrastou(fn) {
     return () => { if (!moveu.current) fn(); };
   }
 
   const naTelaB = pagina === 1;
 
-  // MUD 9 — card externo NEUTRO nas duas telas; a cor vive no "Sua situação"
   const bgCard = {
     background:
       "linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 55%, rgba(255,255,255,0) 100%), var(--surface)",
@@ -344,7 +345,6 @@ function CardVelocimetroCarrossel({
       style={{
         ...bgCard,
         boxShadow: "var(--sombra-card)",
-        transition: "background 300ms ease, border-color 300ms ease",
         touchAction: "pan-y",
       }}
       onTouchStart={(e) => inicio(e.touches[0].clientX, e.touches[0].clientY)}
@@ -356,22 +356,18 @@ function CardVelocimetroCarrossel({
       onMouseUp={(e) => fim(e.clientX)}
       onMouseLeave={(e) => ativo.current && fim(e.clientX)}
     >
-      {/* Tela A: header normal. Tela B: bolinhas flutuando por cima. */}
-      {naTelaB ? (
-        <BolinhasIndicadoras
-          pagina={pagina}
-          irPara={irPara}
-          corAtiva={corFaixa}
-          flutuante
-        />
-      ) : (
-        <div className="flex items-center justify-between px-5 pt-3.5 pb-1 shrink-0">
-          <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            {rotuloPerfil}
-          </span>
-          <BolinhasIndicadoras pagina={pagina} irPara={irPara} corAtiva={corFaixa} />
-        </div>
-      )}
+      {/* Bolinhas: posição fixa e igual nas duas telas */}
+      <BolinhasIndicadoras pagina={pagina} irPara={irPara} />
+
+      {/* Rótulo do perfil só na tela A */}
+      <div
+        className="px-5 pt-3.5 pb-1 shrink-0"
+        style={{ height: naTelaB ? 0 : "auto", overflow: "hidden" }}
+      >
+        <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          {rotuloPerfil}
+        </span>
+      </div>
 
       <div className="flex-1 min-h-0 overflow-hidden">
         <div
@@ -529,29 +525,25 @@ export default function Dashboard() {
             onExcedente={() => navigate("/regra-vinte")}
           />
 
-          {/* MUD 7 + 16 — Fisco mais baixo, barra mais fina e melhor enquadrada */}
+          {/* Fisco colado na barra + barra translúcida */}
           <button
             onClick={() => navigate("/chat")}
-            className="shrink-0 flex items-end gap-0.5 active:opacity-90 transition mt-1"
+            className="shrink-0 flex items-end active:opacity-90 transition mt-1"
             style={{ background: "none", border: "none", padding: 0 }}
           >
-            <Fisco
-              size={124}
+            <FiscoComBalao
+              size={108}
               pose={pose}
               fala={info.palavra}
               corFala={corFaixa}
+              offsetBalao={{ x: 46, y: -2 }}
               className="shrink-0"
-              style={{ marginBottom: -8, marginLeft: -14 }}
+              style={{ marginBottom: -6, marginLeft: -8, marginRight: -6 }}
             />
 
             <span
-              className="flex-1 rounded-full pl-4 pr-1 flex items-center gap-2 text-left min-w-0"
-              style={{
-                height: 44,
-                marginBottom: 6,
-                backgroundColor: "var(--surface)",
-                border: "1px solid var(--border)",
-              }}
+              className="barra-flutuante flex-1 rounded-full pl-4 pr-1 flex items-center gap-2 text-left min-w-0"
+              style={{ height: 44, marginBottom: 8 }}
             >
               <span
                 className="flex-1 text-[13.5px] truncate"
@@ -565,7 +557,7 @@ export default function Dashboard() {
                   width: 34,
                   height: 34,
                   backgroundColor: "var(--primary)",
-                  boxShadow: "0 2px 8px rgba(34,197,94,0.32)",
+                  boxShadow: "0 2px 10px rgba(34,197,94,0.34)",
                 }}
               >
                 <ArrowUp size={17} strokeWidth={2.6} style={{ color: "var(--primary-contrast)" }} />
