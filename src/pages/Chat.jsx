@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Paperclip, Send, Sparkles } from "lucide-react";
+import { ArrowLeft, Paperclip, Sparkles } from "lucide-react";
 import Fisco from "../components/Fisco.jsx";
 import { useAppState } from "@/context/AppStateContext";
-import { faixaDoVelocimetro, FAIXA_INFO, LIMITE_PERGUNTA_CHAT } from "@/lib/fiscal";
+import {
+  faixaDoVelocimetro, FAIXA_INFO, LIMITE_PERGUNTA_CHAT, corBalaoDaFaixa,
+} from "@/lib/fiscal";
 import {
   perguntasDaFaixa, contextoFaq, textoPergunta, buscarRespostaPorTexto,
 } from "@/lib/faqFisco";
@@ -12,6 +14,15 @@ function poseDaFaixa(faixa) {
   if (faixa === "tranquilo" || faixa === "fique_de_olho") return "joinha";
   if (faixa === "atencao" || faixa === "perto_do_limite") return "ok";
   return "alerta";
+}
+
+function SetaEnviar({ tamanho = 16 }) {
+  return (
+    <svg width={tamanho} height={tamanho} viewBox="0 0 24 24" fill="none" aria-hidden style={{ display: "block" }}>
+      <path d="M12 20V5" stroke="var(--primary-contrast)" strokeWidth="3" strokeLinecap="round" />
+      <path d="M5.5 11.5L12 4.5L18.5 11.5" stroke="var(--primary-contrast)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
 }
 
 function AvatarFisco() {
@@ -39,14 +50,12 @@ export default function Chat() {
   const { tipoMEI, faturamentoAtual, limiteAtual, percentualAtual } = useAppState();
 
   const faixa = faixaDoVelocimetro(percentualAtual);
-  const corFaixa = FAIXA_INFO[faixa].cor;
+  const corBalao = corBalaoDaFaixa(faixa);
 
   const modoContextual = contexto === "situacao" || contexto === "limite";
   const pose = modoContextual ? poseDaFaixa(faixa) : "amigavel";
 
   const ctx = contextoFaq({ tipoMEI, limite: limiteAtual, faturado: faturamentoAtual });
-
-  // Cards de pergunta pronta: SÓ no chat contextual.
   const perguntas = modoContextual ? perguntasDaFaixa(faixa) : [];
 
   const [mensagens, setMensagens] = useState([]);
@@ -109,7 +118,7 @@ export default function Chat() {
       className="tela-fixa w-full flex flex-col relative overflow-hidden"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <header className="px-5 pt-5 pb-1 flex items-center gap-3 shrink-0">
+      <header className="px-5 pt-5 pb-0 flex items-center gap-3 shrink-0">
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
@@ -123,33 +132,25 @@ export default function Chat() {
       <div
         ref={listaRef}
         className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden hide-scrollbar px-5"
-        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
       >
         {vazio ? (
           <>
             {modoContextual ? (
-              <div className="flex flex-col items-center text-center">
+              /* Fisco GRANDE com balão. O SVG não tem faixa morta:
+                 o balão fica ao lado da cabeça, dentro da mesma caixa. */
+              <div className="flex justify-center pt-1 pb-1">
                 <Fisco
-                  size={150}
+                  size={300}
                   pose={pose}
                   fala={FAIXA_INFO[faixa].palavra}
-                  corFala={corFaixa}
-                  style={{ marginTop: -6, marginBottom: -6 }}
+                  corBalao={corBalao}
+                  style={{ marginLeft: -34 }}
                 />
-                <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>
-                  {titulo}
-                </h2>
-                <p
-                  className="mt-0.5 text-[13px] px-4"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  {FAIXA_INFO[faixa].resumo}
-                </p>
               </div>
             ) : (
-              /* Header do chat geral */
               <div
-                className="rounded-3xl px-5 pt-3 pb-4 flex items-center gap-3 overflow-hidden relative"
+                className="rounded-3xl px-5 pt-3 pb-4 flex items-center gap-3 overflow-hidden relative mt-1"
                 style={{
                   background:
                     "linear-gradient(150deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.03) 55%, transparent 100%), var(--surface)",
@@ -186,11 +187,22 @@ export default function Chat() {
               </div>
             )}
 
-            {/* Cards de pergunta pronta: só no contextual */}
             {modoContextual && (
               <>
+                <div className="text-center mb-3">
+                  <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>
+                    {titulo}
+                  </h2>
+                  <p
+                    className="mt-0.5 text-[13px]"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    {FAIXA_INFO[faixa].resumo}
+                  </p>
+                </div>
+
                 <p
-                  className="text-[11px] font-semibold uppercase mt-3 mb-2"
+                  className="text-[11px] font-semibold uppercase mb-2"
                   style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
                 >
                   Perguntas comuns nessa situação
@@ -287,7 +299,6 @@ export default function Chat() {
               </div>
             )}
 
-            {/* Sugestões: só no contextual */}
             {modoContextual && !digitando && mensagens.length > 0 && (
               <div className="pt-2 space-y-2">
                 <p
@@ -328,7 +339,6 @@ export default function Chat() {
         `}</style>
       </div>
 
-      {/* Barra flutuante translúcida, sem rodapé */}
       <form
         onSubmit={enviar}
         className="absolute left-0 right-0 bottom-0 px-4 pointer-events-none"
@@ -359,9 +369,8 @@ export default function Chat() {
             aria-label="Enviar"
             disabled={!texto.trim()}
             className="btn-enviar-fisco w-10 h-10 rounded-full flex items-center justify-center shrink-0 disabled:opacity-50"
-            style={{ color: "var(--primary-contrast)" }}
           >
-            <Send size={17} strokeWidth={2.4} />
+            <SetaEnviar tamanho={17} />
           </button>
         </div>
       </form>
