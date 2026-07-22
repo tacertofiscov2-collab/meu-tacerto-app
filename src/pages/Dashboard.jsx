@@ -532,13 +532,12 @@ export default function Dashboard() {
             style={{ background: "none", border: "none", padding: 0 }}
           >
             <FiscoComBalao
-              size={108}
+              size={104}
               pose={pose}
               fala={info.palavra}
               corFala={corFaixa}
-              offsetBalao={{ x: 46, y: -2 }}
               className="shrink-0"
-              style={{ marginBottom: -6, marginLeft: -8, marginRight: -6 }}
+              style={{ marginBottom: -10, marginLeft: -14, marginRight: -18 }}
             />
 
             <span
