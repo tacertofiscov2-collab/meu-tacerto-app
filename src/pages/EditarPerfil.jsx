@@ -7,7 +7,7 @@ import {
 import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
 import { useUserState } from "@/lib/userState";
-import { LIMITES_ANUAIS } from "@/lib/fiscal";
+import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 
 const FOTO_KEY = "tacerto_foto_usuario";
 
@@ -88,11 +88,6 @@ export default function EditarPerfil() {
   const cardStyle = {
     backgroundColor: "var(--surface)",
     border: "1px solid var(--border)",
-  };
-  const fieldStyle = {
-    backgroundColor: "var(--field)",
-    color: "var(--text)",
-    border: "none",
   };
 
   const subAbertura =
@@ -229,10 +224,14 @@ export default function EditarPerfil() {
             </label>
             <input
               value={nome}
+              maxLength={LIMITE_NOME_INPUT}
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
               onChange={(e) => setNome(e.target.value)}
               placeholder="Seu nome"
-              className="w-full bg-transparent text-[15px] font-semibold outline-none"
-              style={{ color: "var(--text)" }}
+              className="campo-tacerto w-full bg-transparent text-[15px] font-semibold outline-none"
+              style={{ color: "var(--text)", border: "none", boxShadow: "none" }}
             />
           </div>
 
@@ -246,14 +245,15 @@ export default function EditarPerfil() {
             >
               E-mail
             </label>
-            <input
-              value={visitante ? "" : email || ""}
-              readOnly
-              tabIndex={-1}
-              placeholder={visitante ? "Sem e-mail cadastrado" : "—"}
-              className="w-full bg-transparent text-[15px] outline-none placeholder:opacity-70"
-              style={{ color: "var(--text)", cursor: "default" }}
-            />
+            <p
+              className="w-full text-[15px] truncate"
+              style={{
+                color: visitante || !email ? "var(--text-secondary)" : "var(--text)",
+              }}
+              title={visitante ? "" : email || ""}
+            >
+              {visitante ? "Sem e-mail cadastrado" : email || "—"}
+            </p>
           </div>
         </div>
 
@@ -386,7 +386,8 @@ export default function EditarPerfil() {
                     onClick={() => escolherTipo(opt)}
                     className="w-full rounded-xl p-4 flex items-center gap-3 text-left transition"
                     style={{
-                      backgroundColor: ativo ? "var(--surface-selected)" : "var(--field)",
+                      backgroundColor: ativo ? "rgba(34,197,94,0.07)" : "var(--field)",
+                      border: ativo ? "1px solid var(--primary)" : "1px solid transparent",
                       opacity: ativo ? 1 : 0.55,
                     }}
                   >
@@ -404,7 +405,7 @@ export default function EditarPerfil() {
                         Limite anual <Valor tamanho="sm">{LIMITES_ANUAIS[opt]}</Valor>
                       </p>
                     </div>
-                    {ativo && <Check size={18} style={{ color: "var(--text)" }} />}
+                    {ativo && <Check size={18} style={{ color: "var(--primary)" }} />}
                   </button>
                 );
               })}
