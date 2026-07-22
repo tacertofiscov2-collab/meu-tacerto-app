@@ -1,15 +1,12 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, TrendingUp } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
-import { SectionTitle } from "../components/FlatList.jsx";
 
 import { useAppState } from "@/context/AppStateContext";
 import {
-  faixaDoVelocimetro,
-  FAIXA_INFO,
-  calcularFaltamOuExcedeu,
+  faixaDoVelocimetro, FAIXA_INFO, calcularFaltamOuExcedeu,
 } from "@/lib/fiscal";
 
 const MESES_ABREV = [
@@ -17,199 +14,187 @@ const MESES_ABREV = [
   "Jul", "Ago", "Set", "Out", "Nov", "Dez",
 ];
 
+function Bloco({ label, children, cor }) {
+  return (
+    <div
+      className="rounded-2xl px-4 py-3 flex-1 min-w-0"
+      style={{ backgroundColor: "var(--field)" }}
+    >
+      <p className="text-[11px]" style={{ color: cor || "var(--text-tertiary)" }}>
+        {label}
+      </p>
+      <div className="mt-1">{children}</div>
+    </div>
+  );
+}
+
 export default function ResumoPerfil() {
   const navigate = useNavigate();
   const {
-    lancamentos,
-    faturamentoAtual,
-    limiteAtual,
-    percentualAtual,
-    faturamentoDoMes,
+    lancamentos, faturamentoAtual, limiteAtual, percentualAtual,
+    faturamentoDoMes, mediaMensal, projecaoFimDoAno,
   } = useAppState();
 
   const anoCorrente = new Date().getFullYear();
 
-  // Conta TODOS os lançamentos do ano corrente (feitos em /lancar + Adicionar faturamento)
   const totalLancamentos = useMemo(
-    () =>
-      lancamentos.filter(
-        (l) => new Date(l.data).getFullYear() === anoCorrente,
-      ).length,
+    () => lancamentos.filter((l) => new Date(l.data).getFullYear() === anoCorrente).length,
     [lancamentos, anoCorrente],
   );
 
   const restante = calcularFaltamOuExcedeu(faturamentoAtual, limiteAtual);
-  const faixa = faixaDoVelocimetro(percentualAtual);
-  const corFaixa = FAIXA_INFO[faixa].cor;
+  const corFaixa = FAIXA_INFO[faixaDoVelocimetro(percentualAtual)].cor;
 
-  // Faturamento por mês (Jan → Dez do ano corrente)
   const dadosMensais = useMemo(() => {
     const arr = [];
     for (let m = 1; m <= 12; m++) {
-      arr.push({
-        mes: MESES_ABREV[m - 1],
-        valor: faturamentoDoMes(m, anoCorrente),
-      });
+      arr.push({ mes: MESES_ABREV[m - 1], valor: faturamentoDoMes(m, anoCorrente) });
     }
     return arr;
   }, [faturamentoDoMes, anoCorrente]);
 
   const maxMes = Math.max(1, ...dadosMensais.map((d) => d.valor));
-
-  const percFmt = Math.round(percentualAtual);
+  const mesAtualIdx = new Date().getMonth() + 1;
 
   return (
     <div
-      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
+      className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
+      <header className="px-5 pt-6 pb-2 flex items-center gap-3 shrink-0">
+        <button
+          onClick={() => navigate(-1)}
+          aria-label="Voltar"
+          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+          style={{ backgroundColor: "var(--field)" }}
+        >
+          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
+        </button>
+        <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
+          Resumo de {anoCorrente}
+        </h1>
+      </header>
+
       <div
-        className="flex-1 overflow-y-auto"
-        style={{ paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
+        className="conteudo-rolavel hide-scrollbar px-5"
+        style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
       >
-        <header className="px-5 pt-6 pb-4 flex items-center gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            aria-label="Voltar"
-            className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
-            style={{ backgroundColor: "var(--field)" }}
+        <p
+          className="text-[12px] font-semibold uppercase mt-3 mb-2"
+          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
+        >
+          Este ano
+        </p>
+
+        <div className="flex gap-2.5">
+          <Bloco label="Faturado">
+            <Valor tamanho="lg" autoAjustar>{faturamentoAtual}</Valor>
+          </Bloco>
+          <Bloco label="Limite">
+            <Valor tamanho="lg" autoAjustar>{limiteAtual}</Valor>
+          </Bloco>
+        </div>
+
+        <div className="flex gap-2.5 mt-2.5">
+          <Bloco
+            label={restante.tipo === "excedeu" ? "Excedeu" : "Faltam"}
+            cor={restante.tipo === "excedeu" ? "var(--danger)" : undefined}
           >
-            <ArrowLeft size={20} style={{ color: "var(--text)" }} />
-          </button>
-          <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-            Resumo de {anoCorrente}
-          </h1>
-        </header>
-
-        <div className="px-5">
-          {/* Bloco superior — flat estilo Pierre */}
-          <SectionTitle className="mt-2">Este ano</SectionTitle>
-
-          {/* Faturado + % lado a lado */}
-          <div className="grid grid-cols-2 gap-4 pt-1">
-            <div>
-              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                Faturado
-              </p>
-              <div className="mt-1">
-                <Valor tamanho="lg" autoAjustar>
-                  {faturamentoAtual}
-                </Valor>
-              </div>
-            </div>
-            <div>
-              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                Do limite
-              </p>
-              <p
-                className="mt-1 font-bold"
-                style={{ color: corFaixa, fontSize: "1.5rem", lineHeight: 1.1 }}
-              >
-                {percFmt}%
-              </p>
-            </div>
-          </div>
-
-          {/* Limite + Faltam/Excedeu */}
-          <div className="grid grid-cols-2 gap-4 pt-5">
-            <div>
-              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                Limite
-              </p>
-              <div className="mt-1">
-                <Valor tamanho="md" autoAjustar>{limiteAtual}</Valor>
-              </div>
-            </div>
-            <div>
-              <p
-                className="text-xs"
-                style={{
-                  color:
-                    restante.tipo === "excedeu"
-                      ? "#ef4444"
-                      : "var(--text-secondary)",
-                }}
-              >
-                {restante.tipo === "excedeu" ? "Excedeu" : "Faltam"}
-              </p>
-              <div className="mt-1">
-                <Valor
-                  tamanho="md"
-                  autoAjustar
-                  cor={restante.tipo === "excedeu" ? "#ef4444" : undefined}
-                >
-                  {restante.valor}
-                </Valor>
-              </div>
-            </div>
-          </div>
-
-          {/* Total de lançamentos — discreto */}
-          <div className="pt-5">
-            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-              Total de lançamentos no ano
-            </p>
-            <p className="mt-1 text-lg font-bold" style={{ color: "var(--text)" }}>
+            <Valor
+              tamanho="md"
+              autoAjustar
+              cor={restante.tipo === "excedeu" ? "var(--danger)" : undefined}
+            >
+              {restante.valor}
+            </Valor>
+          </Bloco>
+          <Bloco label="Lançamentos">
+            <p className="text-[1rem] font-semibold" style={{ color: "var(--text)" }}>
               {totalLancamentos}
             </p>
+          </Bloco>
+        </div>
+
+        <p
+          className="text-[12px] font-semibold uppercase mt-6 mb-2"
+          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
+        >
+          Seu ritmo
+        </p>
+
+        <div
+          className="rounded-2xl px-4 py-3.5"
+          style={{ backgroundColor: "var(--field)" }}
+        >
+          <div className="flex items-center gap-2 mb-2.5">
+            <TrendingUp size={16} style={{ color: "var(--primary)" }} />
+            <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+              Com base nos meses em que você lançou
+            </span>
           </div>
-
-          {/* Gráfico de barras por mês */}
-          <SectionTitle className="mt-8">Por mês</SectionTitle>
-
+          <div className="flex items-baseline justify-between gap-3 mb-2">
+            <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
+              Média por mês
+            </span>
+            <Valor tamanho="md" autoAjustar>{mediaMensal}</Valor>
+          </div>
           <div
-            className="pt-3"
-            style={{
-              borderTop: "1px solid var(--border)",
-              opacity: 1,
-            }}
+            className="flex items-baseline justify-between gap-3 pt-2"
+            style={{ borderTop: "1px solid var(--border)" }}
           >
-            <div
-              className="flex items-end justify-between gap-1"
-              style={{ height: 160 }}
-              role="img"
-              aria-label="Faturamento mês a mês"
-            >
-              {dadosMensais.map((d) => {
-                const altura = d.valor > 0 ? (d.valor / maxMes) * 140 : 0;
-                const mesAtualIdx = new Date().getMonth() + 1;
-                const idxMes = MESES_ABREV.indexOf(d.mes) + 1;
-                const isFuturo = idxMes > mesAtualIdx;
-                const cor = isFuturo
-                  ? "var(--border)"
-                  : d.valor > 0
-                    ? "var(--primary)"
-                    : "var(--field)";
-                return (
+            <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
+              Fecha o ano em
+            </span>
+            <Valor tamanho="md" autoAjustar cor={corFaixa}>{projecaoFimDoAno}</Valor>
+          </div>
+        </div>
+
+        <p
+          className="text-[12px] font-semibold uppercase mt-6 mb-3"
+          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
+        >
+          Por mês
+        </p>
+
+        <div
+          className="rounded-2xl px-3 pt-4 pb-3"
+          style={{ backgroundColor: "var(--field)" }}
+        >
+          <div
+            className="flex items-end justify-between gap-1"
+            style={{ height: 150 }}
+            role="img"
+            aria-label="Faturamento mês a mês"
+          >
+            {dadosMensais.map((d, i) => {
+              const altura = d.valor > 0 ? (d.valor / maxMes) * 128 : 0;
+              const isFuturo = i + 1 > mesAtualIdx;
+              const cor = isFuturo
+                ? "var(--border)"
+                : d.valor > 0
+                  ? "var(--primary)"
+                  : "var(--surface)";
+              return (
+                <div
+                  key={d.mes}
+                  className="flex-1 flex flex-col items-center justify-end gap-1.5"
+                  style={{ minWidth: 0 }}
+                >
                   <div
-                    key={d.mes}
-                    className="flex-1 flex flex-col items-center justify-end gap-1.5"
-                    style={{ minWidth: 0 }}
-                  >
-                    <div
-                      className="w-full rounded-t-md"
-                      style={{
-                        height: Math.max(altura, d.valor > 0 ? 4 : 2),
-                        backgroundColor: cor,
-                        opacity: isFuturo ? 0.4 : 1,
-                        transition: "height 400ms ease-out",
-                      }}
-                      title={
-                        d.valor > 0
-                          ? `${d.mes}: R$ ${d.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-                          : `${d.mes}: sem lançamentos`
-                      }
-                    />
-                    <span
-                      className="text-[10px]"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      {d.mes}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+                    className="w-full rounded-t-md"
+                    style={{
+                      height: Math.max(altura, d.valor > 0 ? 4 : 3),
+                      backgroundColor: cor,
+                      opacity: isFuturo ? 0.35 : 1,
+                      transition: "height 400ms ease-out",
+                    }}
+                  />
+                  <span className="text-[9px]" style={{ color: "var(--text-tertiary)" }}>
+                    {d.mes}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
