@@ -1,0 +1,67 @@
+﻿=== COMMITS ===
+c868352 feat: chat do Fisco com FAQ contextual e efeito digitando
+68dd8b5 feat: base de FAQ do Fisco por faixa e geral
+bac7ca5 feat: tela explicando a regra dos 20% com o Fisco
+b200346 feat: velocimetro trava em 100% com badge de excedente clicavel
+5d09096 feat: Fisco com balao de fala estilo desenho animado
+cd6e806 style: resumo do ano enquadrado, media mensal em destaque
+9852ae4 style: historico no padrao Preferencias, busca fora da barra
+d1b16d0 style: editar perfil redesenhado, estavel nos 3 tamanhos de fonte
+8e0fec1 style: perfil com texto mais forte e menos espaco vazio
+6bd16fb fix: onboarding com telas fixas, fonte padrao e layout estavel
+3ad37d0 fix: tela de boas-vindas sem rolagem
+1374995 feat: cards mais acesos, classes de tela fixa e rolavel
+603c2f9 feat: vocabulario por tipo de MEI, palavra da faixa e excedente
+fde6bc9 feat: onboarding revisado (sem emojis, botoes pill, selecao clara)
+0cacb7a feat: calendario aceita data minima (minISO)
+f528eae feat: regra de data minima no lancamento conforme abertura do MEI
+05deaa0 feat: historico usa SeletorMesAno em pills
+032a466 feat: componente SeletorMesAno reutilizavel
+aad0065 fix: chat sem corte no topo, Fisco reage igual ao dashboard
+1fa7ef2 feat: dashboard com tela B informativa e balao compacto do Fisco
+
+=== STATUS ===
+
+=== ARQUIVOS ===
+src\lib\fiscal.js                           5865 b  21/07/2026 22:22:05
+src\lib\userState.js                        3939 b  21/07/2026 17:36:53
+src\lib\faqFisco.js                        15468 b  21/07/2026 22:38:53
+src\context\AppStateContext.jsx            11649 b  21/07/2026 17:38:04
+src\components\Fisco.jsx                   10346 b  21/07/2026 22:33:21
+src\components\VelocimetroAnimado.jsx       5527 b  21/07/2026 22:35:13
+src\components\Calendario.jsx              10831 b  21/07/2026 18:14:06
+src\components\SeletorMesAno.jsx            5485 b  21/07/2026 18:09:50
+src\components\BottomNav.jsx                4608 b  20/07/2026 23:15:11
+src\components\SwipeBack.jsx                5808 b  20/07/2026 23:13:32
+src\pages\Welcome.jsx                       5139 b  21/07/2026 22:24:08
+src\pages\Onboarding.jsx                   14513 b  21/07/2026 22:25:33
+src\pages\Dashboard.jsx                    15927 b  21/07/2026 18:04:17
+src\pages\Chat.jsx                         11149 b  21/07/2026 22:39:53
+src\pages\RegraVinte.jsx                    9541 b  21/07/2026 22:37:22
+src\pages\Perfil.jsx                       12608 b  21/07/2026 22:26:25
+src\pages\EditarPerfil.jsx                 16186 b  21/07/2026 22:27:59
+src\pages\Preferencias.jsx                 11554 b  21/07/2026 17:39:33
+src\pages\Historico.jsx                    12404 b  21/07/2026 22:28:51
+src\pages\ResumoPerfil.jsx                  7094 b  21/07/2026 22:29:37
+src\pages\Lancar.jsx                       13287 b  21/07/2026 18:12:48
+src\index.css                               1928 b  21/07/2026 22:23:17
+src\main.jsx                                1020 b  20/07/2026 23:20:33
+src\App.jsx                                 4172 b  19/07/2026 13:00:42
+
+=== MARCADORES ===
+OK      src\lib\fiscal.js -> excedenteAcimaDoLimite
+OK      src\lib\fiscal.js -> VOCAB
+OK      src\lib\faqFisco.js -> perguntasDaFaixa
+OK      src\components\Fisco.jsx -> fala
+OK      src\components\VelocimetroAnimado.jsx -> onClickExcedente
+OK      src\pages\Chat.jsx -> digitando
+OK      src\pages\RegraVinte.jsx -> tetoDos20
+OK      src\index.css -> tela-fixa
+OK      src\index.css -> surface-raised
+OK      src\pages\Welcome.jsx -> tela-fixa
+OK      src\pages\Onboarding.jsx -> font-medium
+OK      src\pages\Perfil.jsx -> Secao
+FALTA   src\pages\Historico.jsx -> Periodo exibido
+OK      src\pages\EditarPerfil.jsx -> LinhaFiscal
+OK      src\pages\ResumoPerfil.jsx -> Seu ritmo
+

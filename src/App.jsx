@@ -26,6 +26,7 @@ import EditarPerfil from "./pages/EditarPerfil.jsx";
 import ResumoPerfil from "./pages/ResumoPerfil.jsx";
 import InformacoesFiscais from "./pages/InformacoesFiscais.jsx";
 import Chat from "./pages/Chat.jsx";
+import RegraVinte from "./pages/RegraVinte.jsx";
 import DevSimulador from "./pages/DevSimulador.jsx";
 import AdicionarFaturamento from "./pages/AdicionarFaturamento.jsx";
 import AdicionarFaturamentoDigitar from "./pages/AdicionarFaturamentoDigitar.jsx";
@@ -60,6 +61,7 @@ export default function App() {
         <Route path="/perfil/resumo" element={<ResumoPerfil />} />
         <Route path="/perfil/informacoes-fiscais" element={<InformacoesFiscais />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/regra-vinte" element={<RegraVinte />} />
         <Route path="/dev/simulador" element={<DevSimulador />} />
         <Route path="/excluir-conta" element={<ExcluirConta />} />
         <Route path="/adicionar-faturamento" element={<AdicionarFaturamento />} />
