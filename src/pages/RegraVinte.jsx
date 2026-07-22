@@ -1,0 +1,241 @@
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, MessageCircle } from "lucide-react";
+import Fisco from "../components/Fisco.jsx";
+import Valor from "../components/Valor.jsx";
+import { useAppState } from "@/context/AppStateContext";
+import {
+  LIMITES_ANUAIS, limiteAte20Percent, excedenteAcimaDoLimite, vocab,
+} from "@/lib/fiscal";
+
+export default function RegraVinte() {
+  const navigate = useNavigate();
+  const { tipoMEI, faturamentoAtual, limiteAtual } = useAppState();
+
+  const v = vocab(tipoMEI);
+  const excedente = excedenteAcimaDoLimite(faturamentoAtual, limiteAtual);
+  const tetoDos20 = limiteAte20Percent(tipoMEI);
+  const limiteCheio = LIMITES_ANUAIS[tipoMEI];
+  const passouDos20 = excedente && !excedente.dentroDos20;
+  const cor = passouDos20 ? "#dc2626" : "#ef4444";
+  const anoAtual = new Date().getFullYear();
+
+  const passos = passouDos20
+    ? [
+        {
+          titulo: "Procure um contador agora",
+          texto: `Como você passou de ${Math.round(excedente.percentualExcesso)}% do limite, o desenquadramento é retroativo a 1º de janeiro de ${anoAtual}. Um contador vai recalcular seus impostos do ano como Microempresa.`,
+        },
+        {
+          titulo: "Faça o desenquadramento no Portal do Simples",
+          texto: "O pedido é feito pelo próprio empreendedor, no Portal do Simples Nacional. O contador te ajuda a escolher o motivo correto.",
+        },
+        {
+          titulo: "Separe uma reserva",
+          texto: "Vão existir guias de impostos do ano inteiro, com multa e juros. Quanto antes regularizar, menor o acúmulo.",
+        },
+        {
+          titulo: `Continue registrando ${v.receitaPlural}`,
+          texto: "Mesmo desenquadrado, manter o controle facilita muito a vida do contador e evita pagar imposto a mais.",
+        },
+      ]
+    : [
+        {
+          titulo: `Você continua MEI até 31 de dezembro de ${anoAtual}`,
+          texto: "Passar do limite não te tira do MEI na hora. Você segue pagando o DAS normalmente até o fim do ano.",
+        },
+        {
+          titulo: "Em janeiro, você vira Microempresa",
+          texto: `A partir de 1º de janeiro de ${anoAtual + 1} sua empresa passa a ser ME automaticamente. Vale procurar um contador antes disso pra se organizar.`,
+        },
+        {
+          titulo: "Vai ter um DAS complementar",
+          texto: "Na declaração anual (DASN-SIMEI), o sistema gera uma guia extra sobre o valor que passou do limite. É pago uma vez só.",
+        },
+        {
+          titulo: "Cuidado pra não passar dos 20%",
+          texto: `Se o total do ano passar de ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(tetoDos20)}, a regra muda completamente: o desenquadramento vira retroativo, com multa e juros.`,
+        },
+      ];
+
+  return (
+    <div
+      className="tela-rolavel w-full flex flex-col"
+      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
+    >
+      <header className="px-5 pt-6 pb-2 flex items-center gap-3 shrink-0">
+        <button
+          onClick={() => navigate(-1)}
+          aria-label="Voltar"
+          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+          style={{ backgroundColor: "var(--field)" }}
+        >
+          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
+        </button>
+        <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
+          Passou do limite
+        </h1>
+      </header>
+
+      <div
+        className="conteudo-rolavel hide-scrollbar px-5"
+        style={{ paddingBottom: "calc(40px + env(safe-area-inset-bottom))" }}
+      >
+        <div className="flex flex-col items-center pt-1 pb-2">
+          <Fisco
+            size={168}
+            pose="alerta"
+            fala={passouDos20 ? "Atenção!" : "Calma!"}
+            corFala={cor}
+          />
+        </div>
+
+        {/* Situação em números */}
+        <div
+          className="rounded-2xl px-4 py-3.5"
+          style={{
+            backgroundColor: `${cor}14`,
+            border: `1px solid ${cor}44`,
+          }}
+        >
+          <p
+            className="text-[11px] font-semibold uppercase mb-2.5"
+            style={{ color: cor, letterSpacing: "0.06em" }}
+          >
+            Sua situação hoje
+          </p>
+          <div className="flex items-baseline justify-between gap-3 mb-1.5">
+            <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
+              Você faturou
+            </span>
+            <Valor tamanho="md" autoAjustar>{faturamentoAtual}</Valor>
+          </div>
+          <div className="flex items-baseline justify-between gap-3 mb-1.5">
+            <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
+              Seu limite
+            </span>
+            <Valor tamanho="md" autoAjustar>{limiteAtual}</Valor>
+          </div>
+          <div
+            className="flex items-baseline justify-between gap-3 pt-2"
+            style={{ borderTop: `1px solid ${cor}33` }}
+          >
+            <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
+              Passou
+            </span>
+            <Valor tamanho="md" autoAjustar cor={cor}>
+              {excedente?.valor || 0}
+            </Valor>
+          </div>
+        </div>
+
+        {/* Explicação da régua */}
+        <div
+          className="rounded-2xl px-4 py-3.5 mt-2.5"
+          style={{ backgroundColor: "var(--field)" }}
+        >
+          <p
+            className="text-[11px] font-semibold uppercase mb-2"
+            style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
+          >
+            Como a lei enxerga
+          </p>
+          <div className="space-y-2.5">
+            <div className="flex items-start gap-2.5">
+              <span
+                className="rounded-full shrink-0 mt-1.5"
+                style={{ width: 8, height: 8, backgroundColor: "#ef4444" }}
+              />
+              <p className="text-[13px] leading-snug" style={{ color: "var(--text)" }}>
+                Até <Valor tamanho="sm">{tetoDos20}</Valor> (20% acima): continua MEI até
+                dezembro e paga uma guia complementar.
+              </p>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <span
+                className="rounded-full shrink-0 mt-1.5"
+                style={{ width: 8, height: 8, backgroundColor: "#dc2626" }}
+              />
+              <p className="text-[13px] leading-snug" style={{ color: "var(--text)" }}>
+                Acima disso: deixa de ser MEI desde janeiro deste ano, com recálculo de
+                impostos, multa e juros.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Passos */}
+        <p
+          className="text-[12px] font-semibold uppercase mt-6 mb-2"
+          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
+        >
+          O que fazer agora
+        </p>
+
+        <div className="space-y-2">
+          {passos.map((p, i) => (
+            <div
+              key={i}
+              className="rounded-2xl px-4 py-3.5 flex gap-3"
+              style={{ backgroundColor: "var(--field)" }}
+            >
+              <span
+                className="rounded-full flex items-center justify-center shrink-0"
+                style={{
+                  width: 26,
+                  height: 26,
+                  backgroundColor: `${cor}22`,
+                  color: cor,
+                  fontSize: 13,
+                  fontWeight: 800,
+                }}
+              >
+                {i + 1}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p
+                  className="text-[14px] font-semibold leading-snug"
+                  style={{ color: "var(--text)" }}
+                >
+                  {p.titulo}
+                </p>
+                <p
+                  className="text-[13px] leading-relaxed mt-1"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {p.texto}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={() => navigate("/chat?contexto=limite")}
+          className="w-full rounded-2xl px-4 py-3.5 flex items-center gap-3 mt-3 active:opacity-80"
+          style={{ backgroundColor: "var(--field)" }}
+        >
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+            style={{ backgroundColor: "var(--surface)" }}
+          >
+            <MessageCircle size={18} style={{ color: "var(--primary)" }} />
+          </div>
+          <span
+            className="flex-1 text-[15px] font-semibold text-left"
+            style={{ color: "var(--text)" }}
+          >
+            Tirar dúvidas com o Fisco
+          </span>
+        </button>
+
+        <p
+          className="text-[11px] leading-relaxed text-center mt-4 px-2"
+          style={{ color: "var(--text-tertiary)" }}
+        >
+          O TaCerto! é parceiro do seu contador, não substituto. As informações acima são
+          baseadas no que você registrou no app e servem como orientação geral.
+        </p>
+      </div>
+    </div>
+  );
+}
