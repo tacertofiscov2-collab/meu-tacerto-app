@@ -8,6 +8,7 @@ import Fisco from "../components/Fisco.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
   LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO, FAIXAS_ORDEM, FAIXA_RANGE_LABEL,
+  truncarNome,
 } from "@/lib/fiscal";
 
 const MESES_CURTO = [
@@ -36,9 +37,16 @@ function poseDaFaixa(faixa) {
   return "alerta";
 }
 
-function BolinhasIndicadoras({ pagina, irPara, corAtiva }) {
+/** MUD 9 — bolinhas flutuando por cima, translúcidas, sem ocupar espaço */
+function BolinhasIndicadoras({ pagina, irPara, corAtiva, flutuante }) {
   return (
-    <div className="flex items-center gap-1.5">
+    <div
+      className={
+        "flex items-center gap-1.5 " +
+        (flutuante ? "absolute top-3 right-4 z-10" : "")
+      }
+      style={flutuante ? { opacity: 0.55 } : undefined}
+    >
       {[0, 1].map((i) => (
         <button
           key={i}
@@ -46,10 +54,10 @@ function BolinhasIndicadoras({ pagina, irPara, corAtiva }) {
           aria-label={`Ir para tela ${i + 1}`}
           className="rounded-full transition-colors"
           style={{
-            width: 8,
-            height: 8,
+            width: 7,
+            height: 7,
             backgroundColor: pagina === i ? corAtiva : "var(--text-secondary)",
-            opacity: pagina === i ? 1 : 0.55,
+            opacity: pagina === i ? 1 : 0.5,
           }}
         />
       ))}
@@ -65,35 +73,49 @@ function TelaDetalhes({
   const temLancamento = ultimos.length > 0;
 
   return (
-    <div className="w-1/2 h-full flex flex-col px-3.5 pb-3.5 pt-1 gap-2 overflow-hidden">
-      {/* 1 — Sua situação (clicável) */}
+    <div className="card-b-fonte-fixa w-1/2 h-full flex flex-col px-3.5 pt-3.5 pb-3.5 gap-2 overflow-hidden">
+      {/* 1 — Sua situação (clicável) — MUD 8 */}
       <button
         onClick={onSituacao}
-        className="rounded-2xl px-4 py-3 text-left shrink-0 active:opacity-80 transition"
+        className="relative rounded-2xl pl-4 pr-3 py-3 text-left shrink-0 active:scale-[0.985] active:opacity-90 transition overflow-hidden"
         style={{
-          backgroundColor: hexToRgba(corFaixa, 0.16),
-          border: `1px solid ${hexToRgba(corFaixa, 0.38)}`,
+          backgroundColor: "var(--surface-raised)",
+          boxShadow: `inset 3px 0 0 0 ${corFaixa}, 0 1px 0 0 ${hexToRgba(corFaixa, 0.12)}`,
         }}
       >
-        <div className="flex items-center gap-2 mb-1">
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `linear-gradient(100deg, ${hexToRgba(corFaixa, 0.14)} 0%, ${hexToRgba(corFaixa, 0.03)} 60%, transparent 100%)`,
+          }}
+        />
+        <div className="relative flex items-center gap-2.5">
+          <div className="flex-1 min-w-0">
+            <p
+              className="text-[9px] font-bold uppercase mb-0.5"
+              style={{ color: corFaixa, letterSpacing: "0.09em" }}
+            >
+              Sua situação
+            </p>
+            <p
+              className="text-[13.5px] leading-snug font-semibold"
+              style={{ color: "var(--text)" }}
+            >
+              {info.resumo}
+            </p>
+          </div>
           <span
-            className="rounded-full shrink-0"
-            style={{ width: 7, height: 7, backgroundColor: corFaixa }}
-          />
-          <p
-            className="text-[10px] font-bold uppercase flex-1"
-            style={{ color: corFaixa, letterSpacing: "0.07em" }}
+            className="rounded-full flex items-center justify-center shrink-0"
+            style={{
+              width: 26,
+              height: 26,
+              backgroundColor: hexToRgba(corFaixa, 0.16),
+            }}
           >
-            Sua situação
-          </p>
-          <ChevronRight size={15} style={{ color: corFaixa }} className="shrink-0" />
+            <ChevronRight size={15} strokeWidth={2.6} style={{ color: corFaixa }} />
+          </span>
         </div>
-        <p
-          className="text-[14px] leading-snug font-medium"
-          style={{ color: "var(--text)" }}
-        >
-          {info.resumo}
-        </p>
       </button>
 
       {/* 2 — Últimos lançamentos */}
@@ -104,22 +126,22 @@ function TelaDetalhes({
           style={{ backgroundColor: "var(--surface-raised)" }}
         >
           <div className="flex items-center gap-2 mb-1.5">
-            <Receipt size={13} style={{ color: "var(--primary)" }} />
+            <Receipt size={12} style={{ color: "var(--text-tertiary)" }} />
             <p
-              className="text-[10px] font-bold uppercase flex-1"
-              style={{ color: "var(--text-secondary)", letterSpacing: "0.07em" }}
+              className="text-[9px] font-bold uppercase flex-1"
+              style={{ color: "var(--text-secondary)", letterSpacing: "0.09em" }}
             >
               Últimos lançamentos
             </p>
-            <ChevronRight size={15} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+            <ChevronRight size={14} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {ultimos.map((l) => {
               const d = new Date(l.data);
               return (
                 <div key={l.id} className="flex items-baseline justify-between gap-2">
                   <span
-                    className="text-[12px] truncate"
+                    className="text-[11.5px] truncate"
                     style={{ color: "var(--text-secondary)" }}
                   >
                     {`${String(d.getDate()).padStart(2, "0")} ${MESES_CURTO[d.getMonth()]}`}
@@ -135,8 +157,8 @@ function TelaDetalhes({
           className="rounded-2xl px-4 py-3 shrink-0 flex items-center gap-2.5"
           style={{ backgroundColor: "var(--surface-raised)" }}
         >
-          <Receipt size={15} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
-          <p className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
+          <Receipt size={14} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+          <p className="text-[12.5px]" style={{ color: "var(--text-secondary)" }}>
             Nenhum lançamento ainda
           </p>
         </div>
@@ -147,23 +169,23 @@ function TelaDetalhes({
         className="rounded-2xl px-4 py-2.5 shrink-0"
         style={{ backgroundColor: "var(--surface-raised)" }}
       >
-        <div className="flex items-center gap-2 mb-1.5">
-          <TrendingUp size={13} style={{ color: "var(--primary)" }} />
+        <div className="flex items-center gap-2 mb-1">
+          <TrendingUp size={12} style={{ color: "var(--text-tertiary)" }} />
           <p
-            className="text-[10px] font-bold uppercase"
-            style={{ color: "var(--text-secondary)", letterSpacing: "0.07em" }}
+            className="text-[9px] font-bold uppercase"
+            style={{ color: "var(--text-secondary)", letterSpacing: "0.09em" }}
           >
             Seu ritmo
           </p>
         </div>
         <div className="flex items-baseline justify-between gap-2 mb-0.5">
-          <span className="text-[12px]" style={{ color: "var(--text-secondary)" }}>
+          <span className="text-[11.5px]" style={{ color: "var(--text-secondary)" }}>
             Média por mês
           </span>
           <Valor tamanho="sm" autoAjustar>{mediaMensal}</Valor>
         </div>
         <div className="flex items-baseline justify-between gap-2">
-          <span className="text-[12px]" style={{ color: "var(--text-secondary)" }}>
+          <span className="text-[11.5px]" style={{ color: "var(--text-secondary)" }}>
             Fecha o ano em
           </span>
           <Valor tamanho="sm" autoAjustar cor={corFaixa}>{projecao}</Valor>
@@ -172,16 +194,16 @@ function TelaDetalhes({
 
       {/* 4 — Faixas de risco (fixa, não clicável) */}
       <div
-        className="rounded-2xl px-4 py-2.5 shrink-0 mt-auto"
+        className="rounded-2xl px-4 pt-2.5 pb-3 shrink-0 mt-auto"
         style={{ backgroundColor: "var(--surface-raised)" }}
       >
         <p
-          className="text-[10px] font-bold uppercase mb-1.5"
-          style={{ color: "var(--text-secondary)", letterSpacing: "0.07em" }}
+          className="text-[9px] font-bold uppercase mb-1.5"
+          style={{ color: "var(--text-secondary)", letterSpacing: "0.09em" }}
         >
           Faixas de risco
         </p>
-        <div className="flex rounded-full overflow-hidden mb-1.5" style={{ height: 6 }}>
+        <div className="flex rounded-full overflow-hidden mb-1.5" style={{ height: 5 }}>
           {FAIXAS_ORDEM.map((f) => (
             <div
               key={f}
@@ -197,7 +219,7 @@ function TelaDetalhes({
           {FAIXAS_ORDEM.map((f) => (
             <span
               key={f}
-              className="text-[8px] leading-none"
+              className="text-[7.5px] leading-none"
               style={{
                 color: f === faixaAtiva ? FAIXA_INFO[f].cor : "var(--text-tertiary)",
                 fontWeight: f === faixaAtiva ? 800 : 500,
@@ -301,16 +323,13 @@ function CardVelocimetroCarrossel({
   }
 
   const naTelaB = pagina === 1;
-  const bgCard = naTelaB
-    ? {
-        background: `linear-gradient(160deg, ${hexToRgba(corFaixa, 0.16)} 0%, ${hexToRgba(corFaixa, 0.07)} 55%, ${hexToRgba(corFaixa, 0.03)} 100%), var(--surface)`,
-        border: `1px solid ${hexToRgba(corFaixa, 0.3)}`,
-      }
-    : {
-        background:
-          "linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 55%, rgba(255,255,255,0) 100%), var(--surface)",
-        border: "1px solid var(--border)",
-      };
+
+  // MUD 9 — card externo NEUTRO nas duas telas; a cor vive no "Sua situação"
+  const bgCard = {
+    background:
+      "linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 55%, rgba(255,255,255,0) 100%), var(--surface)",
+    border: "1px solid var(--border)",
+  };
 
   const larg = largura();
   const basePct = pagina === 0 ? 0 : -50;
@@ -337,18 +356,22 @@ function CardVelocimetroCarrossel({
       onMouseUp={(e) => fim(e.clientX)}
       onMouseLeave={(e) => ativo.current && fim(e.clientX)}
     >
-      <div className="flex items-center justify-between px-5 pt-3.5 pb-1 shrink-0">
-        <span
-          className="text-sm"
-          style={{
-            color: "var(--text-secondary)",
-            visibility: naTelaB ? "hidden" : "visible",
-          }}
-        >
-          {rotuloPerfil}
-        </span>
-        <BolinhasIndicadoras pagina={pagina} irPara={irPara} corAtiva={corFaixa} />
-      </div>
+      {/* Tela A: header normal. Tela B: bolinhas flutuando por cima. */}
+      {naTelaB ? (
+        <BolinhasIndicadoras
+          pagina={pagina}
+          irPara={irPara}
+          corAtiva={corFaixa}
+          flutuante
+        />
+      ) : (
+        <div className="flex items-center justify-between px-5 pt-3.5 pb-1 shrink-0">
+          <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+            {rotuloPerfil}
+          </span>
+          <BolinhasIndicadoras pagina={pagina} irPara={irPara} corAtiva={corFaixa} />
+        </div>
+      )}
 
       <div className="flex-1 min-h-0 overflow-hidden">
         <div
@@ -449,7 +472,7 @@ export default function Dashboard() {
         style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
       >
         <header className="px-5 pt-4 pb-1 flex items-start justify-between shrink-0">
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2.5">
               <Gauge size={30} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
               <span
@@ -459,7 +482,7 @@ export default function Dashboard() {
                 Ta<span style={{ color: "var(--primary)" }}>Certo!</span>
               </span>
             </div>
-            <div className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+            <div className="text-sm mt-1 truncate" style={{ color: "var(--text-secondary)" }}>
               {saudacao}
               {nome ? " " : "!"}
               {nome && (
@@ -467,7 +490,7 @@ export default function Dashboard() {
                   className="text-base font-semibold"
                   style={{ color: "var(--text)" }}
                 >
-                  {nome}
+                  {truncarNome(nome)}
                 </span>
               )}
             </div>
@@ -491,7 +514,7 @@ export default function Dashboard() {
           </button>
         </header>
 
-        <div className="px-5 pt-2 flex-1 flex flex-col gap-1 min-h-0">
+        <div className="px-5 pt-2 flex-1 flex flex-col min-h-0">
           <CardVelocimetroCarrossel
             rotuloPerfil={rotuloPerfil}
             percentual={percentualAtual}
@@ -506,37 +529,46 @@ export default function Dashboard() {
             onExcedente={() => navigate("/regra-vinte")}
           />
 
+          {/* MUD 7 + 16 — Fisco mais baixo, barra mais fina e melhor enquadrada */}
           <button
             onClick={() => navigate("/chat")}
-            className="shrink-0 flex items-end gap-1 active:opacity-90 transition"
+            className="shrink-0 flex items-end gap-0.5 active:opacity-90 transition mt-1"
             style={{ background: "none", border: "none", padding: 0 }}
           >
             <Fisco
-              size={96}
+              size={124}
               pose={pose}
               fala={info.palavra}
               corFala={corFaixa}
               className="shrink-0"
+              style={{ marginBottom: -8, marginLeft: -14 }}
             />
 
             <span
-              className="flex-1 rounded-full px-4 py-3 flex items-center gap-2 text-left mb-3 min-w-0"
+              className="flex-1 rounded-full pl-4 pr-1 flex items-center gap-2 text-left min-w-0"
               style={{
+                height: 44,
+                marginBottom: 6,
                 backgroundColor: "var(--surface)",
                 border: "1px solid var(--border)",
               }}
             >
               <span
-                className="flex-1 text-sm truncate"
+                className="flex-1 text-[13.5px] truncate"
                 style={{ color: "var(--text-secondary)" }}
               >
                 Pergunte ao Fisco...
               </span>
               <span
                 className="rounded-full flex items-center justify-center shrink-0"
-                style={{ width: 32, height: 32, backgroundColor: "var(--primary)" }}
+                style={{
+                  width: 34,
+                  height: 34,
+                  backgroundColor: "var(--primary)",
+                  boxShadow: "0 2px 8px rgba(34,197,94,0.32)",
+                }}
               >
-                <ArrowUp size={17} style={{ color: "var(--primary-contrast)" }} />
+                <ArrowUp size={17} strokeWidth={2.6} style={{ color: "var(--primary-contrast)" }} />
               </span>
             </span>
           </button>
