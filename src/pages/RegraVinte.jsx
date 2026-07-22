@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import FiscoComBalao from "../components/FiscoComBalao.jsx";
+import Fisco from "../components/Fisco.jsx";
 import Valor from "../components/Valor.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
@@ -77,12 +77,12 @@ export default function RegraVinte() {
       </header>
 
       <div
-        className="conteudo-rolavel hide-scrollbar px-5"
+        className="conteudo-rolavel hide-scrollbar px-5 overflow-x-hidden"
         style={{ paddingBottom: "calc(40px + env(safe-area-inset-bottom))" }}
       >
         <div className="flex flex-col items-center pt-1 pb-2">
-          <FiscoComBalao
-            size={172}
+          <Fisco
+            size={190}
             pose="alerta"
             fala={passouDos20 ? "Atenção!" : "Calma!"}
             corFala={cor}
