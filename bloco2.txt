@@ -1,0 +1,796 @@
+﻿
+
+========== src\components\Fisco.jsx ==========
+
+/**
+ * Fisco â€” mascote robÃ´ do TaCerto!
+ *
+ * Props:
+ * - size: largura em px. PadrÃ£o 64.
+ * - pose: "joinha" | "ok" | "alerta" | "neutro". PadrÃ£o "neutro".
+ */
+export default function Fisco({ size = 64, pose = "neutro", className = "", style }) {
+    const altura = (size / 380) * 380;
+    const uid = `fisco-${pose}`;
+  
+    const olhoY = pose === "alerta" ? 104 : 103;
+    const boca =
+      pose === "alerta"
+        ? "M176 124 Q190 113 204 124"
+        : pose === "ok"
+          ? "M180 118 L200 118"
+          : "M177 116 Q190 126 203 116";
+  
+    return (
+      <svg
+        width={size}
+        height={altura}
+        viewBox="0 0 380 380"
+        role="img"
+        aria-label="Fisco, seu amigo fiscal"
+        className={className}
+        style={style}
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <linearGradient id={`${uid}-metal`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#71717a" />
+            <stop offset="45%" stopColor="#52525b" />
+            <stop offset="100%" stopColor="#3f3f46" />
+          </linearGradient>
+          <linearGradient id={`${uid}-metalClaro`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#a1a1aa" />
+            <stop offset="50%" stopColor="#71717a" />
+            <stop offset="100%" stopColor="#52525b" />
+          </linearGradient>
+          <linearGradient id={`${uid}-visor`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#18181b" />
+            <stop offset="100%" stopColor="#09090b" />
+          </linearGradient>
+          <radialGradient id={`${uid}-brilho`} cx="35%" cy="30%" r="60%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+  
+        {/* sombra no chÃ£o */}
+        <ellipse cx="190" cy="348" rx="74" ry="10" fill="var(--primary)" opacity="0.12" />
+  
+        {/* antena */}
+        <line x1="190" y1="66" x2="190" y2="46" stroke="#52525b" strokeWidth="5" strokeLinecap="round" />
+        <circle cx="190" cy="40" r="10" fill="var(--primary)" />
+        <circle cx="186.5" cy="36.5" r="3.5" fill="#bbf7d0" />
+  
+        {/* orelhas */}
+        <rect x="120" y="96" width="14" height="30" rx="7" fill={`url(#${uid}-metal)`} />
+        <rect x="246" y="96" width="14" height="30" rx="7" fill={`url(#${uid}-metal)`} />
+        <circle cx="127" cy="111" r="3.5" fill="var(--primary)" opacity="0.6" />
+        <circle cx="253" cy="111" r="3.5" fill="var(--primary)" opacity="0.6" />
+  
+        {/* cabeÃ§a */}
+        <rect x="132" y="64" width="116" height="90" rx="30" fill={`url(#${uid}-metalClaro)`} />
+        <rect x="137" y="69" width="106" height="80" rx="26" fill={`url(#${uid}-metal)`} />
+        <rect x="137" y="69" width="106" height="80" rx="26" fill={`url(#${uid}-brilho)`} />
+  
+        {/* visor */}
+        <rect x="149" y="84" width="82" height="50" rx="20" fill={`url(#${uid}-visor)`} />
+        <rect x="153" y="88" width="74" height="20" rx="10" fill="#ffffff" opacity="0.05" />
+  
+        {/* olhos */}
+        <circle cx="171" cy={olhoY} r="9.5" fill="var(--primary)" />
+        <circle cx="167.5" cy={olhoY - 3} r="3.2" fill="#dcfce7" />
+        <circle cx="209" cy={olhoY} r="9.5" fill="var(--primary)" />
+        <circle cx="205.5" cy={olhoY - 3} r="3.2" fill="#dcfce7" />
+  
+        {/* boca */}
+        <path d={boca} stroke="var(--primary)" strokeWidth="3.2" fill="none" strokeLinecap="round" />
+  
+        {/* pescoÃ§o */}
+        <rect x="178" y="152" width="24" height="16" rx="6" fill="#3f3f46" />
+  
+        {/* tronco */}
+        <rect x="140" y="166" width="100" height="104" rx="30" fill={`url(#${uid}-metalClaro)`} />
+        <rect x="145" y="171" width="90" height="94" rx="26" fill={`url(#${uid}-metal)`} />
+        <rect x="145" y="171" width="90" height="94" rx="26" fill={`url(#${uid}-brilho)`} />
+  
+        {/* velocÃ­metro no peito */}
+        <circle cx="190" cy="208" r="29" fill="#18181b" />
+        <circle cx="190" cy="208" r="24" fill="#27272a" />
+        <path d="M170 215 A20 20 0 0 1 210 215" stroke="var(--primary)" strokeWidth="5" fill="none" strokeLinecap="round" />
+        <line x1="190" y1="208" x2="201" y2="199" stroke="#ffffff" strokeWidth="3.2" strokeLinecap="round" />
+        <circle cx="190" cy="208" r="4" fill="#ffffff" />
+  
+        {/* detalhe do tronco */}
+        <rect x="174" y="245" width="32" height="7" rx="3.5" fill="var(--primary)" opacity="0.5" />
+  
+        {/* ===== BRAÃ‡OS POR POSE ===== */}
+  
+        {pose === "joinha" && (
+          <>
+            {/* braÃ§o esquerdo levantado com polegar pra cima */}
+            <rect x="118" y="176" width="26" height="40" rx="13" fill={`url(#${uid}-metal)`} transform="rotate(-32 131 196)" />
+            <circle cx="112" cy="156" r="17" fill={`url(#${uid}-metalClaro)`} />
+            {/* polegar */}
+            <rect x="107" y="130" width="11" height="24" rx="5.5" fill={`url(#${uid}-metalClaro)`} />
+            <circle cx="112" cy="158" r="7" fill="var(--primary)" opacity="0.35" />
+            {/* braÃ§o direito relaxado */}
+            <rect x="236" y="176" width="26" height="64" rx="13" fill={`url(#${uid}-metal)`} />
+            <circle cx="249" cy="248" r="16" fill={`url(#${uid}-metalClaro)`} />
+            <circle cx="249" cy="248" r="7" fill="var(--primary)" opacity="0.3" />
+          </>
+        )}
+  
+        {pose === "ok" && (
+          <>
+            {/* braÃ§o esquerdo com gesto de OK */}
+            <rect x="118" y="176" width="26" height="42" rx="13" fill={`url(#${uid}-metal)`} transform="rotate(-24 131 197)" />
+            <circle cx="115" cy="158" r="17" fill={`url(#${uid}-metalClaro)`} />
+            {/* cÃ­rculo do OK */}
+            <circle cx="113" cy="155" r="8.5" fill="none" stroke="var(--primary)" strokeWidth="3.4" />
+            {/* dedos levantados */}
+            <rect x="121" y="138" width="7" height="15" rx="3.5" fill={`url(#${uid}-metalClaro)`} transform="rotate(16 124 145)" />
+            <rect x="129" y="141" width="7" height="13" rx="3.5" fill={`url(#${uid}-metalClaro)`} transform="rotate(24 132 147)" />
+            {/* braÃ§o direito relaxado */}
+            <rect x="236" y="176" width="26" height="64" rx="13" fill={`url(#${uid}-metal)`} />
+            <circle cx="249" cy="248" r="16" fill={`url(#${uid}-metalClaro)`} />
+            <circle cx="249" cy="248" r="7" fill="var(--primary)" opacity="0.3" />
+          </>
+        )}
+  
+        {pose === "alerta" && (
+          <>
+            {/* dois braÃ§os pra cima, mÃ£os na cabeÃ§a */}
+            <rect x="122" y="138" width="26" height="52" rx="13" fill={`url(#${uid}-metal)`} transform="rotate(34 135 164)" />
+            <circle cx="150" cy="116" r="17" fill={`url(#${uid}-metalClaro)`} />
+            <circle cx="150" cy="116" r="7" fill="#ef4444" opacity="0.35" />
+            <rect x="232" y="138" width="26" height="52" rx="13" fill={`url(#${uid}-metal)`} transform="rotate(-34 245 164)" />
+            <circle cx="230" cy="116" r="17" fill={`url(#${uid}-metalClaro)`} />
+            <circle cx="230" cy="116" r="7" fill="#ef4444" opacity="0.35" />
+            {/* gotinha de suor */}
+            <path d="M244 88 Q248 96 244 99 Q240 96 244 88 Z" fill="#60a5fa" opacity="0.75" />
+          </>
+        )}
+  
+        {pose === "neutro" && (
+          <>
+            <rect x="118" y="176" width="26" height="64" rx="13" fill={`url(#${uid}-metal)`} />
+            <circle cx="131" cy="248" r="16" fill={`url(#${uid}-metalClaro)`} />
+            <circle cx="131" cy="248" r="7" fill="var(--primary)" opacity="0.3" />
+            <rect x="236" y="176" width="26" height="64" rx="13" fill={`url(#${uid}-metal)`} />
+            <circle cx="249" cy="248" r="16" fill={`url(#${uid}-metalClaro)`} />
+            <circle cx="249" cy="248" r="7" fill="var(--primary)" opacity="0.3" />
+          </>
+        )}
+  
+        {/* pernas */}
+        <rect x="156" y="270" width="28" height="46" rx="13" fill={`url(#${uid}-metal)`} />
+        <rect x="196" y="270" width="28" height="46" rx="13" fill={`url(#${uid}-metal)`} />
+        <ellipse cx="170" cy="322" rx="21" ry="11" fill={`url(#${uid}-metalClaro)`} />
+        <ellipse cx="210" cy="322" rx="21" ry="11" fill={`url(#${uid}-metalClaro)`} />
+      </svg>
+    );
+  }
+
+========== src\components\VelocimetroAnimado.jsx ==========
+
+import { useEffect, useState, useId } from "react";
+import { FAIXA_INFO } from "@/lib/fiscal";
+
+/**
+ * VelocÃ­metro animado com:
+ * - Arco de fundo com gradiente completo em opacidade 0.2
+ * - Arco preenchido com gradiente completo em opacidade 1
+ * - AnimaÃ§Ã£o de entrada 0% â†’ valor real (1200ms) + pulse do ponteiro (400ms)
+ * - Trava visual em 100% (arco/ponteiro), mas o nÃºmero exibido Ã© o real
+ */
+export default function VelocimetroAnimado({
+  percentual,
+  maxWidth = 220,
+  numeroClasse = "text-5xl font-bold",
+}) {
+  const uid = useId().replace(/:/g, "");
+  const gradId = `velGrad-${uid}`;
+
+  const pVisual = Math.max(0, Math.min(100, percentual));
+  const [progresso, setProgresso] = useState(0);
+  const [pulse, setPulse] = useState(false);
+
+  useEffect(() => {
+    setProgresso(0);
+    setPulse(false);
+    const t1 = setTimeout(() => setProgresso(pVisual), 80);
+    const t2 = setTimeout(() => setPulse(true), 80 + 1200);
+    const t3 = setTimeout(() => setPulse(false), 80 + 1200 + 400);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [pVisual]);
+
+  const cx = 100;
+  const cy = 100;
+  const r = 80;
+  const arcLength = Math.PI * r;
+  const filledLength = (progresso / 100) * arcLength;
+  const arcPath = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
+
+  // Ponteiro desenhado estaticamente apontando pra esquerda (rad = 180Â°);
+  // depois rotacionado (progresso/100)*180Â° em torno do centro.
+  const needleR = 60;
+  const baseHalfWidth = 7;
+  const midHalfWidth = 3;
+  const midR = needleR * 0.45;
+
+  // rad=Ï€: cos=-1, sin=0; perpX=sin=0, perpY=cos=-1
+  const tipX = cx - needleR;
+  const tipY = cy;
+  const b1x = cx;
+  const b1y = cy - baseHalfWidth;
+  const b2x = cx;
+  const b2y = cy + baseHalfWidth;
+  const mx = cx - midR;
+  const my = cy;
+  const m1x = mx;
+  const m1y = my - midHalfWidth;
+  const m2x = mx;
+  const m2y = my + midHalfWidth;
+  const needlePoints = `${b1x},${b1y} ${m1x},${m1y} ${tipX},${tipY} ${m2x},${m2y} ${b2x},${b2y}`;
+
+  const rotDeg = (progresso / 100) * 180;
+
+  return (
+    <div className="w-full flex flex-col items-center">
+      <svg
+        viewBox="0 0 200 120"
+        className="block mx-auto w-full"
+        style={{ maxWidth }}
+        role="img"
+        aria-label={`VelocÃ­metro fiscal: ${Math.round(percentual)} por cento`}
+      >
+        <defs>
+          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={FAIXA_INFO.tranquilo.cor} />
+            <stop offset="50%" stopColor={FAIXA_INFO.fique_de_olho.cor} />
+            <stop offset="75%" stopColor={FAIXA_INFO.atencao.cor} />
+            <stop offset="90%" stopColor={FAIXA_INFO.perto_do_limite.cor} />
+            <stop offset="100%" stopColor={FAIXA_INFO.estourou.cor} />
+          </linearGradient>
+        </defs>
+
+        {/* Arco de fundo â€” gradiente completo com opacidade reduzida */}
+        <path
+          d={arcPath}
+          fill="none"
+          stroke={`url(#${gradId})`}
+          strokeWidth={18}
+          strokeLinecap="round"
+          opacity={0.2}
+        />
+
+        {/* Arco preenchido â€” animado via stroke-dasharray */}
+        <path
+          d={arcPath}
+          fill="none"
+          stroke={`url(#${gradId})`}
+          strokeWidth={18}
+          strokeLinecap="round"
+          strokeDasharray={`${filledLength} ${arcLength}`}
+          style={{
+            transition: "stroke-dasharray 1200ms cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+        />
+
+        {/* Ponteiro (rotate) + pulse */}
+        <g
+          style={{
+            transformOrigin: "100px 100px",
+            transform: `scale(${pulse ? 1.08 : 1})`,
+            transition: "transform 400ms ease-out",
+          }}
+        >
+          <g
+            style={{
+              transformOrigin: "100px 100px",
+              transform: `rotate(${rotDeg}deg)`,
+              transition: "transform 1200ms cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
+            <polygon points={needlePoints} fill="var(--text)" />
+          </g>
+          <circle cx={cx} cy={cy} r={8} fill="var(--text)" />
+          <circle cx={cx} cy={cy} r={3.5} fill="var(--bg)" />
+        </g>
+      </svg>
+
+      <div className="mt-1 flex flex-col items-center">
+        <span className={numeroClasse} style={{ color: "var(--text)" }}>
+          {Math.round(percentual)}%
+        </span>
+      </div>
+    </div>
+  );
+}
+
+
+========== src\pages\Dashboard.jsx ==========
+
+import { useNavigate } from "react-router-dom";
+import { useRef, useState, useEffect } from "react";
+import { Bell, Gauge, ArrowUp, TrendingUp } from "lucide-react";
+import BottomNav from "../components/BottomNav.jsx";
+import Valor from "../components/Valor.jsx";
+import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
+import Fisco from "../components/Fisco.jsx";
+import { useAppState } from "@/context/AppStateContext";
+import {
+  LABEL_TIPO,
+  faixaDoVelocimetro,
+  FAIXA_INFO,
+  FAIXAS_ORDEM,
+  FAIXA_RANGE_LABEL,
+} from "@/lib/fiscal";
+
+function saudacaoPorHora() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return "Bom dia,";
+  if (h >= 12 && h < 18) return "Boa tarde,";
+  return "Boa noite,";
+}
+
+function hexToRgba(hex, alpha) {
+  const h = String(hex).replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function poseDaFaixa(faixa) {
+  if (faixa === "tranquilo" || faixa === "fique_de_olho") return "joinha";
+  if (faixa === "atencao" || faixa === "perto_do_limite") return "ok";
+  return "alerta";
+}
+
+function palavraDaFaixa(faixa) {
+  if (faixa === "tranquilo" || faixa === "fique_de_olho") return "TÃ¡ de boa";
+  if (faixa === "atencao" || faixa === "perto_do_limite") return "AtenÃ§Ã£o";
+  return "Cuidado";
+}
+
+function BolinhasIndicadoras({ pagina, irPara, corAtiva }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      {[0, 1].map((i) => (
+        <button
+          key={i}
+          onClick={(e) => {
+            e.stopPropagation();
+            irPara(i);
+          }}
+          aria-label={`Ir para tela ${i + 1}`}
+          className="rounded-full transition-colors"
+          style={{
+            width: 8,
+            height: 8,
+            backgroundColor: pagina === i ? corAtiva : "var(--text-secondary)",
+            opacity: pagina === i ? 1 : 0.6,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function TelaLegenda({ faixaAtiva, corFaixa, mediaMensal, projecao }) {
+  const info = FAIXA_INFO[faixaAtiva];
+
+  return (
+    <div className="w-1/2 h-full flex flex-col px-4 pb-4 pt-1 gap-2.5 overflow-hidden">
+      {/* Legenda das faixas */}
+      <div
+        className="rounded-2xl px-3 py-2.5 shrink-0"
+        style={{ backgroundColor: "var(--bg)", opacity: 0.55 }}
+      >
+        <p
+          className="text-[10px] mb-1.5 uppercase tracking-wide"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          Faixas de risco
+        </p>
+        <div className="flex rounded-full overflow-hidden mb-1.5" style={{ height: 6 }}>
+          {FAIXAS_ORDEM.map((f) => (
+            <div
+              key={f}
+              style={{
+                flex: 1,
+                backgroundColor: FAIXA_INFO[f].cor,
+                opacity: f === faixaAtiva ? 1 : 0.35,
+              }}
+            />
+          ))}
+        </div>
+        <div className="flex justify-between">
+          {FAIXAS_ORDEM.map((f) => (
+            <span
+              key={f}
+              className="text-[8px] leading-none"
+              style={{
+                color: f === faixaAtiva ? FAIXA_INFO[f].cor : "var(--text-secondary)",
+                fontWeight: f === faixaAtiva ? 700 : 400,
+              }}
+            >
+              {FAIXA_RANGE_LABEL[f]}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* SituaÃ§Ã£o atual */}
+      <div
+        className="rounded-2xl px-3.5 py-3 shrink-0"
+        style={{
+          backgroundColor: hexToRgba(corFaixa, 0.12),
+          border: `1px solid ${hexToRgba(corFaixa, 0.3)}`,
+        }}
+      >
+        <p
+          className="text-[10px] uppercase tracking-wide mb-1"
+          style={{ color: corFaixa }}
+        >
+          Sua situaÃ§Ã£o
+        </p>
+        <p
+          className="text-[13px] leading-snug"
+          style={{ color: "var(--text)" }}
+        >
+          {info.resumo}
+        </p>
+      </div>
+
+      {/* MÃ©dia mensal + projeÃ§Ã£o */}
+      <div
+        className="rounded-2xl px-3.5 py-3 flex-1 min-h-0 flex flex-col justify-center"
+        style={{ backgroundColor: "var(--bg)", opacity: 0.55 }}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <TrendingUp size={14} style={{ color: "var(--primary)" }} />
+          <p
+            className="text-[10px] uppercase tracking-wide"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            Seu ritmo
+          </p>
+        </div>
+        <div className="flex items-baseline justify-between gap-2 mb-1.5">
+          <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
+            MÃ©dia por mÃªs
+          </span>
+          <Valor tamanho="sm" autoAjustar>{mediaMensal}</Valor>
+        </div>
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
+            Fecha o ano em
+          </span>
+          <Valor tamanho="sm" autoAjustar>{projecao}</Valor>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CardVelocimetroCarrossel({
+  rotuloPerfil, percentual, faturado, limite, mediaMensal, projecao,
+}) {
+  const [pagina, setPagina] = useState(0);
+  const [dragPx, setDragPx] = useState(0);
+  const [arrastando, setArrastando] = useState(false);
+
+  const containerRef = useRef(null);
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const startTime = useRef(0);
+  const ativo = useRef(false);
+  const eixo = useRef(null);
+
+  const chaveFaixa = faixaDoVelocimetro(percentual);
+  const corFaixa = FAIXA_INFO[chaveFaixa].cor;
+
+  function largura() {
+    return containerRef.current?.clientWidth || 1;
+  }
+
+  function inicio(x, y) {
+    startX.current = x;
+    startY.current = y;
+    startTime.current = Date.now();
+    ativo.current = true;
+    eixo.current = null;
+    setArrastando(true);
+    setDragPx(0);
+  }
+
+  function mover(x, y) {
+    if (!ativo.current) return;
+    const dx = x - startX.current;
+    const dy = y - startY.current;
+
+    if (eixo.current === null) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      eixo.current = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      if (eixo.current === "y") {
+        ativo.current = false;
+        setArrastando(false);
+        setDragPx(0);
+        return;
+      }
+    }
+
+    if (eixo.current === "x") setDragPx(dx);
+  }
+
+  function fim(x) {
+    if (!ativo.current) {
+      setArrastando(false);
+      setDragPx(0);
+      eixo.current = null;
+      return;
+    }
+    const dx = x - startX.current;
+    const dt = Date.now() - startTime.current;
+    const velocidade = Math.abs(dx) / Math.max(1, dt);
+    const passouMeio = Math.abs(dx) > largura() * 0.3;
+    const flick = velocidade > 0.4 && Math.abs(dx) > 30;
+
+    ativo.current = false;
+    eixo.current = null;
+    setArrastando(false);
+    setDragPx(0);
+
+    if (passouMeio || flick) setPagina((p) => (p === 0 ? 1 : 0));
+  }
+
+  function irPara(i) {
+    setDragPx(0);
+    setArrastando(false);
+    setPagina(i);
+  }
+
+  const naTelaB = pagina === 1;
+  const bgCard = naTelaB
+    ? {
+        background: `linear-gradient(160deg, ${hexToRgba(corFaixa, 0.16)} 0%, ${hexToRgba(corFaixa, 0.07)} 55%, ${hexToRgba(corFaixa, 0.03)} 100%), var(--surface)`,
+        border: `1px solid ${hexToRgba(corFaixa, 0.3)}`,
+      }
+    : {
+        background:
+          "linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 55%, rgba(255,255,255,0) 100%), var(--surface)",
+        border: "1px solid var(--border)",
+      };
+
+  const larg = largura();
+  const basePct = pagina === 0 ? 0 : -50;
+  const dragPct = larg ? (dragPx / larg) * 50 : 0;
+  const translate = basePct + dragPct;
+
+  return (
+    <div
+      ref={containerRef}
+      data-carrossel-velocimetro
+      className="relative w-full flex-1 min-h-0 rounded-3xl overflow-hidden flex flex-col"
+      style={{
+        ...bgCard,
+        boxShadow: "0 10px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+        transition: "background 300ms ease, border-color 300ms ease",
+        touchAction: "pan-y",
+      }}
+      onTouchStart={(e) => inicio(e.touches[0].clientX, e.touches[0].clientY)}
+      onTouchMove={(e) => mover(e.touches[0].clientX, e.touches[0].clientY)}
+      onTouchEnd={(e) => fim(e.changedTouches[0].clientX)}
+      onTouchCancel={() => fim(startX.current)}
+      onMouseDown={(e) => inicio(e.clientX, e.clientY)}
+      onMouseMove={(e) => ativo.current && mover(e.clientX, e.clientY)}
+      onMouseUp={(e) => fim(e.clientX)}
+      onMouseLeave={(e) => ativo.current && fim(e.clientX)}
+    >
+      <div className="flex items-center justify-between px-5 pt-3.5 pb-1 shrink-0">
+        <span
+          className="text-sm"
+          style={{
+            color: "var(--text-secondary)",
+            visibility: naTelaB ? "hidden" : "visible",
+          }}
+        >
+          {rotuloPerfil}
+        </span>
+        <BolinhasIndicadoras pagina={pagina} irPara={irPara} corAtiva={corFaixa} />
+      </div>
+
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <div
+          className="flex h-full"
+          style={{
+            width: "200%",
+            transform: `translateX(${translate}%)`,
+            transition: arrastando ? "none" : "transform 300ms ease-in-out",
+          }}
+        >
+          <div className="w-1/2 h-full flex flex-col px-5 pb-4 min-h-0">
+            <div className="flex-1 min-h-0 flex items-center justify-center">
+              <VelocimetroAnimado percentual={percentual} maxWidth={210} />
+            </div>
+            <div
+              className="grid grid-cols-2 pt-3 shrink-0"
+              style={{ borderTop: "1px solid var(--border)" }}
+            >
+              {[
+                { valor: faturado, label: "Faturado" },
+                { valor: limite, label: "Limite" },
+              ].map((c, i) => (
+                <div
+                  key={c.label}
+                  className={
+                    "flex flex-col items-center text-center min-w-0 " +
+                    (i > 0 ? "border-l" : "")
+                  }
+                  style={{
+                    paddingLeft: 12,
+                    paddingRight: 12,
+                    ...(i > 0 ? { borderColor: "var(--border)" } : {}),
+                  }}
+                >
+                  <Valor tamanho="md" autoAjustar>{c.valor}</Valor>
+                  <span
+                    className="text-xs mt-1"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    {c.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <TelaLegenda
+            faixaAtiva={chaveFaixa}
+            corFaixa={corFaixa}
+            mediaMensal={mediaMensal}
+            projecao={projecao}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Dashboard() {
+  const navigate = useNavigate();
+  const {
+    nome, tipoMEI, faturamentoAtual, limiteAtual, percentualAtual,
+    mediaMensal, projecaoFimDoAno,
+  } = useAppState();
+
+  const rotuloPerfil = LABEL_TIPO[tipoMEI];
+  const saudacao = saudacaoPorHora();
+  const faixa = faixaDoVelocimetro(percentualAtual);
+  const pose = poseDaFaixa(faixa);
+  const palavra = palavraDaFaixa(faixa);
+  const corFaixa = FAIXA_INFO[faixa].cor;
+
+  return (
+    <div
+      className="w-full flex flex-col"
+      style={{
+        backgroundColor: "var(--bg)",
+        color: "var(--text)",
+        height: "100dvh",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        className="flex-1 flex flex-col min-h-0"
+        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
+      >
+        <header className="px-5 pt-4 pb-1 flex items-start justify-between shrink-0">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2.5">
+              <Gauge size={30} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
+              <span
+                className="font-bold text-2xl leading-none"
+                style={{ color: "var(--text)" }}
+              >
+                Ta<span style={{ color: "var(--primary)" }}>Certo!</span>
+              </span>
+            </div>
+            <div className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+              {saudacao}
+              {nome ? " " : "!"}
+              {nome && (
+                <span
+                  className="text-base font-semibold"
+                  style={{ color: "var(--text)" }}
+                >
+                  {nome}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <button
+            onClick={() => navigate("/alertas")}
+            aria-label="NotificaÃ§Ãµes"
+            className="relative w-11 h-11 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
+            style={{
+              backgroundColor: "var(--surface)",
+              border: "1px solid var(--border)",
+            }}
+          >
+            <Bell size={20} style={{ color: "var(--text)" }} />
+            <span
+              className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full"
+              style={{ backgroundColor: "var(--danger)" }}
+              aria-hidden
+            />
+          </button>
+        </header>
+
+        <div className="px-5 pt-2 flex-1 flex flex-col gap-2 min-h-0">
+          <CardVelocimetroCarrossel
+            rotuloPerfil={rotuloPerfil}
+            percentual={percentualAtual}
+            faturado={faturamentoAtual}
+            limite={limiteAtual}
+            mediaMensal={mediaMensal}
+            projecao={projecaoFimDoAno}
+          />
+
+          <button
+            onClick={() => navigate("/chat")}
+            className="shrink-0 flex items-end gap-1 active:opacity-90 transition"
+            style={{ background: "none", border: "none", padding: 0 }}
+          >
+            <div className="relative shrink-0">
+              <Fisco size={86} pose={pose} />
+              <span
+                className="absolute px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap"
+                style={{
+                  top: 2,
+                  right: -6,
+                  backgroundColor: hexToRgba(corFaixa, 0.18),
+                  color: corFaixa,
+                  border: `1px solid ${hexToRgba(corFaixa, 0.35)}`,
+                  backdropFilter: "blur(4px)",
+                }}
+              >
+                {palavra}
+              </span>
+            </div>
+
+            <span
+              className="flex-1 rounded-full px-4 py-3 flex items-center gap-2 text-left mb-3 min-w-0"
+              style={{
+                backgroundColor: "var(--surface)",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <span
+                className="flex-1 text-sm truncate"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Pergunte ao Fisco...
+              </span>
+              <span
+                className="rounded-full flex items-center justify-center shrink-0"
+                style={{ width: 32, height: 32, backgroundColor: "var(--primary)" }}
+              >
+                <ArrowUp size={17} style={{ color: "var(--primary-contrast)" }} />
+              </span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <BottomNav ativo="inicio" />
+    </div>
+  );
+}
