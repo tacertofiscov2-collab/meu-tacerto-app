@@ -1,18 +1,19 @@
 import { useNavigate } from "react-router-dom";
-import { useRef, useState, useEffect } from "react";
-import { Bell, Gauge, ArrowUp, TrendingUp } from "lucide-react";
+import { useRef, useState, useMemo } from "react";
+import { Bell, Gauge, ArrowUp, TrendingUp, ChevronRight, Receipt } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
 import Fisco from "../components/Fisco.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
-  LABEL_TIPO,
-  faixaDoVelocimetro,
-  FAIXA_INFO,
-  FAIXAS_ORDEM,
-  FAIXA_RANGE_LABEL,
+  LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO, FAIXAS_ORDEM, FAIXA_RANGE_LABEL,
 } from "@/lib/fiscal";
+
+const MESES_CURTO = [
+  "jan", "fev", "mar", "abr", "mai", "jun",
+  "jul", "ago", "set", "out", "nov", "dez",
+];
 
 function saudacaoPorHora() {
   const h = new Date().getHours();
@@ -35,29 +36,20 @@ function poseDaFaixa(faixa) {
   return "alerta";
 }
 
-function palavraDaFaixa(faixa) {
-  if (faixa === "tranquilo" || faixa === "fique_de_olho") return "Tá de boa";
-  if (faixa === "atencao" || faixa === "perto_do_limite") return "Atenção";
-  return "Cuidado";
-}
-
 function BolinhasIndicadoras({ pagina, irPara, corAtiva }) {
   return (
     <div className="flex items-center gap-1.5">
       {[0, 1].map((i) => (
         <button
           key={i}
-          onClick={(e) => {
-            e.stopPropagation();
-            irPara(i);
-          }}
+          onClick={(e) => { e.stopPropagation(); irPara(i); }}
           aria-label={`Ir para tela ${i + 1}`}
           className="rounded-full transition-colors"
           style={{
             width: 8,
             height: 8,
             backgroundColor: pagina === i ? corAtiva : "var(--text-secondary)",
-            opacity: pagina === i ? 1 : 0.6,
+            opacity: pagina === i ? 1 : 0.55,
           }}
         />
       ))}
@@ -65,19 +57,127 @@ function BolinhasIndicadoras({ pagina, irPara, corAtiva }) {
   );
 }
 
-function TelaLegenda({ faixaAtiva, corFaixa, mediaMensal, projecao }) {
+/** Tela B — Situação · Últimos lançamentos · Ritmo · Faixas */
+function TelaDetalhes({
+  faixaAtiva, corFaixa, mediaMensal, projecao, ultimos, onSituacao, onLancamentos,
+}) {
   const info = FAIXA_INFO[faixaAtiva];
+  const temLancamento = ultimos.length > 0;
 
   return (
-    <div className="w-1/2 h-full flex flex-col px-4 pb-4 pt-1 gap-2.5 overflow-hidden">
-      {/* Legenda das faixas */}
+    <div className="w-1/2 h-full flex flex-col px-3.5 pb-3.5 pt-1 gap-2 overflow-hidden">
+      {/* 1 — Sua situação (clicável) */}
+      <button
+        onClick={onSituacao}
+        className="rounded-2xl px-4 py-3 text-left shrink-0 active:opacity-80 transition"
+        style={{
+          backgroundColor: hexToRgba(corFaixa, 0.16),
+          border: `1px solid ${hexToRgba(corFaixa, 0.38)}`,
+        }}
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <span
+            className="rounded-full shrink-0"
+            style={{ width: 7, height: 7, backgroundColor: corFaixa }}
+          />
+          <p
+            className="text-[10px] font-bold uppercase flex-1"
+            style={{ color: corFaixa, letterSpacing: "0.07em" }}
+          >
+            Sua situação
+          </p>
+          <ChevronRight size={15} style={{ color: corFaixa }} className="shrink-0" />
+        </div>
+        <p
+          className="text-[14px] leading-snug font-medium"
+          style={{ color: "var(--text)" }}
+        >
+          {info.resumo}
+        </p>
+      </button>
+
+      {/* 2 — Últimos lançamentos */}
+      {temLancamento ? (
+        <button
+          onClick={onLancamentos}
+          className="rounded-2xl px-4 py-2.5 text-left shrink-0 active:opacity-80 transition"
+          style={{ backgroundColor: "var(--surface-raised)" }}
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <Receipt size={13} style={{ color: "var(--primary)" }} />
+            <p
+              className="text-[10px] font-bold uppercase flex-1"
+              style={{ color: "var(--text-secondary)", letterSpacing: "0.07em" }}
+            >
+              Últimos lançamentos
+            </p>
+            <ChevronRight size={15} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+          </div>
+          <div className="space-y-1">
+            {ultimos.map((l) => {
+              const d = new Date(l.data);
+              return (
+                <div key={l.id} className="flex items-baseline justify-between gap-2">
+                  <span
+                    className="text-[12px] truncate"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    {`${String(d.getDate()).padStart(2, "0")} ${MESES_CURTO[d.getMonth()]}`}
+                  </span>
+                  <Valor tamanho="sm" sinal="+">{l.valor}</Valor>
+                </div>
+              );
+            })}
+          </div>
+        </button>
+      ) : (
+        <div
+          className="rounded-2xl px-4 py-3 shrink-0 flex items-center gap-2.5"
+          style={{ backgroundColor: "var(--surface-raised)" }}
+        >
+          <Receipt size={15} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+          <p className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
+            Nenhum lançamento ainda
+          </p>
+        </div>
+      )}
+
+      {/* 3 — Seu ritmo */}
       <div
-        className="rounded-2xl px-3 py-2.5 shrink-0"
-        style={{ backgroundColor: "var(--bg)", opacity: 0.55 }}
+        className="rounded-2xl px-4 py-2.5 shrink-0"
+        style={{ backgroundColor: "var(--surface-raised)" }}
+      >
+        <div className="flex items-center gap-2 mb-1.5">
+          <TrendingUp size={13} style={{ color: "var(--primary)" }} />
+          <p
+            className="text-[10px] font-bold uppercase"
+            style={{ color: "var(--text-secondary)", letterSpacing: "0.07em" }}
+          >
+            Seu ritmo
+          </p>
+        </div>
+        <div className="flex items-baseline justify-between gap-2 mb-0.5">
+          <span className="text-[12px]" style={{ color: "var(--text-secondary)" }}>
+            Média por mês
+          </span>
+          <Valor tamanho="sm" autoAjustar>{mediaMensal}</Valor>
+        </div>
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-[12px]" style={{ color: "var(--text-secondary)" }}>
+            Fecha o ano em
+          </span>
+          <Valor tamanho="sm" autoAjustar cor={corFaixa}>{projecao}</Valor>
+        </div>
+      </div>
+
+      {/* 4 — Faixas de risco (fixa, não clicável) */}
+      <div
+        className="rounded-2xl px-4 py-2.5 shrink-0 mt-auto"
+        style={{ backgroundColor: "var(--surface-raised)" }}
       >
         <p
-          className="text-[10px] mb-1.5 uppercase tracking-wide"
-          style={{ color: "var(--text-secondary)" }}
+          className="text-[10px] font-bold uppercase mb-1.5"
+          style={{ color: "var(--text-secondary)", letterSpacing: "0.07em" }}
         >
           Faixas de risco
         </p>
@@ -88,7 +188,7 @@ function TelaLegenda({ faixaAtiva, corFaixa, mediaMensal, projecao }) {
               style={{
                 flex: 1,
                 backgroundColor: FAIXA_INFO[f].cor,
-                opacity: f === faixaAtiva ? 1 : 0.35,
+                opacity: f === faixaAtiva ? 1 : 0.3,
               }}
             />
           ))}
@@ -99,63 +199,13 @@ function TelaLegenda({ faixaAtiva, corFaixa, mediaMensal, projecao }) {
               key={f}
               className="text-[8px] leading-none"
               style={{
-                color: f === faixaAtiva ? FAIXA_INFO[f].cor : "var(--text-secondary)",
-                fontWeight: f === faixaAtiva ? 700 : 400,
+                color: f === faixaAtiva ? FAIXA_INFO[f].cor : "var(--text-tertiary)",
+                fontWeight: f === faixaAtiva ? 800 : 500,
               }}
             >
               {FAIXA_RANGE_LABEL[f]}
             </span>
           ))}
-        </div>
-      </div>
-
-      {/* Situação atual */}
-      <div
-        className="rounded-2xl px-3.5 py-3 shrink-0"
-        style={{
-          backgroundColor: hexToRgba(corFaixa, 0.12),
-          border: `1px solid ${hexToRgba(corFaixa, 0.3)}`,
-        }}
-      >
-        <p
-          className="text-[10px] uppercase tracking-wide mb-1"
-          style={{ color: corFaixa }}
-        >
-          Sua situação
-        </p>
-        <p
-          className="text-[13px] leading-snug"
-          style={{ color: "var(--text)" }}
-        >
-          {info.resumo}
-        </p>
-      </div>
-
-      {/* Média mensal + projeção */}
-      <div
-        className="rounded-2xl px-3.5 py-3 flex-1 min-h-0 flex flex-col justify-center"
-        style={{ backgroundColor: "var(--bg)", opacity: 0.55 }}
-      >
-        <div className="flex items-center gap-2 mb-2">
-          <TrendingUp size={14} style={{ color: "var(--primary)" }} />
-          <p
-            className="text-[10px] uppercase tracking-wide"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Seu ritmo
-          </p>
-        </div>
-        <div className="flex items-baseline justify-between gap-2 mb-1.5">
-          <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
-            Média por mês
-          </span>
-          <Valor tamanho="sm" autoAjustar>{mediaMensal}</Valor>
-        </div>
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
-            Fecha o ano em
-          </span>
-          <Valor tamanho="sm" autoAjustar>{projecao}</Valor>
         </div>
       </div>
     </div>
@@ -164,6 +214,7 @@ function TelaLegenda({ faixaAtiva, corFaixa, mediaMensal, projecao }) {
 
 function CardVelocimetroCarrossel({
   rotuloPerfil, percentual, faturado, limite, mediaMensal, projecao,
+  ultimos, onSituacao, onLancamentos, onResumo, onExcedente,
 }) {
   const [pagina, setPagina] = useState(0);
   const [dragPx, setDragPx] = useState(0);
@@ -175,6 +226,7 @@ function CardVelocimetroCarrossel({
   const startTime = useRef(0);
   const ativo = useRef(false);
   const eixo = useRef(null);
+  const moveu = useRef(false);
 
   const chaveFaixa = faixaDoVelocimetro(percentual);
   const corFaixa = FAIXA_INFO[chaveFaixa].cor;
@@ -189,6 +241,7 @@ function CardVelocimetroCarrossel({
     startTime.current = Date.now();
     ativo.current = true;
     eixo.current = null;
+    moveu.current = false;
     setArrastando(true);
     setDragPx(0);
   }
@@ -209,7 +262,10 @@ function CardVelocimetroCarrossel({
       }
     }
 
-    if (eixo.current === "x") setDragPx(dx);
+    if (eixo.current === "x") {
+      moveu.current = true;
+      setDragPx(dx);
+    }
   }
 
   function fim(x) {
@@ -239,6 +295,11 @@ function CardVelocimetroCarrossel({
     setPagina(i);
   }
 
+  // Evita disparar clique dos cards logo após um arrasto
+  function seNaoArrastou(fn) {
+    return () => { if (!moveu.current) fn(); };
+  }
+
   const naTelaB = pagina === 1;
   const bgCard = naTelaB
     ? {
@@ -263,7 +324,7 @@ function CardVelocimetroCarrossel({
       className="relative w-full flex-1 min-h-0 rounded-3xl overflow-hidden flex flex-col"
       style={{
         ...bgCard,
-        boxShadow: "0 10px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+        boxShadow: "var(--sombra-card)",
         transition: "background 300ms ease, border-color 300ms ease",
         touchAction: "pan-y",
       }}
@@ -298,9 +359,14 @@ function CardVelocimetroCarrossel({
             transition: arrastando ? "none" : "transform 300ms ease-in-out",
           }}
         >
+          {/* Tela A */}
           <div className="w-1/2 h-full flex flex-col px-5 pb-4 min-h-0">
             <div className="flex-1 min-h-0 flex items-center justify-center">
-              <VelocimetroAnimado percentual={percentual} maxWidth={210} />
+              <VelocimetroAnimado
+                percentual={percentual}
+                maxWidth={205}
+                onClickExcedente={seNaoArrastou(onExcedente)}
+              />
             </div>
             <div
               className="grid grid-cols-2 pt-3 shrink-0"
@@ -310,10 +376,11 @@ function CardVelocimetroCarrossel({
                 { valor: faturado, label: "Faturado" },
                 { valor: limite, label: "Limite" },
               ].map((c, i) => (
-                <div
+                <button
                   key={c.label}
+                  onClick={seNaoArrastou(onResumo)}
                   className={
-                    "flex flex-col items-center text-center min-w-0 " +
+                    "flex flex-col items-center text-center min-w-0 active:opacity-70 transition " +
                     (i > 0 ? "border-l" : "")
                   }
                   style={{
@@ -329,16 +396,20 @@ function CardVelocimetroCarrossel({
                   >
                     {c.label}
                   </span>
-                </div>
+                </button>
               ))}
             </div>
           </div>
 
-          <TelaLegenda
+          {/* Tela B */}
+          <TelaDetalhes
             faixaAtiva={chaveFaixa}
             corFaixa={corFaixa}
             mediaMensal={mediaMensal}
             projecao={projecao}
+            ultimos={ultimos}
+            onSituacao={seNaoArrastou(onSituacao)}
+            onLancamentos={seNaoArrastou(onLancamentos)}
           />
         </div>
       </div>
@@ -349,7 +420,7 @@ function CardVelocimetroCarrossel({
 export default function Dashboard() {
   const navigate = useNavigate();
   const {
-    nome, tipoMEI, faturamentoAtual, limiteAtual, percentualAtual,
+    nome, tipoMEI, lancamentos, faturamentoAtual, limiteAtual, percentualAtual,
     mediaMensal, projecaoFimDoAno,
   } = useAppState();
 
@@ -357,18 +428,21 @@ export default function Dashboard() {
   const saudacao = saudacaoPorHora();
   const faixa = faixaDoVelocimetro(percentualAtual);
   const pose = poseDaFaixa(faixa);
-  const palavra = palavraDaFaixa(faixa);
-  const corFaixa = FAIXA_INFO[faixa].cor;
+  const info = FAIXA_INFO[faixa];
+  const corFaixa = info.cor;
+
+  const ultimos = useMemo(
+    () =>
+      [...lancamentos]
+        .sort((a, b) => new Date(b.data) - new Date(a.data))
+        .slice(0, 2),
+    [lancamentos],
+  );
 
   return (
     <div
-      className="w-full flex flex-col"
-      style={{
-        backgroundColor: "var(--bg)",
-        color: "var(--text)",
-        height: "100dvh",
-        overflow: "hidden",
-      }}
+      className="tela-fixa w-full flex flex-col"
+      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       <div
         className="flex-1 flex flex-col min-h-0"
@@ -417,7 +491,7 @@ export default function Dashboard() {
           </button>
         </header>
 
-        <div className="px-5 pt-2 flex-1 flex flex-col gap-2 min-h-0">
+        <div className="px-5 pt-2 flex-1 flex flex-col gap-1 min-h-0">
           <CardVelocimetroCarrossel
             rotuloPerfil={rotuloPerfil}
             percentual={percentualAtual}
@@ -425,6 +499,11 @@ export default function Dashboard() {
             limite={limiteAtual}
             mediaMensal={mediaMensal}
             projecao={projecaoFimDoAno}
+            ultimos={ultimos}
+            onSituacao={() => navigate("/chat?contexto=situacao")}
+            onLancamentos={() => navigate("/historico")}
+            onResumo={() => navigate("/perfil/resumo")}
+            onExcedente={() => navigate("/regra-vinte")}
           />
 
           <button
@@ -432,22 +511,13 @@ export default function Dashboard() {
             className="shrink-0 flex items-end gap-1 active:opacity-90 transition"
             style={{ background: "none", border: "none", padding: 0 }}
           >
-            <div className="relative shrink-0">
-              <Fisco size={86} pose={pose} />
-              <span
-                className="absolute px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap"
-                style={{
-                  top: 2,
-                  right: -6,
-                  backgroundColor: hexToRgba(corFaixa, 0.18),
-                  color: corFaixa,
-                  border: `1px solid ${hexToRgba(corFaixa, 0.35)}`,
-                  backdropFilter: "blur(4px)",
-                }}
-              >
-                {palavra}
-              </span>
-            </div>
+            <Fisco
+              size={96}
+              pose={pose}
+              fala={info.palavra}
+              corFala={corFaixa}
+              className="shrink-0"
+            />
 
             <span
               className="flex-1 rounded-full px-4 py-3 flex items-center gap-2 text-left mb-3 min-w-0"
