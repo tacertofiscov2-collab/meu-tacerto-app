@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Search, TrendingUp, ChevronDown, Receipt, Plus, Pencil, Trash2,
-  BarChart3,
+  BarChart3, Calendar,
 } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 import SeletorMesAno from "../components/SeletorMesAno.jsx";
@@ -10,6 +10,7 @@ import SeletorMesAno from "../components/SeletorMesAno.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import { useAppState } from "@/context/AppStateContext";
+
 const DISMISS_KEY = "tacerto:hist_faturamento_dismissed";
 
 const MESES = [
@@ -43,9 +44,7 @@ export default function Historico() {
   }, []);
 
   function dispensarFaturamento() {
-    try {
-      localStorage.setItem(DISMISS_KEY, "1");
-    } catch {}
+    try { localStorage.setItem(DISMISS_KEY, "1"); } catch {}
     setMostrarFaturamento(false);
   }
 
@@ -69,186 +68,202 @@ export default function Historico() {
     [filtrados],
   );
 
-  const fieldStyle = {
-    backgroundColor: "var(--field)",
-    border: "1px solid var(--border)",
-    color: "var(--text)",
-  };
-
-  function confirmarExcluir() {
-    if (excluirId) removerLancamento(excluirId);
-    setExcluirId(null);
-  }
-
   return (
     <div
-      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
+      className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-        <header className="px-5 pt-6 pb-4 flex items-center gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            aria-label="Voltar"
-            className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+      <header className="px-5 pt-6 pb-2 flex items-center gap-3 shrink-0">
+        <button
+          onClick={() => navigate(-1)}
+          aria-label="Voltar"
+          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+          style={{ backgroundColor: "var(--field)" }}
+        >
+          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
+        </button>
+        <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
+          Histórico
+        </h1>
+      </header>
+
+      <div
+        className="conteudo-rolavel hide-scrollbar px-5"
+        style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
+      >
+        {mostrarFaturamento && (
+          <div
+            className="rounded-2xl px-4 py-3.5 mt-2"
             style={{ backgroundColor: "var(--field)" }}
           >
-            <ArrowLeft size={20} style={{ color: "var(--text)" }} />
-          </button>
-          <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-            Histórico
-          </h1>
-        </header>
-
-        <div className="px-5 space-y-4">
-          {mostrarFaturamento && (
-            <div className="py-3" style={{ borderLeft: "3px solid var(--primary)", paddingLeft: 12 }}>
-              <div className="flex items-start gap-3">
-                <BarChart3 size={20} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[15px] font-semibold" style={{ color: "var(--text)" }}>
-                    Comece com o velocímetro certo
-                  </p>
-                  <p className="text-xs leading-relaxed mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                    Já faturou este ano antes de instalar o app? Adicione o total em 1 minuto.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 mt-2 pl-8">
-                <button
-                  onClick={() => setModalFaturamento(true)}
-                  className="text-sm font-semibold"
-                  style={{ color: "var(--primary)" }}
-                >
-                  Adicionar faturamento
-                </button>
-                <button
-                  onClick={dispensarFaturamento}
-                  className="text-sm"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Agora não
-                </button>
-              </div>
-            </div>
-          )}
-
-          <div className="relative">
-            <Search
-              size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2"
-              style={{ color: "var(--text-secondary)" }}
-            />
-            <input
-              type="text"
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              placeholder="Buscar lançamento..."
-              className="w-full pl-10 pr-3 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
-              style={fieldStyle}
-            />
-          </div>
-
-          {/* Filtro de mês — abre SeletorMesAno */}
-          <button
-            onClick={() => setSeletorAberto(true)}
-            className="w-full flex items-center justify-between pl-4 pr-3 py-3 rounded-xl text-sm active:opacity-80"
-            style={fieldStyle}
-          >
-            <span>{`${MESES[mesIdx]} ${anoNum}`}</span>
-            <ChevronDown size={18} style={{ color: "var(--text-secondary)" }} />
-          </button>
-
-          <div className="pt-1 pb-1">
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              Total de {MESES[mesIdx]}
-            </p>
-            <div className="mt-1">
-              <Valor tamanho="xl">{total}</Valor>
-            </div>
-          </div>
-
-          <button
-            onClick={() => navigate("/lancar")}
-            className="w-full flex items-center gap-3 py-3.5 text-[16px] active:opacity-70"
-            style={{ color: "var(--text)" }}
-          >
-            <Plus size={22} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
-            Fazer novo lançamento
-          </button>
-
-          {filtrados.length === 0 ? (
-            <div className="py-12 flex flex-col items-center gap-3">
+            <div className="flex items-start gap-3">
               <div
-                className="w-14 h-14 rounded-full flex items-center justify-center"
+                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                style={{ backgroundColor: "var(--surface)" }}
+              >
+                <BarChart3 size={18} style={{ color: "var(--primary)" }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] font-semibold" style={{ color: "var(--text)" }}>
+                  Comece com o velocímetro certo
+                </p>
+                <p className="text-xs leading-relaxed mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                  Já faturou este ano antes de instalar o app?
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 mt-2.5">
+              <button
+                onClick={() => setModalFaturamento(true)}
+                className="text-sm font-semibold"
+                style={{ color: "var(--primary)" }}
+              >
+                Adicionar faturamento
+              </button>
+              <button
+                onClick={dispensarFaturamento}
+                className="text-sm"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Agora não
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Busca — fora de qualquer barra, no padrão de bloco */}
+        <div
+          className="rounded-2xl flex items-center gap-2.5 px-4 mt-3"
+          style={{ backgroundColor: "var(--field)", minHeight: 50 }}
+        >
+          <Search size={18} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+          <input
+            type="text"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar lançamento"
+            className="flex-1 bg-transparent text-[15px] outline-none placeholder:opacity-60"
+            style={{ color: "var(--text)" }}
+          />
+        </div>
+
+        {/* Período */}
+        <button
+          onClick={() => setSeletorAberto(true)}
+          className="w-full rounded-2xl flex items-center gap-3 px-4 mt-2.5 active:opacity-80"
+          style={{ backgroundColor: "var(--field)", minHeight: 58 }}
+        >
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+            style={{ backgroundColor: "var(--surface)" }}
+          >
+            <Calendar size={18} style={{ color: "var(--primary)" }} />
+          </div>
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-[15px] font-semibold" style={{ color: "var(--text)" }}>
+              {`${MESES[mesIdx]} de ${anoNum}`}
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+              Período exibido
+            </p>
+          </div>
+          <ChevronDown size={18} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+        </button>
+
+        {/* Total */}
+        <div
+          className="rounded-2xl px-4 py-3.5 mt-2.5"
+          style={{ backgroundColor: "var(--field)" }}
+        >
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+            Total de {MESES[mesIdx]}
+          </p>
+          <div className="mt-1">
+            <Valor tamanho="xl" autoAjustar>{total}</Valor>
+          </div>
+        </div>
+
+        {/* Novo lançamento */}
+        <button
+          onClick={() => navigate("/lancar")}
+          className="w-full rounded-2xl flex items-center gap-3 px-4 mt-2.5 active:opacity-80"
+          style={{ backgroundColor: "var(--field)", minHeight: 52 }}
+        >
+          <Plus size={20} strokeWidth={2.2} style={{ color: "var(--primary)" }} className="shrink-0" />
+          <span className="text-[15px] font-semibold" style={{ color: "var(--text)" }}>
+            Fazer novo lançamento
+          </span>
+        </button>
+
+        {/* Lista */}
+        <p
+          className="text-[12px] font-semibold uppercase mt-6 mb-2"
+          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
+        >
+          Lançamentos
+        </p>
+
+        {filtrados.length === 0 ? (
+          <div
+            className="rounded-2xl py-10 flex flex-col items-center gap-3"
+            style={{ backgroundColor: "var(--field)" }}
+          >
+            <div
+              className="w-13 h-13 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: "var(--surface)", width: 52, height: 52 }}
+            >
+              <Receipt size={24} style={{ color: "var(--text-tertiary)" }} />
+            </div>
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              Nenhum lançamento ainda
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {filtrados.map((l) => (
+              <div
+                key={l.id}
+                className="rounded-2xl px-4 py-3 flex items-center gap-3"
                 style={{ backgroundColor: "var(--field)" }}
               >
-                <Receipt size={26} style={{ color: "var(--text-secondary)" }} />
-              </div>
-              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                Nenhum lançamento ainda
-              </p>
-            </div>
-          ) : (
-            <ul>
-              {filtrados.map((l) => (
-                <li key={l.id} className="flex items-stretch gap-3">
-                  <TrendingUp
-                    size={20}
-                    strokeWidth={1.75}
-                    style={{ color: "var(--primary)", marginTop: 16 }}
-                    className="shrink-0"
-                  />
-                  <div
-                    className="flex-1 min-w-0 flex items-center gap-2"
-                    style={{
-                      paddingTop: 14,
-                      paddingBottom: 14,
-                      borderBottom: "1px solid var(--border)",
-                    }}
+                <TrendingUp
+                  size={19}
+                  strokeWidth={2}
+                  style={{ color: "var(--primary)" }}
+                  className="shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p
+                    className="text-[15px] font-semibold leading-tight truncate"
+                    style={{ color: "var(--text)" }}
                   >
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className="text-[15px]"
-                        style={{
-                          color: "var(--text)",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {l.descricao}
-                      </p>
-                      <p
-                        className="text-xs mt-0.5"
-                        style={{ color: "var(--text-secondary)", whiteSpace: "nowrap" }}
-                      >
-                        {labelData(l.data)}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Valor tamanho="md" sinal="+">{l.valor}</Valor>
-                      <button
-                        onClick={() => navigate(`/lancar?id=${l.id}`)}
-                        aria-label="Editar lançamento"
-                        className="w-10 h-10 rounded-full flex items-center justify-center active:opacity-70"
-                      >
-                        <Pencil size={16} style={{ color: "var(--text-secondary)" }} />
-                      </button>
-                      <button
-                        onClick={() => setExcluirId(l.id)}
-                        aria-label="Excluir lançamento"
-                        className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center active:opacity-70"
-                      >
-                        <Trash2 size={16} style={{ color: "var(--text-secondary)" }} />
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+                    {l.descricao}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                    {labelData(l.data)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-0.5 shrink-0">
+                  <Valor tamanho="md" sinal="+">{l.valor}</Valor>
+                  <button
+                    onClick={() => navigate(`/lancar?id=${l.id}`)}
+                    aria-label="Editar lançamento"
+                    className="w-9 h-9 rounded-full flex items-center justify-center active:opacity-70"
+                  >
+                    <Pencil size={15} style={{ color: "var(--text-tertiary)" }} />
+                  </button>
+                  <button
+                    onClick={() => setExcluirId(l.id)}
+                    aria-label="Excluir lançamento"
+                    className="w-9 h-9 -ml-1 rounded-full flex items-center justify-center active:opacity-70"
+                  >
+                    <Trash2 size={15} style={{ color: "var(--text-tertiary)" }} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <SeletorMesAno
@@ -288,7 +303,7 @@ export default function Historico() {
                 Cancelar
               </button>
               <button
-                onClick={confirmarExcluir}
+                onClick={() => { removerLancamento(excluirId); setExcluirId(null); }}
                 className="flex-1 py-3 rounded-xl font-semibold"
                 style={{ backgroundColor: "#ef4444", color: "#fff" }}
               >
@@ -302,10 +317,7 @@ export default function Historico() {
       <ModalFaturamentoInicial
         aberto={modalFaturamento}
         onClose={() => setModalFaturamento(false)}
-        onSalvar={() => {
-          setModalFaturamento(false);
-          dispensarFaturamento();
-        }}
+        onSalvar={() => { setModalFaturamento(false); dispensarFaturamento(); }}
       />
 
       <BottomNav ativo="historico" />
