@@ -1,18 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  ArrowLeft, HelpCircle, FileText, ListChecks, Wand2, Paperclip, Send,
-} from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Paperclip, Send, Sparkles } from "lucide-react";
 import Fisco from "../components/Fisco.jsx";
 import { useAppState } from "@/context/AppStateContext";
-import { faixaDoVelocimetro } from "@/lib/fiscal";
-
-const VANTAGENS = [
-  { Icon: HelpCircle, texto: "Tire dúvidas sobre MEI, DAS e imposto na hora" },
-  { Icon: FileText, texto: "Envie foto ou PDF do extrato e o Fisco calcula pra você" },
-  { Icon: ListChecks, texto: "Passo a passo pra pagar o DAS sem erro" },
-  { Icon: Wand2, texto: "Explicações simples, sem juridiquês" },
-];
+import { faixaDoVelocimetro, FAIXA_INFO } from "@/lib/fiscal";
+import { perguntasDaFaixa, perguntasGerais, contextoFaq } from "@/lib/faqFisco";
 
 function poseDaFaixa(faixa) {
   if (faixa === "tranquilo" || faixa === "fique_de_olho") return "joinha";
@@ -22,18 +14,44 @@ function poseDaFaixa(faixa) {
 
 export default function Chat() {
   const navigate = useNavigate();
-  const { percentualAtual } = useAppState();
+  const [params] = useSearchParams();
+  const contexto = params.get("contexto"); // "situacao" | "limite" | null
+
+  const { tipoMEI, faturamentoAtual, limiteAtual, percentualAtual } = useAppState();
+
+  const faixa = faixaDoVelocimetro(percentualAtual);
+  const pose = poseDaFaixa(faixa);
+  const corFaixa = FAIXA_INFO[faixa].cor;
+
+  const modoContextual = contexto === "situacao" || contexto === "limite";
+  const ctx = contextoFaq({ tipoMEI, limite: limiteAtual, faturado: faturamentoAtual });
+  const perguntas = modoContextual ? perguntasDaFaixa(faixa) : perguntasGerais();
+
   const [mensagens, setMensagens] = useState([]);
   const [texto, setTexto] = useState("");
+  const [digitando, setDigitando] = useState(false);
   const listaRef = useRef(null);
-
-  const pose = poseDaFaixa(faixaDoVelocimetro(percentualAtual));
 
   useEffect(() => {
     if (listaRef.current) {
       listaRef.current.scrollTop = listaRef.current.scrollHeight;
     }
-  }, [mensagens]);
+  }, [mensagens, digitando]);
+
+  function responder(item) {
+    setMensagens((prev) => [
+      ...prev,
+      { id: Date.now(), autor: "user", texto: item.pergunta },
+    ]);
+    setDigitando(true);
+    setTimeout(() => {
+      setDigitando(false);
+      setMensagens((prev) => [
+        ...prev,
+        { id: Date.now() + 1, autor: "fisco", texto: item.resposta(ctx) },
+      ]);
+    }, 3000);
+  }
 
   function enviar(e) {
     e?.preventDefault?.();
@@ -41,19 +59,32 @@ export default function Chat() {
     if (!t) return;
     setMensagens((prev) => [...prev, { id: Date.now(), autor: "user", texto: t }]);
     setTexto("");
+    setDigitando(true);
+    setTimeout(() => {
+      setDigitando(false);
+      setMensagens((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          autor: "fisco",
+          texto:
+            "Essa eu ainda não sei responder sozinho — em breve vou conseguir buscar a resposta certa pra você.\n\nPor enquanto, toque em uma das perguntas prontas ou fale com um contador se for algo urgente.",
+        },
+      ]);
+    }, 3000);
   }
 
-  const vazio = mensagens.length === 0;
+  const vazio = mensagens.length === 0 && !digitando;
+
+  const titulo = modoContextual ? "Sobre a sua situação" : "Fisco";
+  const subtitulo = modoContextual
+    ? FAIXA_INFO[faixa].resumo
+    : "Seu amigo fiscal. Como posso te ajudar hoje?";
 
   return (
     <div
-      className="w-full flex flex-col"
-      style={{
-        backgroundColor: "var(--bg)",
-        color: "var(--text)",
-        height: "100dvh",
-        overflow: "hidden",
-      }}
+      className="tela-fixa w-full flex flex-col"
+      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       <header className="px-5 pt-5 pb-1 flex items-center gap-3 shrink-0">
         <button
@@ -66,72 +97,85 @@ export default function Chat() {
         </button>
       </header>
 
-      {vazio ? (
-        <div className="flex-1 min-h-0 flex flex-col px-5 overflow-hidden">
-          <div className="flex flex-col items-center text-center shrink-0">
-            <Fisco size={104} pose={pose} />
-            <h2 className="mt-1 text-2xl font-bold" style={{ color: "var(--text)" }}>
-              Fisco
-            </h2>
-            <p className="mt-0.5 text-sm" style={{ color: "var(--text-secondary)" }}>
-              Seu amigo fiscal. Como posso te ajudar hoje?
-            </p>
-          </div>
-
-          <ul className="w-full mt-4 space-y-2 shrink-0">
-            {VANTAGENS.map(({ Icon, texto }, i) => (
-              <li
-                key={i}
-                className="flex items-center gap-3 rounded-2xl p-3 text-left"
-                style={{
-                  backgroundColor: "var(--surface)",
-                  border: "1px solid var(--border)",
-                }}
+      <div
+        ref={listaRef}
+        className="flex-1 min-h-0 overflow-y-auto hide-scrollbar px-5"
+      >
+        {vazio ? (
+          <>
+            <div className="flex flex-col items-center text-center">
+              <Fisco
+                size={modoContextual ? 128 : 150}
+                pose={pose}
+                fala={FAIXA_INFO[faixa].palavra}
+                corFala={corFaixa}
+              />
+              <h2
+                className="text-xl font-bold mt-1"
+                style={{ color: "var(--text)" }}
               >
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                {titulo}
+              </h2>
+              <p
+                className="mt-0.5 text-[13px] px-4"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                {subtitulo}
+              </p>
+            </div>
+
+            <p
+              className="text-[11px] font-semibold uppercase mt-4 mb-2"
+              style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
+            >
+              {modoContextual ? "Perguntas comuns nessa situação" : "Perguntas frequentes"}
+            </p>
+
+            <div className="space-y-2 pb-4">
+              {perguntas.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => responder(p)}
+                  className="w-full rounded-2xl px-4 py-3 flex items-center gap-3 text-left active:opacity-75"
                   style={{ backgroundColor: "var(--field)" }}
                 >
-                  <Icon size={18} style={{ color: "var(--primary)" }} />
-                </div>
-                <span
-                  className="text-[13px] leading-snug"
-                  style={{ color: "var(--text)" }}
-                >
-                  {texto}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        <div
-          ref={listaRef}
-          className="flex-1 min-h-0 overflow-y-auto px-5 hide-scrollbar"
-          style={{ paddingBottom: "calc(84px + env(safe-area-inset-bottom))" }}
-        >
-          <div className="space-y-3 pt-2">
+                  <div
+                    className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: "var(--surface)" }}
+                  >
+                    <Sparkles size={16} style={{ color: "var(--primary)" }} />
+                  </div>
+                  <span
+                    className="flex-1 text-[14px] leading-snug font-medium"
+                    style={{ color: "var(--text)" }}
+                  >
+                    {p.pergunta}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="space-y-3 pt-2 pb-4">
             {mensagens.map((m) => {
               const isUser = m.autor === "user";
               return (
-                <div
-                  key={m.id}
-                  className={`flex ${isUser ? "justify-end" : "justify-start"}`}
-                >
+                <div key={m.id} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
                   <div
-                    className="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed"
+                    className="max-w-[85%] rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed"
                     style={
                       isUser
                         ? {
                             backgroundColor: "var(--primary)",
                             color: "var(--primary-contrast)",
                             borderBottomRightRadius: 6,
+                            fontWeight: 500,
                           }
                         : {
-                            backgroundColor: "var(--surface)",
+                            backgroundColor: "var(--field)",
                             color: "var(--text)",
-                            border: "1px solid var(--border)",
                             borderBottomLeftRadius: 6,
+                            whiteSpace: "pre-line",
                           }
                     }
                   >
@@ -140,21 +184,90 @@ export default function Chat() {
                 </div>
               );
             })}
+
+            {digitando && (
+              <div className="flex justify-start">
+                <div
+                  className="rounded-2xl px-4 py-3 flex items-center gap-1.5"
+                  style={{
+                    backgroundColor: "var(--field)",
+                    borderBottomLeftRadius: 6,
+                  }}
+                >
+                  <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
+                    Fisco está digitando
+                  </span>
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className="rounded-full"
+                      style={{
+                        width: 5,
+                        height: 5,
+                        backgroundColor: "var(--primary)",
+                        animation: `fiscoPonto 1.2s ease-in-out ${i * 0.18}s infinite`,
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sugestões após a resposta */}
+            {!digitando && mensagens.length > 0 && (
+              <div className="pt-2 space-y-2">
+                <p
+                  className="text-[11px] font-semibold uppercase"
+                  style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
+                >
+                  Perguntar outra coisa
+                </p>
+                {perguntas
+                  .filter((p) => !mensagens.some((m) => m.texto === p.pergunta))
+                  .slice(0, 3)
+                  .map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => responder(p)}
+                      className="w-full rounded-2xl px-4 py-2.5 flex items-center gap-2.5 text-left active:opacity-75"
+                      style={{ backgroundColor: "var(--field)" }}
+                    >
+                      <Sparkles size={15} style={{ color: "var(--primary)" }} className="shrink-0" />
+                      <span
+                        className="flex-1 text-[13px] leading-snug"
+                        style={{ color: "var(--text)" }}
+                      >
+                        {p.pergunta}
+                      </span>
+                    </button>
+                  ))}
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        )}
+
+        <style>{`
+          @keyframes fiscoPonto {
+            0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+            30% { opacity: 1; transform: translateY(-3px); }
+          }
+        `}</style>
+      </div>
 
       <form
         onSubmit={enviar}
         className="shrink-0 px-4"
-        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)", paddingTop: 10 }}
+        style={{
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
+          paddingTop: 10,
+        }}
       >
         <div
           className="flex items-center gap-2 rounded-full pl-2 pr-1.5 py-1.5"
           style={{
             backgroundColor: "var(--surface)",
             border: "1px solid var(--border)",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.22)",
+            boxShadow: "var(--sombra-card)",
           }}
         >
           <button
@@ -162,7 +275,7 @@ export default function Chat() {
             aria-label="Anexar"
             className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 hover:opacity-80"
           >
-            <Paperclip size={18} style={{ color: "var(--text-secondary)" }} />
+            <Paperclip size={18} style={{ color: "var(--text-tertiary)" }} />
           </button>
           <input
             type="text"
