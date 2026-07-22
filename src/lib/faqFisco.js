@@ -7,19 +7,35 @@ const fmt = (v) =>
     maximumFractionDigits: 0,
   }).format(v);
 
-/**
- * FAQ do Fisco — respostas prontas dentro do app.
- *
- * Cada item: { id, pergunta, resposta(ctx) }
- * ctx = { tipoMEI, limite, faturado, limiteCheio, teto20 }
- *
- * Regra editorial:
- * - Linguagem simples, sem juridiquês
- * - Nunca prometer resultado
- * - Sempre sugerir contador em decisão relevante
- */
-
 const RESSALVA = "Isso é uma orientação geral — pra decidir, vale confirmar com um contador.";
+
+const ehCaminhoneiro = (c) => c.tipoMEI === "MEI_CAMINHONEIRO";
+
+// Vocabulário aplicado nas respostas
+const V = (c) =>
+  ehCaminhoneiro(c)
+    ? {
+        receita: "frete",
+        receitas: "fretes",
+        oQueEntra: "seus fretes",
+        cliente: "embarcador",
+        clientes: "embarcadores",
+        trabalhar: "rodar",
+        trabalho: "frete",
+        recebeu: "recebeu pelos fretes",
+        atividade: "transporte",
+      }
+    : {
+        receita: "recebimento",
+        receitas: "recebimentos",
+        oQueEntra: "seus recebimentos",
+        cliente: "cliente",
+        clientes: "clientes",
+        trabalhar: "trabalhar",
+        trabalho: "serviço",
+        recebeu: "recebeu",
+        atividade: "atividade",
+      };
 
 // ---- Perguntas por FAIXA (card "Sua situação" do dashboard) ----
 
@@ -28,26 +44,30 @@ const POR_FAIXA = {
     {
       id: "t1",
       pergunta: "Como eu sei se estou no caminho certo?",
-      resposta: (c) =>
-        `Pelo velocímetro. Ele compara tudo que você já registrou este ano (${fmt(c.faturado)}) com o seu limite anual (${fmt(c.limite)}). Enquanto o ponteiro estiver na faixa verde, você tem folga.\n\nO segredo é registrar tudo que entra: dinheiro, Pix, cartão, transferência. Não importa se você emitiu nota ou não — pra Receita, o que conta é o valor recebido.`,
+      resposta: (c) => {
+        const v = V(c);
+        return `Pelo velocímetro. Ele compara tudo que você já registrou este ano (${fmt(c.faturado)}) com o seu limite anual (${fmt(c.limite)}). Enquanto o ponteiro estiver na faixa verde, você tem folga.\n\nO segredo é registrar todos ${v.oQueEntra}: dinheiro, Pix, cartão, transferência. Não importa se você emitiu nota ou não — pra Receita, o que conta é o valor recebido.`;
+      },
     },
     {
       id: "t2",
       pergunta: "Preciso lançar dinheiro em espécie também?",
-      resposta: () =>
-        `Sim. O limite do MEI olha a receita bruta, que é tudo que entra pelo seu trabalho — incluindo dinheiro vivo.\n\nDeixar de registrar não diminui o que você faturou de verdade: só faz o velocímetro mostrar um número mais baixo que a realidade, e isso é justamente o que causa susto no fim do ano.`,
+      resposta: (c) => {
+        const v = V(c);
+        return `Sim. O limite olha a receita bruta, que é tudo que entra pelo seu ${v.atividade} — incluindo dinheiro vivo.\n\nDeixar de registrar não diminui o que você faturou de verdade: só faz o velocímetro mostrar um número mais baixo que a realidade, e isso é justamente o que causa susto no fim do ano.`;
+      },
     },
     {
       id: "t3",
       pergunta: "O que acontece se eu esquecer de pagar o DAS?",
       resposta: () =>
-        `O DAS vence todo dia 20. Se atrasar, ele continua disponível pra pagamento com multa e juros — não some.\n\nO problema maior é acumular: ficar muito tempo sem pagar pode complicar seus benefícios do INSS e até levar à baixa do CNPJ. Se tiver DAS atrasado, dá pra emitir tudo pelo app do MEI ou pelo Portal do Empreendedor.`,
+        `O DAS vence todo dia 20. Se atrasar, ele continua disponível pra pagamento com multa e juros — não some.\n\nO problema maior é acumular: ficar muito tempo sem pagar pode complicar seus benefícios do INSS e até levar à baixa do CNPJ. Dá pra emitir tudo pelo app do MEI ou pelo Portal do Empreendedor.`,
     },
     {
       id: "t4",
       pergunta: "Meu salário CLT conta no limite?",
       resposta: () =>
-        `Não. O limite considera só o que a sua empresa MEI fatura.\n\nSalário de carteira assinada, aposentadoria, aluguel que você recebe como pessoa física — nada disso entra na conta do CNPJ.`,
+        `Não. O limite considera só o que a sua empresa fatura pelo CNPJ.\n\nSalário de carteira assinada, aposentadoria, aluguel que você recebe como pessoa física — nada disso entra na conta.`,
     },
     {
       id: "t5",
@@ -72,9 +92,12 @@ const POR_FAIXA = {
     },
     {
       id: "f3",
-      pergunta: "Posso recusar trabalho pra não estourar?",
-      resposta: () =>
-        `Pode, mas raramente é a melhor saída. Recusar faturamento é abrir mão de dinheiro.\n\nAlternativas comuns: negociar pra que parte do pagamento caia em janeiro do ano seguinte, ou já se planejar pra virar Microempresa. ${RESSALVA}`,
+      pergunta: (c) =>
+        ehCaminhoneiro(c) ? "Posso recusar frete pra não estourar?" : "Posso recusar trabalho pra não estourar?",
+      resposta: (c) => {
+        const v = V(c);
+        return `Pode, mas raramente é a melhor saída. Recusar ${v.trabalho} é abrir mão de dinheiro.\n\nAlternativas comuns: negociar com o ${v.cliente} pra que parte do pagamento caia em janeiro do ano seguinte, ou já se planejar pra virar Microempresa. ${RESSALVA}`;
+      },
     },
     {
       id: "f4",
@@ -108,8 +131,10 @@ const POR_FAIXA = {
     {
       id: "a3",
       pergunta: "Posso dividir o pagamento pro ano que vem?",
-      resposta: () =>
-        `O que conta pro limite é a data em que você recebe, não a data do serviço.\n\nEntão, negociar com o cliente pra que parte caia em janeiro é uma prática legítima. Só não vale registrar com data errada — isso sim é problema. ${RESSALVA}`,
+      resposta: (c) => {
+        const v = V(c);
+        return `O que conta pro limite é a data em que você recebe, não a data do ${v.trabalho}.\n\nEntão, negociar com o ${v.cliente} pra que parte caia em janeiro é uma prática legítima. Só não vale registrar com data errada — isso sim é problema. ${RESSALVA}`;
+      },
     },
     {
       id: "a4",
@@ -119,9 +144,12 @@ const POR_FAIXA = {
     },
     {
       id: "a5",
-      pergunta: "Se eu parar de faturar agora, resolve?",
-      resposta: () =>
-        `Se você parar antes de bater o limite, sim — nada muda e você segue MEI normalmente no ano que vem.\n\nMas parar de trabalhar raramente é a melhor decisão financeira. Vale conversar com um contador sobre qual sai mais caro: perder o faturamento ou migrar de regime.`,
+      pergunta: (c) =>
+        ehCaminhoneiro(c) ? "Se eu parar de rodar agora, resolve?" : "Se eu parar de faturar agora, resolve?",
+      resposta: (c) => {
+        const v = V(c);
+        return `Se você parar antes de bater o limite, sim — nada muda e você segue MEI normalmente no ano que vem.\n\nMas parar de ${v.trabalhar} raramente é a melhor decisão financeira. Vale conversar com um contador sobre qual sai mais caro: perder o faturamento ou migrar de regime.`;
+      },
     },
   ],
 
@@ -131,7 +159,8 @@ const POR_FAIXA = {
       pergunta: "Estou quase no limite. O que faço?",
       resposta: (c) => {
         const falta = Math.max(0, c.limite - c.faturado);
-        return `Você tem ${fmt(falta)} de margem antes de bater os ${fmt(c.limite)}.\n\nA recomendação prática: evite fechar contratos grandes agora sem antes falar com um contador. Passar do limite não é o fim do mundo, mas muda sua vida fiscal no ano que vem.`;
+        const v = V(c);
+        return `Você tem ${fmt(falta)} de margem antes de bater os ${fmt(c.limite)}.\n\nA recomendação prática: evite fechar ${v.receitas} grandes agora sem antes falar com um contador. Passar do limite não é o fim do mundo, mas muda sua vida fiscal no ano que vem.`;
       },
     },
     {
@@ -149,8 +178,10 @@ const POR_FAIXA = {
     {
       id: "p4",
       pergunta: "Quanto vou pagar de imposto como ME?",
-      resposta: () =>
-        `Como ME no Simples Nacional, o imposto vira um percentual do faturamento, e a faixa inicial costuma ficar entre 4% e 6% dependendo da atividade.\n\nO valor exato depende do seu caso. ${RESSALVA}`,
+      resposta: (c) =>
+        ehCaminhoneiro(c)
+          ? `Como ME no Simples Nacional, o imposto vira um percentual do faturamento. Pra transporte de cargas, a faixa inicial costuma ficar em torno de 6%.\n\nO valor exato depende do seu caso. ${RESSALVA}`
+          : `Como ME no Simples Nacional, o imposto vira um percentual do faturamento, e a faixa inicial costuma ficar entre 4% e 6% dependendo da atividade.\n\nO valor exato depende do seu caso. ${RESSALVA}`,
     },
     {
       id: "p5",
@@ -175,9 +206,12 @@ const POR_FAIXA = {
     },
     {
       id: "e3",
-      pergunta: "Preciso parar de faturar agora?",
-      resposta: (c) =>
-        `Não precisa parar, mas precisa ficar de olho: se o total do ano passar de ${fmt(c.teto20)}, a regra muda completamente e o desenquadramento vira retroativo, com multa e juros.\n\nEssa é a linha que você não quer cruzar sem falar com um contador antes.`,
+      pergunta: (c) =>
+        ehCaminhoneiro(c) ? "Preciso parar de rodar agora?" : "Preciso parar de faturar agora?",
+      resposta: (c) => {
+        const v = V(c);
+        return `Não precisa parar de ${v.trabalhar}, mas precisa ficar de olho: se o total do ano passar de ${fmt(c.teto20)}, a regra muda completamente e o desenquadramento vira retroativo, com multa e juros.\n\nEssa é a linha que você não quer cruzar sem falar com um contador antes.`;
+      },
     },
     {
       id: "e4",
@@ -205,8 +239,10 @@ const POR_FAIXA = {
     {
       id: "c2",
       pergunta: "Vou pagar muito mais imposto?",
-      resposta: () =>
-        `Sim, o valor sobe — em vez do DAS fixo, você passa a pagar um percentual sobre tudo que faturou no ano, mais multa e juros sobre o atraso.\n\nO número exato depende da sua atividade e do total faturado. Um contador consegue calcular isso rapidamente.`,
+      resposta: (c) => {
+        const v = V(c);
+        return `Sim, o valor sobe — em vez do DAS fixo, você passa a pagar um percentual sobre tudo que ${v.recebeu} no ano, mais multa e juros sobre o atraso.\n\nO número exato depende da sua atividade e do total faturado. Um contador consegue calcular isso rapidamente.`;
+      },
     },
     {
       id: "c3",
@@ -223,8 +259,10 @@ const POR_FAIXA = {
     {
       id: "c5",
       pergunta: "Meu CNPJ vai ser cancelado?",
-      resposta: () =>
-        `Não. O CNPJ continua ativo e é o mesmo — o que muda é o regime tributário.\n\nVocê deixa de ser MEI e passa a ser Microempresa. A empresa segue existindo e funcionando normalmente.`,
+      resposta: (c) =>
+        ehCaminhoneiro(c)
+          ? `Não. O CNPJ continua ativo e é o mesmo — o que muda é o regime tributário.\n\nVocê deixa de ser MEI Caminhoneiro e passa a ser Microempresa. Seu registro na ANTT (RNTRC) também continua valendo.`
+          : `Não. O CNPJ continua ativo e é o mesmo — o que muda é o regime tributário.\n\nVocê deixa de ser MEI e passa a ser Microempresa. A empresa segue existindo e funcionando normalmente.`,
     },
   ],
 };
@@ -236,7 +274,7 @@ const GERAIS = [
     id: "g1",
     pergunta: "Quanto é o DAS e quando vence?",
     resposta: (c) =>
-      c.tipoMEI === "MEI_CAMINHONEIRO"
+      ehCaminhoneiro(c)
         ? `O DAS do MEI Caminhoneiro é um valor fixo mensal, que muda um pouco conforme o tipo de transporte (municipal, intermunicipal ou cargas especiais). Ele já vem com INSS, ICMS e ISS num boleto só.\n\nVence todo dia 20. Se cair em fim de semana ou feriado, antecipa. O valor exato do seu caso aparece no app do MEI ou no Portal do Empreendedor.`
         : `O DAS do MEI é um valor fixo mensal, que muda um pouco conforme a atividade (comércio, serviços ou os dois). Ele já inclui INSS e o imposto estadual ou municipal.\n\nVence todo dia 20. Se cair em fim de semana ou feriado, antecipa. O valor exato aparece no app do MEI ou no Portal do Empreendedor.`,
   },
@@ -245,16 +283,20 @@ const GERAIS = [
     pergunta: "Qual é o meu limite de faturamento?",
     resposta: (c) => {
       const proporcional = c.limite !== c.limiteCheio;
+      const v = V(c);
       return proporcional
         ? `O seu limite este ano é ${fmt(c.limite)}.\n\nEle é menor que o limite cheio (${fmt(c.limiteCheio)}) porque você abriu o MEI no meio do ano — nesse caso a lei calcula proporcional aos meses de atividade.`
-        : `O seu limite é ${fmt(c.limite)} por ano.\n\nEsse valor considera tudo que entra pelo CNPJ: dinheiro, Pix, cartão, transferência, com ou sem nota fiscal.`;
+        : `O seu limite é ${fmt(c.limite)} por ano.\n\nEsse valor considera tudo que entra pelo CNPJ com ${v.oQueEntra}: dinheiro, Pix, cartão, transferência, com ou sem nota fiscal.`;
     },
   },
   {
     id: "g3",
-    pergunta: "Preciso emitir nota fiscal?",
-    resposta: () =>
-      `Pra pessoa física (cliente comum), não é obrigatório — só se ele pedir.\n\nPra empresa (pessoa jurídica), sim, é obrigatório emitir.\n\nMas atenção: emitir ou não nota não muda o seu limite. O que conta é o valor que você recebeu.`,
+    pergunta: (c) =>
+      ehCaminhoneiro(c) ? "Preciso emitir CT-e em todo frete?" : "Preciso emitir nota fiscal?",
+    resposta: (c) =>
+      ehCaminhoneiro(c)
+        ? `Pra transportar carga de terceiros, o CT-e (Conhecimento de Transporte Eletrônico) é obrigatório. É ele que documenta o frete.\n\nPra emitir, você precisa estar com o RNTRC ativo na ANTT. E atenção: emitir ou não documento não muda o seu limite — o que conta é o valor que você recebeu.`
+        : `Pra pessoa física (cliente comum), não é obrigatório — só se ele pedir.\n\nPra empresa (pessoa jurídica), sim, é obrigatório emitir.\n\nMas atenção: emitir ou não nota não muda o seu limite. O que conta é o valor que você recebeu.`,
   },
   {
     id: "g4",
@@ -270,11 +312,19 @@ const GERAIS = [
   },
   {
     id: "g6",
-    pergunta: "Posso ter funcionário?",
-    resposta: () =>
-      `Sim, mas apenas um. E o salário precisa ser o mínimo ou o piso da categoria.\n\nVocê passa a recolher uma contribuição extra sobre a folha e a ter obrigações trabalhistas. ${RESSALVA}`,
+    pergunta: (c) =>
+      ehCaminhoneiro(c) ? "Posso ter um ajudante ou segundo motorista?" : "Posso ter funcionário?",
+    resposta: (c) =>
+      ehCaminhoneiro(c)
+        ? `Sim, mas apenas um — pode ser um ajudante ou um segundo motorista. O salário precisa ser o mínimo ou o piso da categoria.\n\nVocê passa a recolher uma contribuição extra sobre a folha e a ter obrigações trabalhistas. ${RESSALVA}`
+        : `Sim, mas apenas um. E o salário precisa ser o mínimo ou o piso da categoria.\n\nVocê passa a recolher uma contribuição extra sobre a folha e a ter obrigações trabalhistas. ${RESSALVA}`,
   },
 ];
+
+/** Resolve pergunta que pode ser string ou função(ctx) */
+export function textoPergunta(item, ctx) {
+  return typeof item.pergunta === "function" ? item.pergunta(ctx) : item.pergunta;
+}
 
 export function perguntasDaFaixa(faixa) {
   return POR_FAIXA[faixa] || POR_FAIXA.tranquilo;
