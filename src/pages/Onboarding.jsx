@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
-  ArrowLeft, Briefcase, Truck, CheckCircle2, Clock, Info, Gauge, ChevronDown,
+  ArrowLeft, ArrowRight, Briefcase, Truck, CheckCircle2, Clock, Gauge, ChevronDown,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
 import { setUserState } from "@/lib/userState";
-import { LIMITES_ANUAIS, limiteProporcional } from "@/lib/fiscal";
+import { LIMITES_ANUAIS, limiteProporcional, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 import SeletorMesAno from "@/components/SeletorMesAno";
 import Valor from "@/components/Valor";
 
@@ -79,21 +79,28 @@ export default function Onboarding() {
     color: "var(--text)",
   };
 
+  // MUD 5 — botão pill padronizado, com seta e glow ao pressionar
   const btnPrincipal = {
     backgroundColor: "transparent",
     border: "1.5px solid var(--primary)",
     color: "var(--primary)",
+    width: 232,
+    height: 52,
   };
   const btnPrincipalClasse =
-    "mx-auto block px-10 py-3 rounded-full font-semibold text-sm transition active:scale-[0.98] disabled:opacity-35";
+    "btn-pill-tacerto mx-auto flex items-center justify-center gap-2 rounded-full font-semibold text-[15px] disabled:opacity-35";
 
+  // MUD 3 e 4 — selecionado = borda verde discreta; não selecionado = apagado
   function estiloCard(selecionado, algoSelecionado) {
     const claro = !algoSelecionado || selecionado;
     return {
-      backgroundColor: claro ? "var(--surface-selected)" : "var(--field)",
-      border: "none",
+      backgroundColor: selecionado ? "rgba(34,197,94,0.07)" : "var(--field)",
+      border: selecionado
+        ? "1px solid var(--primary)"
+        : "1px solid transparent",
       opacity: claro ? 1 : 0.42,
-      transition: "background-color 180ms ease, opacity 180ms ease",
+      transition:
+        "background-color 180ms ease, border-color 180ms ease, opacity 180ms ease",
     };
   }
 
@@ -169,10 +176,15 @@ export default function Onboarding() {
 
               <input
                 type="text"
+                name="apelido-tacerto"
                 placeholder="Digite seu nome ou apelido"
                 value={nome}
-                maxLength={30}
+                maxLength={LIMITE_NOME_INPUT}
                 autoFocus
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="words"
+                spellCheck={false}
                 onChange={(e) => { setNome(e.target.value); if (erro) setErro(""); }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -180,7 +192,7 @@ export default function Onboarding() {
                     else { setErro(""); setStep(2); }
                   }
                 }}
-                className="w-full px-4 py-3.5 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
+                className="campo-tacerto w-full px-4 py-3.5 rounded-xl text-sm placeholder:opacity-70"
                 style={fieldStyle}
               />
 
@@ -202,6 +214,7 @@ export default function Onboarding() {
                 style={btnPrincipal}
               >
                 Continuar
+                <ArrowRight size={18} strokeWidth={2.4} />
               </button>
             </div>
           )}
@@ -228,15 +241,16 @@ export default function Onboarding() {
                     <button
                       key={o.v}
                       onClick={() => setTipoMei(o.v)}
-                      className="w-full flex items-center gap-3 p-3.5 rounded-xl text-left"
+                      className="w-full flex items-center gap-3.5 p-3.5 rounded-xl text-left"
                       style={estiloCard(sel, !!tipoMei)}
                     >
-                      <div
-                        className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                        style={{ backgroundColor: "rgba(34,197,94,0.12)" }}
-                      >
-                        <Ico size={20} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
-                      </div>
+                      {/* MUD 3 — sem fundo verde, só o ícone */}
+                      <Ico
+                        size={24}
+                        strokeWidth={1.75}
+                        className="shrink-0"
+                        style={{ color: sel ? "var(--primary)" : "var(--text-secondary)" }}
+                      />
                       <div className="flex-1 min-w-0">
                         <div
                           className="text-sm font-semibold"
@@ -265,6 +279,7 @@ export default function Onboarding() {
                   style={btnPrincipal}
                 >
                   Continuar
+                  <ArrowRight size={18} strokeWidth={2.4} />
                 </button>
               </div>
             </div>
@@ -296,7 +311,11 @@ export default function Onboarding() {
                         color: "var(--text)",
                       }}
                     >
-                      <Ico size={14} strokeWidth={1.75} />
+                      <Ico
+                        size={14}
+                        strokeWidth={1.75}
+                        style={{ color: sel ? "var(--primary)" : "var(--text-secondary)" }}
+                      />
                       {o.l}
                     </button>
                   );
@@ -304,7 +323,7 @@ export default function Onboarding() {
               </div>
 
               {/* Área reservada — mantém o botão no mesmo lugar nos dois casos */}
-              <div style={{ minHeight: 108 }} className="pt-3">
+              <div style={{ minHeight: 96 }} className="pt-3">
                 {meiEsseAno === true && (
                   <>
                     <p
@@ -313,52 +332,54 @@ export default function Onboarding() {
                     >
                       Qual mês você abriu?
                     </p>
+                    {/* MUD 6 — mês e limite na MESMA barra */}
                     <button
                       onClick={() => setSeletorMes(true)}
-                      className="w-full h-[46px] px-4 flex items-center justify-between rounded-xl text-sm mb-2"
-                      style={{
-                        ...fieldStyle,
-                        fontWeight: mesMei ? 600 : 400,
-                        color: mesMei ? "var(--text)" : "var(--text-secondary)",
-                      }}
+                      className="w-full px-4 py-2.5 flex items-center justify-between gap-3 rounded-xl"
+                      style={fieldStyle}
                     >
-                      <span>{mesMei ? MESES[parseInt(mesMei) - 1] : "Selecione o mês"}</span>
-                      <ChevronDown size={18} style={{ color: "var(--text-secondary)" }} />
-                    </button>
-
-                    {mesMei && (
-                      <div
-                        className="rounded-xl px-3 py-2.5"
-                        style={{
-                          backgroundColor: "var(--field)",
-                          border: "1px solid var(--border)",
-                        }}
-                      >
-                        <p
-                          className="text-xs font-medium inline-flex items-center gap-1.5"
-                          style={{ color: "var(--text)" }}
+                      <div className="flex-1 min-w-0 text-left">
+                        <div
+                          className="text-sm"
+                          style={{
+                            fontWeight: mesMei ? 600 : 400,
+                            color: mesMei ? "var(--text)" : "var(--text-secondary)",
+                          }}
                         >
-                          <Info size={14} strokeWidth={2} style={{ color: "var(--primary)" }} />
-                          Limite: <Valor tamanho="sm">{limiteFinal}</Valor>
-                        </p>
+                          {mesMei ? MESES[parseInt(mesMei) - 1] : "Selecione o mês"}
+                        </div>
+                        {mesMei && (
+                          <div
+                            className="text-[11px] mt-0.5 flex items-center gap-1"
+                            style={{ color: "var(--text-secondary)" }}
+                          >
+                            Limite: <Valor tamanho="sm">{limiteFinal}</Valor>
+                          </div>
+                        )}
                       </div>
-                    )}
+                      <ChevronDown size={18} style={{ color: "var(--text-secondary)" }} className="shrink-0" />
+                    </button>
                   </>
                 )}
 
                 {meiEsseAno === false && (
                   <div
-                    className="rounded-xl px-3 py-2.5"
+                    className="rounded-xl px-4 py-3"
                     style={{
                       backgroundColor: "var(--field)",
                       border: "1px solid var(--border)",
                     }}
                   >
+                    {/* MUD 4 — ícone neutro, não verde */}
                     <p
                       className="text-xs font-medium inline-flex items-center gap-1.5"
                       style={{ color: "var(--text)" }}
                     >
-                      <CheckCircle2 size={14} strokeWidth={2} style={{ color: "var(--primary)" }} />
+                      <CheckCircle2
+                        size={14}
+                        strokeWidth={2}
+                        style={{ color: "var(--text-secondary)" }}
+                      />
                       Limite cheio: <Valor tamanho="sm">{limiteCheio}</Valor> / ano
                     </p>
                   </div>
@@ -371,7 +392,8 @@ export default function Onboarding() {
                 className={btnPrincipalClasse}
                 style={btnPrincipal}
               >
-                Começar a usar!
+                Começar a usar
+                <ArrowRight size={18} strokeWidth={2.4} />
               </button>
             </div>
           )}
