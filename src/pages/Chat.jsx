@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Paperclip, Send, Sparkles } from "lucide-react";
 import Fisco from "../components/Fisco.jsx";
-import FiscoComBalao from "../components/FiscoComBalao.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import { faixaDoVelocimetro, FAIXA_INFO, LIMITE_PERGUNTA_CHAT } from "@/lib/fiscal";
 import {
@@ -103,12 +102,11 @@ export default function Chat() {
   }
 
   const vazio = mensagens.length === 0 && !digitando;
-
   const titulo = modoContextual ? "Sobre a sua situação" : "Fisco";
 
   return (
     <div
-      className="tela-fixa w-full flex flex-col relative"
+      className="tela-fixa w-full flex flex-col relative overflow-hidden"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       <header className="px-5 pt-5 pb-1 flex items-center gap-3 shrink-0">
@@ -124,21 +122,21 @@ export default function Chat() {
 
       <div
         ref={listaRef}
-        className="flex-1 min-h-0 overflow-y-auto hide-scrollbar px-5"
-        style={{ paddingBottom: "calc(120px + env(safe-area-inset-bottom))" }}
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden hide-scrollbar px-5"
+        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
       >
         {vazio ? (
           <>
             {modoContextual ? (
               <div className="flex flex-col items-center text-center">
-                <FiscoComBalao
-                  size={132}
+                <Fisco
+                  size={150}
                   pose={pose}
                   fala={FAIXA_INFO[faixa].palavra}
                   corFala={corFaixa}
-                  style={{ marginBottom: -8 }}
+                  style={{ marginTop: -6, marginBottom: -6 }}
                 />
-                <h2 className="text-lg font-bold mt-1" style={{ color: "var(--text)" }}>
+                <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>
                   {titulo}
                 </h2>
                 <p
@@ -192,7 +190,7 @@ export default function Chat() {
             {modoContextual && (
               <>
                 <p
-                  className="text-[11px] font-semibold uppercase mt-4 mb-2"
+                  className="text-[11px] font-semibold uppercase mt-3 mb-2"
                   style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
                 >
                   Perguntas comuns nessa situação
@@ -353,20 +351,17 @@ export default function Chat() {
             maxLength={LIMITE_PERGUNTA_CHAT}
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Pergunte ao Fisco..."
-            className="flex-1 bg-transparent outline-none text-sm py-2"
+            className="flex-1 bg-transparent outline-none text-sm py-2 min-w-0"
             style={{ color: "var(--text)" }}
           />
           <button
             type="submit"
             aria-label="Enviar"
             disabled={!texto.trim()}
-            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 active:scale-95 transition disabled:opacity-50"
-            style={{
-              backgroundColor: "var(--primary)",
-              color: "var(--primary-contrast)",
-            }}
+            className="btn-enviar-fisco w-10 h-10 rounded-full flex items-center justify-center shrink-0 disabled:opacity-50"
+            style={{ color: "var(--primary-contrast)" }}
           >
-            <Send size={18} />
+            <Send size={17} strokeWidth={2.4} />
           </button>
         </div>
       </form>
