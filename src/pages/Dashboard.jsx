@@ -4,7 +4,7 @@ import { Bell, Gauge, ArrowUp, TrendingUp, ChevronRight, Receipt } from "lucide-
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
-import FiscoComBalao from "../components/FiscoComBalao.jsx";
+import Fisco from "../components/Fisco.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
   LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO, FAIXAS_ORDEM, FAIXA_RANGE_LABEL,
@@ -37,12 +37,8 @@ function poseDaFaixa(faixa) {
   return "alerta";
 }
 
-/**
- * Bolinhas do carrossel — MESMA posição nas duas telas (absolutas).
- * Cor SEMPRE verde: forte no card A, bem fraca no card B.
- */
+/** Bolinhas do carrossel — sempre verdes, sempre no mesmo lugar, quase imperceptíveis */
 function BolinhasIndicadoras({ pagina, irPara }) {
-  const forte = pagina === 0;
   return (
     <div className="absolute top-4 right-5 z-20 flex items-center gap-1.5">
       {[0, 1].map((i) => {
@@ -54,12 +50,10 @@ function BolinhasIndicadoras({ pagina, irPara }) {
             aria-label={`Ir para tela ${i + 1}`}
             className="rounded-full transition-all"
             style={{
-              width: 7,
-              height: 7,
+              width: 6,
+              height: 6,
               backgroundColor: "var(--primary)",
-              opacity: forte
-                ? (ativa ? 1 : 0.3)
-                : (ativa ? 0.4 : 0.15),
+              opacity: ativa ? 0.5 : 0.16,
             }}
           />
         );
@@ -76,11 +70,11 @@ function TelaDetalhes({
   const temLancamento = ultimos.length > 0;
 
   return (
-    <div className="card-b-fonte-fixa w-1/2 h-full flex flex-col px-3.5 pt-3.5 pb-3.5 gap-2 overflow-hidden">
+    <div className="card-b-fonte-fixa w-1/2 h-full flex flex-col px-4 pt-4 pb-4 gap-2.5 overflow-hidden">
       {/* 1 — Sua situação (clicável) */}
       <button
         onClick={onSituacao}
-        className="relative rounded-2xl pl-4 pr-3 py-3 text-left shrink-0 active:scale-[0.985] active:opacity-90 transition overflow-hidden"
+        className="relative rounded-2xl pl-4 pr-3 py-3.5 text-left shrink-0 active:scale-[0.985] active:opacity-90 transition overflow-hidden"
         style={{
           backgroundColor: "var(--surface-raised)",
           boxShadow: `inset 3px 0 0 0 ${corFaixa}`,
@@ -94,9 +88,9 @@ function TelaDetalhes({
           }}
         />
         <div className="relative flex items-center gap-2.5">
-          <div className="flex-1 min-w-0" style={{ paddingRight: 42 }}>
+          <div className="flex-1 min-w-0" style={{ paddingRight: 34 }}>
             <p
-              className="text-[9px] font-bold uppercase mb-0.5"
+              className="text-[9px] font-bold uppercase mb-1"
               style={{ color: corFaixa, letterSpacing: "0.09em" }}
             >
               Sua situação
@@ -125,7 +119,7 @@ function TelaDetalhes({
       {temLancamento ? (
         <button
           onClick={onLancamentos}
-          className="rounded-2xl px-4 py-2.5 text-left shrink-0 active:opacity-80 transition"
+          className="rounded-2xl px-4 py-3 text-left shrink-0 active:opacity-80 transition"
           style={{ backgroundColor: "var(--surface-raised)" }}
         >
           <div className="flex items-center gap-2 mb-1.5">
@@ -138,7 +132,7 @@ function TelaDetalhes({
             </p>
             <ChevronRight size={14} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
           </div>
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             {ultimos.map((l) => {
               const d = new Date(l.data);
               return (
@@ -169,10 +163,10 @@ function TelaDetalhes({
 
       {/* 3 — Seu ritmo */}
       <div
-        className="rounded-2xl px-4 py-2.5 shrink-0"
+        className="rounded-2xl px-4 py-3 shrink-0"
         style={{ backgroundColor: "var(--surface-raised)" }}
       >
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex items-center gap-2 mb-1.5">
           <TrendingUp size={12} style={{ color: "var(--text-tertiary)" }} />
           <p
             className="text-[9px] font-bold uppercase"
@@ -181,7 +175,7 @@ function TelaDetalhes({
             Seu ritmo
           </p>
         </div>
-        <div className="flex items-baseline justify-between gap-2 mb-0.5">
+        <div className="flex items-baseline justify-between gap-2 mb-1">
           <span className="text-[11.5px]" style={{ color: "var(--text-secondary)" }}>
             Média por mês
           </span>
@@ -195,9 +189,12 @@ function TelaDetalhes({
         </div>
       </div>
 
-      {/* 4 — Faixas de risco (fixa, não clicável) */}
+      {/* Respiro elástico: absorve a sobra sem esticar os cards */}
+      <div className="flex-1 min-h-0" aria-hidden />
+
+      {/* 4 — Faixas de risco (fina, fixa, não clicável) */}
       <div
-        className="rounded-2xl px-4 pt-2.5 pb-3 shrink-0 mt-auto"
+        className="rounded-2xl px-4 pt-2.5 pb-2.5 shrink-0"
         style={{ backgroundColor: "var(--surface-raised)" }}
       >
         <p
@@ -356,7 +353,6 @@ function CardVelocimetroCarrossel({
       onMouseUp={(e) => fim(e.clientX)}
       onMouseLeave={(e) => ativo.current && fim(e.clientX)}
     >
-      {/* Bolinhas: posição fixa e igual nas duas telas */}
       <BolinhasIndicadoras pagina={pagina} irPara={irPara} />
 
       {/* Rótulo do perfil só na tela A */}
@@ -525,24 +521,24 @@ export default function Dashboard() {
             onExcedente={() => navigate("/regra-vinte")}
           />
 
-          {/* Fisco colado na barra + barra translúcida */}
+          {/* Fisco + barra translúcida */}
           <button
             onClick={() => navigate("/chat")}
-            className="shrink-0 flex items-end active:opacity-90 transition mt-1"
+            className="shrink-0 flex items-end active:opacity-90 transition mt-1 w-full"
             style={{ background: "none", border: "none", padding: 0 }}
           >
-            <FiscoComBalao
-              size={104}
+            <Fisco
+              size={132}
               pose={pose}
               fala={info.palavra}
               corFala={corFaixa}
               className="shrink-0"
-              style={{ marginBottom: -10, marginLeft: -14, marginRight: -18 }}
+              style={{ marginBottom: -12, marginLeft: -22, marginRight: -30 }}
             />
 
             <span
-              className="barra-flutuante flex-1 rounded-full pl-4 pr-1 flex items-center gap-2 text-left min-w-0"
-              style={{ height: 44, marginBottom: 8 }}
+              className="barra-flutuante flex-1 rounded-full pl-4 pr-1.5 flex items-center gap-2 text-left min-w-0"
+              style={{ height: 46, marginBottom: 10 }}
             >
               <span
                 className="flex-1 text-[13.5px] truncate"
@@ -551,15 +547,14 @@ export default function Dashboard() {
                 Pergunte ao Fisco...
               </span>
               <span
-                className="rounded-full flex items-center justify-center shrink-0"
-                style={{
-                  width: 34,
-                  height: 34,
-                  backgroundColor: "var(--primary)",
-                  boxShadow: "0 2px 10px rgba(34,197,94,0.34)",
-                }}
+                className="btn-enviar-fisco rounded-full flex items-center justify-center shrink-0"
+                style={{ width: 34, height: 34 }}
               >
-                <ArrowUp size={17} strokeWidth={2.6} style={{ color: "var(--primary-contrast)" }} />
+                <ArrowUp
+                  size={18}
+                  strokeWidth={3}
+                  style={{ color: "var(--primary-contrast)" }}
+                />
               </span>
             </span>
           </button>
