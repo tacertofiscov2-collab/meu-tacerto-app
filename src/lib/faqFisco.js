@@ -343,3 +343,82 @@ export function contextoFaq({ tipoMEI, limite, faturado }) {
     teto20: limiteAte20Percent(tipoMEI),
   };
 }
+
+/* ===================================================================
+   MATCHING POR PALAVRA-CHAVE — chat geral (sem contexto)
+   Liga o que o usuário digita às respostas prontas.
+   Referencia os itens por ID, não por posição.
+   =================================================================== */
+
+const CHAVES_POR_ID = {
+  g1: [
+    "das", "guia", "boleto", "carne", "carnê", "mensalidade", "quanto pago",
+    "quanto custa", "vence", "vencimento", "dia 20", "pagamento mensal",
+    "atrasei", "atrasado", "esqueci de pagar",
+  ],
+  g2: [
+    "limite", "teto", "quanto posso faturar", "quanto posso receber",
+    "faturamento maximo", "estourar", "81 mil", "81000", "251", "quanto falta",
+    "receita bruta", "faturamento anual",
+  ],
+  g3: [
+    "nota fiscal", "notinha", "emitir nota", "nfe", "nf-e", "nfse",
+    "cte", "ct-e", "conhecimento de transporte", "documento fiscal",
+    "preciso emitir", "obrigado a emitir",
+  ],
+  g4: [
+    "direito", "direitos", "aposentadoria", "aposentar", "inss",
+    "auxilio", "auxílio", "beneficio", "benefício", "maternidade",
+    "pensao", "pensão", "afastamento", "doenca", "doença", "previdencia",
+  ],
+  g5: [
+    "dasn", "declaracao", "declaração", "declarar", "anual", "simei",
+    "31 de maio", "prazo de maio", "declaracao anual", "entregar declaracao",
+  ],
+  g6: [
+    "funcionario", "funcionário", "empregado", "contratar", "clt",
+    "ajudante", "motorista", "carteira assinada", "registrar alguem",
+    "posso contratar",
+  ],
+};
+
+function normalizar(t) {
+  return String(t || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Procura uma resposta pronta a partir do texto digitado pelo usuário.
+ * Retorna o item do FAQ geral, ou null se nada bater.
+ * A chave mais longa encontrada vence — evita que "das" ganhe de "declaracao anual".
+ */
+export function buscarRespostaPorTexto(texto) {
+  const t = normalizar(texto);
+  if (!t) return null;
+
+  let melhorId = null;
+  let melhorPeso = 0;
+
+  for (const [id, termos] of Object.entries(CHAVES_POR_ID)) {
+    for (const termo of termos) {
+      const alvo = normalizar(termo);
+      // Termos curtos (até 4 letras) exigem palavra inteira, pra não casar dentro de outra.
+      const bateu =
+        alvo.length <= 4
+          ? new RegExp(`(^|\\s)${alvo}(\\s|$|\\?|!|\\.|,)`).test(t)
+          : t.includes(alvo);
+
+      if (bateu && alvo.length > melhorPeso) {
+        melhorPeso = alvo.length;
+        melhorId = id;
+      }
+    }
+  }
+
+  if (!melhorId) return null;
+  return GERAIS.find((g) => g.id === melhorId) || null;
+}
