@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import Fisco from "../components/Fisco.jsx";
+import FiscoComBalao from "../components/FiscoComBalao.jsx";
 import Valor from "../components/Valor.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
@@ -81,11 +81,12 @@ export default function RegraVinte() {
         style={{ paddingBottom: "calc(40px + env(safe-area-inset-bottom))" }}
       >
         <div className="flex flex-col items-center pt-1 pb-2">
-          <Fisco
-            size={200}
+          <FiscoComBalao
+            size={168}
             pose="alerta"
             fala={passouDos20 ? "Atenção!" : "Calma!"}
             corFala={cor}
+            offsetBalao={{ x: 74, y: 6 }}
           />
         </div>
 
@@ -178,7 +179,6 @@ export default function RegraVinte() {
               className="rounded-2xl px-4 py-3.5 flex gap-3"
               style={{ backgroundColor: "var(--field)" }}
             >
-              {/* MUD 12 — numeração neutra, sem cor */}
               <span
                 className="rounded-full flex items-center justify-center shrink-0"
                 style={{
