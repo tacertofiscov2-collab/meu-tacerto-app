@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Paperclip, Send, Sparkles } from "lucide-react";
 import Fisco from "../components/Fisco.jsx";
 import { useAppState } from "@/context/AppStateContext";
-import { faixaDoVelocimetro, FAIXA_INFO } from "@/lib/fiscal";
+import { faixaDoVelocimetro, FAIXA_INFO, LIMITE_PERGUNTA_CHAT } from "@/lib/fiscal";
 import {
   perguntasDaFaixa, perguntasGerais, contextoFaq, textoPergunta,
 } from "@/lib/faqFisco";
@@ -22,10 +22,13 @@ export default function Chat() {
   const { tipoMEI, faturamentoAtual, limiteAtual, percentualAtual } = useAppState();
 
   const faixa = faixaDoVelocimetro(percentualAtual);
-  const pose = poseDaFaixa(faixa);
   const corFaixa = FAIXA_INFO[faixa].cor;
 
   const modoContextual = contexto === "situacao" || contexto === "limite";
+
+  // MUD 15 — no chat geral o Fisco não reflete a situação: pose amigável, sem balão.
+  const pose = modoContextual ? poseDaFaixa(faixa) : "amigavel";
+
   const ctx = contextoFaq({ tipoMEI, limite: limiteAtual, faturado: faturamentoAtual });
   const perguntas = modoContextual ? perguntasDaFaixa(faixa) : perguntasGerais();
 
@@ -86,7 +89,7 @@ export default function Chat() {
 
   return (
     <div
-      className="tela-fixa w-full flex flex-col"
+      className="tela-fixa w-full flex flex-col relative"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       <header className="px-5 pt-5 pb-1 flex items-center gap-3 shrink-0">
@@ -100,26 +103,70 @@ export default function Chat() {
         </button>
       </header>
 
-      <div ref={listaRef} className="flex-1 min-h-0 overflow-y-auto hide-scrollbar px-5">
+      <div
+        ref={listaRef}
+        className="flex-1 min-h-0 overflow-y-auto hide-scrollbar px-5"
+        style={{ paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}
+      >
         {vazio ? (
           <>
-            <div className="flex flex-col items-center text-center">
-              <Fisco
-                size={modoContextual ? 128 : 150}
-                pose={pose}
-                fala={FAIXA_INFO[faixa].palavra}
-                corFala={corFaixa}
-              />
-              <h2 className="text-xl font-bold mt-1" style={{ color: "var(--text)" }}>
-                {titulo}
-              </h2>
-              <p
-                className="mt-0.5 text-[13px] px-4"
-                style={{ color: "var(--text-secondary)" }}
+            {modoContextual ? (
+              <div className="flex flex-col items-center text-center">
+                <Fisco
+                  size={150}
+                  pose={pose}
+                  fala={FAIXA_INFO[faixa].palavra}
+                  corFala={corFaixa}
+                />
+                <h2 className="text-xl font-bold mt-1" style={{ color: "var(--text)" }}>
+                  {titulo}
+                </h2>
+                <p
+                  className="mt-0.5 text-[13px] px-4"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {subtitulo}
+                </p>
+              </div>
+            ) : (
+              /* MUD 15 — header caprichado do chat geral */
+              <div
+                className="rounded-3xl px-5 pt-3 pb-4 flex items-center gap-3 overflow-hidden relative"
+                style={{
+                  background:
+                    "linear-gradient(150deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.03) 55%, transparent 100%), var(--surface)",
+                  border: "1px solid var(--border)",
+                }}
               >
-                {subtitulo}
-              </p>
-            </div>
+                <Fisco size={112} pose="amigavel" className="shrink-0" style={{ marginLeft: -10 }} />
+                <div className="flex-1 min-w-0">
+                  <div
+                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 mb-1.5"
+                    style={{ backgroundColor: "rgba(34,197,94,0.14)" }}
+                  >
+                    <span
+                      className="rounded-full"
+                      style={{ width: 6, height: 6, backgroundColor: "var(--primary)" }}
+                    />
+                    <span
+                      className="text-[10px] font-bold uppercase"
+                      style={{ color: "var(--primary)", letterSpacing: "0.08em" }}
+                    >
+                      Online
+                    </span>
+                  </div>
+                  <h2 className="text-2xl font-bold leading-none" style={{ color: "var(--text)" }}>
+                    Fisco
+                  </h2>
+                  <p
+                    className="mt-1.5 text-[13px] leading-snug"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Seu amigo fiscal. Como posso te ajudar hoje?
+                  </p>
+                </div>
+              </div>
+            )}
 
             <p
               className="text-[11px] font-semibold uppercase mt-4 mb-2"
@@ -156,25 +203,46 @@ export default function Chat() {
           <div className="space-y-3 pt-2 pb-4">
             {mensagens.map((m) => {
               const isUser = m.autor === "user";
+              if (isUser) {
+                return (
+                  <div key={m.id} className="flex justify-end">
+                    <div
+                      className="max-w-[85%] rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed"
+                      style={{
+                        backgroundColor: "var(--primary)",
+                        color: "var(--primary-contrast)",
+                        borderBottomRightRadius: 6,
+                        fontWeight: 500,
+                      }}
+                    >
+                      {m.texto}
+                    </div>
+                  </div>
+                );
+              }
+              /* MUD 18 — avatar do Fisco em toda resposta */
               return (
-                <div key={m.id} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+                <div key={m.id} className="flex justify-start items-end gap-1.5">
+                  <span
+                    className="rounded-full flex items-center justify-center shrink-0 overflow-hidden"
+                    style={{
+                      width: 34,
+                      height: 34,
+                      marginBottom: 2,
+                      backgroundColor: "var(--surface)",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    <Fisco size={30} pose="amigavel" apenasCabeca />
+                  </span>
                   <div
-                    className="max-w-[85%] rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed"
-                    style={
-                      isUser
-                        ? {
-                            backgroundColor: "var(--primary)",
-                            color: "var(--primary-contrast)",
-                            borderBottomRightRadius: 6,
-                            fontWeight: 500,
-                          }
-                        : {
-                            backgroundColor: "var(--field)",
-                            color: "var(--text)",
-                            borderBottomLeftRadius: 6,
-                            whiteSpace: "pre-line",
-                          }
-                    }
+                    className="max-w-[80%] rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed"
+                    style={{
+                      backgroundColor: "var(--field)",
+                      color: "var(--text)",
+                      borderBottomLeftRadius: 6,
+                      whiteSpace: "pre-line",
+                    }}
                   >
                     {m.texto}
                   </div>
@@ -183,7 +251,19 @@ export default function Chat() {
             })}
 
             {digitando && (
-              <div className="flex justify-start">
+              <div className="flex justify-start items-end gap-1.5">
+                <span
+                  className="rounded-full flex items-center justify-center shrink-0 overflow-hidden"
+                  style={{
+                    width: 34,
+                    height: 34,
+                    marginBottom: 2,
+                    backgroundColor: "var(--surface)",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  <Fisco size={30} pose="amigavel" apenasCabeca />
+                </span>
                 <div
                   className="rounded-2xl px-4 py-3 flex items-center gap-1.5"
                   style={{ backgroundColor: "var(--field)", borderBottomLeftRadius: 6 }}
@@ -247,18 +327,21 @@ export default function Chat() {
         `}</style>
       </div>
 
+      {/* MUD 10 e 13 — sem rodapé: barra flutuante translúcida sobre o conteúdo */}
       <form
         onSubmit={enviar}
-        className="shrink-0 px-4"
+        className="absolute left-0 right-0 bottom-0 px-4 pointer-events-none"
         style={{
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
-          paddingTop: 10,
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 14px)",
+          paddingTop: 6,
         }}
       >
         <div
-          className="flex items-center gap-2 rounded-full pl-2 pr-1.5 py-1.5"
+          className="pointer-events-auto flex items-center gap-2 rounded-full pl-2 pr-1.5 py-1.5"
           style={{
-            backgroundColor: "var(--surface)",
+            backgroundColor: "color-mix(in srgb, var(--surface) 62%, transparent)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
             border: "1px solid var(--border)",
             boxShadow: "var(--sombra-card)",
           }}
@@ -273,10 +356,11 @@ export default function Chat() {
           <input
             type="text"
             value={texto}
+            maxLength={LIMITE_PERGUNTA_CHAT}
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Pergunte ao Fisco..."
-            className="flex-1 bg-transparent outline-none text-sm py-2"
-            style={{ color: "var(--text)" }}
+            className="campo-tacerto flex-1 bg-transparent outline-none text-sm py-2"
+            style={{ color: "var(--text)", border: "none", boxShadow: "none" }}
           />
           <button
             type="submit"
