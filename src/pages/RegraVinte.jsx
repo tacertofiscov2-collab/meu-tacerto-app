@@ -82,11 +82,10 @@ export default function RegraVinte() {
       >
         <div className="flex flex-col items-center pt-1 pb-2">
           <FiscoComBalao
-            size={168}
+            size={172}
             pose="alerta"
             fala={passouDos20 ? "Atenção!" : "Calma!"}
             corFala={cor}
-            offsetBalao={{ x: 74, y: 6 }}
           />
         </div>
 
