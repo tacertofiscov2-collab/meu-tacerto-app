@@ -6,17 +6,20 @@
   --bg: #0f0f11;
   --surface: #18181b;
   --surface-selected: #2f2f35;
+  --surface-raised: #232329;
   --field: #27272a;
   --primary: #22c55e;
   --primary-contrast: #0a0a0a;
   --text: #ffffff;
-  --text-secondary: #a1a1aa;
-  --text-tertiary: #71717a;
+  --text-secondary: #b4b4bd;
+  --text-tertiary: #8a8a94;
   --border: #3f3f46;
   --danger: #f87171;
 
   --nav-bg: rgba(15, 15, 17, 0.6);
   --nav-border: rgba(63, 63, 70, 0.15);
+
+  --sombra-card: 0 6px 18px rgba(0, 0, 0, 0.4);
 
   --font-scale: 1;
 }
@@ -25,22 +28,25 @@
   --bg: #ffffff;
   --surface: #f4f4f5;
   --surface-selected: #e0e0e4;
+  --surface-raised: #ececf0;
   --field: #e4e4e7;
   --primary: #16a34a;
   --primary-contrast: #ffffff;
   --text: #0f0f11;
-  --text-secondary: #52525b;
-  --text-tertiary: #71717a;
+  --text-secondary: #46464f;
+  --text-tertiary: #6b6b75;
   --border: #d4d4d8;
   --danger: #dc2626;
 
   --nav-bg: rgba(255, 255, 255, 0.72);
   --nav-border: rgba(212, 212, 216, 0.6);
+
+  --sombra-card: 0 4px 14px rgba(0, 0, 0, 0.1);
 }
 
 .font-small { --font-scale: 0.92; }
 .font-medium { --font-scale: 1; }
-.font-large { --font-scale: 1.12; }
+.font-large { --font-scale: 1.1; }
 
 html {
   font-size: calc(16px * var(--font-scale));
@@ -55,6 +61,24 @@ body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
+}
+
+/* Telas fixas: usa em qualquer página que NÃO deve rolar */
+.tela-fixa {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* Telas com rolagem controlada (Perfil, Histórico) */
+.tela-rolavel {
+  height: 100dvh;
+  overflow: hidden;
+}
+.tela-rolavel > .conteudo-rolavel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .snap-y::-webkit-scrollbar { display: none; }
