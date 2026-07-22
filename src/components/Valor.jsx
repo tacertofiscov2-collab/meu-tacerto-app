@@ -4,13 +4,20 @@
  * <Valor>48600</Valor>              → R$ 48.600,00
  * <Valor decimais={2}>48600.5</Valor> → R$ 48.600,50
  * <Valor sinal="+">3500</Valor>     → + R$ 3.500,00  (sinal em verde)
+ * <Valor px={13}>3500</Valor>       → tamanho FIXO em px, ignora --font-scale
  *
  * Regras visuais:
  * - Todo o valor renderiza em cor --text (BRANCO uniforme).
  * - Sinal opcional (+/-) em cor --primary (verde), ANTES do "R$".
  * - SEMPRE 2 casas decimais.
  * - SEMPRE em uma linha (white-space: nowrap), tabular-nums.
+ *
+ * ATENÇÃO: os tamanhos nomeados usam rem, que escala com a preferência
+ * de fonte do usuário. Onde o tamanho NÃO pode escalar (Card B do
+ * dashboard), use a prop `px`.
  */
+
+import { useLayoutEffect, useRef, useState } from "react";
 
 const TAMANHOS = {
   sm: "0.875rem",
@@ -39,21 +46,23 @@ function partes(valor, decimais = 2) {
   return { inteiro, centavos, negativo };
 }
 
-import { useLayoutEffect, useRef, useState } from "react";
-
 export default function Valor({
   children,
   decimais = 2,
   sinal,
   tamanho = "md",
+  px,
+  peso: pesoProp,
   cor,
   className = "",
   style,
   autoAjustar = false,
 }) {
   const { inteiro, centavos } = partes(children, decimais);
-  const baseSize = TAMANHOS[tamanho] || TAMANHOS.md;
-  const peso = PESOS[tamanho] || PESOS.md;
+
+  // px tem prioridade: tamanho absoluto, imune ao --font-scale
+  const baseSize = px ? `${px}px` : (TAMANHOS[tamanho] || TAMANHOS.md);
+  const peso = pesoProp || PESOS[tamanho] || PESOS.md;
   const corValor = cor || "var(--text)";
 
   const ref = useRef(null);
