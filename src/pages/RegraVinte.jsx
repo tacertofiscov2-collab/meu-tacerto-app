@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import Fisco from "../components/Fisco.jsx";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 import Valor from "../components/Valor.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
@@ -14,16 +13,16 @@ export default function RegraVinte() {
   const v = vocab(tipoMEI);
   const excedente = excedenteAcimaDoLimite(faturamentoAtual, limiteAtual);
   const tetoDos20 = limiteAte20Percent(tipoMEI);
-  const limiteCheio = LIMITES_ANUAIS[tipoMEI];
   const passouDos20 = excedente && !excedente.dentroDos20;
   const cor = passouDos20 ? "#dc2626" : "#ef4444";
   const anoAtual = new Date().getFullYear();
+  const pctExcesso = excedente ? Math.round(excedente.percentualExcesso) : 0;
 
   const passos = passouDos20
     ? [
         {
           titulo: "Procure um contador agora",
-          texto: `Como você passou de ${Math.round(excedente.percentualExcesso)}% do limite, o desenquadramento é retroativo a 1º de janeiro de ${anoAtual}. Um contador vai recalcular seus impostos do ano como Microempresa.`,
+          texto: `Como você passou de ${pctExcesso}% do limite, o desenquadramento é retroativo a 1º de janeiro de ${anoAtual}. Um contador vai recalcular seus impostos do ano como Microempresa.`,
         },
         {
           titulo: "Faça o desenquadramento no Portal do Simples",
@@ -62,7 +61,7 @@ export default function RegraVinte() {
       className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <header className="px-5 pt-6 pb-2 flex items-center gap-3 shrink-0">
+      <header className="px-5 pt-6 pb-3 flex items-center gap-3 shrink-0">
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
@@ -80,18 +79,47 @@ export default function RegraVinte() {
         className="conteudo-rolavel hide-scrollbar px-5 overflow-x-hidden"
         style={{ paddingBottom: "calc(40px + env(safe-area-inset-bottom))" }}
       >
-        <div className="flex flex-col items-center pt-1 pb-2">
-          <Fisco
-            size={190}
-            pose="alerta"
-            fala={passouDos20 ? "Atenção!" : "Calma!"}
-            corFala={cor}
-          />
+        {/* Faixa de destaque: substitui o Fisco */}
+        <div
+          className="rounded-3xl px-5 py-5 relative overflow-hidden"
+          style={{
+            background: `linear-gradient(150deg, ${cor}26 0%, ${cor}0d 55%, transparent 100%), var(--surface)`,
+            border: `1px solid ${cor}3d`,
+          }}
+        >
+          <div className="flex items-center gap-3.5">
+            <span
+              className="rounded-2xl flex items-center justify-center shrink-0"
+              style={{
+                width: 52,
+                height: 52,
+                backgroundColor: `${cor}22`,
+              }}
+            >
+              <AlertTriangle size={26} strokeWidth={2.2} style={{ color: cor }} />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p
+                className="text-[11px] font-bold uppercase mb-1"
+                style={{ color: cor, letterSpacing: "0.08em" }}
+              >
+                {passouDos20 ? "Situação crítica" : "Dentro da margem legal"}
+              </p>
+              <p
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: "var(--text)" }}
+              >
+                {passouDos20
+                  ? `Você passou ${pctExcesso}% do limite anual.`
+                  : "Você passou do limite, mas ainda dentro dos 20% que a lei permite."}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Situação em números */}
         <div
-          className="rounded-2xl px-4 py-3.5"
+          className="rounded-2xl px-4 py-3.5 mt-2.5"
           style={{
             backgroundColor: `${cor}14`,
             border: `1px solid ${cor}44`,
