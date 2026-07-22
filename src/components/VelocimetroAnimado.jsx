@@ -1,22 +1,28 @@
 import { useEffect, useState, useId } from "react";
+import { AlertTriangle } from "lucide-react";
 import { FAIXA_INFO } from "@/lib/fiscal";
 
 /**
- * Velocímetro animado com:
- * - Arco de fundo com gradiente completo em opacidade 0.2
- * - Arco preenchido com gradiente completo em opacidade 1
- * - Animação de entrada 0% → valor real (1200ms) + pulse do ponteiro (400ms)
- * - Trava visual em 100% (arco/ponteiro), mas o número exibido é o real
+ * Velocímetro animado.
+ * - Arco e ponteiro TRAVAM em 100%.
+ * - Número exibido também trava em 100%.
+ * - Acima de 100%: badge redondo ao lado mostrando "+N%" (até 20%).
+ * - Acima de 120%: badge vira alerta (ícone), pois passou da margem legal.
+ * - Badge é clicável (onClickExcedente).
  */
 export default function VelocimetroAnimado({
   percentual,
   maxWidth = 220,
   numeroClasse = "text-5xl font-bold",
+  onClickExcedente,
 }) {
   const uid = useId().replace(/:/g, "");
   const gradId = `velGrad-${uid}`;
 
   const pVisual = Math.max(0, Math.min(100, percentual));
+  const excesso = percentual > 100 ? percentual - 100 : 0;
+  const passouDos20 = excesso > 20;
+
   const [progresso, setProgresso] = useState(0);
   const [pulse, setPulse] = useState(false);
 
@@ -40,14 +46,11 @@ export default function VelocimetroAnimado({
   const filledLength = (progresso / 100) * arcLength;
   const arcPath = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
 
-  // Ponteiro desenhado estaticamente apontando pra esquerda (rad = 180°);
-  // depois rotacionado (progresso/100)*180° em torno do centro.
   const needleR = 60;
   const baseHalfWidth = 7;
   const midHalfWidth = 3;
   const midR = needleR * 0.45;
 
-  // rad=π: cos=-1, sin=0; perpX=sin=0, perpY=cos=-1
   const tipX = cx - needleR;
   const tipY = cy;
   const b1x = cx;
@@ -63,6 +66,7 @@ export default function VelocimetroAnimado({
   const needlePoints = `${b1x},${b1y} ${m1x},${m1y} ${tipX},${tipY} ${m2x},${m2y} ${b2x},${b2y}`;
 
   const rotDeg = (progresso / 100) * 180;
+  const corAlerta = passouDos20 ? FAIXA_INFO.critico.cor : FAIXA_INFO.estourou.cor;
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -71,7 +75,7 @@ export default function VelocimetroAnimado({
         className="block mx-auto w-full"
         style={{ maxWidth }}
         role="img"
-        aria-label={`Velocímetro fiscal: ${Math.round(percentual)} por cento`}
+        aria-label={`Velocímetro fiscal: ${Math.round(percentual)} por cento do limite`}
       >
         <defs>
           <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -83,7 +87,6 @@ export default function VelocimetroAnimado({
           </linearGradient>
         </defs>
 
-        {/* Arco de fundo — gradiente completo com opacidade reduzida */}
         <path
           d={arcPath}
           fill="none"
@@ -93,7 +96,6 @@ export default function VelocimetroAnimado({
           opacity={0.2}
         />
 
-        {/* Arco preenchido — animado via stroke-dasharray */}
         <path
           d={arcPath}
           fill="none"
@@ -101,12 +103,9 @@ export default function VelocimetroAnimado({
           strokeWidth={18}
           strokeLinecap="round"
           strokeDasharray={`${filledLength} ${arcLength}`}
-          style={{
-            transition: "stroke-dasharray 1200ms cubic-bezier(0.4, 0, 0.2, 1)",
-          }}
+          style={{ transition: "stroke-dasharray 1200ms cubic-bezier(0.4, 0, 0.2, 1)" }}
         />
 
-        {/* Ponteiro (rotate) + pulse */}
         <g
           style={{
             transformOrigin: "100px 100px",
@@ -128,10 +127,41 @@ export default function VelocimetroAnimado({
         </g>
       </svg>
 
-      <div className="mt-1 flex flex-col items-center">
+      <div className="mt-1 flex items-center justify-center gap-2">
         <span className={numeroClasse} style={{ color: "var(--text)" }}>
-          {Math.round(percentual)}%
+          {Math.round(pVisual)}%
         </span>
+
+        {excesso > 0 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClickExcedente?.();
+            }}
+            aria-label={
+              passouDos20
+                ? "Você passou da margem de 20%. Toque para entender"
+                : `Você passou ${Math.round(excesso)}% do limite. Toque para entender`
+            }
+            className="rounded-full flex items-center justify-center shrink-0 active:scale-95 transition"
+            style={{
+              width: 52,
+              height: 52,
+              backgroundColor: `${corAlerta}33`,
+              border: `1.5px solid ${corAlerta}80`,
+            }}
+          >
+            {passouDos20 ? (
+              <AlertTriangle size={24} strokeWidth={2.4} style={{ color: corAlerta }} />
+            ) : (
+              <span
+                style={{ color: corAlerta, fontSize: 15, fontWeight: 800, lineHeight: 1 }}
+              >
+                +{Math.round(excesso)}%
+              </span>
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
