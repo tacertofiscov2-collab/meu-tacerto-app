@@ -125,18 +125,18 @@ export default function Chat() {
       <div
         ref={listaRef}
         className="flex-1 min-h-0 overflow-y-auto hide-scrollbar px-5"
-        style={{ paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(120px + env(safe-area-inset-bottom))" }}
       >
         {vazio ? (
           <>
             {modoContextual ? (
               <div className="flex flex-col items-center text-center">
                 <FiscoComBalao
-                  size={118}
+                  size={132}
                   pose={pose}
                   fala={FAIXA_INFO[faixa].palavra}
                   corFala={corFaixa}
-                  offsetBalao={{ x: 52, y: 2 }}
+                  style={{ marginBottom: -8 }}
                 />
                 <h2 className="text-lg font-bold mt-1" style={{ color: "var(--text)" }}>
                   {titulo}
