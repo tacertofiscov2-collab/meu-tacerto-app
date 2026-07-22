@@ -10,6 +10,18 @@ export const LABEL_TIPO = {
   MEI_CAMINHONEIRO: "MEI Caminhoneiro",
 };
 
+// Limites de caracteres — MUD 17
+export const LIMITE_NOME_INPUT = 20;
+export const LIMITE_NOME_EXIBICAO = 16;
+export const LIMITE_VALOR_LANCAMENTO = 9999999.99;
+export const LIMITE_PERGUNTA_CHAT = 300;
+
+export function truncarNome(nome, max = LIMITE_NOME_EXIBICAO) {
+  const n = String(nome || "").trim();
+  if (n.length <= max) return n;
+  return n.slice(0, max).trimEnd() + "…";
+}
+
 // Vocabulário por tipo de MEI — usado em textos do app e do Fisco.
 export const VOCAB = {
   MEI: {
@@ -102,7 +114,7 @@ export const FAIXA_INFO = {
     cor: "#ef4444",
     mensagem: "Passou do limite, mas dá pra ajustar.",
     resumo: "Passou do limite, dentro dos 20% da lei.",
-    palavra: "Cuidado",
+    palavra: "Passou",
     textoDetalhado: () =>
       `Você passou do limite, mas ainda dentro dos 20% que a lei permite. Continua MEI até dezembro.`,
   },
