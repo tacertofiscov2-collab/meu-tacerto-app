@@ -1,17 +1,55 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
-import { SectionTitle, FlatGroup, FlatItem } from "../components/FlatList.jsx";
 import {
   ArrowLeft, User, Settings, Info, Shield, Users, Lock, LogOut,
-  ChevronDown, UserPlus, X, Check, Receipt, TrendingUp, BarChart3,
+  ChevronDown, ChevronRight, UserPlus, X, Check, Receipt, TrendingUp, BarChart3,
 } from "lucide-react";
-import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import { useUserState, setUserState } from "@/lib/userState";
 import { lerContas, lerContaAtivaId, ativarConta } from "@/lib/contas";
 
 const FOTO_KEY = "tacerto_foto_usuario";
+
+function Secao({ titulo, children }) {
+  return (
+    <div style={{ marginTop: 18 }}>
+      <p
+        className="text-[12px] font-semibold uppercase mb-1"
+        style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
+      >
+        {titulo}
+      </p>
+      <div>{children}</div>
+    </div>
+  );
+}
+
+function Item({ Icon, label, onClick, cor, primeiro }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 py-3 text-left active:opacity-70"
+      style={{
+        borderTop: primeiro ? "none" : "1px solid var(--border)",
+      }}
+    >
+      <Icon
+        size={21}
+        strokeWidth={2}
+        style={{ color: cor || "var(--primary)" }}
+        className="shrink-0"
+      />
+      <span
+        className="flex-1 text-[15px] font-semibold"
+        style={{ color: cor || "var(--text)" }}
+      >
+        {label}
+      </span>
+      <ChevronRight size={17} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+    </button>
+  );
+}
 
 export default function Perfil() {
   const navigate = useNavigate();
@@ -25,15 +63,12 @@ export default function Perfil() {
   const [contaAtivaId, setContaAtivaId] = useState(lerContaAtivaId);
   const [seletorAberto, setSeletorAberto] = useState(false);
   const [confirmarSair, setConfirmarSair] = useState(false);
-  const [modalFaturamento, setModalFaturamento] = useState(false);
 
   useEffect(() => {
     const handler = () => {
       setContas(lerContas());
       setContaAtivaId(lerContaAtivaId());
-      try {
-        setFoto(localStorage.getItem(FOTO_KEY) || null);
-      } catch {}
+      try { setFoto(localStorage.getItem(FOTO_KEY) || null); } catch {}
     };
     window.addEventListener("storage", handler);
     window.addEventListener("tacerto-user-changed", handler);
@@ -45,9 +80,9 @@ export default function Perfil() {
 
   const totalContas = contas.length;
   const temMultiplas = !visitante && totalContas >= 2;
-
   const nomeExibido = nome && nome.trim() ? nome : "Visitante";
   const inicial = (nomeExibido || "?").trim().charAt(0).toUpperCase();
+  const anoAtual = new Date().getFullYear();
 
   function trocarConta(id) {
     const conta = ativarConta(id);
@@ -62,42 +97,25 @@ export default function Perfil() {
     setSeletorAberto(false);
   }
 
-  function sair() {
-    setConfirmarSair(false);
-    navigate("/");
-  }
-
   let contaItem;
   if (visitante) {
-    contaItem = {
-      Icon: UserPlus,
-      label: "Cadastrar conta",
-      onClick: () => navigate("/cadastro"),
-    };
+    contaItem = { Icon: UserPlus, label: "Cadastrar conta", onClick: () => navigate("/cadastro") };
   } else if (totalContas <= 1) {
-    contaItem = {
-      Icon: UserPlus,
-      label: "Adicionar nova conta",
-      onClick: () => navigate("/cadastro"),
-    };
+    contaItem = { Icon: UserPlus, label: "Adicionar nova conta", onClick: () => navigate("/cadastro") };
   } else {
-    contaItem = {
-      Icon: Users,
-      label: "Trocar de conta",
-      onClick: () => setSeletorAberto(true),
-    };
+    contaItem = { Icon: Users, label: "Trocar de conta", onClick: () => setSeletorAberto(true) };
   }
 
   return (
     <div
-      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
+      className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       <div
-        className="flex-1 overflow-y-auto flex flex-col"
-        style={{ paddingBottom: "calc(90px + env(safe-area-inset-bottom))" }}
+        className="conteudo-rolavel hide-scrollbar"
+        style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
       >
-        <header className="px-5 pt-6 pb-4 flex items-center gap-3">
+        <header className="px-5 pt-6 pb-2 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
             aria-label="Voltar"
@@ -111,19 +129,16 @@ export default function Perfil() {
           </h1>
         </header>
 
-        <div className="px-5 pt-2 pb-6 flex flex-col items-center">
+        <div className="px-5 pt-3 pb-5 flex flex-col items-center">
           <div
-            className="w-24 h-24 rounded-full overflow-hidden"
+            className="w-20 h-20 rounded-full overflow-hidden"
             style={{ backgroundColor: "var(--field)" }}
           >
             {foto && !visitante ? (
               <img src={foto} alt="" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <span
-                  className="font-bold"
-                  style={{ color: "var(--primary)", fontSize: 40 }}
-                >
+                <span className="font-bold" style={{ color: "var(--primary)", fontSize: 34 }}>
                   {inicial || "?"}
                 </span>
               </div>
@@ -134,100 +149,54 @@ export default function Perfil() {
             type="button"
             disabled={!temMultiplas}
             onClick={() => temMultiplas && setSeletorAberto(true)}
-            className="mt-4 flex items-center gap-1.5"
+            className="mt-3 flex items-center gap-1.5"
           >
-            <span className="font-bold" style={{ color: "var(--text)", fontSize: 22 }}>
+            <span className="font-bold" style={{ color: "var(--text)", fontSize: 20 }}>
               {nomeExibido}
             </span>
             {temMultiplas && (
-              <ChevronDown size={18} style={{ color: "var(--text-secondary)" }} />
+              <ChevronDown size={17} style={{ color: "var(--text-secondary)" }} />
             )}
           </button>
         </div>
 
-        <div className="px-5 flex-1 flex flex-col">
-          <SectionTitle>Geral</SectionTitle>
-          <FlatGroup>
-            <FlatItem
-              Icon={User}
-              label="Editar perfil"
-              onClick={() => navigate("/editar-perfil")}
-            />
-            <FlatItem
-              Icon={Settings}
-              label="Preferências"
-              onClick={() => navigate("/preferencias")}
-            />
-            <FlatItem
-              Icon={contaItem.Icon}
-              label={contaItem.label}
-              onClick={contaItem.onClick}
-            />
-          </FlatGroup>
+        <div className="px-5">
+          <Secao titulo="Geral">
+            <Item primeiro Icon={User} label="Editar perfil" onClick={() => navigate("/editar-perfil")} />
+            <Item Icon={Settings} label="Preferências" onClick={() => navigate("/preferencias")} />
+            <Item Icon={contaItem.Icon} label={contaItem.label} onClick={contaItem.onClick} />
+          </Secao>
 
-          <div style={{ marginTop: 14 }}>
-            <SectionTitle>Meu MEI</SectionTitle>
-            <FlatGroup>
-              <FlatItem
-                Icon={Receipt}
-                label="Histórico de lançamentos"
-                onClick={() => navigate("/historico")}
-              />
-              <FlatItem
-                Icon={TrendingUp}
-                label="Adicionar faturamento do ano 2026"
-                onClick={() => navigate("/adicionar-faturamento")}
-              />
-              <FlatItem
-                Icon={BarChart3}
-                label="Resumo 2026"
-                onClick={() => navigate("/perfil/resumo")}
-              />
-            </FlatGroup>
-          </div>
+          <Secao titulo="Meu MEI">
+            <Item primeiro Icon={Receipt} label="Histórico de lançamentos" onClick={() => navigate("/historico")} />
+            <Item Icon={TrendingUp} label={`Adicionar faturamento de ${anoAtual}`} onClick={() => navigate("/adicionar-faturamento")} />
+            <Item Icon={BarChart3} label={`Resumo de ${anoAtual}`} onClick={() => navigate("/perfil/resumo")} />
+          </Secao>
 
-          <div style={{ marginTop: 14 }}>
-            <SectionTitle>Segurança e Privacidade</SectionTitle>
-            <FlatGroup>
-              {!visitante && (
-                <FlatItem
-                  Icon={Lock}
-                  label="Alterar senha"
-                  onClick={() => navigate("/alterar-senha")}
-                />
-              )}
-              <FlatItem
-                Icon={Shield}
-                label="Termos e Privacidade"
-                onClick={() => navigate("/termos")}
-              />
-              <FlatItem
-                Icon={Info}
-                label="Sobre o TaCerto!"
-                onClick={() => navigate("/sobre")}
-              />
-            </FlatGroup>
-          </div>
+          <Secao titulo="Segurança e Privacidade">
+            {!visitante && (
+              <Item primeiro Icon={Lock} label="Alterar senha" onClick={() => navigate("/alterar-senha")} />
+            )}
+            <Item primeiro={visitante} Icon={Shield} label="Termos e Privacidade" onClick={() => navigate("/termos")} />
+            <Item Icon={Info} label="Sobre o TaCerto!" onClick={() => navigate("/sobre")} />
+          </Secao>
 
-          <div style={{ marginTop: "auto", paddingTop: 24 }}>
-            <FlatGroup>
-              <FlatItem
-                Icon={LogOut}
-                label="Sair da conta"
-                cor="#ef4444"
-                iconCor="#ef4444"
-                semChevron
-                onClick={() => setConfirmarSair(true)}
-              />
-            </FlatGroup>
+          <div style={{ marginTop: 24 }}>
+            <button
+              onClick={() => setConfirmarSair(true)}
+              className="w-full flex items-center gap-3 py-3 text-left active:opacity-70"
+            >
+              <LogOut size={21} strokeWidth={2} style={{ color: "var(--danger)" }} className="shrink-0" />
+              <span className="flex-1 text-[15px] font-semibold" style={{ color: "var(--danger)" }}>
+                Sair da conta
+              </span>
+            </button>
             <p
               className="text-center"
               style={{
-                color: "var(--text-secondary)",
-                opacity: 0.6,
+                color: "var(--text-tertiary)",
                 fontSize: 11,
-                marginTop: 16,
-                marginBottom: 8,
+                marginTop: 10,
               }}
             >
               v0.1
@@ -236,12 +205,6 @@ export default function Perfil() {
         </div>
       </div>
 
-      <ModalFaturamentoInicial
-        aberto={modalFaturamento}
-        onClose={() => setModalFaturamento(false)}
-        onSalvar={() => setModalFaturamento(false)}
-      />
-
       {seletorAberto && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
@@ -249,11 +212,12 @@ export default function Perfil() {
           onClick={() => setSeletorAberto(false)}
         >
           <div
-            className="w-full max-w-md p-4 space-y-2 animate-in slide-in-from-bottom duration-200"
+            className="w-full max-w-md p-4 space-y-2"
             style={{
               backgroundColor: "var(--surface)",
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
+              paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -287,23 +251,15 @@ export default function Perfil() {
                       {c.foto ? (
                         <img src={c.foto} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="font-bold" style={{ color: "var(--primary)" }}>
-                          {ini}
-                        </span>
+                        <span className="font-bold" style={{ color: "var(--primary)" }}>{ini}</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0 text-left">
-                      <p
-                        className="text-sm font-semibold truncate"
-                        style={{ color: "var(--text)" }}
-                      >
+                      <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>
                         {c.nome || "Conta"}
                       </p>
                       {c.email && (
-                        <p
-                          className="text-xs truncate"
-                          style={{ color: "var(--text-secondary)" }}
-                        >
+                        <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>
                           {c.email}
                         </p>
                       )}
@@ -313,10 +269,7 @@ export default function Perfil() {
                 );
               })}
               <button
-                onClick={() => {
-                  setSeletorAberto(false);
-                  navigate("/cadastro");
-                }}
+                onClick={() => { setSeletorAberto(false); navigate("/cadastro"); }}
                 className="w-full flex items-center gap-3 p-3 rounded-xl active:opacity-80"
               >
                 <div
@@ -325,10 +278,7 @@ export default function Perfil() {
                 >
                   <UserPlus size={18} style={{ color: "var(--primary)" }} />
                 </div>
-                <span
-                  className="text-sm font-semibold"
-                  style={{ color: "var(--primary)" }}
-                >
+                <span className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
                   Adicionar nova conta
                 </span>
               </button>
@@ -344,10 +294,7 @@ export default function Perfil() {
         >
           <div
             className="w-full max-w-sm rounded-2xl p-5 space-y-4"
-            style={{
-              backgroundColor: "var(--surface)",
-              border: "1px solid var(--border)",
-            }}
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
           >
             <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
               Deseja sair da sua conta?
@@ -361,7 +308,7 @@ export default function Perfil() {
                 Cancelar
               </button>
               <button
-                onClick={sair}
+                onClick={() => { setConfirmarSair(false); navigate("/"); }}
                 className="flex-1 py-3 rounded-xl font-semibold"
                 style={{ backgroundColor: "#ef4444", color: "#fff" }}
               >
