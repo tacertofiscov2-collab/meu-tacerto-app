@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft, Briefcase, Truck, CheckCircle2, Clock, Info, Gauge, ChevronDown,
 } from "lucide-react";
@@ -17,7 +17,7 @@ const MESES = [
 
 function Progress({ step }) {
   return (
-    <div className="flex justify-center gap-2 mb-6">
+    <div className="flex justify-center gap-2 mb-5">
       {[1, 2, 3].map((s) => (
         <div
           key={s}
@@ -32,17 +32,6 @@ function Progress({ step }) {
   );
 }
 
-function StepTitle({ children }) {
-  return (
-    <h1
-      className="text-2xl font-bold text-center mb-6"
-      style={{ color: "var(--text)" }}
-    >
-      {children}
-    </h1>
-  );
-}
-
 export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -53,6 +42,23 @@ export default function Onboarding() {
   const [meiEsseAno, setMeiEsseAno] = useState(null);
   const [mesMei, setMesMei] = useState("");
   const [seletorMes, setSeletorMes] = useState(false);
+
+  // Onboarding ignora a preferência de fonte — sempre tamanho padrão.
+  useEffect(() => {
+    const root = document.documentElement;
+    const anteriores = [];
+    ["font-small", "font-large"].forEach((c) => {
+      if (root.classList.contains(c)) {
+        anteriores.push(c);
+        root.classList.remove(c);
+      }
+    });
+    root.classList.add("font-medium");
+    return () => {
+      root.classList.remove("font-medium");
+      anteriores.forEach((c) => root.classList.add(c));
+    };
+  }, []);
 
   const anoAtual = new Date().getFullYear();
   const tipoCanonico = tipoMei === "MEI_CAMINHONEIRO" ? "MEI_CAMINHONEIRO" : "MEI";
@@ -73,7 +79,6 @@ export default function Onboarding() {
     color: "var(--text)",
   };
 
-  // Botão principal: pill estreita, transparente, palavra em verde
   const btnPrincipal = {
     backgroundColor: "transparent",
     border: "1.5px solid var(--primary)",
@@ -82,13 +87,13 @@ export default function Onboarding() {
   const btnPrincipalClasse =
     "mx-auto block px-10 py-3 rounded-full font-semibold text-sm transition active:scale-[0.98] disabled:opacity-35";
 
-  // Estilo de card selecionável: nada selecionado = ambos claros
   function estiloCard(selecionado, algoSelecionado) {
     const claro = !algoSelecionado || selecionado;
     return {
       backgroundColor: claro ? "var(--surface-selected)" : "var(--field)",
       border: "none",
-      opacity: claro ? 1 : 0.45,
+      opacity: claro ? 1 : 0.42,
+      transition: "background-color 180ms ease, opacity 180ms ease",
     };
   }
 
@@ -128,13 +133,8 @@ export default function Onboarding() {
 
   return (
     <div
-      className="w-full flex flex-col"
-      style={{
-        backgroundColor: "var(--bg)",
-        color: "var(--text)",
-        height: "100dvh",
-        overflow: "hidden",
-      }}
+      className="tela-fixa w-full flex flex-col"
+      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       <div className="px-4 pt-5 shrink-0 flex items-center">
         <button
@@ -147,59 +147,73 @@ export default function Onboarding() {
         </button>
       </div>
 
-      <div className="flex-1 min-h-0 flex flex-col justify-center px-6 pb-6 overflow-hidden">
-        <div className="max-w-sm w-full mx-auto">
-          <div className="flex justify-center mb-7">
-            <Gauge size={50} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
+      {/* Bloco central com altura fixa: cabeçalho + conteúdo + rodapé do passo */}
+      <div className="flex-1 min-h-0 flex flex-col px-6 overflow-hidden">
+        <div className="max-w-sm w-full mx-auto flex-1 min-h-0 flex flex-col justify-center">
+          <div className="flex justify-center mb-5 shrink-0">
+            <Gauge size={48} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
           </div>
 
-          <Progress step={progressStep} />
+          <div className="shrink-0">
+            <Progress step={progressStep} />
+          </div>
 
           {step === 1 && (
-            <>
-              <StepTitle>Como posso te chamar?</StepTitle>
+            <div className="shrink-0">
+              <h1
+                className="text-2xl font-bold text-center mb-5"
+                style={{ color: "var(--text)" }}
+              >
+                Como posso te chamar?
+              </h1>
 
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Digite seu nome ou apelido"
-                  value={nome}
-                  maxLength={30}
-                  autoFocus
-                  onChange={(e) => setNome(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      if (!nome.trim()) setErro("Por favor, diga como podemos te chamar!");
-                      else { setErro(""); setStep(2); }
-                    }
-                  }}
-                  className="w-full px-4 py-4 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
-                  style={fieldStyle}
-                />
+              <input
+                type="text"
+                placeholder="Digite seu nome ou apelido"
+                value={nome}
+                maxLength={30}
+                autoFocus
+                onChange={(e) => { setNome(e.target.value); if (erro) setErro(""); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    if (!nome.trim()) setErro("Por favor, diga como podemos te chamar!");
+                    else { setErro(""); setStep(2); }
+                  }
+                }}
+                className="w-full px-4 py-3.5 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
+                style={fieldStyle}
+              />
 
+              {/* Altura reservada — evita o layout pular quando o erro aparece */}
+              <div style={{ minHeight: 26 }} className="flex items-center justify-center">
                 {erro && (
-                  <p className="text-center text-[13px]" style={{ color: "#ef4444" }}>
+                  <p className="text-center text-[13px]" style={{ color: "var(--danger)" }}>
                     {erro}
                   </p>
                 )}
-
-                <button
-                  onClick={() => {
-                    if (!nome.trim()) setErro("Por favor, diga como podemos te chamar!");
-                    else { setErro(""); setStep(2); }
-                  }}
-                  className={btnPrincipalClasse}
-                  style={btnPrincipal}
-                >
-                  Continuar
-                </button>
               </div>
-            </>
+
+              <button
+                onClick={() => {
+                  if (!nome.trim()) setErro("Por favor, diga como podemos te chamar!");
+                  else { setErro(""); setStep(2); }
+                }}
+                className={btnPrincipalClasse}
+                style={btnPrincipal}
+              >
+                Continuar
+              </button>
+            </div>
           )}
 
           {step === 2 && (
-            <>
-              <StepTitle>Qual é o seu MEI?</StepTitle>
+            <div className="shrink-0">
+              <h1
+                className="text-2xl font-bold text-center mb-5"
+                style={{ color: "var(--text)" }}
+              >
+                Qual é o seu MEI?
+              </h1>
 
               <div className="space-y-2.5">
                 {[
@@ -214,7 +228,7 @@ export default function Onboarding() {
                     <button
                       key={o.v}
                       onClick={() => setTipoMei(o.v)}
-                      className="w-full flex items-center gap-3 p-3.5 rounded-xl text-left transition"
+                      className="w-full flex items-center gap-3 p-3.5 rounded-xl text-left"
                       style={estiloCard(sel, !!tipoMei)}
                     >
                       <div
@@ -224,15 +238,18 @@ export default function Onboarding() {
                         <Ico size={20} strokeWidth={1.75} style={{ color: "var(--primary)" }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                        <div
+                          className="text-sm font-semibold"
+                          style={{ color: "var(--text)" }}
+                        >
                           {o.titulo}
                         </div>
                         <div
-                          className="text-[12px] mt-0.5"
-                          style={{ color: "var(--text-secondary)", whiteSpace: "nowrap" }}
+                          className="text-[12px] mt-0.5 flex items-center gap-1"
+                          style={{ color: "var(--text-secondary)" }}
                         >
-                          Limite: <Valor tamanho="sm">{o.limite}</Valor>{" "}
-                          <span style={{ color: "var(--text)" }}>/ ano</span>
+                          Limite: <Valor tamanho="sm">{o.limite}</Valor>
+                          <span style={{ color: "var(--text-secondary)" }}>/ ano</span>
                         </div>
                       </div>
                     </button>
@@ -250,14 +267,19 @@ export default function Onboarding() {
                   Continuar
                 </button>
               </div>
-            </>
+            </div>
           )}
 
           {step === 3 && (
-            <>
-              <StepTitle>Você abriu seu MEI em {anoAtual}?</StepTitle>
+            <div className="shrink-0">
+              <h1
+                className="text-2xl font-bold text-center mb-5"
+                style={{ color: "var(--text)" }}
+              >
+                Você abriu seu MEI em {anoAtual}?
+              </h1>
 
-              <div className="grid grid-cols-2 gap-2.5 mb-3">
+              <div className="grid grid-cols-2 gap-2.5">
                 {[
                   { v: true, Icon: CheckCircle2, l: "Sim, esse ano" },
                   { v: false, Icon: Clock, l: "Não, já faz tempo" },
@@ -268,7 +290,7 @@ export default function Onboarding() {
                     <button
                       key={String(o.v)}
                       onClick={() => { setMeiEsseAno(o.v); if (!o.v) setMesMei(""); }}
-                      className="py-3 rounded-xl text-xs font-medium transition inline-flex items-center justify-center gap-1.5"
+                      className="py-3 rounded-xl text-xs font-medium inline-flex items-center justify-center gap-1.5"
                       style={{
                         ...estiloCard(sel, meiEsseAno !== null),
                         color: "var(--text)",
@@ -281,78 +303,77 @@ export default function Onboarding() {
                 })}
               </div>
 
-              {meiEsseAno === true && (
-                <>
-                  <p
-                    className="text-xs font-medium mb-1.5"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    Qual mês você abriu?
-                  </p>
-                  <button
-                    onClick={() => setSeletorMes(true)}
-                    className="w-full h-[48px] px-4 flex items-center justify-between rounded-xl text-sm transition mb-3"
-                    style={{
-                      ...fieldStyle,
-                      fontWeight: mesMei ? 600 : 400,
-                      color: mesMei ? "var(--text)" : "var(--text-secondary)",
-                    }}
-                  >
-                    <span>
-                      {mesMei ? MESES[parseInt(mesMei) - 1] : "Selecione o mês"}
-                    </span>
-                    <ChevronDown size={18} style={{ color: "var(--text-secondary)" }} />
-                  </button>
-
-                  {mesMei && (
-                    <div
-                      className="rounded-xl p-3"
+              {/* Área reservada — mantém o botão no mesmo lugar nos dois casos */}
+              <div style={{ minHeight: 108 }} className="pt-3">
+                {meiEsseAno === true && (
+                  <>
+                    <p
+                      className="text-xs font-medium mb-1.5"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      Qual mês você abriu?
+                    </p>
+                    <button
+                      onClick={() => setSeletorMes(true)}
+                      className="w-full h-[46px] px-4 flex items-center justify-between rounded-xl text-sm mb-2"
                       style={{
-                        backgroundColor: "var(--field)",
-                        border: "1px solid var(--border)",
+                        ...fieldStyle,
+                        fontWeight: mesMei ? 600 : 400,
+                        color: mesMei ? "var(--text)" : "var(--text-secondary)",
                       }}
                     >
-                      <p
-                        className="text-xs font-medium inline-flex items-center gap-1.5"
-                        style={{ color: "var(--text)" }}
+                      <span>{mesMei ? MESES[parseInt(mesMei) - 1] : "Selecione o mês"}</span>
+                      <ChevronDown size={18} style={{ color: "var(--text-secondary)" }} />
+                    </button>
+
+                    {mesMei && (
+                      <div
+                        className="rounded-xl px-3 py-2.5"
+                        style={{
+                          backgroundColor: "var(--field)",
+                          border: "1px solid var(--border)",
+                        }}
                       >
-                        <Info size={14} strokeWidth={2} style={{ color: "var(--primary)" }} />
-                        Limite: <Valor tamanho="sm">{limiteFinal}</Valor>
-                      </p>
-                    </div>
-                  )}
-                </>
-              )}
+                        <p
+                          className="text-xs font-medium inline-flex items-center gap-1.5"
+                          style={{ color: "var(--text)" }}
+                        >
+                          <Info size={14} strokeWidth={2} style={{ color: "var(--primary)" }} />
+                          Limite: <Valor tamanho="sm">{limiteFinal}</Valor>
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
 
-              {meiEsseAno === false && (
-                <div
-                  className="rounded-xl p-3"
-                  style={{
-                    backgroundColor: "var(--field)",
-                    border: "1px solid var(--border)",
-                  }}
-                >
-                  <p
-                    className="text-xs font-medium inline-flex items-center gap-1.5"
-                    style={{ color: "var(--text)" }}
+                {meiEsseAno === false && (
+                  <div
+                    className="rounded-xl px-3 py-2.5"
+                    style={{
+                      backgroundColor: "var(--field)",
+                      border: "1px solid var(--border)",
+                    }}
                   >
-                    <CheckCircle2 size={14} strokeWidth={2} style={{ color: "var(--primary)" }} />
-                    Limite cheio: <Valor tamanho="sm">{limiteCheio}</Valor> / ano
-                  </p>
-                </div>
-              )}
-
-              <div className="mt-6">
-                <button
-                  onClick={handleFinalizar}
-                  disabled={meiEsseAno === null || (meiEsseAno === true && !mesMei)}
-                  className={btnPrincipalClasse}
-                  style={btnPrincipal}
-                >
-                  Começar a usar!
-                </button>
+                    <p
+                      className="text-xs font-medium inline-flex items-center gap-1.5"
+                      style={{ color: "var(--text)" }}
+                    >
+                      <CheckCircle2 size={14} strokeWidth={2} style={{ color: "var(--primary)" }} />
+                      Limite cheio: <Valor tamanho="sm">{limiteCheio}</Valor> / ano
+                    </p>
+                  </div>
+                )}
               </div>
-            </>
+
+              <button
+                onClick={handleFinalizar}
+                disabled={meiEsseAno === null || (meiEsseAno === true && !mesMei)}
+                className={btnPrincipalClasse}
+                style={btnPrincipal}
+              >
+                Começar a usar!
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -364,10 +385,7 @@ export default function Onboarding() {
         ano={anoAtual}
         comAno={false}
         onFechar={() => setSeletorMes(false)}
-        onSelecionar={(m) => {
-          setMesMei(String(m));
-          setSeletorMes(false);
-        }}
+        onSelecionar={(m) => { setMesMei(String(m)); setSeletorMes(false); }}
       />
     </div>
   );
