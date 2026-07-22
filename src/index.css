@@ -27,7 +27,7 @@
 
   /* Balão do Fisco: névoa translúcida clara no tema escuro */
   --balao-nevoa: 255, 255, 255;
-  --balao-nevoa-forca: 0.16;
+  --balao-nevoa-forca: 0.14;
 }
 
 .theme-light {
@@ -51,7 +51,7 @@
 
   /* Tema claro: névoa ESCURA translúcida */
   --balao-nevoa: 15, 15, 17;
-  --balao-nevoa-forca: 0.14;
+  --balao-nevoa-forca: 0.12;
 }
 
 .font-small { --font-scale: 0.92; }
@@ -141,29 +141,42 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
 }
 
-/* === Balão do Fisco: névoa translúcida + palavra informal === */
+/* === Balão do Fisco: névoa translúcida + bolhas + palavra informal === */
 .fisco-balao {
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.35em 0.95em;
+  padding: 0.3em 0.85em;
   isolation: isolate;
+  white-space: nowrap;
 }
 .fisco-balao::before {
   content: "";
   position: absolute;
-  inset: -18%;
+  inset: -14%;
   z-index: -1;
   border-radius: 50%;
   background: radial-gradient(
     ellipse at center,
-    rgba(var(--balao-nevoa), calc(var(--balao-nevoa-forca) * 1.9)) 0%,
-    rgba(var(--balao-nevoa), calc(var(--balao-nevoa-forca) * 1.1)) 42%,
-    rgba(var(--balao-nevoa), 0) 74%
+    rgba(var(--balao-nevoa), calc(var(--balao-nevoa-forca) * 2.1)) 0%,
+    rgba(var(--balao-nevoa), calc(var(--balao-nevoa-forca) * 1.2)) 45%,
+    rgba(var(--balao-nevoa), 0) 76%
   );
-  filter: blur(7px);
+  filter: blur(6px);
 }
+
+/* Bolhas de ligação entre a cabeça e o balão */
+.fisco-bolha {
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(var(--balao-nevoa), calc(var(--balao-nevoa-forca) * 2.4)) 0%,
+    rgba(var(--balao-nevoa), calc(var(--balao-nevoa-forca) * 1.1)) 55%,
+    rgba(var(--balao-nevoa), 0) 100%
+  );
+  filter: blur(1.5px);
+}
+
 .fisco-balao-texto {
   font-family: "Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive;
   font-style: italic;
