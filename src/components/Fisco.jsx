@@ -1,24 +1,30 @@
 /**
  * Fisco — mascote robô do TaCerto!
  *
- * O balão de fala NÃO vive mais aqui — use <FiscoComBalao />.
+ * O balão de fala vive DENTRO do SVG: névoa translúcida (feGaussianBlur),
+ * sem contorno, bolhas subindo da cabeça em diagonal, palavra colorida
+ * em fonte informal. Assim ele nunca escapa do container nem empurra layout.
  *
  * Props:
  * - size: largura em px. Padrão 64.
  * - pose: "joinha" | "ok" | "alerta" | "neutro" | "amigavel".
+ * - fala: palavra da situação. Sem ela, não desenha balão.
+ * - corFala: cor da palavra (segue a faixa).
  * - apenasCabeca: renderiza só a cabeça (avatar do chat).
  */
 export default function Fisco({
     size = 64,
     pose = "neutro",
+    fala,
+    corFala = "var(--primary)",
     apenasCabeca = false,
     className = "",
     style,
   }) {
-    const uid = `fisco-${pose}-${apenasCabeca ? "h" : "f"}`;
+    const uid = `fisco-${pose}-${apenasCabeca ? "h" : "f"}-${fala ? "b" : "n"}`;
   
     const defs = (
-      <defs>
+      <>
         <linearGradient id={`${uid}-metal`} x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#71717a" />
           <stop offset="45%" stopColor="#52525b" />
@@ -37,7 +43,13 @@ export default function Fisco({
           <stop offset="0%" stopColor="#ffffff" stopOpacity="0.28" />
           <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
         </radialGradient>
-      </defs>
+        <filter id={`${uid}-nevoa`} x="-40%" y="-60%" width="180%" height="220%">
+          <feGaussianBlur stdDeviation="7" />
+        </filter>
+        <filter id={`${uid}-nevoaBolha`} x="-70%" y="-70%" width="240%" height="240%">
+          <feGaussianBlur stdDeviation="2.6" />
+        </filter>
+      </>
     );
   
     const olhoY = pose === "alerta" ? 104 : 103;
@@ -61,7 +73,7 @@ export default function Fisco({
           style={style}
           xmlns="http://www.w3.org/2000/svg"
         >
-          {defs}
+          <defs>{defs}</defs>
           <line x1="190" y1="66" x2="190" y2="46" stroke="#52525b" strokeWidth="5" strokeLinecap="round" />
           <circle cx="190" cy="40" r="10" fill="var(--primary)" />
           <circle cx="186.5" cy="36.5" r="3.5" fill="#bbf7d0" />
@@ -85,18 +97,80 @@ export default function Fisco({
     }
   
     /* ================= MODO COMPLETO ================= */
+    const temFala = Boolean(fala);
+  
+    // Com balão o viewBox cresce à direita e no topo, mas o robô fica
+    // sempre nas MESMAS coordenadas — nada se desloca.
+    const vbX = temFala ? 0 : 0;
+    const vbY = temFala ? -70 : 0;
+    const vbW = temFala ? 520 : 380;
+    const vbH = temFala ? 450 : 380;
+  
+    const alturaProp = (size / vbW) * vbH;
+  
+    // Balão: elipse de névoa + texto, à direita e acima da cabeça
+    const textoLen = String(fala || "").length;
+    const rxBalao = Math.min(112, Math.max(52, textoLen * 8.2 + 24));
+    const cxBalao = 300 + rxBalao * 0.55;
+    const cyBalao = -18;
+  
     return (
       <svg
         width={size}
-        height={size}
-        viewBox="0 0 380 380"
+        height={alturaProp}
+        viewBox={`${vbX} ${vbY} ${vbW} ${vbH}`}
         role="img"
-        aria-label="Fisco, seu amigo fiscal"
+        aria-label={fala ? `Fisco diz: ${fala}` : "Fisco, seu amigo fiscal"}
         className={className}
-        style={style}
+        style={{ display: "block", ...style }}
         xmlns="http://www.w3.org/2000/svg"
       >
-        {defs}
+        <defs>{defs}</defs>
+  
+        {/* ===== BALÃO EM NÉVOA ===== */}
+        {temFala && (
+          <g>
+            {/* bolhas subindo da cabeça em diagonal */}
+            <circle
+              cx="258" cy="52" r="6"
+              fill="var(--balao-nevoa-cor)"
+              opacity="0.5"
+              filter={`url(#${uid}-nevoaBolha)`}
+            />
+            <circle
+              cx="276" cy="26" r="9"
+              fill="var(--balao-nevoa-cor)"
+              opacity="0.55"
+              filter={`url(#${uid}-nevoaBolha)`}
+            />
+  
+            {/* corpo da névoa */}
+            <ellipse
+              cx={cxBalao}
+              cy={cyBalao}
+              rx={rxBalao}
+              ry="34"
+              fill="var(--balao-nevoa-cor)"
+              opacity="0.42"
+              filter={`url(#${uid}-nevoa)`}
+            />
+  
+            <text
+              x={cxBalao}
+              y={cyBalao + 10}
+              textAnchor="middle"
+              fill={corFala}
+              style={{
+                fontSize: 30,
+                fontWeight: 700,
+                fontStyle: "italic",
+                fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive',
+              }}
+            >
+              {fala}
+            </text>
+          </g>
+        )}
   
         {/* sombra no chão */}
         <ellipse cx="190" cy="348" rx="74" ry="10" fill="var(--primary)" opacity="0.12" />
