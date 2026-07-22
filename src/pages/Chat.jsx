@@ -4,7 +4,9 @@ import { ArrowLeft, Paperclip, Send, Sparkles } from "lucide-react";
 import Fisco from "../components/Fisco.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import { faixaDoVelocimetro, FAIXA_INFO } from "@/lib/fiscal";
-import { perguntasDaFaixa, perguntasGerais, contextoFaq } from "@/lib/faqFisco";
+import {
+  perguntasDaFaixa, perguntasGerais, contextoFaq, textoPergunta,
+} from "@/lib/faqFisco";
 
 function poseDaFaixa(faixa) {
   if (faixa === "tranquilo" || faixa === "fique_de_olho") return "joinha";
@@ -15,7 +17,7 @@ function poseDaFaixa(faixa) {
 export default function Chat() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const contexto = params.get("contexto"); // "situacao" | "limite" | null
+  const contexto = params.get("contexto");
 
   const { tipoMEI, faturamentoAtual, limiteAtual, percentualAtual } = useAppState();
 
@@ -39,9 +41,10 @@ export default function Chat() {
   }, [mensagens, digitando]);
 
   function responder(item) {
+    const pergunta = textoPergunta(item, ctx);
     setMensagens((prev) => [
       ...prev,
-      { id: Date.now(), autor: "user", texto: item.pergunta },
+      { id: Date.now(), autor: "user", texto: pergunta },
     ]);
     setDigitando(true);
     setTimeout(() => {
@@ -97,10 +100,7 @@ export default function Chat() {
         </button>
       </header>
 
-      <div
-        ref={listaRef}
-        className="flex-1 min-h-0 overflow-y-auto hide-scrollbar px-5"
-      >
+      <div ref={listaRef} className="flex-1 min-h-0 overflow-y-auto hide-scrollbar px-5">
         {vazio ? (
           <>
             <div className="flex flex-col items-center text-center">
@@ -110,10 +110,7 @@ export default function Chat() {
                 fala={FAIXA_INFO[faixa].palavra}
                 corFala={corFaixa}
               />
-              <h2
-                className="text-xl font-bold mt-1"
-                style={{ color: "var(--text)" }}
-              >
+              <h2 className="text-xl font-bold mt-1" style={{ color: "var(--text)" }}>
                 {titulo}
               </h2>
               <p
@@ -149,7 +146,7 @@ export default function Chat() {
                     className="flex-1 text-[14px] leading-snug font-medium"
                     style={{ color: "var(--text)" }}
                   >
-                    {p.pergunta}
+                    {textoPergunta(p, ctx)}
                   </span>
                 </button>
               ))}
@@ -189,10 +186,7 @@ export default function Chat() {
               <div className="flex justify-start">
                 <div
                   className="rounded-2xl px-4 py-3 flex items-center gap-1.5"
-                  style={{
-                    backgroundColor: "var(--field)",
-                    borderBottomLeftRadius: 6,
-                  }}
+                  style={{ backgroundColor: "var(--field)", borderBottomLeftRadius: 6 }}
                 >
                   <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
                     Fisco está digitando
@@ -213,7 +207,6 @@ export default function Chat() {
               </div>
             )}
 
-            {/* Sugestões após a resposta */}
             {!digitando && mensagens.length > 0 && (
               <div className="pt-2 space-y-2">
                 <p
@@ -223,7 +216,7 @@ export default function Chat() {
                   Perguntar outra coisa
                 </p>
                 {perguntas
-                  .filter((p) => !mensagens.some((m) => m.texto === p.pergunta))
+                  .filter((p) => !mensagens.some((m) => m.texto === textoPergunta(p, ctx)))
                   .slice(0, 3)
                   .map((p) => (
                     <button
@@ -237,7 +230,7 @@ export default function Chat() {
                         className="flex-1 text-[13px] leading-snug"
                         style={{ color: "var(--text)" }}
                       >
-                        {p.pergunta}
+                        {textoPergunta(p, ctx)}
                       </span>
                     </button>
                   ))}
