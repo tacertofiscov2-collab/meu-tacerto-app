@@ -25,8 +25,6 @@
 
   --font-scale: 1;
 
-  /* Névoa do balão do Fisco — clara no tema escuro */
-  --balao-nevoa-cor: #ffffff;
   --barra-vidro: rgba(255, 255, 255, 0.05);
   --barra-vidro-borda: rgba(255, 255, 255, 0.10);
 }
@@ -50,8 +48,6 @@
 
   --sombra-card: 0 4px 14px rgba(0, 0, 0, 0.1);
 
-  /* Névoa ESCURA no tema claro */
-  --balao-nevoa-cor: #0f0f11;
   --barra-vidro: rgba(15, 15, 17, 0.04);
   --barra-vidro-borda: rgba(15, 15, 17, 0.10);
 }
@@ -129,33 +125,58 @@ body {
               0 0 18px 2px rgba(34, 197, 94, 0.22);
 }
 
-/* === Card B com fonte travada em "pequena" === */
+/* === Card B: TUDO em px absoluto, imune à preferência de fonte ===
+   Não adianta redefinir --font-scale aqui: o html já resolveu o rem.
+   Por isso forçamos font-size fixo e todos os filhos herdam em px. */
+.card-b-fonte-fixa,
+.card-b-fonte-fixa * {
+  font-size: inherit;
+}
 .card-b-fonte-fixa {
-  --font-scale: 0.92;
-  font-size: 14.72px;
+  font-size: 13px;
+}
+.card-b-fonte-fixa .cb-rotulo { font-size: 9px !important; }
+.card-b-fonte-fixa .cb-titulo { font-size: 13.5px !important; }
+.card-b-fonte-fixa .cb-linha  { font-size: 11.5px !important; }
+.card-b-fonte-fixa .cb-mini   { font-size: 7.5px !important; }
+
+/* === Barra do Fisco: vidro fosco === */
+.barra-fisco {
+  background-color: var(--barra-vidro);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid var(--barra-vidro-borda);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.20),
+              inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: border-color 200ms ease, background-color 200ms ease;
+}
+.barra-fisco:active {
+  border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+  background-color: color-mix(in srgb, var(--primary) 6%, var(--barra-vidro));
 }
 
-/* === Barra flutuante translúcida (chats e dashboard) === */
+/* alias mantido para o chat */
 .barra-flutuante {
   background-color: var(--barra-vidro);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
   border: 1px solid var(--barra-vidro-borda);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.20);
 }
 
-/* === Botão de enviar da barra do Fisco === */
+/* === Botão de enviar: pastilha verde com seta desenhada === */
 .btn-enviar-fisco {
-  background: linear-gradient(145deg,
-    color-mix(in srgb, var(--primary) 92%, #ffffff) 0%,
-    var(--primary) 55%,
-    color-mix(in srgb, var(--primary) 84%, #000000) 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28),
-              0 2px 6px rgba(0, 0, 0, 0.22);
-  transition: transform 140ms ease, box-shadow 180ms ease;
+  background: linear-gradient(160deg,
+    color-mix(in srgb, var(--primary) 88%, #ffffff) 0%,
+    var(--primary) 48%,
+    color-mix(in srgb, var(--primary) 78%, #000000) 100%);
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.35),
+              inset 0 -1.5px 0 rgba(0, 0, 0, 0.18),
+              0 3px 10px color-mix(in srgb, var(--primary) 40%, transparent);
+  transition: transform 150ms cubic-bezier(0.3, 1.4, 0.5, 1), box-shadow 180ms ease;
 }
-.btn-enviar-fisco:active {
-  transform: scale(0.93);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2),
-              0 1px 3px rgba(0, 0, 0, 0.3);
+.btn-enviar-fisco:active:not(:disabled) {
+  transform: scale(0.9);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25),
+              0 1px 4px color-mix(in srgb, var(--primary) 30%, transparent);
 }
