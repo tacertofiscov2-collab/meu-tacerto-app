@@ -58,10 +58,22 @@
 
 .font-small { --font-scale: 0.92; }
 .font-medium { --font-scale: 1; }
-.font-large { --font-scale: 1.1; }
+.font-large { --font-scale: 1.12; }
 
+/* ===================================================================
+   FONTE: só o TEXTO escala. Caixas ficam fixas.
+
+   O html mantém 16px SEMPRE. Assim todo rem (paddings, margens,
+   alturas do Tailwind) fica constante e nenhum card cresce.
+   A preferência do usuário entra só no zoom do texto, aplicado
+   com font-size relativo no body.
+   =================================================================== */
 html {
-  font-size: calc(16px * var(--font-scale));
+  font-size: 16px;
+}
+
+body {
+  font-size: calc(1rem * var(--font-scale));
 }
 
 html, body, #root {
@@ -75,6 +87,16 @@ body {
   overscroll-behavior: none;
   overflow-x: hidden;
 }
+
+/* Classes de texto do Tailwind passam a escalar via em,
+   herdando o zoom do body em vez do rem fixo do html. */
+.text-xs   { font-size: 0.75em  !important; }
+.text-sm   { font-size: 0.875em !important; }
+.text-base { font-size: 1em     !important; }
+.text-lg   { font-size: 1.125em !important; }
+.text-xl   { font-size: 1.25em  !important; }
+.text-2xl  { font-size: 1.5em   !important; }
+.text-3xl  { font-size: 1.875em !important; }
 
 /* Telas fixas: usa em qualquer página que NÃO deve rolar */
 .tela-fixa {
@@ -129,20 +151,14 @@ body {
               0 0 18px 2px rgba(34, 197, 94, 0.22);
 }
 
-/* ===================================================================
-   CARD B — ILHA DE TAMANHO FIXO
-   O html usa font-size: calc(16px * --font-scale). Como o Tailwind
-   escreve padding/margin/gap em rem, TUDO escala junto com a fonte.
-   Aqui zeramos o efeito: o bloco fixa font-size em 16px absolutos,
-   então 1rem lá dentro = 16px SEMPRE, em qualquer preferência.
-   =================================================================== */
+/* === Card B: texto em px absoluto (não escala nem com o body) === */
 .card-b-fixo {
-  font-size: 16px !important;
+  font-size: 13px !important;
 }
-.card-b-fixo .cb-rotulo { font-size: 9px; }
-.card-b-fixo .cb-titulo { font-size: 13.5px; }
-.card-b-fixo .cb-linha  { font-size: 11.5px; }
-.card-b-fixo .cb-mini   { font-size: 7.5px; }
+.card-b-fixo .cb-rotulo { font-size: 9px !important; }
+.card-b-fixo .cb-titulo { font-size: 13.5px !important; }
+.card-b-fixo .cb-linha  { font-size: 11.5px !important; }
+.card-b-fixo .cb-mini   { font-size: 7.5px !important; }
 
 /* === Barra do Fisco: vidro fosco === */
 .barra-fisco {
@@ -155,8 +171,8 @@ body {
   transition: border-color 200ms ease, background-color 200ms ease;
 }
 .barra-fisco:active {
-  border-color: color-mix(in srgb, var(--primary) 45%, transparent);
-  background-color: color-mix(in srgb, var(--primary) 6%, var(--barra-vidro));
+  border-color: rgba(34, 197, 94, 0.45);
+  background-color: rgba(34, 197, 94, 0.06);
 }
 
 /* alias mantido para o chat */
@@ -170,25 +186,22 @@ body {
 
 /* === Botão de enviar: pastilha verde com seta desenhada === */
 .btn-enviar-fisco {
-  background: linear-gradient(160deg,
-    color-mix(in srgb, var(--primary) 88%, #ffffff) 0%,
-    var(--primary) 48%,
-    color-mix(in srgb, var(--primary) 78%, #000000) 100%);
+  background: linear-gradient(160deg, #4ade80 0%, #22c55e 48%, #15803d 100%);
   box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.35),
               inset 0 -1.5px 0 rgba(0, 0, 0, 0.18),
-              0 3px 10px color-mix(in srgb, var(--primary) 40%, transparent);
+              0 3px 10px rgba(34, 197, 94, 0.4);
   transition: transform 150ms cubic-bezier(0.3, 1.4, 0.5, 1), box-shadow 180ms ease;
+}
+.theme-light .btn-enviar-fisco {
+  background: linear-gradient(160deg, #34d399 0%, #16a34a 48%, #15803d 100%);
 }
 .btn-enviar-fisco:active:not(:disabled) {
   transform: scale(0.9);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25),
-              0 1px 4px color-mix(in srgb, var(--primary) 30%, transparent);
+              0 1px 4px rgba(34, 197, 94, 0.3);
 }
 
-/* ===================================================================
-   FEEDBACK DE TOQUE — destaque no item tocado (estilo TikTok)
-   Aplique a classe .toque em qualquer elemento clicável.
-   =================================================================== */
+/* === Feedback de toque === */
 .toque {
   position: relative;
   -webkit-tap-highlight-color: transparent;
@@ -211,9 +224,7 @@ body {
   transform: scale(0.985);
 }
 
-/* ===================================================================
-   TRANSIÇÃO ENTRE TELAS — deslize
-   =================================================================== */
+/* === Transição entre telas === */
 @keyframes telaEntraDireita {
   from { transform: translateX(24px); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
@@ -230,7 +241,6 @@ body {
   animation: telaEntraEsquerda 260ms cubic-bezier(0.22, 0.8, 0.3, 1) both;
 }
 
-/* Respeita quem prefere menos animação */
 @media (prefers-reduced-motion: reduce) {
   .tela-anima-avancar,
   .tela-anima-voltar {
