@@ -283,17 +283,17 @@ body {
 }
 
 /* ===================================================================
-   TRANSIÇÃO ENTRE TELAS — modelo CARROSSEL
+   TRANSIÇÃO ENTRE TELAS — duas camadas
 
-   As duas telas ficam coladas e andam juntas, 1:1 — igual ao
-   carrossel do velocímetro. Uma sai 100% pra esquerda enquanto a
-   outra entra 100% da direita, sem folga e sem escurecer.
+   Durante a transição existem duas telas montadas. A que entra
+   desliza da borda inteira; a que sai recua 25% e escurece. Esse
+   recuo parcial é o que dá a sensação de profundidade do iOS —
+   sem ele parece que a tela nova entra sobre o vazio.
 
    Regule a velocidade em --transicao-dur, lá no :root.
    =================================================================== */
 .pilha-telas {
   position: relative;
-  overflow: hidden;
 }
 
 .camada-tela {
@@ -310,6 +310,7 @@ body {
   pointer-events: none;
 }
 
+/* Empilhamento: avançar = a nova por cima. Voltar = a antiga por cima. */
 .camada-sai-avancar   { z-index: 1; }
 .camada-entra-avancar { z-index: 2; }
 .camada-sai-voltar    { z-index: 2; }
@@ -319,60 +320,66 @@ body {
   from { transform: translateX(100%); }
   to   { transform: translateX(0); }
 }
-@keyframes telaSaiEsquerda {
+@keyframes telaRecuaEsquerda {
   from { transform: translateX(0); }
-  to   { transform: translateX(-100%); }
+  to   { transform: translateX(-25%); }
 }
 @keyframes telaEntraEsquerda {
-  from { transform: translateX(-100%); }
+  from { transform: translateX(-25%); }
   to   { transform: translateX(0); }
 }
 @keyframes telaSaiDireita {
   from { transform: translateX(0); }
   to   { transform: translateX(100%); }
 }
+@keyframes telaEscurece {
+  from { opacity: 0; }
+  to   { opacity: 0.22; }
+}
+@keyframes telaClareia {
+  from { opacity: 0.22; }
+  to   { opacity: 0; }
+}
 
 .camada-entra-avancar {
   animation: telaEntraDireita var(--transicao-dur) var(--transicao-curva) both;
+  box-shadow: -10px 0 28px rgba(0, 0, 0, 0.38);
 }
 .camada-sai-avancar {
-  animation: telaSaiEsquerda var(--transicao-dur) var(--transicao-curva) both;
+  animation: telaRecuaEsquerda var(--transicao-dur) var(--transicao-curva) both;
 }
 .camada-entra-voltar {
   animation: telaEntraEsquerda var(--transicao-dur) var(--transicao-curva) both;
 }
 .camada-sai-voltar {
   animation: telaSaiDireita var(--transicao-dur) var(--transicao-curva) both;
+  box-shadow: -10px 0 28px rgba(0, 0, 0, 0.38);
 }
 
-/* ===================================================================
-   ARRASTO INTERATIVO (dedo na borda esquerda)
-
-   Aqui não há animação CSS: o transform é escrito pelo JS a cada
-   frame, acompanhando o dedo. Estas classes só definem posição
-   e empilhamento. Também coladas, 1:1.
-   =================================================================== */
-.camada-arrasto-frente {
-  position: relative;
-  z-index: 2;
-  will-change: transform;
-}
-
-.camada-arrasto-fundo {
+/* Véu escuro sobre a tela que fica atrás */
+.camada-sai-avancar::after,
+.camada-entra-voltar::after {
+  content: "";
   position: absolute;
   inset: 0;
-  z-index: 1;
-  overflow: hidden;
+  background-color: #000;
   pointer-events: none;
-  will-change: transform;
-  transform: translateX(-100%);
+  z-index: 9999;
+}
+.camada-sai-avancar::after {
+  animation: telaEscurece var(--transicao-dur) var(--transicao-curva) both;
+}
+.camada-entra-voltar::after {
+  animation: telaClareia var(--transicao-dur) var(--transicao-curva) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .camada-entra-avancar,
   .camada-sai-avancar,
   .camada-entra-voltar,
-  .camada-sai-voltar {
+  .camada-sai-voltar,
+  .camada-sai-avancar::after,
+  .camada-entra-voltar::after {
     animation: none;
   }
 }
