@@ -1,9 +1,9 @@
 /**
  * Fisco — mascote robô do TaCerto!
  *
- * O balão fica ACIMA da cabeça, ligeiramente à direita, dentro de um
- * viewBox que cresce só para cima. Isso mantém o robô grande e visível
- * em qualquer tamanho, sem faixa morta lateral.
+ * O balão fica ACIMA da cabeça. O filtro de blur usa uma área bem
+ * folgada (filterUnits em userSpaceOnUse com caixa explícita), senão
+ * o navegador corta o desfoque nas bordas.
  *
  * Props:
  * - size: LARGURA em px. Padrão 64.
@@ -22,6 +22,15 @@ export default function Fisco({
     style,
   }) {
     const uid = `fisco-${pose}-${apenasCabeca ? "h" : "f"}-${fala ? "b" : "n"}`;
+  
+    const temFala = Boolean(fala);
+  
+    // Balão acima da cabeça
+    const textoLen = String(fala || "").length;
+    const rxBalao = Math.max(86, textoLen * 10.5 + 38);
+    const cxBalao = 200;
+    const cyBalao = -62;
+    const ryBalao = 42;
   
     const defs = (
       <>
@@ -43,10 +52,28 @@ export default function Fisco({
           <stop offset="0%" stopColor="#ffffff" stopOpacity="0.28" />
           <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
         </radialGradient>
-        <filter id={`${uid}-glow`} x="-60%" y="-120%" width="220%" height="340%">
-          <feGaussianBlur stdDeviation="14" />
+  
+        {/* Filtro com caixa EXPLÍCITA em coordenadas do desenho.
+            Sem isso o Safari corta o blur nas bordas. */}
+        <filter
+          id={`${uid}-glow`}
+          filterUnits="userSpaceOnUse"
+          x={cxBalao - rxBalao - 80}
+          y={cyBalao - ryBalao - 80}
+          width={rxBalao * 2 + 160}
+          height={ryBalao * 2 + 160}
+        >
+          <feGaussianBlur stdDeviation="13" />
         </filter>
-        <filter id={`${uid}-glowBolha`} x="-90%" y="-90%" width="280%" height="280%">
+  
+        <filter
+          id={`${uid}-glowBolha`}
+          filterUnits="userSpaceOnUse"
+          x="150"
+          y="-40"
+          width="140"
+          height="140"
+        >
           <feGaussianBlur stdDeviation="3.5" />
         </filter>
       </>
@@ -97,30 +124,27 @@ export default function Fisco({
     }
   
     /* ================= MODO COMPLETO ================= */
-    const temFala = Boolean(fala);
   
-    /* Com balão o viewBox cresce SÓ PARA CIMA (y negativo).
-       A largura continua 380, então o robô mantém o mesmo tamanho
-       relativo e nunca encolhe. `size` é sempre a LARGURA. */
+    /* Com balão o viewBox cresce para cima E nas laterais, pra caber
+       o desfoque inteiro sem corte. A largura visual do robô continua
+       proporcional porque `size` referencia a largura TOTAL. */
+    const margemLateral = temFala ? Math.max(0, rxBalao - 150) : 0;
+    const vbX = temFala ? -margemLateral : 0;
     const vbY = temFala ? -130 : 0;
+    const vbW = temFala ? 380 + margemLateral * 2 : 380;
     const vbH = temFala ? 510 : 380;
-    const alturaProp = (size / 380) * vbH;
   
-    // Balão logo acima da cabeça, deslocado à direita
-    const textoLen = String(fala || "").length;
-    const rxBalao = Math.max(88, textoLen * 11 + 40);
-    const cxBalao = 232;
-    const cyBalao = -66;
+    const alturaProp = (size / vbW) * vbH;
   
     return (
       <svg
         width={size}
         height={alturaProp}
-        viewBox={`0 ${vbY} 380 ${vbH}`}
+        viewBox={`${vbX} ${vbY} ${vbW} ${vbH}`}
         role="img"
         aria-label={fala ? `Fisco diz: ${fala}` : "Fisco, seu amigo fiscal"}
         className={className}
-        style={{ display: "block", ...style }}
+        style={{ display: "block", overflow: "visible", ...style }}
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>{defs}</defs>
@@ -143,13 +167,13 @@ export default function Fisco({
             {/* sombreado do balão */}
             <ellipse
               cx={cxBalao} cy={cyBalao}
-              rx={rxBalao} ry="46"
+              rx={rxBalao} ry={ryBalao}
               fill={corBalao} opacity="0.55"
               filter={`url(#${uid}-glow)`}
             />
             <ellipse
               cx={cxBalao} cy={cyBalao}
-              rx={rxBalao * 0.84} ry="36"
+              rx={rxBalao * 0.84} ry={ryBalao * 0.8}
               fill={corBalao} opacity="0.32"
               filter={`url(#${uid}-glow)`}
             />
@@ -160,7 +184,7 @@ export default function Fisco({
               textAnchor="middle"
               fill="#ffffff"
               style={{
-                fontSize: 37,
+                fontSize: 36,
                 fontWeight: 700,
                 fontStyle: "italic",
                 fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive',
