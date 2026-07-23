@@ -77,7 +77,7 @@ export default function ResumoPerfil() {
 
       <div
         className="conteudo-rolavel hide-scrollbar px-5"
-        style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom))" }}
       >
         <p
           className="text-[12px] font-semibold uppercase mt-3 mb-2"
@@ -116,17 +116,17 @@ export default function ResumoPerfil() {
         </div>
 
         <p
-          className="text-[12px] font-semibold uppercase mt-6 mb-2"
+          className="text-[12px] font-semibold uppercase mt-4 mb-2"
           style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
         >
           Meu ritmo
         </p>
 
         <div
-          className="rounded-2xl px-4 py-3.5"
+          className="rounded-2xl px-4 py-3"
           style={{ backgroundColor: "var(--field)" }}
         >
-          <div className="flex items-center gap-2 mb-2.5">
+          <div className="flex items-center gap-2 mb-2">
             <TrendingUp size={16} style={{ color: "var(--primary)" }} />
             <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
               Com base nos meses lançados
@@ -150,24 +150,24 @@ export default function ResumoPerfil() {
         </div>
 
         <p
-          className="text-[12px] font-semibold uppercase mt-6 mb-3"
+          className="text-[12px] font-semibold uppercase mt-4 mb-2"
           style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
         >
           Por mês
         </p>
 
         <div
-          className="rounded-2xl px-3 pt-4 pb-3"
+          className="rounded-2xl px-3 pt-3 pb-3"
           style={{ backgroundColor: "var(--field)" }}
         >
           <div
             className="flex items-end justify-between gap-1"
-            style={{ height: 150 }}
+            style={{ height: 132 }}
             role="img"
             aria-label="Faturamento mês a mês"
           >
             {dadosMensais.map((d, i) => {
-              const altura = d.valor > 0 ? (d.valor / maxMes) * 128 : 0;
+              const altura = d.valor > 0 ? (d.valor / maxMes) * 108 : 0;
               const isFuturo = i + 1 > mesAtualIdx;
               const cor = isFuturo
                 ? "var(--border)"
