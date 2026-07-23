@@ -137,12 +137,14 @@ export default function Chat() {
         {vazio ? (
           <>
             {modoContextual ? (
-              /* Fisco com balão ACIMA da cabeça.
-                 size = LARGURA. A altura vem do viewBox (510/380),
-                 então 190px de largura = ~255px de altura total. */
-              <div className="flex justify-center" style={{ marginTop: -6, marginBottom: -4 }}>
+              /* Fisco inteiro com balão em cima. O viewBox alarga
+                 conforme o texto, então nada é cortado. */
+              <div
+                className="flex justify-center"
+                style={{ marginTop: -10, marginBottom: -8 }}
+              >
                 <Fisco
-                  size={190}
+                  size={210}
                   pose={pose}
                   fala={FAIXA_INFO[faixa].palavra}
                   corBalao={corBalao}
