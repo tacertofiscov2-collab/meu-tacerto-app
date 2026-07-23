@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
+import TransicaoTela from "./components/TransicaoTela.jsx";
 import ExcluirConta from "./pages/ExcluirConta.jsx";
 import Welcome from "./pages/Welcome.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
@@ -37,39 +38,41 @@ export default function App() {
   return (
     <BrowserRouter>
       <SwipeBack />
-      <Routes>
-        <Route path="/" element={<Welcome />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/cadastro" element={<Cadastro />} />
-        <Route path="/esqueci-senha" element={<EsqueciSenha />} />
-        <Route path="/cadastro-obrigatorio" element={<CadastroObrigatorio />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/sobre" element={<Sobre />} />
-        <Route path="/termos" element={<Termos />} />
-        <Route path="/lancar" element={<Lancar />} />
-        <Route path="/lancar/limite-atingido" element={<LimiteAtingido />} />
-        <Route path="/historico" element={<Historico />} />
-        <Route path="/perfil" element={<Perfil />} />
-        <Route path="/alertas" element={<Alertas />} />
-        <Route path="/preferencias" element={<Preferencias />} />
-        <Route path="/faq" element={<Faq />} />
-        <Route path="/contas" element={<Contas />} />
-        <Route path="/velocimetro" element={<Velocimetro />} />
-        <Route path="/alterar-senha" element={<AlterarSenha />} />
-        <Route path="/editar-perfil" element={<EditarPerfil />} />
-        <Route path="/perfil/resumo" element={<ResumoPerfil />} />
-        <Route path="/perfil/informacoes-fiscais" element={<InformacoesFiscais />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/regra-vinte" element={<RegraVinte />} />
-        <Route path="/dev/simulador" element={<DevSimulador />} />
-        <Route path="/excluir-conta" element={<ExcluirConta />} />
-        <Route path="/adicionar-faturamento" element={<AdicionarFaturamento />} />
-        <Route path="/adicionar-faturamento/digitar" element={<AdicionarFaturamentoDigitar />} />
-        <Route path="/adicionar-faturamento/enviar" element={<AdicionarFaturamentoEnviar />} />
-        <Route path="/adicionar-faturamento/colar" element={<AdicionarFaturamentoColar />} />
-        <Route path="*" element={<EmConstrucao />} />
-      </Routes>
+      <TransicaoTela>
+        <Routes>
+          <Route path="/" element={<Welcome />} />
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/cadastro" element={<Cadastro />} />
+          <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+          <Route path="/cadastro-obrigatorio" element={<CadastroObrigatorio />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/sobre" element={<Sobre />} />
+          <Route path="/termos" element={<Termos />} />
+          <Route path="/lancar" element={<Lancar />} />
+          <Route path="/lancar/limite-atingido" element={<LimiteAtingido />} />
+          <Route path="/historico" element={<Historico />} />
+          <Route path="/perfil" element={<Perfil />} />
+          <Route path="/alertas" element={<Alertas />} />
+          <Route path="/preferencias" element={<Preferencias />} />
+          <Route path="/faq" element={<Faq />} />
+          <Route path="/contas" element={<Contas />} />
+          <Route path="/velocimetro" element={<Velocimetro />} />
+          <Route path="/alterar-senha" element={<AlterarSenha />} />
+          <Route path="/editar-perfil" element={<EditarPerfil />} />
+          <Route path="/perfil/resumo" element={<ResumoPerfil />} />
+          <Route path="/perfil/informacoes-fiscais" element={<InformacoesFiscais />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/regra-vinte" element={<RegraVinte />} />
+          <Route path="/dev/simulador" element={<DevSimulador />} />
+          <Route path="/excluir-conta" element={<ExcluirConta />} />
+          <Route path="/adicionar-faturamento" element={<AdicionarFaturamento />} />
+          <Route path="/adicionar-faturamento/digitar" element={<AdicionarFaturamentoDigitar />} />
+          <Route path="/adicionar-faturamento/enviar" element={<AdicionarFaturamentoEnviar />} />
+          <Route path="/adicionar-faturamento/colar" element={<AdicionarFaturamentoColar />} />
+          <Route path="*" element={<EmConstrucao />} />
+        </Routes>
+      </TransicaoTela>
       <Toaster
         theme="dark"
         position="top-center"
