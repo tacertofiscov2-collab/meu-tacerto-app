@@ -65,7 +65,7 @@ export default function RegraVinte() {
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+          className="toque w-10 h-10 rounded-full flex items-center justify-center"
           style={{ backgroundColor: "var(--field)" }}
         >
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
@@ -76,10 +76,10 @@ export default function RegraVinte() {
       </header>
 
       <div
-        className="conteudo-rolavel hide-scrollbar px-5 overflow-x-hidden"
+        className="conteudo-rolavel hide-scrollbar px-5"
         style={{ paddingBottom: "calc(40px + env(safe-area-inset-bottom))" }}
       >
-        {/* Faixa de destaque: substitui o Fisco */}
+        {/* Faixa de destaque */}
         <div
           className="rounded-3xl px-5 py-5 relative overflow-hidden"
           style={{
@@ -110,8 +110,8 @@ export default function RegraVinte() {
                 style={{ color: "var(--text)" }}
               >
                 {passouDos20
-                  ? `Você passou ${pctExcesso}% do limite anual.`
-                  : "Você passou do limite, mas ainda dentro dos 20% que a lei permite."}
+                  ? `Passei ${pctExcesso}% do limite anual.`
+                  : "Passei do limite, mas ainda dentro dos 20% que a lei permite."}
               </p>
             </div>
           </div>
@@ -129,17 +129,17 @@ export default function RegraVinte() {
             className="text-[11px] font-semibold uppercase mb-2.5"
             style={{ color: cor, letterSpacing: "0.06em" }}
           >
-            Sua situação hoje
+            Como estou hoje
           </p>
           <div className="flex items-baseline justify-between gap-3 mb-1.5">
             <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
-              Você faturou
+              Faturei
             </span>
             <Valor tamanho="md" autoAjustar>{faturamentoAtual}</Valor>
           </div>
           <div className="flex items-baseline justify-between gap-3 mb-1.5">
             <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
-              Seu limite
+              Meu limite
             </span>
             <Valor tamanho="md" autoAjustar>{limiteAtual}</Valor>
           </div>
@@ -148,7 +148,7 @@ export default function RegraVinte() {
             style={{ borderTop: `1px solid ${cor}33` }}
           >
             <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
-              Passou
+              Passei
             </span>
             <Valor tamanho="md" autoAjustar cor={cor}>
               {excedente?.valor || 0}
