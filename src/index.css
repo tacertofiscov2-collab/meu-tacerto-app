@@ -116,6 +116,64 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* ===================================================================
+   NOVO v13.1 — ENQUADRAMENTO SEM ROLAGEM (iPhone / Safari)
+
+   Problema: no Safari do iPhone, 100vh mede a tela SEM a barra de
+   endereço. Toda tela montada com min-h-screen fica mais alta que o
+   espaço visível, e o que está embaixo (o botão) some atrás da barra.
+
+   Solução: dvh (altura real, já descontando a barra) + safe-area.
+   =================================================================== */
+
+/* --- ATENÇÃO: única alteração de comportamento existente. ---
+   Faz min-h-screen / h-screen do Tailwind medirem a tela real.
+   Se causar qualquer efeito indesejado, apague estas 3 linhas. */
+.min-h-screen { min-height: 100dvh !important; }
+.h-screen     { height: 100dvh !important; }
+
+/* Container de tela que se enquadra sozinha, sem rolar.
+   Uso: <div className="tela-enquadrada"> */
+.tela-enquadrada {
+  height: 100dvh;
+  max-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Miolo que ocupa o que sobrou entre cabeçalho e rodapé */
+.corpo-flex {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Empurrador: come o espaço que sobra em vez de deixar vazio morto */
+.espaco-flex {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Rodapé que nunca fica atrás da barra do Safari */
+.rodape-seguro {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+}
+
+/* Topo respeitando o notch, quando a tela não usa cabeçalho padrão */
+.topo-seguro {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Bloco de conteúdo que pode encolher um pouco em tela curta,
+   sem quebrar o layout (usado nas telas mais cheias) */
+.encolhivel {
+  flex: 0 1 auto;
+  min-height: 0;
+}
+
 .snap-y::-webkit-scrollbar { display: none; }
 .hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
