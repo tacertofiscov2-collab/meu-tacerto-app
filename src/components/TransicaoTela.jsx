@@ -1,76 +1,222 @@
-import { cloneElement, useEffect, useRef, useState } from "react";
-import { useLocation, useNavigationType } from "react-router-dom";
-
-/**
- * TransicaoTela — desliza a tela ao navegar, com as DUAS telas visíveis.
- *
- * Durante a transição existem duas camadas montadas:
- *  - a que SAI  (cópia da rota anterior, congelada, sem receber toque)
- *  - a que ENTRA (a rota nova, de verdade)
- *
- * Avançar: a nova entra pela direita, a antiga recua 25% pra esquerda
- * e escurece um pouco. Voltar: o inverso. É o mesmo movimento do iOS.
- *
- * Quando não está animando, só existe UMA camada — o app fica igual
- * ao que era antes, sem camada extra pesando.
- */
-export default function TransicaoTela({ children }) {
-  const location = useLocation();
-  const tipoNav = useNavigationType(); // "PUSH" | "POP" | "REPLACE"
-
-  const chaveAtual = location.pathname + location.search;
-
-  const [estado, setEstado] = useState({
-    chave: chaveAtual,
-    direcao: null,    // "avancar" | "voltar" | null
-    locSaindo: null,  // location da tela que está saindo
-  });
-
-  // Guarda a rota do render anterior sem provocar novo render.
-  const locAnterior = useRef(location);
-
-  // Ajuste durante o render: chave, direção e camadas entram juntas
-  // na tela. Se a classe chegasse um frame depois, a tela nova
-  // apareceria no lugar final e só então pularia pra trás — a "vibrada".
-  if (estado.chave !== chaveAtual) {
-    setEstado({
+import {
+    cloneElement, createContext, useCallback, useContext,
+    useEffect, useMemo, useRef, useState,
+  } from "react";
+  import { useLocation, useNavigate, useNavigationType } from "react-router-dom";
+  
+  const ContextoTransicao = createContext(null);
+  
+  /** Usado pelo SwipeBack para comandar o arrasto interativo. */
+  export function useTransicao() {
+    return useContext(ContextoTransicao);
+  }
+  
+  const CURVA = "cubic-bezier(0.32, 0.72, 0, 1)";
+  const RECUO_FUNDO = 25;   // % que a tela de trás recua
+  const VEU_MAX = 0.22;     // opacidade do escurecimento
+  
+  /**
+   * TransicaoTela — desliza a tela ao navegar, com as DUAS telas visíveis.
+   *
+   * Dois modos:
+   *
+   * 1. AUTOMÁTICO (clique num botão): monta a tela que sai e a que entra,
+   *    e roda a animação CSS do começo ao fim.
+   *
+   * 2. ARRASTO (dedo na borda esquerda): monta a tela anterior atrás e
+   *    move as duas acompanhando o dedo. Ao soltar, completa ou volta.
+   *
+   * No modo arrasto o transform é escrito DIRETO no DOM via ref. Passar
+   * por estado seria um render por frame da árvore inteira — com duas
+   * telas montadas, o iPhone não aguenta.
+   */
+  export default function TransicaoTela({ children }) {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const tipoNav = useNavigationType(); // "PUSH" | "POP" | "REPLACE"
+  
+    const chaveAtual = location.pathname + location.search;
+  
+    const [estado, setEstado] = useState({
       chave: chaveAtual,
-      direcao: tipoNav === "POP" ? "voltar" : "avancar",
-      locSaindo: locAnterior.current,
+      direcao: null,    // "avancar" | "voltar" | null
+      locSaindo: null,
     });
-  }
-
-  useEffect(() => {
-    locAnterior.current = location;
-  }, [location]);
-
-  function aoTerminar(e) {
-    if (e.target !== e.currentTarget) return;
-    setEstado((anterior) => ({ ...anterior, direcao: null, locSaindo: null }));
-  }
-
-  const dir = estado.direcao;
-  const animando = dir !== null;
-
-  return (
-    <div className="pilha-telas">
-      {animando && estado.locSaindo && (
-        <div
-          key="camada-saindo"
-          className={`camada-tela camada-sai-${dir}`}
-          aria-hidden="true"
-        >
-          {cloneElement(children, { location: estado.locSaindo })}
+  
+    // Só liga/desliga as camadas do arrasto. O movimento não passa por aqui.
+    const [arrastando, setArrastando] = useState(false);
+  
+    const locAnterior = useRef(location);
+    const locPreview = useRef(null);
+    const pularAnimacao = useRef(false);
+    const soltando = useRef(false);
+  
+    const refFrente = useRef(null);
+    const refFundo = useRef(null);
+    const refVeu = useRef(null);
+  
+    // Ajuste durante o render: chave, direção e camadas chegam juntas na
+    // tela. Se a classe entrasse um frame depois, a tela nova apareceria
+    // no lugar final e só então pularia pra trás — a "vibrada".
+    if (estado.chave !== chaveAtual) {
+      const pular = pularAnimacao.current;
+      pularAnimacao.current = false;
+      setEstado({
+        chave: chaveAtual,
+        direcao: pular ? null : tipoNav === "POP" ? "voltar" : "avancar",
+        locSaindo: pular ? null : locAnterior.current,
+      });
+    }
+  
+    useEffect(() => {
+      locAnterior.current = location;
+    }, [location]);
+  
+    function aoTerminarAnimacao(e) {
+      if (e.target !== e.currentTarget) return;
+      setEstado((anterior) => ({ ...anterior, direcao: null, locSaindo: null }));
+    }
+  
+    /* ===================== API DO ARRASTO ===================== */
+  
+    /* Só dá pra arrastar se houver uma tela anterior conhecida para
+       desenhar atrás. Em entrada direta por link, não há — e aí o
+       SwipeBack cai no comportamento antigo. */
+    const podeArrastar = useCallback(() => {
+      const ant = locAnterior.current;
+      if (!ant) return false;
+      return ant.pathname + ant.search !== chaveAtual;
+    }, [chaveAtual]);
+  
+    const iniciar = useCallback(() => {
+      if (!podeArrastar() || soltando.current) return false;
+      locPreview.current = locAnterior.current;
+      setArrastando(true);
+      return true;
+    }, [podeArrastar]);
+  
+    const mover = useCallback((px) => {
+      const w = window.innerWidth || 1;
+      const p = Math.max(0, Math.min(px, w));
+      const fracao = p / w;
+  
+      if (refFrente.current) {
+        refFrente.current.style.transition = "none";
+        refFrente.current.style.transform = `translateX(${p}px)`;
+      }
+      if (refFundo.current) {
+        refFundo.current.style.transition = "none";
+        refFundo.current.style.transform =
+          `translateX(${-RECUO_FUNDO + fracao * RECUO_FUNDO}%)`;
+      }
+      if (refVeu.current) {
+        refVeu.current.style.transition = "none";
+        refVeu.current.style.opacity = String(VEU_MAX * (1 - fracao));
+      }
+    }, []);
+  
+    /* Ao soltar: completa o gesto ou devolve a tela ao lugar.
+       A duração é proporcional ao que falta percorrer — soltar perto
+       do fim tem que terminar rápido, senão parece emperrado. */
+    const soltar = useCallback((px, velocidade) => {
+      const w = window.innerWidth || 1;
+      const p = Math.max(0, Math.min(px, w));
+      const concluir = p > w * 0.35 || (velocidade > 0.45 && p > 40);
+  
+      const restante = concluir ? w - p : p;
+      const dur = Math.max(150, Math.min(400, (restante / w) * 430));
+      const trans = `transform ${dur}ms ${CURVA}`;
+  
+      soltando.current = true;
+  
+      if (refFrente.current) {
+        refFrente.current.style.transition = trans;
+        refFrente.current.style.transform =
+          concluir ? `translateX(${w}px)` : "translateX(0px)";
+      }
+      if (refFundo.current) {
+        refFundo.current.style.transition = trans;
+        refFundo.current.style.transform =
+          concluir ? "translateX(0%)" : `translateX(${-RECUO_FUNDO}%)`;
+      }
+      if (refVeu.current) {
+        refVeu.current.style.transition = `opacity ${dur}ms ${CURVA}`;
+        refVeu.current.style.opacity = concluir ? "0" : String(VEU_MAX);
+      }
+  
+      window.setTimeout(() => {
+        soltando.current = false;
+  
+        if (concluir) {
+          // A tela de trás já está exatamente onde a nova rota vai nascer.
+          // Por isso a animação automática é suprimida: seria um segundo
+          // deslize por cima de um movimento que já terminou.
+          pularAnimacao.current = true;
+          setArrastando(false);
+          navigate(-1);
+        } else {
+          setArrastando(false);
+        }
+  
+        if (refFrente.current) {
+          refFrente.current.style.transition = "";
+          refFrente.current.style.transform = "";
+        }
+      }, dur + 30);
+    }, [navigate]);
+  
+    const api = useMemo(
+      () => ({ podeArrastar, iniciar, mover, soltar }),
+      [podeArrastar, iniciar, mover, soltar],
+    );
+  
+    /* ===================== RENDER ===================== */
+  
+    const dir = estado.direcao;
+    const animando = dir !== null && !arrastando;
+  
+    return (
+      <ContextoTransicao.Provider value={api}>
+        <div className="pilha-telas">
+          {/* Tela anterior, desenhada atrás durante o arrasto */}
+          {arrastando && locPreview.current && (
+            <div
+              ref={refFundo}
+              className="camada-tela camada-arrasto-fundo"
+              aria-hidden="true"
+            >
+              {cloneElement(children, { location: locPreview.current })}
+              <div ref={refVeu} className="veu-arrasto" />
+            </div>
+          )}
+  
+          {/* Tela que sai, na navegação automática */}
+          {animando && estado.locSaindo && (
+            <div
+              key="camada-saindo"
+              className={`camada-tela camada-sai-${dir}`}
+              aria-hidden="true"
+            >
+              {cloneElement(children, { location: estado.locSaindo })}
+            </div>
+          )}
+  
+          {/* Tela atual */}
+          <div
+            key={estado.chave}
+            ref={refFrente}
+            className={
+              arrastando
+                ? "camada-tela camada-arrasto-frente"
+                : animando
+                  ? `camada-tela camada-entra-${dir}`
+                  : "camada-tela"
+            }
+            onAnimationEnd={animando ? aoTerminarAnimacao : undefined}
+          >
+            {children}
+          </div>
         </div>
-      )}
-
-      <div
-        key={estado.chave}
-        className={animando ? `camada-tela camada-entra-${dir}` : "camada-tela"}
-        onAnimationEnd={animando ? aoTerminar : undefined}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
+      </ContextoTransicao.Provider>
+    );
+  }

@@ -373,6 +373,39 @@ body {
   animation: telaClareia var(--transicao-dur) var(--transicao-curva) both;
 }
 
+/* ===================================================================
+   ARRASTO INTERATIVO (dedo na borda esquerda)
+
+   Aqui não há animação CSS: o transform é escrito pelo JS a cada
+   frame, acompanhando o dedo. Estas classes só definem posição,
+   empilhamento e sombra.
+   =================================================================== */
+.camada-arrasto-frente {
+  position: relative;
+  z-index: 2;
+  will-change: transform;
+  box-shadow: -10px 0 28px rgba(0, 0, 0, 0.38);
+}
+
+.camada-arrasto-fundo {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  will-change: transform;
+  transform: translateX(-25%);
+}
+
+.veu-arrasto {
+  position: absolute;
+  inset: 0;
+  background-color: #000;
+  opacity: 0.22;
+  pointer-events: none;
+  z-index: 9999;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .camada-entra-avancar,
   .camada-sai-avancar,
