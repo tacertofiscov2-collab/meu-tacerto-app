@@ -29,7 +29,7 @@ function Item({ Icon, label, onClick, cor, primeiro }) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-3 py-3 text-left active:opacity-70"
+      className="toque w-full flex items-center gap-3 py-3 text-left"
       style={{
         borderTop: primeiro ? "none" : "1px solid var(--border)",
       }}
@@ -119,7 +119,7 @@ export default function Perfil() {
           <button
             onClick={() => navigate(-1)}
             aria-label="Voltar"
-            className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+            className="toque w-10 h-10 rounded-full flex items-center justify-center"
             style={{ backgroundColor: "var(--field)" }}
           >
             <ArrowLeft size={20} style={{ color: "var(--text)" }} />
@@ -184,7 +184,7 @@ export default function Perfil() {
           <div style={{ marginTop: 24 }}>
             <button
               onClick={() => setConfirmarSair(true)}
-              className="w-full flex items-center gap-3 py-3 text-left active:opacity-70"
+              className="toque w-full flex items-center gap-3 py-3 text-left"
             >
               <LogOut size={21} strokeWidth={2} style={{ color: "var(--danger)" }} className="shrink-0" />
               <span className="flex-1 text-[15px] font-semibold" style={{ color: "var(--danger)" }}>
@@ -223,12 +223,12 @@ export default function Perfil() {
           >
             <div className="flex items-center justify-between px-1 pb-2">
               <p className="text-base font-bold" style={{ color: "var(--text)" }}>
-                Suas contas
+                Minhas contas
               </p>
               <button
                 onClick={() => setSeletorAberto(false)}
                 aria-label="Fechar"
-                className="w-8 h-8 rounded-full flex items-center justify-center"
+                className="toque w-8 h-8 rounded-full flex items-center justify-center"
                 style={{ backgroundColor: "var(--field)" }}
               >
                 <X size={16} style={{ color: "var(--text)" }} />
@@ -242,7 +242,7 @@ export default function Perfil() {
                   <button
                     key={c.id}
                     onClick={() => trocarConta(c.id)}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl active:opacity-80"
+                    className="toque w-full flex items-center gap-3 p-3 rounded-xl"
                   >
                     <div
                       className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
@@ -270,7 +270,7 @@ export default function Perfil() {
               })}
               <button
                 onClick={() => { setSeletorAberto(false); navigate("/cadastro"); }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl active:opacity-80"
+                className="toque w-full flex items-center gap-3 p-3 rounded-xl"
               >
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
@@ -297,19 +297,19 @@ export default function Perfil() {
             style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
           >
             <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
-              Deseja sair da sua conta?
+              Quer sair da conta?
             </h3>
             <div className="flex gap-2">
               <button
                 onClick={() => setConfirmarSair(false)}
-                className="flex-1 py-3 rounded-xl font-semibold"
+                className="toque flex-1 py-3 rounded-xl font-semibold"
                 style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
               >
                 Cancelar
               </button>
               <button
                 onClick={() => { setConfirmarSair(false); navigate("/"); }}
-                className="flex-1 py-3 rounded-xl font-semibold"
+                className="toque flex-1 py-3 rounded-xl font-semibold"
                 style={{ backgroundColor: "#ef4444", color: "#fff" }}
               >
                 Sair
