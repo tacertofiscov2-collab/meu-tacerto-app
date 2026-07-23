@@ -1,18 +1,18 @@
-import { useState } from "react";
+import { cloneElement, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigationType } from "react-router-dom";
 
 /**
- * TransicaoTela — desliza a tela ao navegar.
+ * TransicaoTela — desliza a tela ao navegar, com as DUAS telas visíveis.
  *
- * Envolve as <Routes /> e aplica uma classe de animação
- * a cada mudança de rota. Sem biblioteca externa: CSS puro.
+ * Durante a transição existem duas camadas montadas:
+ *  - a que SAI  (cópia da rota anterior, congelada, sem receber toque)
+ *  - a que ENTRA (a rota nova, de verdade)
  *
- * - Avançar (PUSH)  → tela entra deslizando da direita
- * - Voltar (POP)    → tela entra deslizando da esquerda
+ * Avançar: a nova entra pela direita, a antiga recua 25% pra esquerda
+ * e escurece um pouco. Voltar: o inverso. É o mesmo movimento do iOS.
  *
- * A chave e a classe mudam SEMPRE no mesmo render. Se a classe
- * entrasse um frame depois, a tela nova apareceria no lugar final
- * e só então pularia pra trás pra animar — que era a "vibrada".
+ * Quando não está animando, só existe UMA camada — o app fica igual
+ * ao que era antes, sem camada extra pesando.
  */
 export default function TransicaoTela({ children }) {
   const location = useLocation();
@@ -20,39 +20,57 @@ export default function TransicaoTela({ children }) {
 
   const chaveAtual = location.pathname + location.search;
 
-  // Estado inicial já com a rota atual: o primeiro carregamento não anima.
-  const [estado, setEstado] = useState({ chave: chaveAtual, classe: "" });
+  const [estado, setEstado] = useState({
+    chave: chaveAtual,
+    direcao: null,    // "avancar" | "voltar" | null
+    locSaindo: null,  // location da tela que está saindo
+  });
 
-  // Ajuste de estado durante o render: React refaz o render antes de
-  // pintar, então chave e classe chegam juntas na tela. Sem frame solto.
+  // Guarda a rota do render anterior sem provocar novo render.
+  const locAnterior = useRef(location);
+
+  // Ajuste durante o render: chave, direção e camadas entram juntas
+  // na tela. Se a classe chegasse um frame depois, a tela nova
+  // apareceria no lugar final e só então pularia pra trás — a "vibrada".
   if (estado.chave !== chaveAtual) {
     setEstado({
       chave: chaveAtual,
-      classe: tipoNav === "POP" ? "tela-anima-voltar" : "tela-anima-avancar",
+      direcao: tipoNav === "POP" ? "voltar" : "avancar",
+      locSaindo: locAnterior.current,
     });
   }
 
-  // Terminou de animar: solta a classe (e o willChange junto).
-  // A animação usa fill "both", então o ponto final é igual ao естado
-  // natural do elemento — remover não muda nada visualmente.
-  function aoTerminarAnimacao(e) {
+  useEffect(() => {
+    locAnterior.current = location;
+  }, [location]);
+
+  function aoTerminar(e) {
     if (e.target !== e.currentTarget) return;
-    setEstado((anterior) => ({ ...anterior, classe: "" }));
+    setEstado((anterior) => ({ ...anterior, direcao: null, locSaindo: null }));
   }
 
-  const animando = estado.classe !== "";
+  const dir = estado.direcao;
+  const animando = dir !== null;
 
   return (
-    <div
-      key={estado.chave}
-      className={estado.classe}
-      onAnimationEnd={aoTerminarAnimacao}
-      style={{
-        height: "100%",
-        willChange: animando ? "transform, opacity" : "auto",
-      }}
-    >
-      {children}
+    <div className="pilha-telas">
+      {animando && estado.locSaindo && (
+        <div
+          key="camada-saindo"
+          className={`camada-tela camada-sai-${dir}`}
+          aria-hidden="true"
+        >
+          {cloneElement(children, { location: estado.locSaindo })}
+        </div>
+      )}
+
+      <div
+        key={estado.chave}
+        className={animando ? `camada-tela camada-entra-${dir}` : "camada-tela"}
+        onAnimationEnd={animando ? aoTerminar : undefined}
+      >
+        {children}
+      </div>
     </div>
   );
 }

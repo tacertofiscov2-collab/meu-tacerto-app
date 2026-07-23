@@ -29,6 +29,10 @@
   --barra-vidro-borda: rgba(255, 255, 255, 0.10);
 
   --toque: rgba(255, 255, 255, 0.09);
+
+  /* Transição entre telas — mexa AQUI pra regular a velocidade */
+  --transicao-dur: 450ms;
+  --transicao-curva: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .theme-light {
@@ -279,36 +283,103 @@ body {
 }
 
 /* ===================================================================
-   TRANSIÇÃO ENTRE TELAS
+   TRANSIÇÃO ENTRE TELAS — duas camadas
 
-   A tela entra da borda inteira (100%), não de 24px, e freia longo
-   no fim — é isso que dá a sensação de app nativo. Sem fade: no iOS
-   a tela desliza sólida por cima, ela não aparece surgindo.
+   Durante a transição existem duas telas montadas. A que entra
+   desliza da borda inteira; a que sai recua 25% e escurece. Esse
+   recuo parcial é o que dá a sensação de profundidade do iOS —
+   sem ele parece que a tela nova entra sobre o vazio.
 
-   A curva 0.32 / 0.72 / 0 / 1 é a mesma família usada pelo iOS:
-   arranca rápido e desacelera devagar até parar.
-
-   Duração: mexa nos DOIS números de 450ms abaixo, sempre juntos.
+   Regule a velocidade em --transicao-dur, lá no :root.
    =================================================================== */
+.pilha-telas {
+  position: relative;
+}
+
+.camada-tela {
+  position: relative;
+  height: 100%;
+}
+
+/* A camada que SAI fica sobreposta e não recebe toque */
+.camada-sai-avancar,
+.camada-sai-voltar {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Empilhamento: avançar = a nova por cima. Voltar = a antiga por cima. */
+.camada-sai-avancar   { z-index: 1; }
+.camada-entra-avancar { z-index: 2; }
+.camada-sai-voltar    { z-index: 2; }
+.camada-entra-voltar  { z-index: 1; }
+
 @keyframes telaEntraDireita {
   from { transform: translateX(100%); }
   to   { transform: translateX(0); }
 }
+@keyframes telaRecuaEsquerda {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-25%); }
+}
 @keyframes telaEntraEsquerda {
-  from { transform: translateX(-100%); }
+  from { transform: translateX(-25%); }
   to   { transform: translateX(0); }
 }
-
-.tela-anima-avancar {
-  animation: telaEntraDireita 450ms cubic-bezier(0.32, 0.72, 0, 1) both;
+@keyframes telaSaiDireita {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
 }
-.tela-anima-voltar {
-  animation: telaEntraEsquerda 450ms cubic-bezier(0.32, 0.72, 0, 1) both;
+@keyframes telaEscurece {
+  from { opacity: 0; }
+  to   { opacity: 0.22; }
+}
+@keyframes telaClareia {
+  from { opacity: 0.22; }
+  to   { opacity: 0; }
+}
+
+.camada-entra-avancar {
+  animation: telaEntraDireita var(--transicao-dur) var(--transicao-curva) both;
+  box-shadow: -10px 0 28px rgba(0, 0, 0, 0.38);
+}
+.camada-sai-avancar {
+  animation: telaRecuaEsquerda var(--transicao-dur) var(--transicao-curva) both;
+}
+.camada-entra-voltar {
+  animation: telaEntraEsquerda var(--transicao-dur) var(--transicao-curva) both;
+}
+.camada-sai-voltar {
+  animation: telaSaiDireita var(--transicao-dur) var(--transicao-curva) both;
+  box-shadow: -10px 0 28px rgba(0, 0, 0, 0.38);
+}
+
+/* Véu escuro sobre a tela que fica atrás */
+.camada-sai-avancar::after,
+.camada-entra-voltar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: #000;
+  pointer-events: none;
+  z-index: 9999;
+}
+.camada-sai-avancar::after {
+  animation: telaEscurece var(--transicao-dur) var(--transicao-curva) both;
+}
+.camada-entra-voltar::after {
+  animation: telaClareia var(--transicao-dur) var(--transicao-curva) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tela-anima-avancar,
-  .tela-anima-voltar {
+  .camada-entra-avancar,
+  .camada-sai-avancar,
+  .camada-entra-voltar,
+  .camada-sai-voltar,
+  .camada-sai-avancar::after,
+  .camada-entra-voltar::after {
     animation: none;
   }
 }
