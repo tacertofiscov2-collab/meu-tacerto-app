@@ -82,7 +82,7 @@ export const FAIXA_INFO = {
     cor: "#22c55e",
     mensagem: "Continua no seu ritmo.",
     resumo: "Tudo tranquilo, dentro do esperado.",
-    palavra: "Tá de boa",
+    palavra: "Tá tranquilo",
     textoDetalhado: (p) =>
       `Você usou ${Number(p).toFixed(0)}% do seu limite anual. Está tranquilo — ainda tem bastante espaço até dezembro.`,
   },
@@ -90,7 +90,7 @@ export const FAIXA_INFO = {
     cor: "#84cc16",
     mensagem: "Vale começar a acompanhar de perto.",
     resumo: "Já passou da metade do limite.",
-    palavra: "Tá de boa",
+    palavra: "Tá tranquilo",
     textoDetalhado: (p) =>
       `Você já usou ${Number(p).toFixed(0)}% do seu limite anual. Ainda está dentro do previsto, mas vale acompanhar mês a mês.`,
   },
