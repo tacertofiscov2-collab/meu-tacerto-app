@@ -65,7 +65,7 @@ export default function ResumoPerfil() {
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+          className="toque w-10 h-10 rounded-full flex items-center justify-center"
           style={{ backgroundColor: "var(--field)" }}
         >
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
@@ -119,7 +119,7 @@ export default function ResumoPerfil() {
           className="text-[12px] font-semibold uppercase mt-6 mb-2"
           style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
         >
-          Seu ritmo
+          Meu ritmo
         </p>
 
         <div
@@ -129,7 +129,7 @@ export default function ResumoPerfil() {
           <div className="flex items-center gap-2 mb-2.5">
             <TrendingUp size={16} style={{ color: "var(--primary)" }} />
             <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
-              Com base nos meses em que você lançou
+              Com base nos meses lançados
             </span>
           </div>
           <div className="flex items-baseline justify-between gap-3 mb-2">
