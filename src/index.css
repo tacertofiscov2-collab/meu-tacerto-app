@@ -27,6 +27,8 @@
 
   --barra-vidro: rgba(255, 255, 255, 0.05);
   --barra-vidro-borda: rgba(255, 255, 255, 0.10);
+
+  --toque: rgba(255, 255, 255, 0.09);
 }
 
 .theme-light {
@@ -50,6 +52,8 @@
 
   --barra-vidro: rgba(15, 15, 17, 0.04);
   --barra-vidro-borda: rgba(15, 15, 17, 0.10);
+
+  --toque: rgba(15, 15, 17, 0.07);
 }
 
 .font-small { --font-scale: 0.92; }
@@ -125,20 +129,20 @@ body {
               0 0 18px 2px rgba(34, 197, 94, 0.22);
 }
 
-/* === Card B: TUDO em px absoluto, imune à preferência de fonte ===
-   Não adianta redefinir --font-scale aqui: o html já resolveu o rem.
-   Por isso forçamos font-size fixo e todos os filhos herdam em px. */
-.card-b-fonte-fixa,
-.card-b-fonte-fixa * {
-  font-size: inherit;
+/* ===================================================================
+   CARD B — ILHA DE TAMANHO FIXO
+   O html usa font-size: calc(16px * --font-scale). Como o Tailwind
+   escreve padding/margin/gap em rem, TUDO escala junto com a fonte.
+   Aqui zeramos o efeito: o bloco fixa font-size em 16px absolutos,
+   então 1rem lá dentro = 16px SEMPRE, em qualquer preferência.
+   =================================================================== */
+.card-b-fixo {
+  font-size: 16px !important;
 }
-.card-b-fonte-fixa {
-  font-size: 13px;
-}
-.card-b-fonte-fixa .cb-rotulo { font-size: 9px !important; }
-.card-b-fonte-fixa .cb-titulo { font-size: 13.5px !important; }
-.card-b-fonte-fixa .cb-linha  { font-size: 11.5px !important; }
-.card-b-fonte-fixa .cb-mini   { font-size: 7.5px !important; }
+.card-b-fixo .cb-rotulo { font-size: 9px; }
+.card-b-fixo .cb-titulo { font-size: 13.5px; }
+.card-b-fixo .cb-linha  { font-size: 11.5px; }
+.card-b-fixo .cb-mini   { font-size: 7.5px; }
 
 /* === Barra do Fisco: vidro fosco === */
 .barra-fisco {
@@ -179,4 +183,57 @@ body {
   transform: scale(0.9);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25),
               0 1px 4px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+/* ===================================================================
+   FEEDBACK DE TOQUE — destaque no item tocado (estilo TikTok)
+   Aplique a classe .toque em qualquer elemento clicável.
+   =================================================================== */
+.toque {
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 120ms ease, transform 120ms ease;
+}
+.toque::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: transparent;
+  pointer-events: none;
+  transition: background-color 160ms ease;
+}
+.toque:active::after {
+  background-color: var(--toque);
+  transition: background-color 40ms ease;
+}
+.toque-escala:active {
+  transform: scale(0.985);
+}
+
+/* ===================================================================
+   TRANSIÇÃO ENTRE TELAS — deslize
+   =================================================================== */
+@keyframes telaEntraDireita {
+  from { transform: translateX(24px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes telaEntraEsquerda {
+  from { transform: translateX(-24px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
+.tela-anima-avancar {
+  animation: telaEntraDireita 260ms cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+.tela-anima-voltar {
+  animation: telaEntraEsquerda 260ms cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+
+/* Respeita quem prefere menos animação */
+@media (prefers-reduced-motion: reduce) {
+  .tela-anima-avancar,
+  .tela-anima-voltar {
+    animation: none;
+  }
 }
