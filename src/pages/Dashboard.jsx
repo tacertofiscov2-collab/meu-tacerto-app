@@ -59,8 +59,12 @@ function SetaEnviar({ tamanho = 16 }) {
   );
 }
 
-/** Bolinhas do carrossel — flutuam POR CIMA, sem ocupar espaço */
+/**
+ * Bolinhas do carrossel — flutuam POR CIMA, sem ocupar espaço.
+ * Card A: verde forte e destacado. Card B: bem fraquinho.
+ */
 function BolinhasIndicadoras({ pagina, irPara }) {
+  const noCardA = pagina === 0;
   return (
     <div className="absolute top-3 right-4 z-30 flex items-center gap-1.5">
       {[0, 1].map((i) => {
@@ -72,10 +76,15 @@ function BolinhasIndicadoras({ pagina, irPara }) {
             aria-label={`Ir para tela ${i + 1}`}
             className="rounded-full transition-all"
             style={{
-              width: 6,
-              height: 6,
+              width: noCardA ? 7 : 6,
+              height: noCardA ? 7 : 6,
               backgroundColor: "var(--primary)",
-              opacity: ativa ? 0.45 : 0.15,
+              opacity: noCardA
+                ? (ativa ? 1 : 0.35)
+                : (ativa ? 0.28 : 0.12),
+              boxShadow: noCardA && ativa
+                ? "0 0 8px color-mix(in srgb, var(--primary) 60%, transparent)"
+                : "none",
             }}
           />
         );
@@ -92,12 +101,19 @@ function TelaDetalhes({
   const temLancamento = ultimos.length > 0;
 
   return (
-    <div className="card-b-fonte-fixa w-1/2 h-full flex flex-col px-3.5 py-3.5 gap-2 overflow-hidden">
+    <div
+      className="card-b-fixo w-1/2 h-full flex flex-col overflow-hidden"
+      style={{ padding: 14, gap: 8 }}
+    >
       {/* 1 — Sua situação (clicável). As bolinhas passam POR CIMA dele. */}
       <button
         onClick={onSituacao}
-        className="relative rounded-2xl pl-4 pr-3 py-3 text-left shrink-0 active:scale-[0.985] active:opacity-90 transition overflow-hidden"
+        className="toque toque-escala relative rounded-2xl text-left shrink-0 overflow-hidden"
         style={{
+          paddingLeft: 16,
+          paddingRight: 12,
+          paddingTop: 12,
+          paddingBottom: 12,
           backgroundColor: "var(--surface-raised)",
           boxShadow: `inset 3px 0 0 0 ${corFaixa}`,
         }}
@@ -109,11 +125,11 @@ function TelaDetalhes({
             background: `linear-gradient(100deg, ${hexToRgba(corFaixa, 0.14)} 0%, ${hexToRgba(corFaixa, 0.03)} 60%, transparent 100%)`,
           }}
         />
-        <div className="relative flex items-center gap-2.5">
+        <div className="relative flex items-center" style={{ gap: 10 }}>
           <div className="flex-1 min-w-0" style={{ paddingRight: 30 }}>
             <p
-              className="cb-rotulo font-bold uppercase mb-1"
-              style={{ color: corFaixa, letterSpacing: "0.09em" }}
+              className="cb-rotulo font-bold uppercase"
+              style={{ color: corFaixa, letterSpacing: "0.09em", marginBottom: 4 }}
             >
               Sua situação
             </p>
@@ -141,10 +157,16 @@ function TelaDetalhes({
       {temLancamento ? (
         <button
           onClick={onLancamentos}
-          className="rounded-2xl px-4 py-2.5 text-left shrink-0 active:opacity-80 transition"
-          style={{ backgroundColor: "var(--surface-raised)" }}
+          className="toque toque-escala rounded-2xl text-left shrink-0"
+          style={{
+            paddingLeft: 16,
+            paddingRight: 16,
+            paddingTop: 10,
+            paddingBottom: 10,
+            backgroundColor: "var(--surface-raised)",
+          }}
         >
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="flex items-center" style={{ gap: 8, marginBottom: 6 }}>
             <Receipt size={12} style={{ color: "var(--text-tertiary)" }} />
             <p
               className="cb-rotulo font-bold uppercase flex-1"
@@ -154,11 +176,11 @@ function TelaDetalhes({
             </p>
             <ChevronRight size={13} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
           </div>
-          <div className="space-y-1">
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {ultimos.map((l) => {
               const d = new Date(l.data);
               return (
-                <div key={l.id} className="flex items-baseline justify-between gap-2">
+                <div key={l.id} className="flex items-baseline justify-between" style={{ gap: 8 }}>
                   <span
                     className="cb-linha truncate"
                     style={{ color: "var(--text-secondary)" }}
@@ -173,8 +195,12 @@ function TelaDetalhes({
         </button>
       ) : (
         <div
-          className="rounded-2xl px-4 py-3 shrink-0 flex items-center gap-2.5"
-          style={{ backgroundColor: "var(--surface-raised)" }}
+          className="rounded-2xl shrink-0 flex items-center"
+          style={{
+            padding: 14,
+            gap: 10,
+            backgroundColor: "var(--surface-raised)",
+          }}
         >
           <Receipt size={13} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
           <p className="cb-linha" style={{ color: "var(--text-secondary)" }}>
@@ -185,10 +211,16 @@ function TelaDetalhes({
 
       {/* 3 — Seu ritmo */}
       <div
-        className="rounded-2xl px-4 py-2.5 shrink-0"
-        style={{ backgroundColor: "var(--surface-raised)" }}
+        className="rounded-2xl shrink-0"
+        style={{
+          paddingLeft: 16,
+          paddingRight: 16,
+          paddingTop: 10,
+          paddingBottom: 10,
+          backgroundColor: "var(--surface-raised)",
+        }}
       >
-        <div className="flex items-center gap-2 mb-1.5">
+        <div className="flex items-center" style={{ gap: 8, marginBottom: 6 }}>
           <TrendingUp size={12} style={{ color: "var(--text-tertiary)" }} />
           <p
             className="cb-rotulo font-bold uppercase"
@@ -197,13 +229,13 @@ function TelaDetalhes({
             Seu ritmo
           </p>
         </div>
-        <div className="flex items-baseline justify-between gap-2 mb-1">
+        <div className="flex items-baseline justify-between" style={{ gap: 8, marginBottom: 4 }}>
           <span className="cb-linha" style={{ color: "var(--text-secondary)" }}>
             Média por mês
           </span>
           <Valor px={12.5} peso={700} autoAjustar>{mediaMensal}</Valor>
         </div>
-        <div className="flex items-baseline justify-between gap-2">
+        <div className="flex items-baseline justify-between" style={{ gap: 8 }}>
           <span className="cb-linha" style={{ color: "var(--text-secondary)" }}>
             Fecha o ano em
           </span>
@@ -216,16 +248,25 @@ function TelaDetalhes({
 
       {/* 4 — Faixas de risco */}
       <div
-        className="rounded-2xl px-4 py-2.5 shrink-0"
-        style={{ backgroundColor: "var(--surface-raised)" }}
+        className="rounded-2xl shrink-0"
+        style={{
+          paddingLeft: 16,
+          paddingRight: 16,
+          paddingTop: 10,
+          paddingBottom: 10,
+          backgroundColor: "var(--surface-raised)",
+        }}
       >
         <p
-          className="cb-rotulo font-bold uppercase mb-1.5"
-          style={{ color: "var(--text-secondary)", letterSpacing: "0.09em" }}
+          className="cb-rotulo font-bold uppercase"
+          style={{ color: "var(--text-secondary)", letterSpacing: "0.09em", marginBottom: 6 }}
         >
           Faixas de risco
         </p>
-        <div className="flex rounded-full overflow-hidden mb-1.5" style={{ height: 5 }}>
+        <div
+          className="flex rounded-full overflow-hidden"
+          style={{ height: 5, marginBottom: 6 }}
+        >
           {FAIXAS_ORDEM.map((f) => (
             <div
               key={f}
@@ -416,7 +457,7 @@ function CardVelocimetroCarrossel({
                   key={c.label}
                   onClick={seNaoArrastou(onResumo)}
                   className={
-                    "flex flex-col items-center text-center min-w-0 active:opacity-70 transition " +
+                    "toque flex flex-col items-center text-center min-w-0 " +
                     (i > 0 ? "border-l" : "")
                   }
                   style={{
@@ -508,7 +549,7 @@ export default function Dashboard() {
           <button
             onClick={() => navigate("/alertas")}
             aria-label="Notificações"
-            className="relative w-11 h-11 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
+            className="toque relative w-11 h-11 rounded-full flex items-center justify-center shrink-0"
             style={{
               backgroundColor: "var(--surface)",
               border: "1px solid var(--border)",
@@ -541,7 +582,7 @@ export default function Dashboard() {
           {/* Fisco NEUTRO, sem balão e sem reação à situação */}
           <button
             onClick={() => navigate("/chat")}
-            className="shrink-0 flex items-end active:opacity-90 transition mt-1 w-full"
+            className="shrink-0 flex items-end transition mt-1 w-full"
             style={{ background: "none", border: "none", padding: 0 }}
           >
             <Fisco
@@ -552,7 +593,7 @@ export default function Dashboard() {
             />
 
             <span
-              className="barra-fisco flex-1 rounded-full pl-5 pr-1.5 flex items-center gap-2 text-left min-w-0"
+              className="barra-fisco toque flex-1 rounded-full pl-5 pr-1.5 flex items-center gap-2 text-left min-w-0"
               style={{ height: 48, marginBottom: 12 }}
             >
               <span
