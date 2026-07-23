@@ -25,7 +25,7 @@ function LinhaFiscal({ Icon, label, valor, onClick, perigo }) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left active:opacity-75 transition"
+      className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left active:opacity-75 transition"
       style={{ backgroundColor: "var(--field)" }}
     >
       <Icon
@@ -147,19 +147,16 @@ export default function EditarPerfil() {
         >
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
         </button>
-        <h1
-          className="text-xl font-bold flex-1 text-center pr-10"
-          style={{ color: "var(--text)" }}
-        >
+        <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
           Editar perfil
         </h1>
       </header>
 
       <div
         className="conteudo-rolavel hide-scrollbar px-5"
-        style={{ paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom))" }}
       >
-        <div className="flex flex-col items-center pt-3 pb-5">
+        <div className="flex flex-col items-center pt-2 pb-4">
           <div className="relative">
             <button
               type="button"
@@ -211,7 +208,7 @@ export default function EditarPerfil() {
           Informações pessoais
         </p>
 
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           <div
             className="rounded-2xl px-4 py-2.5"
             style={{ backgroundColor: "var(--field)" }}
@@ -257,8 +254,8 @@ export default function EditarPerfil() {
           </div>
         </div>
 
-        <div style={{ minHeight: 56 }} className="pt-3">
-          {(temMudanca || salvo) && (
+        {(temMudanca || salvo) && (
+          <div className="pt-2.5">
             <button
               onClick={salvarAlteracoes}
               disabled={salvo}
@@ -270,17 +267,17 @@ export default function EditarPerfil() {
             >
               {salvo ? "Alterações salvas" : "Salvar alterações"}
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         <p
-          className="text-[12px] font-semibold uppercase mb-2 mt-2"
+          className="text-[12px] font-semibold uppercase mb-2 mt-4"
           style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
         >
           Perfil fiscal
         </p>
 
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           <LinhaFiscal
             Icon={Briefcase}
             label="Tipo de MEI"
@@ -295,7 +292,7 @@ export default function EditarPerfil() {
           />
         </div>
 
-        <div className="pt-6">
+        <div className="pt-4">
           <LinhaFiscal
             Icon={Trash2}
             label="Excluir conta"
