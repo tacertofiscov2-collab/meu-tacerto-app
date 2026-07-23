@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useTransicao } from "./TransicaoTela.jsx";
 
 const ROTAS_ABA = { "/dashboard": "inicio", "/perfil": "perfil" };
 const ROTAS_SEM_VOLTAR = new Set(["/", "/onboarding", "/dashboard", "/perfil"]);
@@ -11,7 +10,6 @@ const MIN_DELTA_ATIVAR = 8;
 export default function SwipeBack() {
   const location = useLocation();
   const navigate = useNavigate();
-  const transicao = useTransicao();
 
   useEffect(() => {
     const root = document.getElementById("root");
@@ -29,7 +27,6 @@ export default function SwipeBack() {
     let ativado = false;
     let cancelado = false;
     let modo = null;
-    let comCamadas = false; // arrasto com a tela de destino visível
 
     function prepararArrasto() {
       root.style.willChange = "transform";
@@ -52,34 +49,6 @@ export default function SwipeBack() {
       }, 260);
     }
 
-    /* Decide para onde o gesto leva, já sabendo a direção do dedo.
-       Retorna { loc, lado, ir } ou null. */
-    function alvoDoGesto(dx) {
-      if (modo === "voltar" && dx > 0) {
-        const ant = transicao && transicao.rotaAnterior();
-        if (!ant) return null;
-        return { loc: ant, lado: "esquerda", ir: () => navigate(-1) };
-      }
-      if (modo === "aba") {
-        const aba = ROTAS_ABA[path];
-        if (aba === "inicio" && dx < 0) {
-          return {
-            loc: { pathname: "/perfil", search: "", hash: "" },
-            lado: "direita",
-            ir: () => navigate("/perfil"),
-          };
-        }
-        if (aba === "perfil" && dx > 0) {
-          return {
-            loc: { pathname: "/dashboard", search: "", hash: "" },
-            lado: "esquerda",
-            ir: () => navigate("/dashboard"),
-          };
-        }
-      }
-      return null;
-    }
-
     function onTouchStart(e) {
       const t = e.touches[0];
       if (!t) return;
@@ -92,12 +61,10 @@ export default function SwipeBack() {
       }
       cancelado = false;
 
-      // A borda esquerda tem prioridade: em tela que também é aba,
-      // o gesto de voltar ganha do gesto de trocar de aba.
-      if (podeVoltar && t.clientX <= EDGE_PX) {
-        modo = "voltar";
-      } else if (ehAba) {
+      if (ehAba) {
         modo = "aba";
+      } else if (podeVoltar && t.clientX <= EDGE_PX) {
+        modo = "voltar";
       } else {
         tracking = false;
         modo = null;
@@ -109,7 +76,6 @@ export default function SwipeBack() {
       startTime = Date.now();
       tracking = true;
       ativado = false;
-      comCamadas = false;
     }
 
     function onTouchMove(e) {
@@ -126,22 +92,8 @@ export default function SwipeBack() {
           return;
         }
         ativado = true;
-
-        // Tenta o arrasto com a tela de destino montada atrás.
-        // Sem destino conhecido, cai no arrasto simples do #root.
-        const alvo = transicao ? alvoDoGesto(dx) : null;
-        if (alvo) {
-          comCamadas = transicao.iniciar(alvo.loc, alvo.lado, alvo.ir);
-        }
-        if (!comCamadas) {
-          root.style.transition = "none";
-          prepararArrasto();
-        }
-      }
-
-      if (comCamadas) {
-        transicao.mover(dx);
-        return;
+        root.style.transition = "none";
+        prepararArrasto();
       }
 
       const limite = window.innerWidth * 0.55;
@@ -153,9 +105,13 @@ export default function SwipeBack() {
         }
         root.style.transform = `translateX(${Math.min(dx, limite)}px)`;
       } else if (modo === "aba") {
-        // Sem destino (direção não permitida): resistência, só pra
-        // mostrar que o gesto foi percebido mas não leva a lugar nenhum.
-        root.style.transform = `translateX(${dx * 0.15}px)`;
+        const aba = ROTAS_ABA[path];
+        const permitido =
+          (aba === "inicio" && dx < 0) || (aba === "perfil" && dx > 0);
+        const d = permitido
+          ? Math.max(-limite, Math.min(dx, limite))
+          : dx * 0.15;
+        root.style.transform = `translateX(${d}px)`;
       }
     }
 
@@ -165,7 +121,6 @@ export default function SwipeBack() {
         startY = null;
         tracking = false;
         ativado = false;
-        comCamadas = false;
         modo = null;
         return;
       }
@@ -173,20 +128,33 @@ export default function SwipeBack() {
       const dx = t ? t.clientX - startX : 0;
       const dt = Date.now() - startTime;
       const velocidade = Math.abs(dx) / Math.max(1, dt);
+      const threshold = window.innerWidth * 0.3;
+      const flick = velocidade > 0.45 && Math.abs(dx) > 30;
+      const passou = Math.abs(dx) > threshold || flick;
 
-      if (comCamadas) {
-        // O TransicaoTela decide se completa ou devolve, e navega sozinho.
-        transicao.soltar(dx, velocidade);
-        startX = null;
-        startY = null;
-        tracking = false;
-        ativado = false;
-        comCamadas = false;
-        modo = null;
-        return;
+      if (ativado && modo === "voltar" && dx > 0 && passou) {
+        root.style.transition = "none";
+        root.style.transform = "";
+        limparEstilos();
+        navigate(-1);
+      } else if (ativado && modo === "aba" && passou) {
+        const aba = ROTAS_ABA[path];
+        if (aba === "inicio" && dx < 0) {
+          root.style.transition = "none";
+          root.style.transform = "";
+          limparEstilos();
+          navigate("/perfil");
+        } else if (aba === "perfil" && dx > 0) {
+          root.style.transition = "none";
+          root.style.transform = "";
+          limparEstilos();
+          navigate("/dashboard");
+        } else {
+          voltarSuave();
+        }
+      } else if (ativado) {
+        voltarSuave();
       }
-
-      if (ativado) voltarSuave();
 
       startX = null;
       startY = null;
@@ -196,17 +164,12 @@ export default function SwipeBack() {
     }
 
     function onTouchCancel() {
-      if (comCamadas && transicao) {
-        transicao.soltar(0, 0);
-      } else if (ativado) {
-        voltarSuave();
-      }
+      if (ativado) voltarSuave();
       startX = null;
       startY = null;
       tracking = false;
       ativado = false;
       cancelado = false;
-      comCamadas = false;
       modo = null;
     }
 
@@ -225,7 +188,7 @@ export default function SwipeBack() {
         root.style.willChange = "";
       }
     };
-  }, [location.pathname, navigate, transicao]);
+  }, [location.pathname, navigate]);
 
   return null;
 }
