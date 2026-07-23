@@ -204,14 +204,14 @@ export default function Lancar() {
 
   return (
     <div
-      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
+      className="tela-fixa w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       <header className="px-4 pt-5 pb-2 flex items-center gap-2 shrink-0">
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+          className="toque w-10 h-10 rounded-full flex items-center justify-center"
           style={{ backgroundColor: "var(--field)" }}
         >
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
@@ -221,14 +221,32 @@ export default function Lancar() {
         </h1>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-5 pb-32">
-        <div className="max-w-md mx-auto mt-4 space-y-5">
+      {/* Conteúdo: rola só se precisar, mas cabe tudo em tela normal */}
+      <div
+        className="flex-1 min-h-0 overflow-y-auto hide-scrollbar px-5"
+        style={{ paddingBottom: 4 }}
+      >
+        <div
+          className="max-w-md mx-auto"
+          style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 8 }}
+        >
           <div>
-            <label className="block text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
+            <label
+              className="block"
+              style={{ color: "var(--text-secondary)", fontSize: 12, marginBottom: 6 }}
+            >
               Valor
             </label>
             <div className="flex items-center rounded-xl overflow-hidden" style={fieldStyle}>
-              <span className="pl-4 pr-2 text-2xl font-bold" style={{ color: "var(--text)" }}>
+              <span
+                className="font-bold"
+                style={{
+                  color: "var(--text)",
+                  paddingLeft: 16,
+                  paddingRight: 8,
+                  fontSize: 22,
+                }}
+              >
                 R$
               </span>
               <input
@@ -237,13 +255,22 @@ export default function Lancar() {
                 value={digitando ? valorFmt : ""}
                 onChange={handleValor}
                 placeholder="0,00"
-                className="flex-1 bg-transparent py-4 pr-4 text-3xl font-bold focus:outline-none placeholder:opacity-40"
-                style={{ color: "var(--text)" }}
+                className="flex-1 bg-transparent font-bold focus:outline-none placeholder:opacity-40"
+                style={{
+                  color: "var(--text)",
+                  fontSize: 27,
+                  paddingTop: 12,
+                  paddingBottom: 12,
+                  paddingRight: 16,
+                }}
               />
             </div>
             <p
-              className="text-xs mt-2"
-              style={{ color: atingiuTeto ? "#ef4444" : "var(--text-secondary)" }}
+              style={{
+                color: atingiuTeto ? "#ef4444" : "var(--text-secondary)",
+                fontSize: 11.5,
+                marginTop: 6,
+              }}
             >
               {atingiuTeto
                 ? `Valor máximo por lançamento: R$ ${formatBRLFromCentavos(MAX_CENTAVOS)}`
@@ -252,7 +279,10 @@ export default function Lancar() {
           </div>
 
           <div>
-            <label className="block text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
+            <label
+              className="block"
+              style={{ color: "var(--text-secondary)", fontSize: 12, marginBottom: 6 }}
+            >
               Descrição
             </label>
             <input
@@ -261,18 +291,32 @@ export default function Lancar() {
               maxLength={LIMITE_DESCRICAO}
               onChange={(e) => setDescricao(e.target.value)}
               placeholder="Descrição (opcional)"
-              className="campo-tacerto w-full px-4 rounded-xl text-sm placeholder:opacity-70"
-              style={{ ...fieldStyle, minHeight: 52 }}
+              className="campo-tacerto w-full rounded-xl placeholder:opacity-70"
+              style={{
+                ...fieldStyle,
+                minHeight: 46,
+                paddingLeft: 16,
+                paddingRight: 16,
+                fontSize: 14,
+              }}
             />
           </div>
 
           <div>
-            <label className="block text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
+            <label
+              className="block"
+              style={{ color: "var(--text-secondary)", fontSize: 12, marginBottom: 6 }}
+            >
               Data
             </label>
             <div
-              className="flex items-center rounded-xl px-4"
-              style={{ ...dataFieldStyle, minHeight: 52 }}
+              className="flex items-center rounded-xl"
+              style={{
+                ...dataFieldStyle,
+                minHeight: 46,
+                paddingLeft: 16,
+                paddingRight: 16,
+              }}
             >
               <input
                 type="text"
@@ -281,67 +325,78 @@ export default function Lancar() {
                 onChange={(e) => setDataBR(mascararData(e.target.value))}
                 placeholder="dd/mm/aaaa"
                 maxLength={10}
-                className="flex-1 bg-transparent text-sm focus:outline-none placeholder:opacity-70"
-                style={{ color: "var(--text)" }}
+                className="flex-1 bg-transparent focus:outline-none placeholder:opacity-70"
+                style={{ color: "var(--text)", fontSize: 14 }}
               />
               <button
                 type="button"
                 onClick={() => setCalendarioAberto(true)}
                 aria-label="Selecionar data"
-                className="ml-2 shrink-0 flex items-center justify-center hover:opacity-80"
+                className="toque ml-2 shrink-0 flex items-center justify-center"
               >
                 <CalendarIcon size={18} style={{ color: "var(--text-secondary)" }} />
               </button>
             </div>
             {mostrarErroData && (
-              <p className="mt-2" style={{ color: "#ef4444", fontSize: 12 }}>
+              <p style={{ color: "#ef4444", fontSize: 11.5, marginTop: 6 }}>
                 {msgErroData}
               </p>
             )}
           </div>
 
-          <div className="pt-4">
-            <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
+          <div style={{ marginTop: 4 }}>
+            <p
+              style={{ color: "var(--text-secondary)", fontSize: 12, marginBottom: 6 }}
+            >
               Último lançamento
             </p>
             {ultimoLancamento ? (
               <div
-                className="w-full rounded-xl px-4 py-3 flex items-center gap-3"
+                className="w-full rounded-xl flex items-center"
                 style={{
+                  gap: 12,
+                  paddingLeft: 16,
+                  paddingRight: 16,
+                  paddingTop: 11,
+                  paddingBottom: 11,
                   backgroundColor: "var(--surface)",
                   border: "1px solid var(--border)",
                 }}
               >
                 <TrendingUp
-                  size={20}
+                  size={19}
                   strokeWidth={1.75}
                   style={{ color: "var(--primary)" }}
                   className="shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <p
-                    className="text-[14px] leading-tight truncate"
-                    style={{ color: "var(--text)" }}
+                    className="leading-tight truncate"
+                    style={{ color: "var(--text)", fontSize: 13.5 }}
                   >
                     {ultimoLancamento.descricao}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                  <p
+                    style={{ color: "var(--text-secondary)", fontSize: 11.5, marginTop: 2 }}
+                  >
                     {labelDataCurta(ultimoLancamento.data)}
                   </p>
                 </div>
                 <div className="shrink-0">
-                  <Valor tamanho="sm" sinal="+">{ultimoLancamento.valor}</Valor>
+                  <Valor px={13.5} peso={700} sinal="+">{ultimoLancamento.valor}</Valor>
                 </div>
               </div>
             ) : (
               <div
-                className="w-full rounded-xl px-4 py-4 text-center"
+                className="w-full rounded-xl text-center"
                 style={{
+                  paddingTop: 14,
+                  paddingBottom: 14,
                   backgroundColor: "var(--surface)",
                   border: "1px dashed var(--border)",
                 }}
               >
-                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
                   Nenhum lançamento ainda
                 </p>
               </div>
@@ -362,20 +417,25 @@ export default function Lancar() {
         }}
       />
 
+      {/* Botão fixo no fluxo — nunca fica atrás da barra do navegador */}
       <div
-        className="fixed bottom-0 left-0 right-0 px-5 pt-3 pb-5 z-10"
+        className="shrink-0 px-5"
         style={{
+          paddingTop: 12,
           backgroundColor: "var(--bg)",
           borderTop: "1px solid var(--border)",
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)",
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 14px)",
         }}
       >
         <div className="max-w-md mx-auto">
           <button
             onClick={handleSalvar}
             disabled={salvando || centavos <= 0 || !dataValida}
-            className="w-full py-3.5 rounded-xl font-medium text-sm hover:opacity-90 disabled:opacity-50"
+            className="toque toque-escala w-full rounded-xl font-semibold disabled:opacity-50"
             style={{
+              paddingTop: 13,
+              paddingBottom: 13,
+              fontSize: 14.5,
               backgroundColor: "var(--primary)",
               color: "var(--primary-contrast)",
             }}
