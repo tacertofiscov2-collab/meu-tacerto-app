@@ -7,8 +7,15 @@ import {
   faixaDoVelocimetro, FAIXA_INFO, LIMITE_PERGUNTA_CHAT, corBalaoDaFaixa,
 } from "@/lib/fiscal";
 import {
-  perguntasDaFaixa, contextoFaq, textoPergunta, buscarRespostaPorTexto,
+  perguntasDaFaixa, perguntasGerais, contextoFaq, textoPergunta,
+  buscarRespostaPorTexto,
 } from "@/lib/faqFisco";
+
+/* Quantas perguntas mostrar sem estourar a tela.
+   Geral: o card do Fisco ocupa o topo, então cabem 4.
+   Contextual: o Fisco grande ocupa mais, mas os cards são
+   mais curtos — cabem 5 com rolagem mínima. */
+const MAX_PERGUNTAS_GERAL = 4;
 
 function poseDaFaixa(faixa) {
   if (faixa === "tranquilo" || faixa === "fique_de_olho") return "joinha";
@@ -56,16 +63,20 @@ export default function Chat() {
   const pose = modoContextual ? poseDaFaixa(faixa) : "amigavel";
 
   const ctx = contextoFaq({ tipoMEI, limite: limiteAtual, faturado: faturamentoAtual });
-  const perguntas = modoContextual ? perguntasDaFaixa(faixa) : [];
+
+  /* Contextual: perguntas da faixa. Geral: perguntas gerais.
+     Nos dois casos o texto e a resposta já mudam por tipo de MEI
+     (MEI comum x Caminhoneiro) dentro do faqFisco. */
+  const perguntas = modoContextual
+    ? perguntasDaFaixa(faixa)
+    : perguntasGerais().slice(0, MAX_PERGUNTAS_GERAL);
 
   const [mensagens, setMensagens] = useState([]);
   const [texto, setTexto] = useState("");
   const [digitando, setDigitando] = useState(false);
   const listaRef = useRef(null);
 
-  /* Rola até o fim SÓ quando existe conversa.
-     Na tela inicial (com o Fisco) não rola nada — senão a tela
-     abre já lá embaixo e esconde o robô. */
+  /* Rola até o fim SÓ quando existe conversa. */
   useEffect(() => {
     if (mensagens.length === 0 && !digitando) return;
     if (listaRef.current) {
@@ -116,6 +127,11 @@ export default function Chat() {
 
   const vazio = mensagens.length === 0 && !digitando;
 
+  /* Sugestões após responder: usa a mesma lista do modo atual */
+  const sugestoes = modoContextual
+    ? perguntas
+    : perguntasGerais();
+
   return (
     <div
       className="tela-fixa w-full flex flex-col relative"
@@ -140,8 +156,7 @@ export default function Chat() {
         {vazio ? (
           <>
             {modoContextual ? (
-              /* Só o Fisco com o balão. Sem título nem subtítulo:
-                 o balão já diz a situação. */
+              /* Só o Fisco com o balão. O balão já diz a situação. */
               <div
                 className="flex justify-center"
                 style={{ paddingTop: 4, marginBottom: 4 }}
@@ -162,7 +177,7 @@ export default function Chat() {
                   border: "1px solid var(--border)",
                 }}
               >
-                <Fisco size={112} pose="amigavel" className="shrink-0" style={{ marginLeft: -10 }} />
+                <Fisco size={106} pose="amigavel" className="shrink-0" style={{ marginLeft: -10 }} />
                 <div className="flex-1 min-w-0">
                   <div
                     className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 mb-1.5"
@@ -192,40 +207,51 @@ export default function Chat() {
               </div>
             )}
 
-            {modoContextual && (
-              <>
-                <p
-                  className="text-[11px] font-semibold uppercase mb-2"
-                  style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
-                >
-                  Perguntas comuns
-                </p>
+            <p
+              className="text-[11px] font-semibold uppercase mb-2"
+              style={{
+                color: "var(--text-tertiary)",
+                letterSpacing: "0.06em",
+                marginTop: modoContextual ? 0 : 14,
+              }}
+            >
+              Perguntas comuns
+            </p>
 
-                <div className="space-y-2 pb-4">
-                  {perguntas.map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => responder(p)}
-                      className="toque toque-escala w-full rounded-2xl px-4 py-3 flex items-center gap-3 text-left"
-                      style={{ backgroundColor: "var(--field)" }}
-                    >
-                      <div
-                        className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                        style={{ backgroundColor: "var(--surface)" }}
-                      >
-                        <Sparkles size={16} style={{ color: "var(--primary)" }} />
-                      </div>
-                      <span
-                        className="flex-1 text-[14px] leading-snug font-medium"
-                        style={{ color: "var(--text)" }}
-                      >
-                        {textoPergunta(p, ctx)}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingBottom: 16 }}>
+              {perguntas.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => responder(p)}
+                  className="toque toque-escala w-full rounded-2xl flex items-center text-left"
+                  style={{
+                    gap: 12,
+                    paddingLeft: 16,
+                    paddingRight: 16,
+                    paddingTop: 12,
+                    paddingBottom: 12,
+                    backgroundColor: "var(--field)",
+                  }}
+                >
+                  <div
+                    className="rounded-xl flex items-center justify-center shrink-0"
+                    style={{
+                      width: 32,
+                      height: 32,
+                      backgroundColor: "var(--surface)",
+                    }}
+                  >
+                    <Sparkles size={16} style={{ color: "var(--primary)" }} />
+                  </div>
+                  <span
+                    className="flex-1 leading-snug font-medium"
+                    style={{ color: "var(--text)", fontSize: 14 }}
+                  >
+                    {textoPergunta(p, ctx)}
+                  </span>
+                </button>
+              ))}
+            </div>
           </>
         ) : (
           <div className="space-y-3 pt-2 pb-4">
@@ -292,7 +318,7 @@ export default function Chat() {
               </div>
             )}
 
-            {modoContextual && !digitando && mensagens.length > 0 && (
+            {!digitando && mensagens.length > 0 && (
               <div className="pt-2 space-y-2">
                 <p
                   className="text-[11px] font-semibold uppercase"
@@ -300,7 +326,7 @@ export default function Chat() {
                 >
                   Perguntar outra coisa
                 </p>
-                {perguntas
+                {sugestoes
                   .filter((p) => !mensagens.some((m) => m.texto === textoPergunta(p, ctx)))
                   .slice(0, 3)
                   .map((p) => (
