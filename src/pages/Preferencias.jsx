@@ -39,7 +39,7 @@ function CardOpcao({ Icon, label, sub, ativo, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="flex-1 rounded-2xl px-3 py-4 flex flex-col items-center gap-1.5 transition active:scale-[0.98]"
+      className="flex-1 rounded-2xl px-3 py-3 flex flex-col items-center gap-1.5 transition active:scale-[0.98]"
       style={{
         backgroundColor: ativo ? "var(--surface-selected)" : "var(--field)",
         opacity: ativo ? 1 : 0.55,
@@ -161,10 +161,12 @@ export default function Preferencias() {
       style={{
         backgroundColor: "var(--bg)",
         color: "var(--text)",
-        minHeight: "100dvh",
+        height: "100dvh",
+        maxHeight: "100dvh",
+        overflow: "hidden",
       }}
     >
-      <header className="px-5 pt-6 pb-3 flex items-center gap-3">
+      <header className="px-5 pt-6 pb-2 flex items-center gap-3 shrink-0">
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
@@ -179,12 +181,12 @@ export default function Preferencias() {
       </header>
 
       <div
-        className="px-5 flex-1 flex flex-col gap-7"
-        style={{ paddingBottom: "calc(40px + env(safe-area-inset-bottom))" }}
+        className="px-5 flex-1 min-h-0 flex flex-col gap-4"
+        style={{ paddingBottom: "calc(12px + env(safe-area-inset-bottom))" }}
       >
         <section>
           <p
-            className="text-[13px] mb-3"
+            className="text-[13px] mb-2"
             style={{ color: "var(--text-secondary)" }}
           >
             Tema do app
@@ -214,13 +216,13 @@ export default function Preferencias() {
 
         <section>
           <p
-            className="text-[13px] mb-3"
+            className="text-[13px] mb-2"
             style={{ color: "var(--text-secondary)" }}
           >
             Tamanho da fonte
           </p>
           <div
-            className="rounded-2xl px-4 py-4"
+            className="rounded-2xl px-4 py-3"
             style={{ backgroundColor: "var(--field)" }}
           >
             <div className="flex items-end justify-between gap-2">
@@ -267,14 +269,14 @@ export default function Preferencias() {
 
         <section>
           <p
-            className="text-[13px] mb-3"
+            className="text-[13px] mb-2"
             style={{ color: "var(--text-secondary)" }}
           >
             Notificações
           </p>
 
           <div
-            className="rounded-2xl px-4 py-3.5 flex items-center gap-3"
+            className="rounded-2xl px-4 py-3 flex items-center gap-3"
             style={{ backgroundColor: "var(--field)" }}
           >
             <div
@@ -298,14 +300,14 @@ export default function Preferencias() {
           </div>
 
           <div
-            className="rounded-2xl px-4 pt-3.5 pb-4 mt-2"
+            className="rounded-2xl px-4 pt-3 pb-3 mt-2"
             style={{
               backgroundColor: "var(--field)",
               opacity: push ? 1 : 0.45,
               pointerEvents: push ? "auto" : "none",
             }}
           >
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-2.5">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                 style={{ backgroundColor: "var(--surface)" }}
@@ -331,7 +333,7 @@ export default function Preferencias() {
                   <button
                     key={op.valor}
                     onClick={() => setLembrete(op.valor)}
-                    className="py-2.5 rounded-xl text-[13px] flex items-center justify-center gap-1.5 transition active:scale-[0.98]"
+                    className="py-2 rounded-xl text-[13px] flex items-center justify-center gap-1.5 transition active:scale-[0.98]"
                     style={{
                       backgroundColor: ativo
                         ? "var(--surface-selected)"
