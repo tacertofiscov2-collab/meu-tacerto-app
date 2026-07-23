@@ -445,8 +445,8 @@ function CardVelocimetroCarrossel({
                 onClickExcedente={seNaoArrastou(onExcedente)}
               />
             </div>
-            {/* Divisória é elemento próprio: assim o destaque de toque de
-                cada bloco contorna só a área dele, com cantos arredondados. */}
+            {/* Mesma altura do original. A divisória virou elemento próprio
+                só pra o destaque de toque contornar cada bloco. */}
             <div
               className="flex items-stretch pt-3 shrink-0"
               style={{ borderTop: "1px solid var(--border)" }}
@@ -454,12 +454,7 @@ function CardVelocimetroCarrossel({
               <button
                 onClick={seNaoArrastou(onResumo)}
                 className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0"
-                style={{
-                  paddingLeft: 12,
-                  paddingRight: 12,
-                  paddingTop: 0,
-                  paddingBottom: 4,
-                }}
+                style={{ paddingLeft: 12, paddingRight: 12 }}
               >
                 <Valor tamanho="md" autoAjustar>{faturado}</Valor>
                 <span
@@ -479,12 +474,7 @@ function CardVelocimetroCarrossel({
               <button
                 onClick={seNaoArrastou(onResumo)}
                 className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0"
-                style={{
-                  paddingLeft: 12,
-                  paddingRight: 12,
-                  paddingTop: 0,
-                  paddingBottom: 4,
-                }}
+                style={{ paddingLeft: 12, paddingRight: 12 }}
               >
                 <Valor tamanho="md" autoAjustar>{limite}</Valor>
                 <span
