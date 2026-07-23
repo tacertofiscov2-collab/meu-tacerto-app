@@ -41,37 +41,37 @@ export default function AlterarSenha() {
       className="min-h-screen min-h-[100dvh] w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="px-4 pt-5 shrink-0">
+      <header className="px-5 pt-5 pb-2 flex items-center gap-3 shrink-0">
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
           style={{ backgroundColor: "var(--field)" }}
         >
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
         </button>
-      </div>
+        <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
+          Alterar senha
+        </h1>
+      </header>
 
-      <div className="flex-1 flex flex-col justify-center px-6 pb-6">
+      <div className="flex-1 flex flex-col px-6 pt-4 pb-6">
         <div className="max-w-sm w-full mx-auto">
-          <div className="flex justify-center mb-4">
-            <Lock size={44} strokeWidth={2} style={{ color: "var(--primary)" }} />
+          <div className="flex justify-center mb-3">
+            <Lock size={40} strokeWidth={2} style={{ color: "var(--primary)" }} />
           </div>
-          <h1 className="text-2xl font-bold text-center" style={{ color: "var(--text)" }}>
-            Alterar senha
-          </h1>
-          <p className="text-sm text-center mt-2" style={{ color: "var(--text-secondary)" }}>
+          <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>
             Crie uma nova senha para sua conta.
           </p>
 
-          <div className="mt-6 space-y-4">
+          <div className="mt-5 space-y-3">
             <div className="relative">
               <input
                 type={showAtual ? "text" : "password"}
                 placeholder="Senha atual"
                 value={senhaAtual}
                 onChange={(e) => setSenhaAtual(e.target.value)}
-                className="w-full px-4 py-4 pr-11 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
+                className="w-full px-4 py-3.5 pr-11 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
                 style={fieldStyle}
               />
               <button
@@ -90,7 +90,7 @@ export default function AlterarSenha() {
                 placeholder="Nova senha (mín. 8 caracteres)"
                 value={novaSenha}
                 onChange={(e) => setNovaSenha(e.target.value)}
-                className="w-full px-4 py-4 pr-11 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
+                className="w-full px-4 py-3.5 pr-11 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
                 style={fieldStyle}
               />
               <button

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
-  ArrowLeft, ArrowRight, Briefcase, Truck, CheckCircle2, Clock, Gauge, ChevronDown,
+  ArrowLeft, ArrowRight, Briefcase, Truck, CheckCircle2, Clock, Gauge, CalendarDays,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
@@ -332,32 +332,40 @@ export default function Onboarding() {
                     >
                       Qual mês você abriu?
                     </p>
-                    {/* MUD 6 — mês e limite na MESMA barra */}
+                    {/* MUD 6 — mês e limite na MESMA LINHA, ícone de calendário */}
                     <button
                       onClick={() => setSeletorMes(true)}
-                      className="w-full px-4 py-2.5 flex items-center justify-between gap-3 rounded-xl"
+                      className="w-full px-4 py-3 flex items-center justify-between gap-3 rounded-xl"
                       style={fieldStyle}
                     >
-                      <div className="flex-1 min-w-0 text-left">
-                        <div
-                          className="text-sm"
+                      <div className="flex-1 min-w-0 text-left flex items-center gap-2">
+                        <span
+                          className="text-sm shrink-0"
                           style={{
                             fontWeight: mesMei ? 600 : 400,
                             color: mesMei ? "var(--text)" : "var(--text-secondary)",
                           }}
                         >
                           {mesMei ? MESES[parseInt(mesMei) - 1] : "Selecione o mês"}
-                        </div>
+                        </span>
                         {mesMei && (
-                          <div
-                            className="text-[11px] mt-0.5 flex items-center gap-1"
-                            style={{ color: "var(--text-secondary)" }}
-                          >
-                            Limite: <Valor tamanho="sm">{limiteFinal}</Valor>
-                          </div>
+                          <>
+                            <span
+                              className="shrink-0 text-sm"
+                              style={{ color: "var(--text-tertiary)" }}
+                            >
+                              ·
+                            </span>
+                            <span
+                              className="min-w-0 flex items-center"
+                              style={{ color: "var(--text-secondary)" }}
+                            >
+                              <Valor tamanho="sm">{limiteFinal}</Valor>
+                            </span>
+                          </>
                         )}
                       </div>
-                      <ChevronDown size={18} style={{ color: "var(--text-secondary)" }} className="shrink-0" />
+                      <CalendarDays size={18} style={{ color: "var(--text-secondary)" }} className="shrink-0" />
                     </button>
                   </>
                 )}

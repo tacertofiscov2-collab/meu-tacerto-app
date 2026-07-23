@@ -253,25 +253,28 @@ export default function Fisco({
   
         {/* ===== BRAÇOS POR POSE ===== */}
   
+        {/* Faixa VERDE — mão aberta acenando (4 dedos, sem ambiguidade) */}
         {pose === "joinha" && (
           <>
-            <rect x="118" y="176" width="26" height="40" rx="13" fill={`url(#${uid}-metal)`} transform="rotate(-32 131 196)" />
-            <circle cx="112" cy="156" r="17" fill={`url(#${uid}-metalClaro)`} />
-            <rect x="107" y="130" width="11" height="24" rx="5.5" fill={`url(#${uid}-metalClaro)`} />
-            <circle cx="112" cy="158" r="7" fill="var(--primary)" opacity="0.35" />
+            <rect x="120" y="170" width="26" height="46" rx="13" fill={`url(#${uid}-metal)`} transform="rotate(-38 133 193)" />
+            <circle cx="108" cy="148" r="18" fill={`url(#${uid}-metalClaro)`} />
+            <rect x="93" y="124" width="8" height="20" rx="4" fill={`url(#${uid}-metalClaro)`} transform="rotate(-20 97 134)" />
+            <rect x="102" y="118" width="8" height="24" rx="4" fill={`url(#${uid}-metalClaro)`} transform="rotate(-7 106 130)" />
+            <rect x="111" y="118" width="8" height="24" rx="4" fill={`url(#${uid}-metalClaro)`} transform="rotate(7 115 130)" />
+            <rect x="120" y="124" width="8" height="20" rx="4" fill={`url(#${uid}-metalClaro)`} transform="rotate(20 124 134)" />
+            <circle cx="108" cy="150" r="7" fill="var(--primary)" opacity="0.35" />
             <rect x="236" y="176" width="26" height="64" rx="13" fill={`url(#${uid}-metal)`} />
             <circle cx="249" cy="248" r="16" fill={`url(#${uid}-metalClaro)`} />
             <circle cx="249" cy="248" r="7" fill="var(--primary)" opacity="0.3" />
           </>
         )}
   
+        {/* Faixa AMARELA — sem gesto, braços neutros */}
         {pose === "ok" && (
           <>
-            <rect x="118" y="176" width="26" height="42" rx="13" fill={`url(#${uid}-metal)`} transform="rotate(-24 131 197)" />
-            <circle cx="115" cy="158" r="17" fill={`url(#${uid}-metalClaro)`} />
-            <circle cx="113" cy="155" r="8.5" fill="none" stroke="var(--primary)" strokeWidth="3.4" />
-            <rect x="121" y="138" width="7" height="15" rx="3.5" fill={`url(#${uid}-metalClaro)`} transform="rotate(16 124 145)" />
-            <rect x="129" y="141" width="7" height="13" rx="3.5" fill={`url(#${uid}-metalClaro)`} transform="rotate(24 132 147)" />
+            <rect x="118" y="176" width="26" height="64" rx="13" fill={`url(#${uid}-metal)`} />
+            <circle cx="131" cy="248" r="16" fill={`url(#${uid}-metalClaro)`} />
+            <circle cx="131" cy="248" r="7" fill="var(--primary)" opacity="0.3" />
             <rect x="236" y="176" width="26" height="64" rx="13" fill={`url(#${uid}-metal)`} />
             <circle cx="249" cy="248" r="16" fill={`url(#${uid}-metalClaro)`} />
             <circle cx="249" cy="248" r="7" fill="var(--primary)" opacity="0.3" />

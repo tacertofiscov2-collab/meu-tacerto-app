@@ -12,10 +12,10 @@ import {
 } from "@/lib/faqFisco";
 
 /* Quantas perguntas mostrar sem estourar a tela.
-   Geral: o card do Fisco ocupa o topo, então cabem 4.
-   Contextual: o Fisco grande ocupa mais, mas os cards são
-   mais curtos — cabem 5 com rolagem mínima. */
-const MAX_PERGUNTAS_GERAL = 4;
+   Geral: o card do Fisco encolheu (sem título nem subtítulo),
+   então cabem 5. Contextual: o Fisco grande ocupa mais, mas os
+   cards são mais curtos — cabem 5 com rolagem mínima. */
+const MAX_PERGUNTAS_GERAL = 5;
 
 function poseDaFaixa(faixa) {
   if (faixa === "tranquilo" || faixa === "fique_de_olho") return "joinha";
@@ -141,11 +141,16 @@ export default function Chat() {
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
-          className="toque w-10 h-10 rounded-full flex items-center justify-center"
+          className="toque w-10 h-10 rounded-full flex items-center justify-center shrink-0"
           style={{ backgroundColor: "var(--field)" }}
         >
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
         </button>
+        {!modoContextual && (
+          <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
+            Fisco
+          </h1>
+        )}
       </header>
 
       <div
@@ -169,40 +174,30 @@ export default function Chat() {
                 />
               </div>
             ) : (
+              /* Card só com o robô e o status. O nome agora vive no cabeçalho. */
               <div
-                className="rounded-3xl px-5 pt-3 pb-4 flex items-center gap-3 overflow-hidden relative mt-1"
+                className="rounded-3xl px-4 py-2 flex items-center gap-2 overflow-hidden relative mt-2"
                 style={{
                   background:
                     "linear-gradient(150deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.03) 55%, transparent 100%), var(--surface)",
                   border: "1px solid var(--border)",
                 }}
               >
-                <Fisco size={106} pose="amigavel" className="shrink-0" style={{ marginLeft: -10 }} />
-                <div className="flex-1 min-w-0">
-                  <div
-                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 mb-1.5"
-                    style={{ backgroundColor: "rgba(34,197,94,0.14)" }}
+                <Fisco size={92} pose="amigavel" className="shrink-0" style={{ marginLeft: -6 }} />
+                <div
+                  className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1"
+                  style={{ backgroundColor: "rgba(34,197,94,0.14)" }}
+                >
+                  <span
+                    className="rounded-full"
+                    style={{ width: 6, height: 6, backgroundColor: "var(--primary)" }}
+                  />
+                  <span
+                    className="text-[10px] font-bold uppercase"
+                    style={{ color: "var(--primary)", letterSpacing: "0.08em" }}
                   >
-                    <span
-                      className="rounded-full"
-                      style={{ width: 6, height: 6, backgroundColor: "var(--primary)" }}
-                    />
-                    <span
-                      className="text-[10px] font-bold uppercase"
-                      style={{ color: "var(--primary)", letterSpacing: "0.08em" }}
-                    >
-                      Online
-                    </span>
-                  </div>
-                  <h2 className="text-2xl font-bold leading-none" style={{ color: "var(--text)" }}>
-                    Fisco
-                  </h2>
-                  <p
-                    className="mt-1.5 text-[13px] leading-snug"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    Seu amigo fiscal. Pode perguntar o que quiser.
-                  </p>
+                    Online
+                  </span>
                 </div>
               </div>
             )}
@@ -212,10 +207,10 @@ export default function Chat() {
               style={{
                 color: "var(--text-tertiary)",
                 letterSpacing: "0.06em",
-                marginTop: modoContextual ? 0 : 14,
+                marginTop: modoContextual ? 0 : 12,
               }}
             >
-              Perguntas comuns
+              Dúvidas comuns
             </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingBottom: 16 }}>
@@ -228,8 +223,8 @@ export default function Chat() {
                     gap: 12,
                     paddingLeft: 16,
                     paddingRight: 16,
-                    paddingTop: 12,
-                    paddingBottom: 12,
+                    paddingTop: 11,
+                    paddingBottom: 11,
                     backgroundColor: "var(--field)",
                   }}
                 >

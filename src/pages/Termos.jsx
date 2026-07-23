@@ -50,25 +50,25 @@ export default function Termos() {
       className="min-h-screen min-h-[100dvh] w-full"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="px-4 pt-5">
+      <header className="px-5 pt-5 pb-1 flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
           style={{ backgroundColor: "var(--field)" }}
         >
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
         </button>
-      </div>
+        <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
+          Termos e Privacidade
+        </h1>
+      </header>
 
       <div
         className="max-w-md mx-auto px-5"
         style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
       >
-        <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>
-          Termos e Privacidade
-        </h1>
-        <div className="flex items-center gap-1.5 mt-1.5">
+        <div className="flex items-center gap-1.5 mt-2">
           <Gauge size={15} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
           <span className="text-sm font-medium"><Brand /></span>
           <span className="text-xs" style={{ color: "var(--text-secondary)" }}>· atualizado em breve</span>
