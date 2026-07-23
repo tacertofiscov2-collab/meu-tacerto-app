@@ -445,36 +445,55 @@ function CardVelocimetroCarrossel({
                 onClickExcedente={seNaoArrastou(onExcedente)}
               />
             </div>
+            {/* Divisória é elemento próprio: assim o destaque de toque de
+                cada bloco contorna só a área dele, com cantos arredondados. */}
             <div
-              className="grid grid-cols-2 pt-3 shrink-0"
+              className="flex items-stretch pt-2 shrink-0"
               style={{ borderTop: "1px solid var(--border)" }}
             >
-              {[
-                { valor: faturado, label: "Faturado" },
-                { valor: limite, label: "Limite" },
-              ].map((c, i) => (
-                <button
-                  key={c.label}
-                  onClick={seNaoArrastou(onResumo)}
-                  className={
-                    "toque flex flex-col items-center text-center min-w-0 " +
-                    (i > 0 ? "border-l" : "")
-                  }
-                  style={{
-                    paddingLeft: 12,
-                    paddingRight: 12,
-                    ...(i > 0 ? { borderColor: "var(--border)" } : {}),
-                  }}
+              <button
+                onClick={seNaoArrastou(onResumo)}
+                className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0 mt-1"
+                style={{
+                  paddingLeft: 12,
+                  paddingRight: 12,
+                  paddingTop: 8,
+                  paddingBottom: 8,
+                }}
+              >
+                <Valor tamanho="md" autoAjustar>{faturado}</Valor>
+                <span
+                  className="text-xs mt-1"
+                  style={{ color: "var(--text-secondary)" }}
                 >
-                  <Valor tamanho="md" autoAjustar>{c.valor}</Valor>
-                  <span
-                    className="text-xs mt-1"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    {c.label}
-                  </span>
-                </button>
-              ))}
+                  Faturado
+                </span>
+              </button>
+
+              <div
+                aria-hidden
+                className="shrink-0 mt-1"
+                style={{ width: 1, backgroundColor: "var(--border)" }}
+              />
+
+              <button
+                onClick={seNaoArrastou(onResumo)}
+                className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0 mt-1"
+                style={{
+                  paddingLeft: 12,
+                  paddingRight: 12,
+                  paddingTop: 8,
+                  paddingBottom: 8,
+                }}
+              >
+                <Valor tamanho="md" autoAjustar>{limite}</Valor>
+                <span
+                  className="text-xs mt-1"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Limite
+                </span>
+              </button>
             </div>
           </div>
 
