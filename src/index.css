@@ -117,7 +117,7 @@ body {
 }
 
 /* ===================================================================
-   ENQUADRAMENTO SEM ROLAGEM (iPhone / Safari)
+   NOVO v13.1 — ENQUADRAMENTO SEM ROLAGEM (iPhone / Safari)
 
    Problema: no Safari do iPhone, 100vh mede a tela SEM a barra de
    endereço. Toda tela montada com min-h-screen fica mais alta que o
@@ -126,11 +126,14 @@ body {
    Solução: dvh (altura real, já descontando a barra) + safe-area.
    =================================================================== */
 
-/* Faz min-h-screen / h-screen do Tailwind medirem a tela real. */
+/* --- ATENÇÃO: única alteração de comportamento existente. ---
+   Faz min-h-screen / h-screen do Tailwind medirem a tela real.
+   Se causar qualquer efeito indesejado, apague estas 3 linhas. */
 .min-h-screen { min-height: 100dvh !important; }
 .h-screen     { height: 100dvh !important; }
 
-/* Container de tela que se enquadra sozinha, sem rolar. */
+/* Container de tela que se enquadra sozinha, sem rolar.
+   Uso: <div className="tela-enquadrada"> */
 .tela-enquadrada {
   height: 100dvh;
   max-height: 100dvh;
@@ -164,7 +167,8 @@ body {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
-/* Bloco de conteúdo que pode encolher um pouco em tela curta */
+/* Bloco de conteúdo que pode encolher um pouco em tela curta,
+   sem quebrar o layout (usado nas telas mais cheias) */
 .encolhivel {
   flex: 0 1 auto;
   min-height: 0;
@@ -278,32 +282,21 @@ body {
   transform: scale(0.985);
 }
 
-/* ===================================================================
-   TRANSIÇÃO ENTRE TELAS
-
-   A tela entra da borda inteira (100%), não de 24px, e freia longo
-   no fim — é isso que dá a sensação de app nativo. Sem fade: no iOS
-   a tela desliza sólida por cima, ela não aparece surgindo.
-
-   A curva 0.32 / 0.72 / 0 / 1 é a mesma família usada pelo iOS:
-   arranca rápido e desacelera devagar até parar.
-
-   Duração: mexa nos DOIS números de 450ms abaixo, sempre juntos.
-   =================================================================== */
+/* === Transição entre telas === */
 @keyframes telaEntraDireita {
-  from { transform: translateX(100%); }
-  to   { transform: translateX(0); }
+  from { transform: translateX(24px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
 }
 @keyframes telaEntraEsquerda {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(0); }
+  from { transform: translateX(-24px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
 }
 
 .tela-anima-avancar {
-  animation: telaEntraDireita 450ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  animation: telaEntraDireita 260ms cubic-bezier(0.22, 0.8, 0.3, 1) both;
 }
 .tela-anima-voltar {
-  animation: telaEntraEsquerda 450ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  animation: telaEntraEsquerda 260ms cubic-bezier(0.22, 0.8, 0.3, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
