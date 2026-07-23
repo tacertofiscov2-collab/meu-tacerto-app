@@ -448,17 +448,17 @@ function CardVelocimetroCarrossel({
             {/* Divisória é elemento próprio: assim o destaque de toque de
                 cada bloco contorna só a área dele, com cantos arredondados. */}
             <div
-              className="flex items-stretch pt-2 shrink-0"
+              className="flex items-stretch pt-3 shrink-0"
               style={{ borderTop: "1px solid var(--border)" }}
             >
               <button
                 onClick={seNaoArrastou(onResumo)}
-                className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0 mt-1"
+                className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0"
                 style={{
                   paddingLeft: 12,
                   paddingRight: 12,
-                  paddingTop: 8,
-                  paddingBottom: 8,
+                  paddingTop: 0,
+                  paddingBottom: 4,
                 }}
               >
                 <Valor tamanho="md" autoAjustar>{faturado}</Valor>
@@ -472,18 +472,18 @@ function CardVelocimetroCarrossel({
 
               <div
                 aria-hidden
-                className="shrink-0 mt-1"
+                className="shrink-0"
                 style={{ width: 1, backgroundColor: "var(--border)" }}
               />
 
               <button
                 onClick={seNaoArrastou(onResumo)}
-                className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0 mt-1"
+                className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0"
                 style={{
                   paddingLeft: 12,
                   paddingRight: 12,
-                  paddingTop: 8,
-                  paddingBottom: 8,
+                  paddingTop: 0,
+                  paddingBottom: 4,
                 }}
               >
                 <Valor tamanho="md" autoAjustar>{limite}</Valor>
