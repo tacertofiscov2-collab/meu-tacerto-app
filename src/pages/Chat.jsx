@@ -63,7 +63,11 @@ export default function Chat() {
   const [digitando, setDigitando] = useState(false);
   const listaRef = useRef(null);
 
+  /* Rola até o fim SÓ quando existe conversa.
+     Na tela inicial (com o Fisco) não rola nada — senão a tela
+     abre já lá embaixo e esconde o robô. */
   useEffect(() => {
+    if (mensagens.length === 0 && !digitando) return;
     if (listaRef.current) {
       listaRef.current.scrollTop = listaRef.current.scrollHeight;
     }
@@ -111,7 +115,6 @@ export default function Chat() {
   }
 
   const vazio = mensagens.length === 0 && !digitando;
-  const titulo = modoContextual ? "Como estou" : "Fisco";
 
   return (
     <div
@@ -137,9 +140,11 @@ export default function Chat() {
         {vazio ? (
           <>
             {modoContextual ? (
+              /* Só o Fisco com o balão. Sem título nem subtítulo:
+                 o balão já diz a situação. */
               <div
                 className="flex justify-center"
-                style={{ paddingTop: 4, marginBottom: -6 }}
+                style={{ paddingTop: 4, marginBottom: 4 }}
               >
                 <Fisco
                   size={200}
@@ -189,18 +194,6 @@ export default function Chat() {
 
             {modoContextual && (
               <>
-                <div className="text-center mb-3">
-                  <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>
-                    {titulo}
-                  </h2>
-                  <p
-                    className="mt-0.5 text-[13px]"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    {FAIXA_INFO[faixa].resumo}
-                  </p>
-                </div>
-
                 <p
                   className="text-[11px] font-semibold uppercase mb-2"
                   style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
