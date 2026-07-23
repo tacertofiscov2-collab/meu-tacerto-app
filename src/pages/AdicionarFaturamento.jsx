@@ -14,29 +14,39 @@ function OpcaoCard({ Icon, titulo, descricao, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full flex items-start gap-3 py-4 text-left active:opacity-70"
+      className="toque toque-escala w-full flex items-start gap-3 rounded-2xl text-left"
+      style={{
+        paddingLeft: 14,
+        paddingRight: 12,
+        paddingTop: 11,
+        paddingBottom: 11,
+        backgroundColor: "var(--surface-raised)",
+      }}
     >
       <Icon
-        size={22}
-        strokeWidth={1.75}
+        size={20}
+        strokeWidth={1.9}
         style={{ color: "var(--primary)" }}
-        className="shrink-0 mt-0.5"
+        className="shrink-0"
       />
       <div className="flex-1 min-w-0">
-        <p className="text-[16px] leading-tight" style={{ color: "var(--text)" }}>
+        <p
+          className="font-semibold leading-tight"
+          style={{ color: "var(--text)", fontSize: 14.5 }}
+        >
           {titulo}
         </p>
         <p
-          className="text-[13px] mt-1 leading-snug"
-          style={{ color: "var(--text-secondary)" }}
+          className="leading-snug"
+          style={{ color: "var(--text-secondary)", fontSize: 11.5, marginTop: 3 }}
         >
           {descricao}
         </p>
       </div>
       <ChevronRight
-        size={18}
-        style={{ color: "var(--text-secondary)" }}
-        className="shrink-0 mt-1"
+        size={16}
+        style={{ color: "var(--text-tertiary)" }}
+        className="shrink-0"
       />
     </button>
   );
@@ -49,43 +59,39 @@ export default function AdicionarFaturamento() {
     {
       Icon: Pencil,
       titulo: "Digitar o total",
-      descricao:
-        "Você já sabe quanto faturou este ano? Digite o valor total e pronto.",
+      descricao: "Já sabe quanto faturou este ano? Digite o valor e pronto.",
       onClick: () => navigate("/adicionar-faturamento/digitar"),
     },
     {
       Icon: FileUp,
       titulo: "Enviar extrato bancário",
-      descricao:
-        "Envie PDFs, fotos ou arquivos OFX/CSV. Nossa IA lê e soma automaticamente as entradas.",
+      descricao: "PDFs, fotos ou OFX/CSV. A IA lê e soma as entradas.",
       onClick: () => navigate("/adicionar-faturamento/enviar"),
     },
     {
       Icon: Plus,
       titulo: "Somar valores",
-      descricao:
-        "Prefere adicionar entrada por entrada? Faça direto pelo Histórico com o botão 'Fazer novo lançamento'.",
+      descricao: "Entrada por entrada, direto pelo Histórico.",
       onClick: () => navigate("/historico"),
     },
     {
       Icon: ClipboardPaste,
       titulo: "Colar texto do extrato",
-      descricao:
-        "Copie o texto do seu extrato bancário e cole aqui. Nossa IA identifica as entradas automaticamente.",
+      descricao: "Copie o texto do extrato e cole aqui. A IA identifica.",
       onClick: () => navigate("/adicionar-faturamento/colar"),
     },
   ];
 
   return (
     <div
-      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
+      className="tela-fixa w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <header className="px-5 pt-6 pb-4 flex items-center gap-3">
+      <header className="px-5 pt-5 pb-2 flex items-center gap-3 shrink-0">
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+          className="toque w-10 h-10 rounded-full flex items-center justify-center"
           style={{ backgroundColor: "var(--field)" }}
         >
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
@@ -98,56 +104,71 @@ export default function AdicionarFaturamento() {
         </h1>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-5 pb-10">
+      {/* Bloco de tamanho fixo: não escala com a preferência de fonte,
+          então cabe tudo sem rolagem nos 3 tamanhos. */}
+      <div
+        className="flex-1 min-h-0 flex flex-col px-5 overflow-hidden"
+        style={{
+          fontSize: 16,
+          paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
+        }}
+      >
         <p
-          className="text-sm leading-relaxed mt-2"
-          style={{ color: "var(--text-secondary)" }}
+          className="leading-snug shrink-0"
+          style={{ color: "var(--text-secondary)", fontSize: 12.5 }}
         >
-          Se você começou a usar o app no meio do ano, use esta tela pra
-          registrar o que já faturou antes. Você tem 4 formas de fazer isso:
+          Começou a usar o app no meio do ano? Registre aqui o que já faturou
+          antes. Você tem 4 formas de fazer isso:
         </p>
 
         <div
-          className="mt-4 flex items-start gap-2 rounded-xl px-3 py-3"
-          style={{ backgroundColor: "var(--field)" }}
+          className="flex items-start gap-2 rounded-xl shrink-0"
+          style={{
+            marginTop: 10,
+            paddingLeft: 12,
+            paddingRight: 12,
+            paddingTop: 9,
+            paddingBottom: 9,
+            backgroundColor: "var(--field)",
+          }}
         >
           <Info
-            size={16}
+            size={14}
             style={{ color: "var(--primary)" }}
-            className="shrink-0 mt-0.5"
+            className="shrink-0"
           />
           <p
-            className="text-[12px] leading-snug"
-            style={{ color: "var(--text-secondary)" }}
+            className="leading-snug"
+            style={{ color: "var(--text-secondary)", fontSize: 11 }}
           >
             Registre todo tipo de receita — dinheiro, Pix, cartão, transferência.
-            Não importa se você emitiu nota fiscal ou não.
+            Não importa se emitiu nota fiscal ou não.
           </p>
         </div>
 
-        <div className="mt-4">
-          {opcoes.map((op, i) => (
-            <div key={op.titulo}>
-              {i > 0 && (
-                <div
-                  style={{
-                    marginLeft: 34,
-                    borderTop: "1px solid var(--border)",
-                    opacity: 0.3,
-                  }}
-                />
-              )}
-              <OpcaoCard {...op} />
-            </div>
+        <div
+          className="shrink-0"
+          style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}
+        >
+          {opcoes.map((op) => (
+            <OpcaoCard key={op.titulo} {...op} />
           ))}
         </div>
 
+        {/* Respiro elástico empurra o disclaimer pra base */}
+        <div className="flex-1 min-h-0" aria-hidden />
+
         <p
-          className="text-[11px] leading-relaxed text-center mt-8"
-          style={{ color: "var(--text-secondary)" }}
+          className="leading-relaxed text-center shrink-0"
+          style={{
+            color: "var(--text-tertiary)",
+            fontSize: 10.5,
+            paddingLeft: 8,
+            paddingRight: 8,
+          }}
         >
-          O TaCerto! é seu assistente fiscal. Todas as informações servem
-          apenas pra alimentar seu velocímetro. Não substituímos seu contador.
+          O TaCerto! é seu assistente fiscal. As informações servem pra alimentar
+          seu velocímetro. Não substituímos seu contador.
         </p>
       </div>
     </div>
