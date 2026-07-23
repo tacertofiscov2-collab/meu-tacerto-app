@@ -83,7 +83,7 @@ function BolinhasIndicadoras({ pagina, irPara }) {
                 ? (ativa ? 1 : 0.35)
                 : (ativa ? 0.28 : 0.12),
               boxShadow: noCardA && ativa
-                ? "0 0 8px color-mix(in srgb, var(--primary) 60%, transparent)"
+                ? "0 0 8px rgba(34, 197, 94, 0.6)"
                 : "none",
             }}
           />
@@ -93,7 +93,7 @@ function BolinhasIndicadoras({ pagina, irPara }) {
   );
 }
 
-/** Tela B — Situação · Últimos lançamentos · Ritmo · Faixas */
+/** Tela B — Como estou · Últimos lançamentos · Meu ritmo · Faixas */
 function TelaDetalhes({
   faixaAtiva, corFaixa, mediaMensal, projecao, ultimos, onSituacao, onLancamentos,
 }) {
@@ -105,7 +105,7 @@ function TelaDetalhes({
       className="card-b-fixo w-1/2 h-full flex flex-col overflow-hidden"
       style={{ padding: 14, gap: 8 }}
     >
-      {/* 1 — Sua situação (clicável). As bolinhas passam POR CIMA dele. */}
+      {/* 1 — Como estou (clicável). As bolinhas passam POR CIMA dele. */}
       <button
         onClick={onSituacao}
         className="toque toque-escala relative rounded-2xl text-left shrink-0 overflow-hidden"
@@ -131,7 +131,7 @@ function TelaDetalhes({
               className="cb-rotulo font-bold uppercase"
               style={{ color: corFaixa, letterSpacing: "0.09em", marginBottom: 4 }}
             >
-              Sua situação
+              Como estou
             </p>
             <p
               className="cb-titulo leading-snug font-semibold"
@@ -209,7 +209,7 @@ function TelaDetalhes({
         </div>
       )}
 
-      {/* 3 — Seu ritmo */}
+      {/* 3 — Meu ritmo */}
       <div
         className="rounded-2xl shrink-0"
         style={{
@@ -226,7 +226,7 @@ function TelaDetalhes({
             className="cb-rotulo font-bold uppercase"
             style={{ color: "var(--text-secondary)", letterSpacing: "0.09em" }}
           >
-            Seu ritmo
+            Meu ritmo
           </p>
         </div>
         <div className="flex items-baseline justify-between" style={{ gap: 8, marginBottom: 4 }}>
