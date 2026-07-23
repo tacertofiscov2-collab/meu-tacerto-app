@@ -122,7 +122,7 @@ export default function Chat() {
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+          className="toque w-10 h-10 rounded-full flex items-center justify-center"
           style={{ backgroundColor: "var(--field)" }}
         >
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
@@ -137,15 +137,15 @@ export default function Chat() {
         {vazio ? (
           <>
             {modoContextual ? (
-              /* Fisco GRANDE com balão. O SVG não tem faixa morta:
-                 o balão fica ao lado da cabeça, dentro da mesma caixa. */
-              <div className="flex justify-center pt-1 pb-1">
+              /* Fisco com balão ACIMA da cabeça.
+                 size = LARGURA. A altura vem do viewBox (510/380),
+                 então 190px de largura = ~255px de altura total. */
+              <div className="flex justify-center" style={{ marginTop: -6, marginBottom: -4 }}>
                 <Fisco
-                  size={300}
+                  size={190}
                   pose={pose}
                   fala={FAIXA_INFO[faixa].palavra}
                   corBalao={corBalao}
-                  style={{ marginLeft: -34 }}
                 />
               </div>
             ) : (
@@ -213,7 +213,7 @@ export default function Chat() {
                     <button
                       key={p.id}
                       onClick={() => responder(p)}
-                      className="w-full rounded-2xl px-4 py-3 flex items-center gap-3 text-left active:opacity-75"
+                      className="toque toque-escala w-full rounded-2xl px-4 py-3 flex items-center gap-3 text-left"
                       style={{ backgroundColor: "var(--field)" }}
                     >
                       <div
@@ -314,7 +314,7 @@ export default function Chat() {
                     <button
                       key={p.id}
                       onClick={() => responder(p)}
-                      className="w-full rounded-2xl px-4 py-2.5 flex items-center gap-2.5 text-left active:opacity-75"
+                      className="toque toque-escala w-full rounded-2xl px-4 py-2.5 flex items-center gap-2.5 text-left"
                       style={{ backgroundColor: "var(--field)" }}
                     >
                       <Sparkles size={15} style={{ color: "var(--primary)" }} className="shrink-0" />
@@ -351,7 +351,7 @@ export default function Chat() {
           <button
             type="button"
             aria-label="Anexar"
-            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 hover:opacity-80"
+            className="toque w-9 h-9 rounded-full flex items-center justify-center shrink-0"
           >
             <Paperclip size={18} style={{ color: "var(--text-tertiary)" }} />
           </button>
