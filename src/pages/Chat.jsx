@@ -111,11 +111,11 @@ export default function Chat() {
   }
 
   const vazio = mensagens.length === 0 && !digitando;
-  const titulo = modoContextual ? "Sobre a sua situação" : "Fisco";
+  const titulo = modoContextual ? "Como estou" : "Fisco";
 
   return (
     <div
-      className="tela-fixa w-full flex flex-col relative overflow-hidden"
+      className="tela-fixa w-full flex flex-col relative"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       <header className="px-5 pt-5 pb-0 flex items-center gap-3 shrink-0">
@@ -131,20 +131,18 @@ export default function Chat() {
 
       <div
         ref={listaRef}
-        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden hide-scrollbar px-5"
+        className="flex-1 min-h-0 overflow-y-auto hide-scrollbar px-5"
         style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
       >
         {vazio ? (
           <>
             {modoContextual ? (
-              /* Fisco inteiro com balão em cima. O viewBox alarga
-                 conforme o texto, então nada é cortado. */
               <div
                 className="flex justify-center"
-                style={{ marginTop: -10, marginBottom: -8 }}
+                style={{ paddingTop: 4, marginBottom: -6 }}
               >
                 <Fisco
-                  size={210}
+                  size={200}
                   pose={pose}
                   fala={FAIXA_INFO[faixa].palavra}
                   corBalao={corBalao}
@@ -207,7 +205,7 @@ export default function Chat() {
                   className="text-[11px] font-semibold uppercase mb-2"
                   style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
                 >
-                  Perguntas comuns nessa situação
+                  Perguntas comuns
                 </p>
 
                 <div className="space-y-2 pb-4">
