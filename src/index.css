@@ -355,3 +355,24 @@ body {
     animation: none;
   }
 }
+/* ===================================================================
+   ARRASTO COM O DEDO
+
+   Sem animação CSS aqui: o transform é escrito pelo JS a cada frame.
+   Estas classes só definem posição e empilhamento. A tela de destino
+   fica colada na lateral e anda 1:1 com a da frente.
+   =================================================================== */
+   .camada-arrasto-frente {
+    position: relative;
+    z-index: 2;
+    will-change: transform;
+  }
+  
+  .camada-arrasto-destino {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+    will-change: transform;
+  }
