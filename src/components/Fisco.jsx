@@ -1,12 +1,12 @@
 /**
  * Fisco — mascote robô do TaCerto!
  *
- * O balão vive DENTRO do viewBox 380x380, no canto superior direito,
- * sobre o espaço vazio ao lado da cabeça. Assim o SVG NUNCA tem faixa
- * morta no topo e o robô ocupa sempre a mesma proporção da caixa.
+ * O balão fica ACIMA da cabeça, ligeiramente à direita, dentro de um
+ * viewBox que cresce só para cima. Isso mantém o robô grande e visível
+ * em qualquer tamanho, sem faixa morta lateral.
  *
  * Props:
- * - size: largura/altura em px. Padrão 64.
+ * - size: LARGURA em px. Padrão 64.
  * - pose: "joinha" | "ok" | "alerta" | "neutro" | "amigavel".
  * - fala: palavra da situação. Sem ela, não desenha balão.
  * - corBalao: cor do SOMBREADO do balão (a palavra é sempre branca).
@@ -43,8 +43,8 @@ export default function Fisco({
           <stop offset="0%" stopColor="#ffffff" stopOpacity="0.28" />
           <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
         </radialGradient>
-        <filter id={`${uid}-glow`} x="-60%" y="-90%" width="220%" height="280%">
-          <feGaussianBlur stdDeviation="12" />
+        <filter id={`${uid}-glow`} x="-60%" y="-120%" width="220%" height="340%">
+          <feGaussianBlur stdDeviation="14" />
         </filter>
         <filter id={`${uid}-glowBolha`} x="-90%" y="-90%" width="280%" height="280%">
           <feGaussianBlur stdDeviation="3.5" />
@@ -99,22 +99,24 @@ export default function Fisco({
     /* ================= MODO COMPLETO ================= */
     const temFala = Boolean(fala);
   
-    // Com balão o viewBox alarga só na horizontal — a ALTURA não muda,
-    // então o robô nunca fica com faixa morta em cima.
-    const vbW = temFala ? 620 : 380;
-    const alturaProp = (size / vbW) * 380;
+    /* Com balão o viewBox cresce SÓ PARA CIMA (y negativo).
+       A largura continua 380, então o robô mantém o mesmo tamanho
+       relativo e nunca encolhe. `size` é sempre a LARGURA. */
+    const vbY = temFala ? -130 : 0;
+    const vbH = temFala ? 510 : 380;
+    const alturaProp = (size / 380) * vbH;
   
+    // Balão logo acima da cabeça, deslocado à direita
     const textoLen = String(fala || "").length;
-    const rxBalao = Math.max(96, textoLen * 12 + 44);
-    const cxBalao = 380 + rxBalao * 0.62;
-    const cyBalao = 74;
-    const fonteBalao = 40;
+    const rxBalao = Math.max(88, textoLen * 11 + 40);
+    const cxBalao = 232;
+    const cyBalao = -66;
   
     return (
       <svg
         width={size}
         height={alturaProp}
-        viewBox={`0 0 ${vbW} 380`}
+        viewBox={`0 ${vbY} 380 ${vbH}`}
         role="img"
         aria-label={fala ? `Fisco diz: ${fala}` : "Fisco, seu amigo fiscal"}
         className={className}
@@ -126,14 +128,14 @@ export default function Fisco({
         {/* ===== BALÃO: sombreado colorido + palavra BRANCA ===== */}
         {temFala && (
           <g>
-            {/* bolhas subindo da cabeça */}
+            {/* bolhas subindo da cabeça até o balão */}
             <circle
-              cx="266" cy="112" r="9"
+              cx="212" cy="34" r="7"
               fill={corBalao} opacity="0.5"
               filter={`url(#${uid}-glowBolha)`}
             />
             <circle
-              cx="292" cy="94" r="13"
+              cx="224" cy="8" r="10"
               fill={corBalao} opacity="0.55"
               filter={`url(#${uid}-glowBolha)`}
             />
@@ -141,24 +143,24 @@ export default function Fisco({
             {/* sombreado do balão */}
             <ellipse
               cx={cxBalao} cy={cyBalao}
-              rx={rxBalao} ry="52"
+              rx={rxBalao} ry="46"
               fill={corBalao} opacity="0.55"
               filter={`url(#${uid}-glow)`}
             />
             <ellipse
               cx={cxBalao} cy={cyBalao}
-              rx={rxBalao * 0.86} ry="42"
-              fill={corBalao} opacity="0.3"
+              rx={rxBalao * 0.84} ry="36"
+              fill={corBalao} opacity="0.32"
               filter={`url(#${uid}-glow)`}
             />
   
             <text
               x={cxBalao}
-              y={cyBalao + 14}
+              y={cyBalao + 13}
               textAnchor="middle"
               fill="#ffffff"
               style={{
-                fontSize: fonteBalao,
+                fontSize: 37,
                 fontWeight: 700,
                 fontStyle: "italic",
                 fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive',
