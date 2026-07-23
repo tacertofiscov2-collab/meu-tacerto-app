@@ -12,11 +12,13 @@ import {
   }
   
   const CURVA = "cubic-bezier(0.32, 0.72, 0, 1)";
-  const RECUO_FUNDO = 25;   // % que a tela de trás recua
-  const VEU_MAX = 0.22;     // opacidade do escurecimento
   
   /**
    * TransicaoTela — desliza a tela ao navegar, com as DUAS telas visíveis.
+   *
+   * Modelo CARROSSEL: as telas ficam coladas e andam juntas, 1:1 — o
+   * mesmo movimento do carrossel do velocímetro. (O modelo do iOS, com
+   * a tela de trás recuando só 25% e escurecendo, foi descartado.)
    *
    * Dois modos:
    *
@@ -53,7 +55,6 @@ import {
   
     const refFrente = useRef(null);
     const refFundo = useRef(null);
-    const refVeu = useRef(null);
   
     // Ajuste durante o render: chave, direção e camadas chegam juntas na
     // tela. Se a classe entrasse um frame depois, a tela nova apareceria
@@ -95,10 +96,11 @@ import {
       return true;
     }, [podeArrastar]);
   
+    /* Colado: a tela de trás anda a mesma distância que a da frente.
+       Frente em +p, fundo em -(largura - p). */
     const mover = useCallback((px) => {
       const w = window.innerWidth || 1;
       const p = Math.max(0, Math.min(px, w));
-      const fracao = p / w;
   
       if (refFrente.current) {
         refFrente.current.style.transition = "none";
@@ -106,12 +108,7 @@ import {
       }
       if (refFundo.current) {
         refFundo.current.style.transition = "none";
-        refFundo.current.style.transform =
-          `translateX(${-RECUO_FUNDO + fracao * RECUO_FUNDO}%)`;
-      }
-      if (refVeu.current) {
-        refVeu.current.style.transition = "none";
-        refVeu.current.style.opacity = String(VEU_MAX * (1 - fracao));
+        refFundo.current.style.transform = `translateX(${p - w}px)`;
       }
     }, []);
   
@@ -137,11 +134,7 @@ import {
       if (refFundo.current) {
         refFundo.current.style.transition = trans;
         refFundo.current.style.transform =
-          concluir ? "translateX(0%)" : `translateX(${-RECUO_FUNDO}%)`;
-      }
-      if (refVeu.current) {
-        refVeu.current.style.transition = `opacity ${dur}ms ${CURVA}`;
-        refVeu.current.style.opacity = concluir ? "0" : String(VEU_MAX);
+          concluir ? "translateX(0px)" : `translateX(${-w}px)`;
       }
   
       window.setTimeout(() => {
@@ -186,7 +179,6 @@ import {
               aria-hidden="true"
             >
               {cloneElement(children, { location: locPreview.current })}
-              <div ref={refVeu} className="veu-arrasto" />
             </div>
           )}
   
