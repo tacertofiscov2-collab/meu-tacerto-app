@@ -294,11 +294,13 @@ body {
    =================================================================== */
 .pilha-telas {
   position: relative;
+  width: 100%;
   overflow: hidden;
 }
 
 .camada-tela {
   position: relative;
+  width: 100%;
   height: 100%;
 }
 
@@ -306,7 +308,10 @@ body {
 .camada-sai-avancar,
 .camada-sai-voltar {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   pointer-events: none;
 }
@@ -346,6 +351,39 @@ body {
 .camada-sai-voltar {
   animation: telaSaiDireita var(--transicao-dur) var(--transicao-curva) both;
 }
+
+/* ===================================================================
+   ARRASTO COM O DEDO
+
+   Sem animação CSS aqui: o transform é escrito pelo JS a cada frame.
+   Estas classes definem posição, largura e empilhamento.
+
+   A posição inicial do destino é ±100% — PORCENTAGEM, não pixel.
+   Assim ela é sempre exatamente uma largura de container, e as duas
+   telas ficam coladas sem vão, independente do que o Safari reporte
+   como largura da janela.
+   =================================================================== */
+.camada-arrasto-frente {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  will-change: transform;
+}
+
+.camada-arrasto-destino {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.camada-arrasto-destino.destino-direita  { transform: translateX(100%); }
+.camada-arrasto-destino.destino-esquerda { transform: translateX(-100%); }
 
 @media (prefers-reduced-motion: reduce) {
   .camada-entra-avancar,
