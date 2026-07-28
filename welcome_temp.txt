@@ -1,0 +1,398 @@
+﻿import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import {
+  Gauge, Bell, TrendingUp, ChevronRight, Pencil, FileUp, Plus,
+  ClipboardList, Search, Calendar, ChevronDown, Sparkles, ArrowUp,
+} from "lucide-react";
+
+const VERDE = "var(--primary)";
+
+function MiniVelocimetro({ pct = 55 }) {
+  const R = 46;
+  const cx = 60;
+  const cy = 60;
+  const circ = Math.PI * R;
+  const gid = "mini-velo-grad";
+  const arco = `M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`;
+
+  const needleR = R * 0.75;
+  const baseHalfWidth = 4;
+  const midHalfWidth = 1.7;
+  const midR = needleR * 0.45;
+
+  const tipX = cx - needleR;
+  const tipY = cy;
+  const b1x = cx, b1y = cy - baseHalfWidth;
+  const b2x = cx, b2y = cy + baseHalfWidth;
+  const mx = cx - midR, my = cy;
+  const m1x = mx, m1y = my - midHalfWidth;
+  const m2x = mx, m2y = my + midHalfWidth;
+  const needlePoints = `${b1x},${b1y} ${m1x},${m1y} ${tipX},${tipY} ${m2x},${m2y} ${b2x},${b2y}`;
+
+  const rotDeg = (pct / 100) * 180;
+
+  return (
+    <svg width="120" height="74" viewBox="0 0 120 74" aria-hidden>
+      <defs>
+        <linearGradient id={gid} gradientUnits="userSpaceOnUse" x1={cx - R} y1={cy} x2={cx + R} y2={cy}>
+          <stop offset="0%" stopColor="#22c55e" />
+          <stop offset="45%" stopColor="#84cc16" />
+          <stop offset="70%" stopColor="#eab308" />
+          <stop offset="100%" stopColor="#ef4444" />
+        </linearGradient>
+      </defs>
+      <path d={arco} fill="none" stroke={`url(#${gid})`} strokeWidth="9" strokeLinecap="round" />
+      <path
+        d={arco}
+        fill="none"
+        stroke="var(--surface-raised)"
+        strokeWidth="10"
+        strokeLinecap="round"
+        strokeDasharray={`${circ} ${circ}`}
+        strokeDashoffset={-((pct / 100) * circ)}
+        opacity="0.82"
+      />
+      <g style={{ transformOrigin: "60px 60px", transform: `rotate(${rotDeg}deg)` }}>
+        <polygon points={needlePoints} fill="var(--text)" />
+      </g>
+      <circle cx={cx} cy={cy} r="5.5" fill="var(--text)" />
+      <circle cx={cx} cy={cy} r="2.5" fill="var(--surface)" />
+    </svg>
+  );
+}
+
+function MiniHeader({ titulo }) {
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <span className="font-bold" style={{ color: "var(--text)", fontSize: 15 }}>
+        {titulo}
+      </span>
+    </div>
+  );
+}
+
+function LinhaMini({ Icon, titulo, sub, cor }) {
+  return (
+    <div className="rounded-xl flex items-center gap-2.5" style={{ backgroundColor: "var(--field)", padding: "9px 11px" }}>
+      <span className="rounded-lg flex items-center justify-center shrink-0" style={{ width: 26, height: 26, backgroundColor: "var(--surface)" }}>
+        <Icon size={14} style={{ color: cor || VERDE }} />
+      </span>
+      <span className="flex-1 min-w-0">
+        <span className="block font-semibold truncate" style={{ color: "var(--text)", fontSize: 12.5 }}>{titulo}</span>
+        {sub && <span className="block truncate" style={{ color: "var(--text-secondary)", fontSize: 10 }}>{sub}</span>}
+      </span>
+      <ChevronRight size={13} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+    </div>
+  );
+}
+
+function MiniDashboard() {
+  return (
+    <div style={{ padding: 14 }}>
+      <div className="flex items-center justify-between" style={{ marginBottom: 10 }}>
+        <span className="font-bold" style={{ color: "var(--text)", fontSize: 13 }}>Boa tarde</span>
+        <span className="rounded-full flex items-center justify-center" style={{ width: 26, height: 26, backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
+          <Bell size={13} style={{ color: "var(--text)" }} />
+        </span>
+      </div>
+
+      <div
+        className="rounded-2xl"
+        style={{
+          background: "linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 60%, transparent 100%), var(--surface)",
+          border: "1px solid var(--border)",
+          padding: "12px 14px 16px",
+        }}
+      >
+        <span style={{ color: "var(--text-secondary)", fontSize: 11 }}>Meu MEI</span>
+        <div className="flex flex-col items-center" style={{ marginTop: 4 }}>
+          <MiniVelocimetro pct={55} />
+          <span className="font-bold" style={{ color: "var(--text)", fontSize: 30, lineHeight: 1, marginTop: 2 }}>55%</span>
+        </div>
+        <div className="flex items-center" style={{ borderTop: "1px solid var(--border)", marginTop: 12, paddingTop: 10 }}>
+          <div className="flex-1 flex flex-col items-center">
+            <span className="font-bold" style={{ color: "var(--text)", fontSize: 13 }}>Em dia</span>
+            <span style={{ color: "var(--text-secondary)", fontSize: 10 }}>Faturado</span>
+          </div>
+          <div style={{ width: 1, alignSelf: "stretch", backgroundColor: "var(--border)" }} />
+          <div className="flex-1 flex flex-col items-center">
+            <span className="font-bold" style={{ color: VERDE, fontSize: 13 }}>Zona verde</span>
+            <span style={{ color: "var(--text-secondary)", fontSize: 10 }}>SituaÃ§Ã£o</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-center" style={{ marginTop: -30, position: "relative", zIndex: 2 }}>
+        <span className="rounded-full flex items-center justify-center" style={{ width: 44, height: 44, backgroundColor: VERDE, boxShadow: "0 6px 16px rgba(34,197,94,0.45)" }}>
+          <Plus size={24} strokeWidth={2.6} style={{ color: "var(--primary-contrast)" }} />
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function MiniAdicionar() {
+  return (
+    <div style={{ padding: 14 }}>
+      <MiniHeader titulo="Adicionar faturamento" />
+      <div className="flex flex-col" style={{ gap: 8 }}>
+        <LinhaMini Icon={Pencil} titulo="Digitar o total" sub="JÃ¡ sabe quanto faturou? Digite." />
+        <LinhaMini Icon={FileUp} titulo="Enviar extrato bancÃ¡rio" sub="PDF, foto ou OFX/CSV." />
+        <LinhaMini Icon={Plus} titulo="Somar valores" sub="Entrada por entrada." />
+        <LinhaMini Icon={ClipboardList} titulo="Colar texto do extrato" sub="Cole e a IA identifica." />
+      </div>
+    </div>
+  );
+}
+
+function MiniHistorico() {
+  const linhas = [
+    { d: "Recebimento", data: "18 de Junho" },
+    { d: "Recebimento", data: "09 de Junho" },
+    { d: "Recebimento", data: "02 de Junho" },
+  ];
+  return (
+    <div style={{ padding: 14 }}>
+      <MiniHeader titulo="HistÃ³rico" />
+      <div className="rounded-xl flex items-center gap-2" style={{ backgroundColor: "var(--field)", padding: "9px 11px", marginBottom: 8 }}>
+        <Search size={14} style={{ color: "var(--text-tertiary)" }} />
+        <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>Buscar lanÃ§amento</span>
+      </div>
+      <div className="rounded-xl flex items-center gap-2.5" style={{ backgroundColor: "var(--field)", padding: "9px 11px", marginBottom: 8 }}>
+        <span className="rounded-lg flex items-center justify-center shrink-0" style={{ width: 26, height: 26, backgroundColor: "var(--surface)" }}>
+          <Calendar size={14} style={{ color: VERDE }} />
+        </span>
+        <span className="flex-1 min-w-0">
+          <span className="block font-semibold" style={{ color: "var(--text)", fontSize: 12.5 }}>Este mÃªs</span>
+          <span className="block" style={{ color: "var(--text-secondary)", fontSize: 10 }}>PerÃ­odo exibido</span>
+        </span>
+        <ChevronDown size={13} style={{ color: "var(--text-tertiary)" }} />
+      </div>
+      <div className="flex flex-col" style={{ gap: 6 }}>
+        {linhas.map((l, i) => (
+          <div key={i} className="rounded-xl flex items-center gap-2.5" style={{ backgroundColor: "var(--field)", padding: "9px 11px" }}>
+            <TrendingUp size={15} style={{ color: VERDE }} className="shrink-0" />
+            <span className="flex-1 min-w-0">
+              <span className="block font-semibold truncate" style={{ color: "var(--text)", fontSize: 12.5 }}>{l.d}</span>
+              <span className="block" style={{ color: "var(--text-secondary)", fontSize: 10 }}>{l.data}</span>
+            </span>
+            <span className="font-bold shrink-0" style={{ color: VERDE, fontSize: 12.5 }}>+ R$ â€¢â€¢â€¢</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MiniResumo() {
+  const MESES = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
+  const barras = [40, 62, 35, 78, 55, 70, 48, 0, 0, 0, 0, 0];
+  const maxAtivo = 6;
+  return (
+    <div style={{ padding: 14 }}>
+      <MiniHeader titulo="Resumo do ano" />
+      <div className="grid grid-cols-2" style={{ gap: 8, marginBottom: 8 }}>
+        {[
+          { r: "Faturado", v: "Em dia" },
+          { r: "SituaÃ§Ã£o", v: "Verde", cor: VERDE },
+          { r: "Ritmo", v: "EstÃ¡vel" },
+          { r: "LanÃ§amentos", v: "12" },
+        ].map((c, i) => (
+          <div key={i} className="rounded-xl" style={{ backgroundColor: "var(--field)", padding: "8px 11px" }}>
+            <span className="block" style={{ color: "var(--text-secondary)", fontSize: 10 }}>{c.r}</span>
+            <span className="block font-bold" style={{ color: c.cor || "var(--text)", fontSize: 14 }}>{c.v}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl" style={{ backgroundColor: "var(--field)", padding: "11px 12px" }}>
+        <span className="block" style={{ color: "var(--text-secondary)", fontSize: 10, marginBottom: 8 }}>Por mÃªs</span>
+        <div className="flex items-end justify-between" style={{ height: 54, gap: 3 }}>
+          {barras.map((h, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center justify-end" style={{ gap: 3 }}>
+              <div
+                className="w-full rounded-t"
+                style={{ height: h ? `${(h / 78) * 44}px` : 3, backgroundColor: i >= maxAtivo ? "var(--border)" : VERDE, opacity: i >= maxAtivo ? 0.35 : 1 }}
+              />
+              <span style={{ color: "var(--text-tertiary)", fontSize: 7 }}>{MESES[i]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MiniFisco() {
+  const perguntas = [
+    "Quanto Ã© o DAS e quando vence?",
+    "Qual Ã© o meu limite de faturamento?",
+    "Preciso emitir nota em todo serviÃ§o?",
+  ];
+  return (
+    <div style={{ padding: 14, position: "relative" }}>
+      <MiniHeader titulo="Fisco" />
+
+      <div
+        className="rounded-2xl flex items-center gap-3"
+        style={{
+          background: "linear-gradient(150deg, rgba(34,197,94,0.14) 0%, rgba(34,197,94,0.03) 55%, transparent 100%), var(--surface)",
+          border: "1px solid var(--border)",
+          padding: "10px 12px",
+          marginBottom: 10,
+        }}
+      >
+        <span className="rounded-full shrink-0 overflow-hidden" style={{ width: 40, height: 40, backgroundColor: "var(--surface-raised)", border: "1px solid var(--border)" }}>
+          <img src="/fisco-joinha.png" alt="Fisco" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 12%" }} />
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-full" style={{ backgroundColor: "rgba(34,197,94,0.14)", padding: "3px 9px" }}>
+          <span className="rounded-full" style={{ width: 5, height: 5, backgroundColor: VERDE }} />
+          <span className="font-bold uppercase" style={{ color: VERDE, fontSize: 9, letterSpacing: "0.08em" }}>Online</span>
+        </span>
+      </div>
+
+      <div className="flex flex-col" style={{ gap: 7 }}>
+        {perguntas.map((p, i) => (
+          <div key={i} className="rounded-xl flex items-center gap-2.5" style={{ backgroundColor: "var(--field)", padding: "9px 11px" }}>
+            <span className="rounded-lg flex items-center justify-center shrink-0" style={{ width: 24, height: 24, backgroundColor: "var(--surface)" }}>
+              <Sparkles size={13} style={{ color: VERDE }} />
+            </span>
+            <span className="flex-1 min-w-0 font-medium truncate" style={{ color: "var(--text)", fontSize: 12 }}>{p}</span>
+          </div>
+        ))}
+      </div>
+
+      <div
+        className="rounded-2xl flex items-center gap-2.5"
+        style={{ backgroundColor: "var(--field)", border: "1px solid var(--border)", padding: "9px 10px 9px 14px", marginTop: 9 }}
+      >
+        <span className="flex-1 min-w-0" style={{ color: "var(--text-tertiary)", fontSize: 12 }}>Pergunte ao Fisco...</span>
+        <span className="rounded-full flex items-center justify-center shrink-0" style={{ width: 26, height: 26, backgroundColor: VERDE }}>
+          <ArrowUp size={14} strokeWidth={2.6} style={{ color: "var(--primary-contrast)" }} />
+        </span>
+      </div>
+
+      <img
+        src="/fisco-joinha.png"
+        alt="Fisco"
+        style={{
+          position: "absolute",
+          left: -24,
+          bottom: -34,
+          width: 168,
+          height: "auto",
+          zIndex: 5,
+          filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.45))",
+          pointerEvents: "none",
+        }}
+      />
+    </div>
+  );
+}
+
+const SLIDES = [
+  { Mini: MiniDashboard, titulo: "Saiba quanto jÃ¡ faturou", subtitulo: "Acompanhe o velocÃ­metro e faÃ§a lanÃ§amentos pra mantÃª-lo atualizado." },
+  { Mini: MiniAdicionar, titulo: "JÃ¡ faturou antes de baixar?", subtitulo: "Registre em segundos o que veio antes." },
+  { Mini: MiniHistorico, titulo: "Tudo organizado", subtitulo: "Cada recebimento, mÃªs a mÃªs." },
+  { Mini: MiniResumo, titulo: "Enxergue o ano todo", subtitulo: "MÃ©dia mensal e projeÃ§Ã£o de fechamento." },
+  { Mini: MiniFisco, titulo: "O Fisco te acompanha", subtitulo: "Ele avisa antes de virar problema." },
+];
+
+export default function Welcome() {
+  const navigate = useNavigate();
+  const scrollerRef = useRef(null);
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const onScroll = () => setActive(Math.round(el.scrollLeft / el.clientWidth));
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const goTo = (i) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+  };
+
+  return (
+    <div className="tela-fixa w-full flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
+      <div className="flex items-center justify-center gap-1.5 pt-6 pb-3 shrink-0">
+        <Gauge size={22} strokeWidth={2.5} style={{ color: VERDE }} />
+        <span className="text-xl font-bold" style={{ color: "var(--text)" }}>
+          Ta<span style={{ color: VERDE }}>Certo!</span>
+        </span>
+      </div>
+
+      <div ref={scrollerRef} className="flex-1 min-h-0 flex overflow-x-auto snap-x snap-mandatory hide-scrollbar">
+        {SLIDES.map(({ Mini, titulo, subtitulo }, i) => (
+          <div key={i} className="min-w-full snap-center flex flex-col min-h-0">
+            <div className="flex-1 min-h-0 overflow-hidden flex justify-center px-6 pt-2">
+              <div className="w-full" style={{ maxWidth: 300 }}>
+                <div
+                  className="mx-auto relative h-full"
+                  style={{
+                    borderTopLeftRadius: 30,
+                    borderTopRightRadius: 30,
+                    border: "1.5px solid var(--border)",
+                    borderBottom: "none",
+                    backgroundColor: "var(--bg)",
+                    boxShadow: "0 -10px 44px rgba(0,0,0,0.4)",
+                    overflow: "hidden",
+                  }}
+                >
+                  <Mini />
+                  <div
+                    aria-hidden
+                    className="absolute left-0 right-0 bottom-0"
+                    style={{ height: 64, background: "linear-gradient(to bottom, transparent, var(--bg))" }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="shrink-0 px-8 pt-4 text-center">
+              <h2 className="font-bold leading-tight" style={{ color: "var(--text)", fontSize: 22 }}>{titulo}</h2>
+              <p className="leading-snug" style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 8 }}>{subtitulo}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex justify-center gap-2 py-4 shrink-0">
+        {SLIDES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => goTo(i)}
+            aria-label={`Ir para slide ${i + 1}`}
+            className="h-2 rounded-full transition-all"
+            style={{ width: i === active ? 24 : 8, backgroundColor: i === active ? VERDE : "var(--border)" }}
+          />
+        ))}
+      </div>
+
+      <div className="px-5 shrink-0" style={{ paddingBottom: "calc(14px + env(safe-area-inset-bottom))" }}>
+        <button onClick={() => navigate("/cadastro")} className="w-full py-3 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90" style={{ backgroundColor: VERDE, color: "var(--primary-contrast)" }}>
+          Criar conta
+        </button>
+
+        <button
+          onClick={() => {
+            try { localStorage.setItem("tacerto_visitante", "true"); } catch {}
+            navigate("/onboarding");
+          }}
+          className="w-full py-3 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90"
+          style={{ backgroundColor: "var(--field)", color: "var(--text-secondary)", border: "1px solid var(--border)", marginTop: 10 }}
+        >
+          Entrar sem conta
+        </button>
+
+        <p className="text-center text-sm mt-3.5" style={{ color: "var(--text-secondary)" }}>
+          JÃ¡ tem conta?{" "}
+          <button onClick={() => navigate("/login")} className="font-semibold" style={{ color: VERDE }}>Entrar</button>
+        </p>
+      </div>
+    </div>
+  );
+}

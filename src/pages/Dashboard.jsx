@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useRef, useState, useMemo } from "react";
+import { useRef, useState, useMemo, useEffect } from "react";
 import { Bell, Gauge, TrendingUp, ChevronRight, Receipt } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
@@ -60,13 +60,13 @@ function SetaEnviar({ tamanho = 16 }) {
 }
 
 /**
- * Bolinhas do carrossel — flutuam POR CIMA, sem ocupar espaço.
- * Card A: verde forte e destacado. Card B: bem fraquinho.
+ * Bolinhas do carrossel — agora FORA dos cards, centralizadas logo
+ * abaixo deles. A bolinha do card ativo fica destacada (verde forte);
+ * a outra fica bem apagada.
  */
 function BolinhasIndicadoras({ pagina, irPara }) {
-  const noCardA = pagina === 0;
   return (
-    <div className="absolute top-3 right-4 z-30 flex items-center gap-1.5">
+    <div className="flex items-center justify-center gap-2 shrink-0" style={{ marginTop: 10 }}>
       {[0, 1].map((i) => {
         const ativa = pagina === i;
         return (
@@ -76,15 +76,11 @@ function BolinhasIndicadoras({ pagina, irPara }) {
             aria-label={`Ir para tela ${i + 1}`}
             className="rounded-full transition-all"
             style={{
-              width: noCardA ? 7 : 6,
-              height: noCardA ? 7 : 6,
+              width: ativa ? 11 : 9,
+              height: ativa ? 11 : 9,
               backgroundColor: "var(--primary)",
-              opacity: noCardA
-                ? (ativa ? 1 : 0.35)
-                : (ativa ? 0.28 : 0.12),
-              boxShadow: noCardA && ativa
-                ? "0 0 8px rgba(34, 197, 94, 0.6)"
-                : "none",
+              opacity: ativa ? 1 : 0.22,
+              boxShadow: ativa ? "0 0 9px rgba(34, 197, 94, 0.65)" : "none",
             }}
           />
         );
@@ -102,8 +98,8 @@ function TelaDetalhes({
 
   return (
     <div
-      className="card-b-fixo w-1/2 h-full flex flex-col overflow-hidden"
-      style={{ padding: 14, gap: 8 }}
+      className="card-b-fixo h-full flex flex-col overflow-hidden"
+      style={{ padding: 14, gap: 8, flex: "0 0 50%", width: "50%" }}
     >
       {/* 1 — Como estou (clicável). As bolinhas passam POR CIMA dele. */}
       <button
@@ -243,9 +239,6 @@ function TelaDetalhes({
         </div>
       </div>
 
-      {/* Respiro elástico: absorve a sobra */}
-      <div className="flex-1 min-h-0" aria-hidden />
-
       {/* 4 — Faixas de risco */}
       <div
         className="rounded-2xl shrink-0"
@@ -304,6 +297,7 @@ function CardVelocimetroCarrossel({
   const [pagina, setPagina] = useState(0);
   const [dragPx, setDragPx] = useState(0);
   const [arrastando, setArrastando] = useState(false);
+  const [larguraCard, setLarguraCard] = useState(0);
 
   const containerRef = useRef(null);
   const startX = useRef(0);
@@ -316,8 +310,21 @@ function CardVelocimetroCarrossel({
   const chaveFaixa = faixaDoVelocimetro(percentual);
   const corFaixa = FAIXA_INFO[chaveFaixa].cor;
 
+  // Mede a largura real do card (= largura do container). Só muda em
+  // rotação/resize, NUNCA durante o deslize — por isso o conteúdo não
+  // recalcula tamanho no meio do movimento.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const medir = () => setLarguraCard(el.clientWidth);
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   function largura() {
-    return containerRef.current?.clientWidth || 1;
+    return larguraCard || containerRef.current?.clientWidth || 1;
   }
 
   function inicio(x, y) {
@@ -384,20 +391,22 @@ function CardVelocimetroCarrossel({
     return () => { if (!moveu.current) fn(); };
   }
 
-  const naTelaB = pagina === 1;
-
   const bgCard = {
     background:
       "linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 55%, rgba(255,255,255,0) 100%), var(--surface)",
     border: "1px solid var(--border)",
   };
 
-  const larg = largura();
-  const basePct = pagina === 0 ? 0 : -50;
-  const dragPct = larg ? (dragPx / larg) * 50 : 0;
-  const translate = basePct + dragPct;
+  // Deslize em PORCENTAGEM (imune a timing de medição). O trilho é 200%
+  // e cada card 50%. Página 0 = 0%, página 1 = -50%. O arraste em px é
+  // convertido pra % dividindo pela largura atual do container.
+  const larg = larguraCard || 1;
+  const base = pagina === 0 ? 0 : -50;
+  const dragPct = (dragPx / larg) * 50;
+  const translatePct = base + dragPct;
 
   return (
+    <div className="flex flex-col flex-1 min-h-0">
     <div
       ref={containerRef}
       data-carrossel-velocimetro
@@ -416,28 +425,20 @@ function CardVelocimetroCarrossel({
       onMouseUp={(e) => fim(e.clientX)}
       onMouseLeave={(e) => ativo.current && fim(e.clientX)}
     >
-      <BolinhasIndicadoras pagina={pagina} irPara={irPara} />
-
-      {/* Rótulo do perfil: só existe na tela A. Na B nem é renderizado. */}
-      {!naTelaB && (
-        <div className="px-5 pt-3.5 pb-1 shrink-0">
-          <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            {rotuloPerfil}
-          </span>
-        </div>
-      )}
-
       <div className="flex-1 min-h-0 overflow-hidden">
         <div
           className="flex h-full"
           style={{
             width: "200%",
-            transform: `translateX(${translate}%)`,
+            transform: `translateX(${translatePct}%)`,
             transition: arrastando ? "none" : "transform 300ms ease-in-out",
           }}
         >
-          {/* Tela A */}
-          <div className="w-1/2 h-full flex flex-col px-5 pb-4 min-h-0">
+          {/* Tela A — 50% do trilho, travada (não encolhe nem estica) */}
+          <div
+            className="h-full flex flex-col px-5 pb-4 min-h-0"
+            style={{ flex: "0 0 50%", width: "50%" }}
+          >
             <div className="flex-1 min-h-0 flex items-center justify-center">
               <VelocimetroAnimado
                 percentual={percentual}
@@ -449,7 +450,7 @@ function CardVelocimetroCarrossel({
                 só pra o destaque de toque contornar cada bloco. */}
             <div
               className="flex items-stretch pt-3 shrink-0"
-              style={{ borderTop: "1px solid var(--border)" }}
+              style={{ borderTop: "1px solid var(--border)", marginTop: 10 }}
             >
               <button
                 onClick={seNaoArrastou(onResumo)}
@@ -487,7 +488,7 @@ function CardVelocimetroCarrossel({
             </div>
           </div>
 
-          {/* Tela B */}
+          {/* Tela B — largura fixa em px */}
           <TelaDetalhes
             faixaAtiva={chaveFaixa}
             corFaixa={corFaixa}
@@ -499,6 +500,10 @@ function CardVelocimetroCarrossel({
           />
         </div>
       </div>
+    </div>
+
+      {/* Bolinhas FORA do card, centralizadas logo abaixo */}
+      <BolinhasIndicadoras pagina={pagina} irPara={irPara} />
     </div>
   );
 }
@@ -533,26 +538,29 @@ export default function Dashboard() {
         <header className="px-5 pt-4 pb-1 flex items-start justify-between shrink-0">
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2.5">
-              <Gauge size={30} style={{ color: "var(--primary)" }} strokeWidth={2.2} />
+              <Gauge size={34} style={{ color: "var(--primary)" }} strokeWidth={2.2} className="shrink-0" />
               <span
-                className="font-bold text-2xl leading-none"
-                style={{ color: "var(--text)" }}
+                className="font-semibold"
+                style={{ color: "var(--text-secondary)", fontSize: 14, letterSpacing: "0.01em" }}
               >
-                Ta<span style={{ color: "var(--primary)" }}>Certo!</span>
+                {saudacao.replace(/,\s*$/, "")}
               </span>
             </div>
-            <div className="text-sm mt-1 truncate" style={{ color: "var(--text-secondary)" }}>
-              {saudacao}
-              {nome ? " " : "!"}
-              {nome && (
-                <span
-                  className="text-base font-semibold"
-                  style={{ color: "var(--text)" }}
-                >
-                  {truncarNome(nome)}
-                </span>
-              )}
-            </div>
+            {nome ? (
+              <span
+                className="block font-extrabold leading-none truncate"
+                style={{ color: "var(--text)", fontSize: 23, marginTop: 6, marginLeft: 30 }}
+              >
+                {truncarNome(nome)}
+              </span>
+            ) : (
+              <span
+                className="block font-extrabold leading-none"
+                style={{ color: "var(--text)", fontSize: 23, marginTop: 6, marginLeft: 30 }}
+              >
+                Bem-vindo
+              </span>
+            )}
           </div>
 
           <button
@@ -591,8 +599,8 @@ export default function Dashboard() {
           {/* Fisco NEUTRO, sem balão e sem reação à situação */}
           <button
             onClick={() => navigate("/chat")}
-            className="shrink-0 flex items-end transition mt-1 w-full"
-            style={{ background: "none", border: "none", padding: 0 }}
+            className="shrink-0 flex items-end transition w-full"
+            style={{ background: "none", border: "none", padding: 0, marginTop: -4 }}
           >
             <Fisco
               size={116}

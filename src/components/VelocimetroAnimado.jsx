@@ -2,6 +2,12 @@ import { useEffect, useState, useId } from "react";
 import { AlertTriangle } from "lucide-react";
 import { FAIXA_INFO } from "@/lib/fiscal";
 
+// Flag de MÓDULO: lembra que a animação de entrada já aconteceu nesta
+// sessão. Sobrevive a remontagens do componente (o carrossel do dashboard
+// remonta o velocímetro ao deslizar) — por isso não usamos useRef aqui,
+// que zeraria a cada remontagem e faria o ponteiro subir do zero de novo.
+let jaAnimouNaSessao = false;
+
 /**
  * Velocímetro animado.
  * - Arco e ponteiro TRAVAM em 100%.
@@ -9,10 +15,15 @@ import { FAIXA_INFO } from "@/lib/fiscal";
  * - Acima de 100%: badge redondo ao lado mostrando "+N%" (até 20%).
  * - Acima de 120%: badge vira alerta (ícone), pois passou da margem legal.
  * - Badge é clicável (onClickExcedente).
+ *
+ * ANIMAÇÃO: sobe do zero APENAS na primeira montagem. Depois disso, se
+ * o percentual mudar, o ponteiro apenas desliza suave até o novo valor.
+ * NUNCA reinicia do zero por causa de re-render/remontagem (era o que
+ * causava o "encolhe e cresce" ao deslizar o carrossel do dashboard).
  */
 export default function VelocimetroAnimado({
   percentual,
-  maxWidth = 220,
+  maxWidth = 260,
   numeroClasse = "text-5xl font-bold",
   onClickExcedente,
 }) {
@@ -23,20 +34,35 @@ export default function VelocimetroAnimado({
   const excesso = percentual > 100 ? percentual - 100 : 0;
   const passouDos20 = excesso > 20;
 
-  const [progresso, setProgresso] = useState(0);
+  // Se a animação de entrada já rolou nesta sessão, começa já no valor
+  // final (sem subir do zero). Só anima do zero na primeiríssima vez.
+  const [progresso, setProgresso] = useState(jaAnimouNaSessao ? pVisual : 0);
   const [pulse, setPulse] = useState(false);
 
+  // Animação de ENTRADA: só uma vez por sessão, mesmo que o componente
+  // remonte depois (deslize do carrossel não re-anima).
   useEffect(() => {
+    if (jaAnimouNaSessao) {
+      setProgresso(pVisual);
+      return;
+    }
+    jaAnimouNaSessao = true;
     setProgresso(0);
-    setPulse(false);
-    const t1 = setTimeout(() => setProgresso(pVisual), 80);
-    const t2 = setTimeout(() => setPulse(true), 80 + 1200);
-    const t3 = setTimeout(() => setPulse(false), 80 + 1200 + 400);
+    const t1 = setTimeout(() => setProgresso(pVisual), 60);
+    const t2 = setTimeout(() => setPulse(true), 60 + 1200);
+    const t3 = setTimeout(() => setPulse(false), 60 + 1200 + 400);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Mudança REAL de percentual depois da entrada: desliza suave, sem zerar.
+  useEffect(() => {
+    if (!jaAnimouNaSessao) return;
+    setProgresso(pVisual);
   }, [pVisual]);
 
   const cx = 100;

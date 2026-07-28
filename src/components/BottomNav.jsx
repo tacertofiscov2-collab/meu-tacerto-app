@@ -23,9 +23,9 @@ export default function BottomNav({ ativo }) {
       ? String(nome).trim().charAt(0).toUpperCase()
       : null;
 
-  const ICON_SIZE = 32;
-  const AVATAR_SIZE = 34;
-  const LABEL_SIZE = 13;
+  const ICON_SIZE = 26;
+  const AVATAR_SIZE = 28;
+  const LABEL_SIZE = 11;
 
   const corTexto = (isAtivo) =>
     isAtivo ? "var(--primary)" : "var(--text-secondary)";
@@ -39,14 +39,15 @@ export default function BottomNav({ ativo }) {
         left: 0,
         right: 0,
         zIndex: 50,
-        background: "var(--nav-bg)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        borderTop: "1px solid var(--nav-border)",
-        paddingTop: 12,
-        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 22px)",
-        paddingLeft: 16,
-        paddingRight: 16,
+        background:
+          "linear-gradient(115deg, rgba(255,255,255,0.02) 0%, rgba(20,22,20,0.03) 30%, rgba(20,22,20,0.03) 70%, rgba(255,255,255,0.015) 100%)",
+        backdropFilter: "blur(24px) saturate(160%)",
+        WebkitBackdropFilter: "blur(24px) saturate(160%)",
+        borderTop: "1px solid rgba(255,255,255,0.05)",
+        paddingTop: 10,
+        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 18px)",
+        paddingLeft: 13,
+        paddingRight: 13,
         display: "flex",
         alignItems: "flex-end",
         justifyContent: "space-around",
@@ -79,8 +80,8 @@ export default function BottomNav({ ativo }) {
       >
         <span
           style={{
-            width: 58,
-            height: 58,
+            width: 48,
+            height: 48,
             borderRadius: "50%",
             backgroundColor: "var(--primary)",
             display: "flex",
@@ -133,7 +134,7 @@ export default function BottomNav({ ativo }) {
             <span
               style={{
                 color: "var(--primary)",
-                fontSize: 15,
+                fontSize: 13,
                 fontWeight: 700,
                 lineHeight: 1,
               }}
@@ -141,7 +142,7 @@ export default function BottomNav({ ativo }) {
               {inicial}
             </span>
           ) : (
-            <User size={20} style={{ color: corTexto(ativo === "perfil") }} />
+            <User size={16} style={{ color: corTexto(ativo === "perfil") }} />
           )}
         </span>
         <span
