@@ -24,7 +24,7 @@ export default function BottomNav({ ativo }) {
       : null;
 
   const ICON_SIZE = 26;
-  const AVATAR_SIZE = 28;
+  const AVATAR_SIZE = 30;
   const LABEL_SIZE = 11;
 
   const corTexto = (isAtivo) =>
@@ -40,10 +40,12 @@ export default function BottomNav({ ativo }) {
         right: 0,
         zIndex: 50,
         background:
-          "linear-gradient(115deg, rgba(255,255,255,0.02) 0%, rgba(20,22,20,0.03) 30%, rgba(20,22,20,0.03) 70%, rgba(255,255,255,0.015) 100%)",
+          "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(8,8,10,0.88)",
         backdropFilter: "blur(24px) saturate(160%)",
         WebkitBackdropFilter: "blur(24px) saturate(160%)",
-        borderTop: "1px solid rgba(255,255,255,0.05)",
+        borderTop: "1px solid rgba(255,255,255,0.12)",
+        boxShadow:
+          "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28)",
         paddingTop: 10,
         paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 18px)",
         paddingLeft: 13,
@@ -103,23 +105,22 @@ export default function BottomNav({ ativo }) {
         className="flex flex-col items-center gap-1 active:scale-95 transition"
         style={{ background: "none", border: "none", padding: 0 }}
       >
-        <span
-          style={{
-            width: AVATAR_SIZE,
-            height: AVATAR_SIZE,
-            borderRadius: "50%",
-            backgroundColor: "var(--field)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden",
-            border:
-              ativo === "perfil"
-                ? "1.5px solid var(--primary)"
-                : "1.5px solid transparent",
-          }}
-        >
-          {foto ? (
+        {foto ? (
+          <span
+            style={{
+              width: AVATAR_SIZE,
+              height: AVATAR_SIZE,
+              borderRadius: "50%",
+              overflow: "hidden",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border:
+                ativo === "perfil"
+                  ? "1.5px solid var(--primary)"
+                  : "1.5px solid transparent",
+            }}
+          >
             <img
               src={foto}
               alt=""
@@ -130,21 +131,30 @@ export default function BottomNav({ ativo }) {
                 borderRadius: "50%",
               }}
             />
-          ) : inicial ? (
-            <span
-              style={{
-                color: "var(--primary)",
-                fontSize: 13,
-                fontWeight: 700,
-                lineHeight: 1,
-              }}
-            >
-              {inicial}
-            </span>
-          ) : (
-            <User size={16} style={{ color: corTexto(ativo === "perfil") }} />
-          )}
-        </span>
+          </span>
+        ) : inicial ? (
+          <span
+            style={{
+              width: AVATAR_SIZE,
+              height: AVATAR_SIZE,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: corTexto(ativo === "perfil"),
+              fontSize: 17,
+              fontWeight: 700,
+              lineHeight: 1,
+            }}
+          >
+            {inicial}
+          </span>
+        ) : (
+          <User
+            size={ICON_SIZE}
+            strokeWidth={ativo === "perfil" ? 2.5 : 2}
+            style={{ color: corTexto(ativo === "perfil") }}
+          />
+        )}
         <span
           className="font-medium leading-none"
           style={{ color: corTexto(ativo === "perfil"), fontSize: LABEL_SIZE }}

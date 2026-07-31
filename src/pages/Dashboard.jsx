@@ -1,10 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useMemo, useEffect } from "react";
-import { Bell, Gauge, TrendingUp, ChevronRight, Receipt } from "lucide-react";
+import { Bell, Gauge, TrendingUp, ChevronRight, Receipt, Send } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
-import Fisco from "../components/Fisco.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
   LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO, FAIXAS_ORDEM, FAIXA_RANGE_LABEL,
@@ -15,6 +14,16 @@ const MESES_CURTO = [
   "jan", "fev", "mar", "abr", "mai", "jun",
   "jul", "ago", "set", "out", "nov", "dez",
 ];
+
+const VIDRO = {
+  background:
+    "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(8,8,10,0.88)",
+  backdropFilter: "blur(24px) saturate(160%)",
+  WebkitBackdropFilter: "blur(24px) saturate(160%)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  boxShadow:
+    "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)",
+};
 
 function saudacaoPorHora() {
   const h = new Date().getHours();
@@ -31,7 +40,6 @@ function hexToRgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-/** Seta do botão de enviar — desenhada, não é ícone de biblioteca */
 function SetaEnviar({ tamanho = 16 }) {
   return (
     <svg
@@ -59,11 +67,6 @@ function SetaEnviar({ tamanho = 16 }) {
   );
 }
 
-/**
- * Bolinhas do carrossel — agora FORA dos cards, centralizadas logo
- * abaixo deles. A bolinha do card ativo fica destacada (verde forte);
- * a outra fica bem apagada.
- */
 function BolinhasIndicadoras({ pagina, irPara }) {
   return (
     <div className="flex items-center justify-center gap-2 shrink-0" style={{ marginTop: 10 }}>
@@ -89,7 +92,6 @@ function BolinhasIndicadoras({ pagina, irPara }) {
   );
 }
 
-/** Tela B — Como estou · Últimos lançamentos · Meu ritmo · Faixas */
 function TelaDetalhes({
   faixaAtiva, corFaixa, mediaMensal, projecao, ultimos, onSituacao, onLancamentos,
 }) {
@@ -101,7 +103,6 @@ function TelaDetalhes({
       className="card-b-fixo h-full flex flex-col overflow-hidden"
       style={{ padding: 14, gap: 8, flex: "0 0 50%", width: "50%" }}
     >
-      {/* 1 — Como estou (clicável). As bolinhas passam POR CIMA dele. */}
       <button
         onClick={onSituacao}
         className="toque toque-escala relative rounded-2xl text-left shrink-0 overflow-hidden"
@@ -110,7 +111,7 @@ function TelaDetalhes({
           paddingRight: 12,
           paddingTop: 12,
           paddingBottom: 12,
-          backgroundColor: "var(--surface-raised)",
+          backgroundColor: "rgba(10,10,12,0.55)",
           boxShadow: `inset 3px 0 0 0 ${corFaixa}`,
         }}
       >
@@ -118,7 +119,7 @@ function TelaDetalhes({
           aria-hidden
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: `linear-gradient(100deg, ${hexToRgba(corFaixa, 0.14)} 0%, ${hexToRgba(corFaixa, 0.03)} 60%, transparent 100%)`,
+            background: `linear-gradient(100deg, ${hexToRgba(corFaixa, 0.22)} 0%, ${hexToRgba(corFaixa, 0.06)} 60%, transparent 100%)`,
           }}
         />
         <div className="relative flex items-center" style={{ gap: 10 }}>
@@ -149,7 +150,6 @@ function TelaDetalhes({
         </div>
       </button>
 
-      {/* 2 — Últimos lançamentos */}
       {temLancamento ? (
         <button
           onClick={onLancamentos}
@@ -159,7 +159,7 @@ function TelaDetalhes({
             paddingRight: 16,
             paddingTop: 10,
             paddingBottom: 10,
-            backgroundColor: "var(--surface-raised)",
+            backgroundColor: "rgba(255, 255, 255, 0.07)",
           }}
         >
           <div className="flex items-center" style={{ gap: 8, marginBottom: 6 }}>
@@ -195,7 +195,7 @@ function TelaDetalhes({
           style={{
             padding: 14,
             gap: 10,
-            backgroundColor: "var(--surface-raised)",
+            backgroundColor: "rgba(255, 255, 255, 0.07)",
           }}
         >
           <Receipt size={13} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
@@ -205,7 +205,6 @@ function TelaDetalhes({
         </div>
       )}
 
-      {/* 3 — Meu ritmo */}
       <div
         className="rounded-2xl shrink-0"
         style={{
@@ -213,7 +212,7 @@ function TelaDetalhes({
           paddingRight: 16,
           paddingTop: 10,
           paddingBottom: 10,
-          backgroundColor: "var(--surface-raised)",
+          backgroundColor: "rgba(255, 255, 255, 0.07)",
         }}
       >
         <div className="flex items-center" style={{ gap: 8, marginBottom: 6 }}>
@@ -239,7 +238,6 @@ function TelaDetalhes({
         </div>
       </div>
 
-      {/* 4 — Faixas de risco */}
       <div
         className="rounded-2xl shrink-0"
         style={{
@@ -247,7 +245,7 @@ function TelaDetalhes({
           paddingRight: 16,
           paddingTop: 10,
           paddingBottom: 10,
-          backgroundColor: "var(--surface-raised)",
+          backgroundColor: "rgba(255, 255, 255, 0.07)",
         }}
       >
         <p
@@ -310,9 +308,6 @@ function CardVelocimetroCarrossel({
   const chaveFaixa = faixaDoVelocimetro(percentual);
   const corFaixa = FAIXA_INFO[chaveFaixa].cor;
 
-  // Mede a largura real do card (= largura do container). Só muda em
-  // rotação/resize, NUNCA durante o deslize — por isso o conteúdo não
-  // recalcula tamanho no meio do movimento.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -392,14 +387,11 @@ function CardVelocimetroCarrossel({
   }
 
   const bgCard = {
-    background:
-      "linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 55%, rgba(255,255,255,0) 100%), var(--surface)",
-    border: "1px solid var(--border)",
+    ...VIDRO,
+    boxShadow:
+      "inset 0 1px 0 0 rgba(255,255,255,0.22), inset 0 6px 14px -8px rgba(255,255,255,0.14), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)",
   };
 
-  // Deslize em PORCENTAGEM (imune a timing de medição). O trilho é 200%
-  // e cada card 50%. Página 0 = 0%, página 1 = -50%. O arraste em px é
-  // convertido pra % dividindo pela largura atual do container.
   const larg = larguraCard || 1;
   const base = pagina === 0 ? 0 : -50;
   const dragPct = (dragPx / larg) * 50;
@@ -413,7 +405,6 @@ function CardVelocimetroCarrossel({
       className="relative w-full flex-1 min-h-0 rounded-3xl overflow-hidden flex flex-col"
       style={{
         ...bgCard,
-        boxShadow: "var(--sombra-card)",
         touchAction: "pan-y",
       }}
       onTouchStart={(e) => inicio(e.touches[0].clientX, e.touches[0].clientY)}
@@ -434,23 +425,31 @@ function CardVelocimetroCarrossel({
             transition: arrastando ? "none" : "transform 300ms ease-in-out",
           }}
         >
-          {/* Tela A — 50% do trilho, travada (não encolhe nem estica) */}
           <div
-            className="h-full flex flex-col px-5 pb-4 min-h-0"
+            className="h-full flex flex-col px-5 pb-1 min-h-0"
             style={{ flex: "0 0 50%", width: "50%" }}
           >
             <div className="flex-1 min-h-0 flex items-center justify-center">
               <VelocimetroAnimado
                 percentual={percentual}
                 maxWidth={205}
+                numeroClasse="text-4xl font-bold"
                 onClickExcedente={seNaoArrastou(onExcedente)}
               />
             </div>
-            {/* Mesma altura do original. A divisória virou elemento próprio
-                só pra o destaque de toque contornar cada bloco. */}
+
+            {rotuloPerfil && (
+              <p
+                className="text-center shrink-0"
+                style={{ color: "var(--text-tertiary)", fontSize: 11.5, marginBottom: 2 }}
+              >
+                {rotuloPerfil}
+              </p>
+            )}
+
             <div
               className="flex items-stretch pt-3 shrink-0"
-              style={{ borderTop: "1px solid var(--border)", marginTop: 10 }}
+              style={{ borderTop: "1px solid var(--border)", marginTop: 2 }}
             >
               <button
                 onClick={seNaoArrastou(onResumo)}
@@ -488,7 +487,6 @@ function CardVelocimetroCarrossel({
             </div>
           </div>
 
-          {/* Tela B — largura fixa em px */}
           <TelaDetalhes
             faixaAtiva={chaveFaixa}
             corFaixa={corFaixa}
@@ -502,7 +500,6 @@ function CardVelocimetroCarrossel({
       </div>
     </div>
 
-      {/* Bolinhas FORA do card, centralizadas logo abaixo */}
       <BolinhasIndicadoras pagina={pagina} irPara={irPara} />
     </div>
   );
@@ -533,44 +530,40 @@ export default function Dashboard() {
     >
       <div
         className="flex-1 flex flex-col min-h-0"
-        style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(76px + env(safe-area-inset-bottom))" }}
       >
         <header className="px-5 pt-4 pb-1 flex items-start justify-between shrink-0">
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2.5">
               <Gauge size={34} style={{ color: "var(--primary)" }} strokeWidth={2.2} className="shrink-0" />
               <span
-                className="font-semibold"
+                className="font-bold text-2xl leading-none"
+                style={{ color: "var(--text)" }}
+              >
+                Ta<span style={{ color: "var(--primary)" }}>Certo!</span>
+              </span>
+            </div>
+            <div className="flex items-baseline gap-1.5 min-w-0" style={{ marginTop: 6 }}>
+              <span
+                className="font-semibold shrink-0"
                 style={{ color: "var(--text-secondary)", fontSize: 14, letterSpacing: "0.01em" }}
               >
                 {saudacao.replace(/,\s*$/, "")}
               </span>
+              <span
+                className="font-extrabold leading-none truncate"
+                style={{ color: "var(--text)", fontSize: 19 }}
+              >
+                {nome ? truncarNome(nome) : "Bem-vindo"}
+              </span>
             </div>
-            {nome ? (
-              <span
-                className="block font-extrabold leading-none truncate"
-                style={{ color: "var(--text)", fontSize: 23, marginTop: 6, marginLeft: 30 }}
-              >
-                {truncarNome(nome)}
-              </span>
-            ) : (
-              <span
-                className="block font-extrabold leading-none"
-                style={{ color: "var(--text)", fontSize: 23, marginTop: 6, marginLeft: 30 }}
-              >
-                Bem-vindo
-              </span>
-            )}
           </div>
 
           <button
             onClick={() => navigate("/alertas")}
             aria-label="Notificações"
             className="toque relative w-11 h-11 rounded-full flex items-center justify-center shrink-0"
-            style={{
-              backgroundColor: "var(--surface)",
-              border: "1px solid var(--border)",
-            }}
+            style={{ ...VIDRO }}
           >
             <Bell size={20} style={{ color: "var(--text)" }} />
             <span
@@ -596,35 +589,73 @@ export default function Dashboard() {
             onExcedente={() => navigate("/regra-vinte")}
           />
 
-          {/* Fisco NEUTRO, sem balão e sem reação à situação */}
           <button
             onClick={() => navigate("/chat")}
-            className="shrink-0 flex items-end transition w-full"
-            style={{ background: "none", border: "none", padding: 0, marginTop: -4 }}
+            className="shrink-0 w-full flex items-start gap-2"
+            style={{ background: "none", border: "none", padding: 0, marginTop: 4, marginBottom: 12 }}
           >
-            <Fisco
-              size={116}
-              pose="neutro"
-              className="shrink-0"
-              style={{ marginBottom: -12, marginLeft: -16, marginRight: 2 }}
-            />
+            <span
+              className="relative shrink-0 rounded-full flex items-center justify-center"
+              style={{
+                width: 96,
+                height: 96,
+                ...VIDRO,
+                border: "1.5px solid rgba(34,197,94,0.45)",
+              }}
+            >
+              <span className="rounded-full overflow-hidden flex items-center justify-center" style={{ width: "100%", height: "100%" }}>
+                <img
+                  src="/fisco-perfil.png"
+                  alt="Fisco"
+                  style={{
+                    width: "108%",
+                    height: "108%",
+                    objectFit: "cover",
+                    objectPosition: "50% 18%",
+                  }}
+                />
+              </span>
+              <span
+                className="absolute rounded-full"
+                style={{
+                  width: 26,
+                  height: 26,
+                  backgroundColor: "var(--primary)",
+                  border: "4px solid var(--bg)",
+                  bottom: 2,
+                  right: 2,
+                }}
+              />
+            </span>
 
             <span
-              className="barra-fisco toque flex-1 rounded-full pl-5 pr-1.5 flex items-center gap-2 text-left min-w-0"
-              style={{ height: 48, marginBottom: 12 }}
+              className="toque flex-1 flex items-center gap-2 text-left min-w-0 rounded-full"
+              style={{
+                ...VIDRO,
+                height: 48,
+                paddingLeft: 18,
+                paddingRight: 12,
+                marginTop: 24,
+              }}
             >
               <span
-                className="flex-1 text-[14px] truncate"
-                style={{ color: "var(--text-secondary)" }}
+                className="flex-1 truncate"
+                style={{
+                  color: "var(--text-tertiary)",
+                  fontSize: 15,
+                  fontStyle: "italic",
+                  fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive',
+                }}
               >
                 Pergunte ao Fisco...
               </span>
-              <span
-                className="btn-enviar-fisco rounded-full flex items-center justify-center shrink-0"
-                style={{ width: 36, height: 36 }}
-              >
-                <SetaEnviar tamanho={17} />
-              </span>
+
+              <Send
+                size={22}
+                strokeWidth={2.2}
+                className="shrink-0"
+                style={{ color: "var(--primary)" }}
+              />
             </span>
           </button>
         </div>

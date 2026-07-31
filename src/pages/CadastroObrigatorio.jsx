@@ -132,3 +132,4 @@ export default function CadastroObrigatorio() {
     </div>
   );
 }
+

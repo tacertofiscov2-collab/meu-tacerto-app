@@ -18,7 +18,7 @@ function Bloco({ label, children, cor }) {
   return (
     <div
       className="rounded-2xl px-4 py-3 flex-1 min-w-0"
-      style={{ backgroundColor: "var(--field)" }}
+      style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(14,14,16,0.82)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)" }}
     >
       <p className="text-[11px]" style={{ color: cor || "var(--text-tertiary)" }}>
         {label}
@@ -66,7 +66,7 @@ export default function ResumoPerfil() {
           onClick={() => navigate(-1)}
           aria-label="Voltar"
           className="toque w-10 h-10 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: "var(--field)" }}
+          style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(14,14,16,0.82)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)" }}
         >
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
         </button>
@@ -124,7 +124,7 @@ export default function ResumoPerfil() {
 
         <div
           className="rounded-2xl px-4 py-3"
-          style={{ backgroundColor: "var(--field)" }}
+          style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(14,14,16,0.82)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)" }}
         >
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp size={16} style={{ color: "var(--primary)" }} />
@@ -158,7 +158,7 @@ export default function ResumoPerfil() {
 
         <div
           className="rounded-2xl px-3 pt-3 pb-3"
-          style={{ backgroundColor: "var(--field)" }}
+          style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(14,14,16,0.82)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)" }}
         >
           <div
             className="flex items-end justify-between gap-1"
