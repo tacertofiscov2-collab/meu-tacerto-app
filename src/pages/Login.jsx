@@ -4,8 +4,10 @@ import { ArrowLeft, Eye, EyeOff, Mail, Gauge } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { detectMode } from "@/components/SmartContactInput";
 import AuthError, { translateAuthError } from "@/components/AuthError";
+import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 
 export default function Login() {
+  useTemaEscuroForcado();
   const navigate = useNavigate();
   const [contato, setContato] = useState("");
   const [senha, setSenha] = useState("");
@@ -164,4 +166,3 @@ export default function Login() {
     </div>
   );
 }
-

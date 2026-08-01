@@ -45,7 +45,7 @@ export default function BottomNav({ ativo }) {
         WebkitBackdropFilter: "blur(24px) saturate(160%)",
         borderTop: "1px solid rgba(255,255,255,0.12)",
         boxShadow:
-          "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28)",
+          "inset 0 1px 0 0 rgba(255,255,255,0.26), inset 0 7px 16px -8px rgba(255,255,255,0.17)",
         paddingTop: 10,
         paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 18px)",
         paddingLeft: 13,
