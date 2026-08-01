@@ -9,6 +9,7 @@ import { setUserState } from "@/lib/userState";
 import { LIMITES_ANUAIS, limiteProporcional, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 import SeletorMesAno from "@/components/SeletorMesAno";
 import Valor from "@/components/Valor";
+import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -33,6 +34,7 @@ function Progress({ step }) {
 }
 
 export default function Onboarding() {
+  useTemaEscuroForcado();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [erro, setErro] = useState("");

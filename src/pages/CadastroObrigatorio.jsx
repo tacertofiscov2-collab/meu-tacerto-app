@@ -5,8 +5,10 @@ import { supabase } from "@/lib/supabase";
 import { getPerfilLocal } from "@/lib/localData";
 import { detectMode } from "@/components/SmartContactInput";
 import AuthError, { translateAuthError } from "@/components/AuthError";
+import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 
 export default function CadastroObrigatorio() {
+  useTemaEscuroForcado();
   const navigate = useNavigate();
   const [contato, setContato] = useState("");
   const [senha, setSenha] = useState("");
@@ -132,4 +134,3 @@ export default function CadastroObrigatorio() {
     </div>
   );
 }
-

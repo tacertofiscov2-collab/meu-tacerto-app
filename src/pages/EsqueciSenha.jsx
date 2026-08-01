@@ -4,8 +4,10 @@ import { ArrowLeft, KeyRound, Mail } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { detectMode } from "@/components/SmartContactInput";
 import AuthError, { translateAuthError } from "@/components/AuthError";
+import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 
 export default function EsqueciSenha() {
+  useTemaEscuroForcado();
   const navigate = useNavigate();
   const [contato, setContato] = useState("");
   const [erro, setErro] = useState("");
@@ -113,4 +115,3 @@ export default function EsqueciSenha() {
     </div>
   );
 }
-

@@ -4,6 +4,7 @@ import {
   Gauge, TrendingUp, ChevronRight, ArrowLeft, Pencil, FileUp, Plus,
   ClipboardList, Search, Calendar, ChevronDown, Sparkles, Send, Mic,
 } from "lucide-react";
+import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 
 const VERDE = "var(--primary)";
 
@@ -324,6 +325,7 @@ const SLIDES = [
 ];
 
 export default function Welcome() {
+  useTemaEscuroForcado();
   const navigate = useNavigate();
   const scrollerRef = useRef(null);
   const [active, setActive] = useState(0);

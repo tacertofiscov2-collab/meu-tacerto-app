@@ -262,6 +262,9 @@ export default function Chat() {
                         color: "var(--primary-contrast)",
                         borderBottomRightRadius: 6,
                         fontWeight: 500,
+                        whiteSpace: "pre-wrap",
+                        overflowWrap: "anywhere",
+                        wordBreak: "break-word",
                       }}
                     >
                       {m.texto}
@@ -278,7 +281,9 @@ export default function Chat() {
                       backgroundColor: "var(--field)",
                       color: "var(--text)",
                       borderBottomLeftRadius: 6,
-                      whiteSpace: "pre-line",
+                      whiteSpace: "pre-wrap",
+                      overflowWrap: "anywhere",
+                      wordBreak: "break-word",
                     }}
                   >
                     {m.texto}
@@ -391,4 +396,3 @@ export default function Chat() {
     </div>
   );
 }
-

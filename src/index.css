@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@1,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@1,700&display=swap');
 
 :root {
   --bg: #0f0f11;
@@ -86,6 +86,40 @@ body {
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
   overflow-x: hidden;
+}
+
+/* ===================================================================
+   CURSOR (caret) VERDE em todos os campos do app.
+   =================================================================== */
+input,
+textarea,
+select,
+[contenteditable] {
+  caret-color: var(--primary);
+}
+
+/* ===================================================================
+   Menu nativo do iOS ("Copiar / Buscar Seleção / Pesquisar") não deve
+   aparecer ao segurar o dedo na interface. Fica liberado APENAS em
+   campos de texto, onde o usuário precisa selecionar e editar.
+   =================================================================== */
+body {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea,
+[contenteditable],
+.selecionavel {
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }
 
 /* Classes de texto do Tailwind passam a escalar via em,

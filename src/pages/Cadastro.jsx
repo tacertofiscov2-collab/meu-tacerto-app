@@ -6,8 +6,10 @@ import { detectMode } from "@/components/SmartContactInput";
 import AuthError, { translateAuthError } from "@/components/AuthError";
 import { adicionarConta, lerContas } from "@/lib/contas";
 import { setUserState } from "@/lib/userState";
+import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 
 export default function Cadastro() {
+  useTemaEscuroForcado();
   const navigate = useNavigate();
   const [contato, setContato] = useState("");
   const [senha, setSenha] = useState("");
@@ -180,4 +182,3 @@ export default function Cadastro() {
     </div>
   );
 }
-
