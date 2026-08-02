@@ -4,10 +4,13 @@ import BottomNav from "../components/BottomNav.jsx";
 import {
   ArrowLeft, User, Settings, Info, Shield, Users, Lock, LogOut,
   ChevronDown, ChevronRight, UserPlus, X, Check, Receipt, TrendingUp, BarChart3,
+  Trash2,
 } from "lucide-react";
 
 import { useUserState, setUserState } from "@/lib/userState";
-import { lerContas, lerContaAtivaId, ativarConta } from "@/lib/contas";
+import {
+  lerContas, lerContaAtivaId, ativarConta, removerAcessoConta,
+} from "@/lib/contas";
 
 const FOTO_KEY = "tacerto_foto_usuario";
 
@@ -63,6 +66,7 @@ export default function Perfil() {
   const [contaAtivaId, setContaAtivaId] = useState(lerContaAtivaId);
   const [seletorAberto, setSeletorAberto] = useState(false);
   const [confirmarSair, setConfirmarSair] = useState(false);
+  const [contaARemover, setContaARemover] = useState(null);
 
   useEffect(() => {
     const handler = () => {
@@ -95,6 +99,32 @@ export default function Perfil() {
       setContaAtivaId(id);
     }
     setSeletorAberto(false);
+  }
+
+  function confirmarRemocao() {
+    if (!contaARemover) return;
+    const { novaAtivaId } = removerAcessoConta(contaARemover.id);
+    const restantes = lerContas();
+    setContas(restantes);
+    setContaAtivaId(novaAtivaId);
+
+    /* Se a conta removida era a que estava em uso, entra na que
+       assumiu o lugar. Sem nenhuma conta, volta a ser visitante. */
+    if (novaAtivaId) {
+      const nova = restantes.find((c) => c.id === novaAtivaId);
+      if (nova) {
+        setUserState({
+          nome: nova.nome || "",
+          email: nova.email || "",
+          visitante: false,
+        });
+      }
+    } else {
+      setUserState({ nome: "", email: "", visitante: true });
+    }
+
+    setContaARemover(null);
+    if (restantes.length === 0) setSeletorAberto(false);
   }
 
   let contaItem;
@@ -207,21 +237,25 @@ export default function Perfil() {
 
       {seletorAberto && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+          className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center"
           style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
           onClick={() => setSeletorAberto(false)}
         >
           <div
-            className="w-full max-w-md p-4 space-y-2"
+            className="w-full max-w-md p-4 flex flex-col"
             style={{
               backgroundColor: "var(--surface)",
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
-              paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
+              /* O rodapé fixo tem ~100px. Sem contar com ele aqui, o
+                 último item da lista ("Adicionar nova conta") ficava
+                 escondido atrás do BottomNav. */
+              paddingBottom: "calc(env(safe-area-inset-bottom) + 96px)",
+              maxHeight: "80dvh",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-1 pb-2">
+            <div className="flex items-center justify-between px-1 pb-2 shrink-0">
               <p className="text-base font-bold" style={{ color: "var(--text)" }}>
                 Minhas contas
               </p>
@@ -234,38 +268,50 @@ export default function Perfil() {
                 <X size={16} style={{ color: "var(--text)" }} />
               </button>
             </div>
-            <div className="space-y-1">
+            {/* Rola quando há muitas contas, em vez de estourar a tela */}
+            <div className="space-y-1 overflow-y-auto hide-scrollbar min-h-0">
               {contas.map((c) => {
                 const ini = (c.nome || "?").trim().charAt(0).toUpperCase();
                 const ativa = c.id === contaAtivaId;
                 return (
-                  <button
-                    key={c.id}
-                    onClick={() => trocarConta(c.id)}
-                    className="toque w-full flex items-center gap-3 p-3 rounded-xl"
-                  >
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
-                      style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(14,14,16,0.82)", backdropFilter: "blur(6px) saturate(160%)", WebkitBackdropFilter: "blur(6px) saturate(160%)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)" }}
+                  <div key={c.id} className="flex items-center rounded-xl">
+                    <button
+                      onClick={() => trocarConta(c.id)}
+                      className="toque flex-1 min-w-0 flex items-center gap-3 p-3 rounded-xl"
                     >
-                      {c.foto ? (
-                        <img src={c.foto} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="font-bold" style={{ color: "var(--primary)" }}>{ini}</span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0 text-left">
-                      <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>
-                        {c.nome || "Conta"}
-                      </p>
-                      {c.email && (
-                        <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>
-                          {c.email}
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
+                        style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(14,14,16,0.82)", backdropFilter: "blur(6px) saturate(160%)", WebkitBackdropFilter: "blur(6px) saturate(160%)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)" }}
+                      >
+                        {c.foto ? (
+                          <img src={c.foto} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="font-bold" style={{ color: "var(--primary)" }}>{ini}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0 text-left">
+                        <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>
+                          {c.nome || "Conta"}
                         </p>
-                      )}
-                    </div>
-                    {ativa && <Check size={20} style={{ color: "var(--primary)" }} />}
-                  </button>
+                        {c.email && (
+                          <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>
+                            {c.email}
+                          </p>
+                        )}
+                      </div>
+                      {ativa && <Check size={20} style={{ color: "var(--primary)" }} className="shrink-0" />}
+                    </button>
+
+                    {/* Remove só o acesso neste aparelho — não exclui a conta */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setContaARemover(c); }}
+                      aria-label={`Remover acesso da conta ${c.nome || ""}`}
+                      className="toque w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                      style={{ marginLeft: 4 }}
+                    >
+                      <Trash2 size={17} style={{ color: "var(--text-tertiary)" }} />
+                    </button>
+                  </div>
                 );
               })}
               <button
@@ -287,9 +333,54 @@ export default function Perfil() {
         </div>
       )}
 
+      {contaARemover && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center p-4"
+          style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+          onClick={() => setContaARemover(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-2xl p-5 space-y-3"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
+          >
+            <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
+              Remover acesso?
+            </h3>
+            <p className="text-sm leading-snug" style={{ color: "var(--text-secondary)" }}>
+              A conta{" "}
+              <span style={{ color: "var(--text)", fontWeight: 600 }}>
+                {contaARemover.email || contaARemover.nome || "selecionada"}
+              </span>{" "}
+              sai deste aparelho, mas não é excluída. Você pode entrar nela de
+              novo quando quiser.
+            </p>
+            <p className="text-xs leading-snug" style={{ color: "var(--text-tertiary)" }}>
+              Para excluir a conta de verdade, entre nela e use “Excluir conta”.
+            </p>
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => setContaARemover(null)}
+                className="toque flex-1 py-3 rounded-xl font-semibold"
+                style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarRemocao}
+                className="toque flex-1 py-3 rounded-xl font-semibold"
+                style={{ backgroundColor: "#ef4444", color: "#fff" }}
+              >
+                Remover
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {confirmarSair && (
         <div
-          className="fixed inset-0 z-40 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
           style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
         >
           <div

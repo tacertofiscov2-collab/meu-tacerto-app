@@ -5,11 +5,15 @@ import { useLocation, useNavigate } from "react-router-dom";
    componente AbasDeslizantes, com gesto próprio (framer-motion).
    Este arquivo cuida apenas do "arrastar da borda para voltar"
    nas demais telas.
-   PILOTO: /editar-perfil também saiu daqui — agora usa
-   TelaComVoltarReal (framer-motion, conteúdo real por trás). */
+
+   As rotas que usam TelaComVoltarReal (framer-motion, com o conteúdo
+   real da tela anterior por trás) também saem daqui — senão os dois
+   mecanismos competem pelo mesmo gesto e a tela "vaza". */
 const ROTAS_ABA = {};
 const ROTAS_SEM_VOLTAR = new Set([
-  "/", "/onboarding", "/dashboard", "/perfil", "/editar-perfil",
+  "/", "/onboarding", "/dashboard", "/perfil",
+  // usam TelaComVoltarReal:
+  "/editar-perfil", "/preferencias", "/contas", "/alterar-senha",
 ]);
 
 const EDGE_PX = 30;

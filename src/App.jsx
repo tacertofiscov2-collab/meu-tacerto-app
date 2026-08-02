@@ -58,19 +58,44 @@ export default function App() {
           <Route path="/lancar/limite-atingido" element={<LimiteAtingido />} />
           <Route path="/historico" element={<Historico />} />
           <Route path="/alertas" element={<Alertas />} />
-          <Route path="/preferencias" element={<Preferencias />} />
           <Route path="/faq" element={<Faq />} />
-          <Route path="/contas" element={<Contas />} />
           <Route path="/velocimetro" element={<Velocimetro />} />
-          <Route path="/alterar-senha" element={<AlterarSenha />} />
 
-          {/* PILOTO: deslize com conteúdo real da tela anterior
-              (Perfil) por trás, via framer-motion. */}
+          {/* ===================================================
+              Telas abertas a partir do Perfil: arrastar da borda
+              revela o Perfil de verdade por trás (framer-motion).
+              Estas rotas também saem da lista do SwipeBack.
+              Ver src/components/TelaComVoltarReal.jsx
+              =================================================== */}
           <Route
             path="/editar-perfil"
             element={
               <TelaComVoltarReal anterior={<Perfil />}>
                 <EditarPerfil />
+              </TelaComVoltarReal>
+            }
+          />
+          <Route
+            path="/preferencias"
+            element={
+              <TelaComVoltarReal anterior={<Perfil />}>
+                <Preferencias />
+              </TelaComVoltarReal>
+            }
+          />
+          <Route
+            path="/contas"
+            element={
+              <TelaComVoltarReal anterior={<Perfil />}>
+                <Contas />
+              </TelaComVoltarReal>
+            }
+          />
+          <Route
+            path="/alterar-senha"
+            element={
+              <TelaComVoltarReal anterior={<Perfil />}>
+                <AlterarSenha />
               </TelaComVoltarReal>
             }
           />
