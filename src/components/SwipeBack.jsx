@@ -4,9 +4,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 /* O par /dashboard ↔ /perfil NÃO é tratado aqui: ele vive no
    componente AbasDeslizantes, com gesto próprio (framer-motion).
    Este arquivo cuida apenas do "arrastar da borda para voltar"
-   nas demais telas. */
+   nas demais telas.
+   PILOTO: /editar-perfil também saiu daqui — agora usa
+   TelaComVoltarReal (framer-motion, conteúdo real por trás). */
 const ROTAS_ABA = {};
-const ROTAS_SEM_VOLTAR = new Set(["/", "/onboarding", "/dashboard", "/perfil"]);
+const ROTAS_SEM_VOLTAR = new Set([
+  "/", "/onboarding", "/dashboard", "/perfil", "/editar-perfil",
+]);
 
 const EDGE_PX = 30;
 const MIN_DELTA_ATIVAR = 8;

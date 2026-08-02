@@ -3,6 +3,8 @@ import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
 import TransicaoTela from "./components/TransicaoTela.jsx";
 import AbasDeslizantes from "./components/AbasDeslizantes.jsx";
+import TelaComVoltarReal from "./components/TelaComVoltarReal.jsx";
+import Perfil from "./pages/Perfil.jsx";
 import ExcluirConta from "./pages/ExcluirConta.jsx";
 import Welcome from "./pages/Welcome.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
@@ -61,7 +63,18 @@ export default function App() {
           <Route path="/contas" element={<Contas />} />
           <Route path="/velocimetro" element={<Velocimetro />} />
           <Route path="/alterar-senha" element={<AlterarSenha />} />
-          <Route path="/editar-perfil" element={<EditarPerfil />} />
+
+          {/* PILOTO: deslize com conteúdo real da tela anterior
+              (Perfil) por trás, via framer-motion. */}
+          <Route
+            path="/editar-perfil"
+            element={
+              <TelaComVoltarReal anterior={<Perfil />}>
+                <EditarPerfil />
+              </TelaComVoltarReal>
+            }
+          />
+
           <Route path="/perfil/resumo" element={<ResumoPerfil />} />
           <Route path="/perfil/informacoes-fiscais" element={<InformacoesFiscais />} />
           <Route path="/regra-vinte" element={<RegraVinte />} />

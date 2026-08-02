@@ -6,7 +6,6 @@ import Dashboard from "@/pages/Dashboard.jsx";
 import Perfil from "@/pages/Perfil.jsx";
 import BottomNav from "@/components/BottomNav.jsx";
 import { TrilhoContext } from "@/components/TrilhoContext.js";
-import { AnimacaoTrilhoContext } from "@/components/AnimacaoTrilhoContext.js";
 
 /**
  * AbasDeslizantes — o par Início ↔ Perfil, deslizável com o dedo.
@@ -50,25 +49,16 @@ export default function AbasDeslizantes() {
   const indiceDaRota = Math.max(0, ABAS.indexOf(location.pathname));
   const [indice, setIndice] = useState(indiceDaRota);
 
-  /* Ref que sempre reflete o índice atual, para ser lido dentro de
-     callbacks (como o listener de resize) sem precisar recriar o
-     efeito toda vez que o índice muda. */
-  const indiceRef = useRef(indice);
-  useEffect(() => {
-    indiceRef.current = indice;
-  }, [indice]);
-
-  /* TESTE: true enquanto o trilho está sendo arrastado OU animando
-     (arrasto solto, ou troca via clique/rota). Dashboard e Perfil leem
-     isso para desligar o backdrop-filter (vidro) só nesse momento. */
-  const [animando, setAnimando] = useState(false);
-
-  const x = useMotionValue(0);
   const [largura, setLargura] = useState(
     typeof window !== "undefined" ? window.innerWidth : 390,
   );
+  /* Começa já na aba da rota atual: abrir /perfil direto não deve
+     mostrar o Dashboard e depois pular. */
+  const x = useMotionValue(-indiceDaRota * largura);
   const larguraRef = useRef(largura);
   const arrastandoRef = useRef(false);
+  const indiceRef = useRef(indice);
+  indiceRef.current = indice;
 
   /* Mede a largura só em rotação/resize. NÃO depende do índice: se
      dependesse, cada troca de aba re-executaria o efeito e o x.set()
@@ -79,7 +69,7 @@ export default function AbasDeslizantes() {
       larguraRef.current = w;
       setLargura(w);
       if (!arrastandoRef.current) {
-        x.jump(-indiceRef.current * w);
+        x.set(-indiceRef.current * w);
       }
     }
     window.addEventListener("resize", medir);
@@ -93,11 +83,7 @@ export default function AbasDeslizantes() {
     if (arrastandoRef.current) return;
     if (indiceDaRota === indice) return;
     setIndice(indiceDaRota);
-    setAnimando(true);
-    animate(x, -indiceDaRota * larguraRef.current, {
-      ...TRANSICAO,
-      onComplete: () => setAnimando(false),
-    });
+    animate(x, -indiceDaRota * larguraRef.current, TRANSICAO);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [indiceDaRota]);
 
@@ -111,7 +97,6 @@ export default function AbasDeslizantes() {
   function irPara(novo, velocidade = 0) {
     const destino = Math.max(0, Math.min(ABAS.length - 1, novo));
     setIndice(destino);
-    setAnimando(true);
 
     /* A URL só muda QUANDO a animação termina. Trocar a rota no meio do
        movimento fazia o React re-renderizar durante a animação — era
@@ -120,7 +105,6 @@ export default function AbasDeslizantes() {
       ...TRANSICAO,
       velocity: velocidade,
       onComplete: () => {
-        setAnimando(false);
         if (ABAS[destino] !== window.location.pathname) {
           navigate(ABAS[destino], { replace: true });
         }
@@ -155,7 +139,6 @@ export default function AbasDeslizantes() {
       }}
     >
       <TrilhoContext.Provider value={true}>
-      <AnimacaoTrilhoContext.Provider value={animando}>
       <motion.div
         drag="x"
         dragElastic={0}
@@ -163,7 +146,6 @@ export default function AbasDeslizantes() {
         dragConstraints={restricoes}
         onDragStart={() => {
           arrastandoRef.current = true;
-          setAnimando(true);
         }}
         onDragEnd={aoSoltar}
         style={{
@@ -198,7 +180,6 @@ export default function AbasDeslizantes() {
           <PerfilMemo />
         </div>
       </motion.div>
-      </AnimacaoTrilhoContext.Provider>
       </TrilhoContext.Provider>
 
       {/* Rodapé ÚNICO e fixo: fica parado enquanto as telas deslizam. */}
