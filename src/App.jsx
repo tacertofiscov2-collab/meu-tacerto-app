@@ -2,8 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
 import TransicaoTela from "./components/TransicaoTela.jsx";
-import AbasDeslizantes from "./components/AbasDeslizantes.jsx";
-import TelaComVoltarReal from "./components/TelaComVoltarReal.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import Perfil from "./pages/Perfil.jsx";
 import ExcluirConta from "./pages/ExcluirConta.jsx";
 import Welcome from "./pages/Welcome.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
@@ -33,6 +33,24 @@ import AdicionarFaturamentoDigitar from "./pages/AdicionarFaturamentoDigitar.jsx
 import AdicionarFaturamentoEnviar from "./pages/AdicionarFaturamentoEnviar.jsx";
 import AdicionarFaturamentoColar from "./pages/AdicionarFaturamentoColar.jsx";
 
+/* ===================================================================
+   NAVEGAÇÃO POR GESTO — DESATIVADA DE PROPÓSITO
+
+   O gesto de "arrastar para voltar" entre telas foi desligado. Não é
+   bug esquecido: a decisão está documentada em PENDENCIAS_FUTURAS.md,
+   na raiz do projeto. Resumo: dentro do navegador o resultado nunca
+   ficou 100% liso, e a solução correta é empacotar com Capacitor
+   antes do lançamento, ganhando o gesto nativo do próprio sistema.
+
+   Os componentes AbasDeslizantes.jsx, TelaComVoltarReal.jsx e
+   VoltarAnimadoContext.js continuam no projeto, prontos para quando
+   for a hora — só não estão mais em uso aqui.
+
+   CONTINUAM ATIVOS (não mexer): os slides do Welcome e o carrossel
+   A/B do velocímetro no Dashboard. Esses são deslizes INTERNOS de
+   componente, funcionam bem e não dependem de nada disto.
+   =================================================================== */
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -46,72 +64,22 @@ export default function App() {
           <Route path="/esqueci-senha" element={<EsqueciSenha />} />
           <Route path="/cadastro-obrigatorio" element={<CadastroObrigatorio />} />
 
-          {/* Início e Perfil vivem juntos numa pilha deslizável.
-              Ver src/components/AbasDeslizantes.jsx */}
-          <Route path="/dashboard" element={<AbasDeslizantes />} />
-          <Route path="/perfil" element={<AbasDeslizantes />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/perfil" element={<Perfil />} />
 
-          {/* ===================================================
-              Telas com deslize que revela a tela de ORIGEM real.
-              A origem vem do state do navigate:
-                navigate("/rota", { state: { de: "dashboard" } })
-              Sem state, cai no `padrao` da rota.
-              Ver src/components/TelaComVoltarReal.jsx
-              =================================================== */}
-          <Route
-            path="/editar-perfil"
-            element={<TelaComVoltarReal><EditarPerfil /></TelaComVoltarReal>}
-          />
-          <Route
-            path="/preferencias"
-            element={<TelaComVoltarReal><Preferencias /></TelaComVoltarReal>}
-          />
-          <Route
-            path="/contas"
-            element={<TelaComVoltarReal><Contas /></TelaComVoltarReal>}
-          />
-          <Route
-            path="/alterar-senha"
-            element={<TelaComVoltarReal><AlterarSenha /></TelaComVoltarReal>}
-          />
-          <Route
-            path="/faq"
-            element={<TelaComVoltarReal><Faq /></TelaComVoltarReal>}
-          />
-          <Route
-            path="/sobre"
-            element={<TelaComVoltarReal><Sobre /></TelaComVoltarReal>}
-          />
-          <Route
-            path="/termos"
-            element={<TelaComVoltarReal><Termos /></TelaComVoltarReal>}
-          />
-          <Route
-            path="/excluir-conta"
-            element={<TelaComVoltarReal><ExcluirConta /></TelaComVoltarReal>}
-          />
-          <Route
-            path="/perfil/informacoes-fiscais"
-            element={<TelaComVoltarReal><InformacoesFiscais /></TelaComVoltarReal>}
-          />
-          {/* Abertas dos dois lados: o padrão é o Dashboard, mas o
-              Perfil manda `state: { de: "perfil" }` quando abre. */}
-          <Route
-            path="/historico"
-            element={<TelaComVoltarReal padrao="dashboard"><Historico /></TelaComVoltarReal>}
-          />
-          <Route
-            path="/perfil/resumo"
-            element={<TelaComVoltarReal padrao="dashboard"><ResumoPerfil /></TelaComVoltarReal>}
-          />
-          <Route
-            path="/alertas"
-            element={<TelaComVoltarReal padrao="dashboard"><Alertas /></TelaComVoltarReal>}
-          />
-          <Route
-            path="/regra-vinte"
-            element={<TelaComVoltarReal padrao="dashboard"><RegraVinte /></TelaComVoltarReal>}
-          />
+          <Route path="/editar-perfil" element={<EditarPerfil />} />
+          <Route path="/preferencias" element={<Preferencias />} />
+          <Route path="/contas" element={<Contas />} />
+          <Route path="/alterar-senha" element={<AlterarSenha />} />
+          <Route path="/faq" element={<Faq />} />
+          <Route path="/sobre" element={<Sobre />} />
+          <Route path="/termos" element={<Termos />} />
+          <Route path="/excluir-conta" element={<ExcluirConta />} />
+          <Route path="/perfil/informacoes-fiscais" element={<InformacoesFiscais />} />
+          <Route path="/historico" element={<Historico />} />
+          <Route path="/perfil/resumo" element={<ResumoPerfil />} />
+          <Route path="/alertas" element={<Alertas />} />
+          <Route path="/regra-vinte" element={<RegraVinte />} />
 
           <Route path="/lancar" element={<Lancar />} />
           <Route path="/lancar/limite-atingido" element={<LimiteAtingido />} />
