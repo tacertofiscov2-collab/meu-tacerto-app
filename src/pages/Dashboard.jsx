@@ -1,25 +1,38 @@
 import { useNavigate } from "react-router-dom";
-import { useRef, useState, useMemo, useEffect } from "react";
-import { Bell, Gauge, TrendingUp, ChevronRight, Receipt, Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList, Copy, CornerUpLeft, Pencil } from "lucide-react";
+import { useRef, useState, useMemo, useEffect, useContext } from "react";
+import { Bell, Gauge, TrendingUp, ChevronRight, Receipt, Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList, Copy, CornerUpLeft, Pencil, History, MessageSquarePlus, Trash2, Sparkles, MessageCircleQuestion } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
 import { useAppState } from "@/context/AppStateContext";
+import { AnimacaoTrilhoContext } from "@/components/AnimacaoTrilhoContext.js";
 import {
   LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO, FAIXAS_ORDEM, FAIXA_RANGE_LABEL,
   truncarNome,
 } from "@/lib/fiscal";
+import {
+  lerConversas, salvarConversa, apagarConversa, novoIdConversa, rotuloData,
+} from "@/lib/chatHistorico";
 
 const MESES_CURTO = [
   "jan", "fev", "mar", "abr", "mai", "jun",
   "jul", "ago", "set", "out", "nov", "dez",
 ];
 
+/* TESTE: enquanto o trilho de deslize está arrastando/animando,
+   desliga o backdrop-filter (vidro) desse elemento. Reduz a
+   quantidade de camadas de composição ativas durante a animação,
+   pra ver se isso elimina a travadinha residual. */
+function semBlurSeAnimando(base, animando) {
+  if (!animando) return base;
+  return { ...base, backdropFilter: "none", WebkitBackdropFilter: "none" };
+}
+
 const VIDRO = {
   background:
     "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(8,8,10,0.88)",
-  backdropFilter: "blur(24px) saturate(160%)",
-  WebkitBackdropFilter: "blur(24px) saturate(160%)",
+  backdropFilter: "blur(6px) saturate(160%)",
+  WebkitBackdropFilter: "blur(6px) saturate(160%)",
   border: "1px solid rgba(255,255,255,0.12)",
   boxShadow:
     "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)",
@@ -30,8 +43,8 @@ const VIDRO = {
 const VIDRO_SUAVE = {
   background:
     "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(8,8,10,0.88)",
-  backdropFilter: "blur(24px) saturate(160%)",
-  WebkitBackdropFilter: "blur(24px) saturate(160%)",
+  backdropFilter: "blur(6px) saturate(160%)",
+  WebkitBackdropFilter: "blur(6px) saturate(160%)",
   border: "1px solid rgba(255,255,255,0.12)",
   boxShadow:
     "inset 0 1px 0 0 rgba(255,255,255,0.26), inset 0 7px 16px -8px rgba(255,255,255,0.17), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)",
@@ -40,12 +53,94 @@ const VIDRO_SUAVE = {
 const VIDRO_CHAT = {
   background:
     "linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 24%, rgba(255,255,255,0) 58%), rgba(8,8,10,0.55)",
-  backdropFilter: "blur(28px) saturate(160%)",
-  WebkitBackdropFilter: "blur(28px) saturate(160%)",
+  backdropFilter: "blur(6px) saturate(160%)",
+  WebkitBackdropFilter: "blur(6px) saturate(160%)",
   border: "1px solid rgba(255,255,255,0.14)",
   boxShadow:
     "inset 0 1px 0 0 rgba(255,255,255,0.22), inset 0 7px 16px -8px rgba(255,255,255,0.14), 0 12px 36px rgba(0,0,0,0.5)",
 };
+
+
+/* Perguntas sugeridas por situação. Tocar numa delas abre o chat do
+   Fisco já com a pergunta enviada. */
+const PERGUNTAS_POR_FAIXA = {
+  tranquilo: [
+    "Quanto ainda posso faturar este ano?",
+    "Quando vence o DAS e quanto é?",
+    "Preciso emitir nota em todo serviço?",
+    "O que acontece se eu atrasar o DAS?",
+    "Como funciona a declaração anual (DASN)?",
+    "Posso ter funcionário sendo MEI?",
+    "Tenho direito a aposentadoria?",
+    "E se eu ficar doente, recebo alguma coisa?",
+    "Posso ter mais de um MEI?",
+    "Preciso de conta bancária separada?",
+  ],
+  fique_de_olho: [
+    "Quanto ainda posso faturar este ano?",
+    "Estou no ritmo certo para o ano?",
+    "Quando vence o DAS e quanto é?",
+    "O que acontece se eu passar do limite?",
+    "Preciso emitir nota em todo serviço?",
+    "Como funciona a declaração anual (DASN)?",
+    "Posso ter funcionário sendo MEI?",
+    "Tenho direito a aposentadoria?",
+    "O que acontece se eu atrasar o DAS?",
+    "Preciso de conta bancária separada?",
+  ],
+  atencao: [
+    "O que acontece se eu passar do limite?",
+    "Quanto ainda posso faturar sem estourar?",
+    "Posso adiantar recebimentos para o ano que vem?",
+    "O que é a regra dos 20%?",
+    "Como faço para virar ME?",
+    "Vou pagar mais imposto se mudar de categoria?",
+    "Estou no ritmo certo para o ano?",
+    "Perco meus direitos se sair do MEI?",
+    "Quando vence o DAS e quanto é?",
+    "Devo parar de faturar até dezembro?",
+  ],
+  perto_do_limite: [
+    "Quanto ainda posso faturar sem estourar?",
+    "O que acontece se eu passar do limite?",
+    "O que é a regra dos 20%?",
+    "Posso adiantar recebimentos para o ano que vem?",
+    "Como faço para virar ME?",
+    "Vou pagar mais imposto se mudar de categoria?",
+    "Devo parar de faturar até dezembro?",
+    "Perco meus direitos se sair do MEI?",
+    "Preciso avisar a Receita de alguma coisa?",
+    "Quanto tempo tenho para regularizar?",
+  ],
+  estourou: [
+    "Passei do limite. E agora, o que fazer?",
+    "O que é a regra dos 20%?",
+    "Vou ter que virar ME? Como funciona?",
+    "Quanto vou pagar de imposto sobre o excesso?",
+    "Perco meus direitos de MEI?",
+    "Preciso avisar a Receita de alguma coisa?",
+    "Quanto tempo tenho para regularizar?",
+    "Posso voltar a ser MEI no ano que vem?",
+    "Vou pagar multa?",
+    "Preciso de um contador agora?",
+  ],
+  critico: [
+    "Passei muito do limite. O que fazer agora?",
+    "O que acontece quando passo de 20% do limite?",
+    "Sou desenquadrado automaticamente?",
+    "Vou ter que virar ME? Como funciona?",
+    "Quanto vou pagar de imposto sobre o excesso?",
+    "Vou pagar multa?",
+    "Perco meus direitos de MEI?",
+    "Preciso de um contador agora?",
+    "Posso voltar a ser MEI no ano que vem?",
+    "Quanto tempo tenho para regularizar?",
+  ],
+};
+
+function perguntasDaSituacao(faixa) {
+  return PERGUNTAS_POR_FAIXA[faixa] || PERGUNTAS_POR_FAIXA.tranquilo;
+}
 
 function saudacaoPorHora() {
   const h = new Date().getHours();
@@ -118,7 +213,7 @@ function TelaDetalhes({
           }}
         />
         <div className="relative flex items-center" style={{ gap: 10 }}>
-          <div className="flex-1 min-w-0" style={{ paddingRight: 30 }}>
+          <div className="flex-1 min-w-0">
             <p
               className="cb-rotulo font-bold uppercase"
               style={{ color: corFaixa, letterSpacing: "0.09em", marginBottom: 4 }}
@@ -131,16 +226,37 @@ function TelaDetalhes({
             >
               {info.resumo}
             </p>
+
+            {/* Deixa explícito que o card abre as dúvidas */}
+            <span
+              className="inline-flex items-center rounded-full"
+              style={{
+                gap: 5,
+                marginTop: 7,
+                padding: "4px 9px",
+                backgroundColor: hexToRgba(corFaixa, 0.16),
+                border: `1px solid ${hexToRgba(corFaixa, 0.3)}`,
+              }}
+            >
+              <MessageCircleQuestion size={11} strokeWidth={2.4} style={{ color: corFaixa }} />
+              <span
+                className="cb-rotulo font-bold uppercase"
+                style={{ color: corFaixa, letterSpacing: "0.06em" }}
+              >
+                Tirar dúvidas
+              </span>
+            </span>
           </div>
           <span
             className="rounded-full flex items-center justify-center shrink-0"
             style={{
-              width: 24,
-              height: 24,
-              backgroundColor: hexToRgba(corFaixa, 0.16),
+              width: 26,
+              height: 26,
+              backgroundColor: hexToRgba(corFaixa, 0.2),
+              border: `1px solid ${hexToRgba(corFaixa, 0.35)}`,
             }}
           >
-            <ChevronRight size={14} strokeWidth={2.6} style={{ color: corFaixa }} />
+            <ChevronRight size={15} strokeWidth={2.8} style={{ color: corFaixa }} />
           </span>
         </div>
       </button>
@@ -287,6 +403,7 @@ function CardVelocimetroCarrossel({
   rotuloPerfil, percentual, faturado, limite, mediaMensal, projecao,
   ultimos, onSituacao, onLancamentos, onResumo, onExcedente,
 }) {
+  const animando = useContext(AnimacaoTrilhoContext);
   const [pagina, setPagina] = useState(0);
   const [dragPx, setDragPx] = useState(0);
   const [arrastando, setArrastando] = useState(false);
@@ -382,7 +499,7 @@ function CardVelocimetroCarrossel({
   }
 
   const bgCard = {
-    ...VIDRO,
+    ...semBlurSeAnimando(VIDRO, animando),
     boxShadow:
       "inset 0 1px 0 0 rgba(255,255,255,0.22), inset 0 6px 14px -8px rgba(255,255,255,0.14), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)",
   };
@@ -540,8 +657,8 @@ function BolhaMensagem({ autor, texto, citando, onSegurar }) {
           background: doUsuario
             ? "linear-gradient(160deg, rgba(74,222,128,0.30) 0%, rgba(34,197,94,0.22) 55%, rgba(21,128,61,0.18) 100%)"
             : "linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.02) 100%)",
-          backdropFilter: "blur(18px) saturate(150%)",
-          WebkitBackdropFilter: "blur(18px) saturate(150%)",
+          backdropFilter: "blur(6px) saturate(150%)",
+          WebkitBackdropFilter: "blur(6px) saturate(150%)",
           border: doUsuario
             ? "1px solid rgba(74,222,128,0.35)"
             : "1px solid rgba(255,255,255,0.10)",
@@ -675,9 +792,208 @@ function FiscoDigitando() {
   );
 }
 
-function ChatFiscoExpandido({ aberto, onFechar, mensagens, digitando, onEnviar, onEditarMensagem }) {
+/** Painel só com as perguntas sugeridas conforme a situação.
+    Fecha no "×" ou clicando fora. */
+function PainelPerguntas({ aberto, onFechar, faixa, corFaixa, onPerguntar }) {
+  if (!aberto) return null;
+  const perguntas = perguntasDaSituacao(faixa);
+
+  return (
+    <div
+      className="fixed inset-0 z-[75] flex items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.5)", animation: "menuMsgFade 260ms ease-out" }}
+      onClick={onFechar}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative flex flex-col rounded-3xl overflow-hidden"
+        style={{
+          ...VIDRO_CHAT,
+          width: "calc(100% - 32px)",
+          maxWidth: 420,
+          maxHeight: "72vh",
+          animation: "menuMsgPop 340ms cubic-bezier(0.25,0.9,0.3,1)",
+        }}
+      >
+        <button
+          type="button"
+          onClick={onFechar}
+          aria-label="Fechar"
+          className="rounded-full flex items-center justify-center active:scale-95 transition"
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            zIndex: 20,
+            width: 30,
+            height: 30,
+            backgroundColor: "rgba(0,0,0,0.55)",
+            border: "1px solid rgba(255,255,255,0.12)",
+          }}
+        >
+          <X size={15} style={{ color: "var(--text-secondary)" }} />
+        </button>
+
+        <div
+          className="flex-1 min-h-0 overflow-y-auto hide-scrollbar"
+          style={{ padding: "48px 12px 12px", display: "flex", flexDirection: "column", gap: 8 }}
+        >
+          {perguntas.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => onPerguntar(p)}
+              className="toque toque-escala w-full rounded-2xl flex items-center text-left shrink-0"
+              style={{
+                gap: 11,
+                padding: "13px 14px",
+                backgroundColor: "rgba(255,255,255,0.07)",
+                border: "1px solid rgba(255,255,255,0.09)",
+              }}
+            >
+              <span
+                className="rounded-xl flex items-center justify-center shrink-0"
+                style={{ width: 30, height: 30, backgroundColor: hexToRgba(corFaixa, 0.16) }}
+              >
+                <Sparkles size={15} style={{ color: corFaixa }} />
+              </span>
+              <span
+                className="flex-1 leading-snug"
+                style={{ color: "var(--text)", fontSize: 14 }}
+              >
+                {p}
+              </span>
+              <ChevronRight size={15} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Painel com a lista de conversas salvas */
+function PainelHistorico({ aberto, onFechar, conversas, idAtual, onAbrir, onNova, onApagar }) {
+  if (!aberto) return null;
+
+  return (
+    <div
+      className="absolute inset-0 z-[20] flex flex-col"
+      style={{ background: "rgba(0,0,0,0.35)", animation: "menuMsgFade 260ms ease-out" }}
+      onClick={onFechar}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="flex flex-col h-full"
+        style={{
+          ...VIDRO_CHAT,
+          border: "none",
+          borderRadius: 0,
+          animation: "painelEntra 300ms cubic-bezier(0.25,0.9,0.3,1)",
+        }}
+      >
+        <style>{`
+          @keyframes painelEntra {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+
+        <div className="flex items-center gap-3 shrink-0" style={{ padding: "14px 16px" }}>
+          <p className="flex-1 font-bold" style={{ color: "var(--text)", fontSize: 15 }}>
+            Conversas
+          </p>
+          <button
+            type="button"
+            onClick={onNova}
+            aria-label="Nova conversa"
+            className="toque rounded-full flex items-center justify-center shrink-0"
+            style={{ width: 32, height: 32, backgroundColor: "rgba(255,255,255,0.08)" }}
+          >
+            <MessageSquarePlus size={16} style={{ color: "var(--primary)" }} />
+          </button>
+          <button
+            type="button"
+            onClick={onFechar}
+            aria-label="Fechar histórico"
+            className="toque rounded-full flex items-center justify-center shrink-0"
+            style={{ width: 32, height: 32, backgroundColor: "rgba(255,255,255,0.08)" }}
+          >
+            <X size={16} style={{ color: "var(--text-secondary)" }} />
+          </button>
+        </div>
+
+        <div
+          className="flex-1 min-h-0 overflow-y-auto"
+          style={{ padding: "0 12px 12px", display: "flex", flexDirection: "column", gap: 8 }}
+        >
+          {conversas.length === 0 && (
+            <p
+              className="text-center"
+              style={{ color: "var(--text-tertiary)", fontSize: 13.5, marginTop: 24 }}
+            >
+              Nenhuma conversa salva ainda.
+            </p>
+          )}
+
+          {conversas.map((c) => {
+            const ativa = c.id === idAtual;
+            return (
+              <div
+                key={c.id}
+                className="rounded-2xl flex items-center"
+                style={{
+                  gap: 10,
+                  padding: "11px 12px",
+                  backgroundColor: ativa
+                    ? "rgba(34,197,94,0.12)"
+                    : "rgba(255,255,255,0.06)",
+                  border: ativa
+                    ? "1px solid rgba(34,197,94,0.35)"
+                    : "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => onAbrir(c.id)}
+                  className="toque flex-1 min-w-0 text-left"
+                  style={{ background: "none", border: "none", padding: 0 }}
+                >
+                  <p
+                    className="truncate"
+                    style={{ color: "var(--text)", fontSize: 14, fontWeight: 600 }}
+                  >
+                    {c.titulo}
+                  </p>
+                  <p style={{ color: "var(--text-tertiary)", fontSize: 11.5, marginTop: 2 }}>
+                    {rotuloData(c.atualizadaEm)} · {c.mensagens.length} mensagens
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onApagar(c.id)}
+                  aria-label="Apagar conversa"
+                  className="toque rounded-full flex items-center justify-center shrink-0"
+                  style={{ width: 30, height: 30, backgroundColor: "rgba(255,255,255,0.06)" }}
+                >
+                  <Trash2 size={14} style={{ color: "var(--text-tertiary)" }} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChatFiscoExpandido({
+  aberto, onFechar, mensagens, digitando, onEnviar, onEditarMensagem,
+  conversas, idAtual, onAbrirConversa, onNovaConversa, onApagarConversa,
+}) {
   const [rascunho, setRascunho] = useState("");
   const [menuAnexo, setMenuAnexo] = useState(false);
+  const [historicoAberto, setHistoricoAberto] = useState(false);
   const [msgMenu, setMsgMenu] = useState(null);
   const [respondendo, setRespondendo] = useState(null);
   const [editando, setEditando] = useState(null);
@@ -724,7 +1040,7 @@ function ChatFiscoExpandido({ aberto, onFechar, mensagens, digitando, onEnviar, 
       `}</style>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex flex-col"
+        className="flex flex-col relative"
         style={{
           ...VIDRO_CHAT,
           position: "absolute",
@@ -755,6 +1071,14 @@ function ChatFiscoExpandido({ aberto, onFechar, mensagens, digitando, onEnviar, 
             <p style={{ color: "var(--primary)", fontSize: 11.5 }}>● Online</p>
           </div>
           <button
+            onClick={() => setHistoricoAberto(true)}
+            aria-label="Histórico de conversas"
+            className="toque rounded-full flex items-center justify-center shrink-0"
+            style={{ width: 32, height: 32, backgroundColor: "rgba(255,255,255,0.08)" }}
+          >
+            <History size={16} style={{ color: "var(--text-secondary)" }} />
+          </button>
+          <button
             onClick={onFechar}
             aria-label="Fechar chat"
             className="toque rounded-full flex items-center justify-center shrink-0"
@@ -764,12 +1088,17 @@ function ChatFiscoExpandido({ aberto, onFechar, mensagens, digitando, onEnviar, 
           </button>
         </div>
 
+        <PainelHistorico
+          aberto={historicoAberto}
+          onFechar={() => setHistoricoAberto(false)}
+          conversas={conversas}
+          idAtual={idAtual}
+          onAbrir={(id) => { onAbrirConversa(id); setHistoricoAberto(false); }}
+          onNova={() => { onNovaConversa(); setHistoricoAberto(false); }}
+          onApagar={onApagarConversa}
+        />
+
         <div className="flex-1 min-h-0 overflow-y-auto" style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
-          {mensagens.length === 0 && !digitando && (
-            <p className="text-center" style={{ color: "var(--text-tertiary)", fontSize: 13.5, marginTop: 24 }}>
-              Pergunte qualquer coisa sobre seu MEI.
-            </p>
-          )}
           {mensagens.map((m) => (
             <BolhaMensagem
               key={m.id}
@@ -875,8 +1204,8 @@ function ChatFiscoExpandido({ aberto, onFechar, mensagens, digitando, onEnviar, 
                 height: 44,
                 background:
                   "linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.02) 100%)",
-                backdropFilter: "blur(18px) saturate(150%)",
-                WebkitBackdropFilter: "blur(18px) saturate(150%)",
+                backdropFilter: "blur(6px) saturate(150%)",
+                WebkitBackdropFilter: "blur(6px) saturate(150%)",
                 border: "1px solid rgba(255,255,255,0.12)",
                 boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.16)",
                 transform: menuAnexo ? "rotate(45deg)" : "none",
@@ -898,8 +1227,8 @@ function ChatFiscoExpandido({ aberto, onFechar, mensagens, digitando, onEnviar, 
                 cursor: "text",
                 background:
                   "linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.02) 100%)",
-                backdropFilter: "blur(18px) saturate(150%)",
-                WebkitBackdropFilter: "blur(18px) saturate(150%)",
+                backdropFilter: "blur(6px) saturate(150%)",
+                WebkitBackdropFilter: "blur(6px) saturate(150%)",
                 border: "1px solid rgba(255,255,255,0.12)",
                 boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.16)",
               }}
@@ -1095,6 +1424,7 @@ function CaixaFiscoExpandida({ onFechar, onEnviarPrimeira }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const animando = useContext(AnimacaoTrilhoContext);
   const {
     nome, tipoMEI, lancamentos, faturamentoAtual, limiteAtual, percentualAtual,
     mediaMensal, projecaoFimDoAno,
@@ -1107,6 +1437,49 @@ export default function Dashboard() {
   const [chatAberto, setChatAberto] = useState(false);
   const [mensagens, setMensagens] = useState([]);
   const [digitando, setDigitando] = useState(false);
+
+  // Painel de perguntas sugeridas (abre pelo card "Como estou")
+  const [perguntasAberto, setPerguntasAberto] = useState(false);
+
+  // Histórico de conversas (ver src/lib/chatHistorico.js)
+  const [conversas, setConversas] = useState([]);
+  const [idConversa, setIdConversa] = useState(null);
+
+  // Carrega a lista de conversas salvas ao montar.
+  useEffect(() => {
+    setConversas(lerConversas());
+  }, []);
+
+  // Salva sempre que a conversa muda (e não está no meio de uma resposta).
+  useEffect(() => {
+    if (!idConversa || mensagens.length === 0 || digitando) return;
+    salvarConversa(idConversa, mensagens);
+    setConversas(lerConversas());
+  }, [mensagens, digitando, idConversa]);
+
+  function abrirConversa(id) {
+    const c = lerConversas().find((x) => x.id === id);
+    if (!c) return;
+    setIdConversa(c.id);
+    setMensagens(c.mensagens);
+    setChatAberto(true);
+  }
+
+  function novaConversa() {
+    setIdConversa(null);
+    setMensagens([]);
+    setChatAberto(true);
+  }
+
+  function removerConversa(id) {
+    apagarConversa(id);
+    const restantes = lerConversas();
+    setConversas(restantes);
+    if (id === idConversa) {
+      setIdConversa(null);
+      setMensagens([]);
+    }
+  }
 
   function responderComoFisco() {
     setDigitando(true);
@@ -1125,6 +1498,7 @@ export default function Dashboard() {
 
   function enviarPrimeiraMensagem(texto) {
     const minhaMsg = { id: Date.now(), autor: "user", texto };
+    setIdConversa(novoIdConversa());
     setMensagens([minhaMsg]);
     setCaixaExpandida(false);
     setChatAberto(true);
@@ -1138,7 +1512,17 @@ export default function Dashboard() {
       texto,
       ...(respondendo ? { citando: respondendo.texto } : {}),
     };
+    if (!idConversa) setIdConversa(novoIdConversa());
     setMensagens((m) => [...m, minhaMsg]);
+    responderComoFisco();
+  }
+
+  function perguntarAoFisco(texto) {
+    const minhaMsg = { id: Date.now(), autor: "user", texto };
+    setIdConversa(novoIdConversa());
+    setMensagens([minhaMsg]);
+    setPerguntasAberto(false);
+    setChatAberto(true);
     responderComoFisco();
   }
 
@@ -1196,7 +1580,7 @@ export default function Dashboard() {
             onClick={() => navigate("/alertas")}
             aria-label="Notificações"
             className="toque relative w-11 h-11 rounded-full flex items-center justify-center shrink-0"
-            style={{ ...VIDRO }}
+            style={{ ...semBlurSeAnimando(VIDRO, animando) }}
           >
             <Bell size={20} style={{ color: "var(--text)" }} />
             <span
@@ -1216,7 +1600,7 @@ export default function Dashboard() {
             mediaMensal={mediaMensal}
             projecao={projecaoFimDoAno}
             ultimos={ultimos}
-            onSituacao={() => setChatAberto(true)}
+            onSituacao={() => setPerguntasAberto(true)}
             onLancamentos={() => navigate("/historico")}
             onResumo={() => navigate("/perfil/resumo")}
             onExcedente={() => navigate("/regra-vinte")}
@@ -1251,7 +1635,7 @@ export default function Dashboard() {
                 style={{
                   width: 96,
                   height: 96,
-                  ...VIDRO,
+                  ...semBlurSeAnimando(VIDRO, animando),
                   border: "1.5px solid rgba(34,197,94,0.45)",
                 }}
               >
@@ -1283,7 +1667,7 @@ export default function Dashboard() {
               <span
                 className="toque flex-1 flex items-center gap-2 text-left min-w-0 rounded-full"
                 style={{
-                  ...VIDRO_SUAVE,
+                  ...semBlurSeAnimando(VIDRO_SUAVE, animando),
                   height: 48,
                   paddingLeft: 18,
                   paddingRight: 12,
@@ -1313,6 +1697,14 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <PainelPerguntas
+        aberto={perguntasAberto}
+        onFechar={() => setPerguntasAberto(false)}
+        faixa={faixaDoVelocimetro(percentualAtual)}
+        corFaixa={FAIXA_INFO[faixaDoVelocimetro(percentualAtual)].cor}
+        onPerguntar={perguntarAoFisco}
+      />
+
       <ChatFiscoExpandido
         aberto={chatAberto}
         onFechar={() => setChatAberto(false)}
@@ -1320,6 +1712,11 @@ export default function Dashboard() {
         digitando={digitando}
         onEnviar={enviarMensagem}
         onEditarMensagem={editarMensagem}
+        conversas={conversas}
+        idAtual={idConversa}
+        onAbrirConversa={abrirConversa}
+        onNovaConversa={novaConversa}
+        onApagarConversa={removerConversa}
       />
 
       <BottomNav ativo="inicio" />

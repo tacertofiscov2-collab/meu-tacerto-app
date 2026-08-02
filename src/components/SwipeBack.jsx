@@ -1,7 +1,11 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const ROTAS_ABA = { "/dashboard": "inicio", "/perfil": "perfil" };
+/* O par /dashboard ↔ /perfil NÃO é tratado aqui: ele vive no
+   componente AbasDeslizantes, com gesto próprio (framer-motion).
+   Este arquivo cuida apenas do "arrastar da borda para voltar"
+   nas demais telas. */
+const ROTAS_ABA = {};
 const ROTAS_SEM_VOLTAR = new Set(["/", "/onboarding", "/dashboard", "/perfil"]);
 
 const EDGE_PX = 30;
@@ -32,12 +36,16 @@ export default function SwipeBack() {
       root.style.willChange = "transform";
       root.style.backgroundColor = "var(--bg)";
       root.style.minHeight = "100dvh";
+      /* Sombra na borda: dá a sensação de uma folha deslizando por cima
+         em vez de um bloco solto revelando o vazio. */
+      root.style.boxShadow = "-10px 0 28px rgba(0,0,0,0.55)";
       document.body.style.backgroundColor = "var(--bg)";
     }
 
     function limparEstilos() {
       root.style.willChange = "";
       root.style.transform = "";
+      root.style.boxShadow = "";
     }
 
     function voltarSuave() {
@@ -96,7 +104,8 @@ export default function SwipeBack() {
         prepararArrasto();
       }
 
-      const limite = window.innerWidth * 0.55;
+      /* Arrasto mais curto: expõe menos área vazia atrás da tela. */
+      const limite = window.innerWidth * 0.34;
 
       if (modo === "voltar") {
         if (dx <= 0) {
@@ -186,6 +195,7 @@ export default function SwipeBack() {
         root.style.transform = "";
         root.style.transition = "";
         root.style.willChange = "";
+        root.style.boxShadow = "";
       }
     };
   }, [location.pathname, navigate]);

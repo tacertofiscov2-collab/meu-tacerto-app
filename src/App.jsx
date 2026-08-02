@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
 import TransicaoTela from "./components/TransicaoTela.jsx";
+import AbasDeslizantes from "./components/AbasDeslizantes.jsx";
 import ExcluirConta from "./pages/ExcluirConta.jsx";
 import Welcome from "./pages/Welcome.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
@@ -9,14 +10,12 @@ import Login from "./pages/Login.jsx";
 import Cadastro from "./pages/Cadastro.jsx";
 import EsqueciSenha from "./pages/EsqueciSenha.jsx";
 import CadastroObrigatorio from "./pages/CadastroObrigatorio.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
 import Sobre from "./pages/Sobre.jsx";
 import Termos from "./pages/Termos.jsx";
 import Lancar from "./pages/Lancar.jsx";
 import LimiteAtingido from "./pages/LimiteAtingido.jsx";
 import EmConstrucao from "./pages/EmConstrucao.jsx";
 import Historico from "./pages/Historico.jsx";
-import Perfil from "./pages/Perfil.jsx";
 import Alertas from "./pages/Alertas.jsx";
 import Preferencias from "./pages/Preferencias.jsx";
 import Faq from "./pages/Faq.jsx";
@@ -45,13 +44,17 @@ export default function App() {
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/esqueci-senha" element={<EsqueciSenha />} />
           <Route path="/cadastro-obrigatorio" element={<CadastroObrigatorio />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+
+          {/* Início e Perfil vivem juntos numa pilha deslizável.
+              Ver src/components/AbasDeslizantes.jsx */}
+          <Route path="/dashboard" element={<AbasDeslizantes />} />
+          <Route path="/perfil" element={<AbasDeslizantes />} />
+
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/termos" element={<Termos />} />
           <Route path="/lancar" element={<Lancar />} />
           <Route path="/lancar/limite-atingido" element={<LimiteAtingido />} />
           <Route path="/historico" element={<Historico />} />
-          <Route path="/perfil" element={<Perfil />} />
           <Route path="/alertas" element={<Alertas />} />
           <Route path="/preferencias" element={<Preferencias />} />
           <Route path="/faq" element={<Faq />} />

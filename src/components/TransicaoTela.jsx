@@ -14,11 +14,21 @@ import { useLocation, useNavigationType } from "react-router-dom";
  * entrasse um frame depois, a tela nova apareceria no lugar final
  * e só então pularia pra trás pra animar — que era a "vibrada".
  */
+/* Estas rotas vivem juntas no trilho deslizante (AbasDeslizantes) e
+   têm animação própria. Se o TransicaoTela também animasse, as duas
+   se sobreporiam e a tela "piscava" ao completar o gesto. */
+const ROTAS_DO_TRILHO = new Set(["/dashboard", "/perfil"]);
+
 export default function TransicaoTela({ children }) {
   const location = useLocation();
   const tipoNav = useNavigationType(); // "PUSH" | "POP" | "REPLACE"
 
-  const chaveAtual = location.pathname + location.search;
+  /* Dentro do trilho, a chave é sempre a mesma: assim o React não
+     remonta nada ao trocar de aba, e nenhuma animação é disparada. */
+  const noTrilho = ROTAS_DO_TRILHO.has(location.pathname);
+  const chaveAtual = noTrilho
+    ? "__trilho__"
+    : location.pathname + location.search;
 
   // Estado inicial já com a rota atual: o primeiro carregamento não anima.
   const [estado, setEstado] = useState({ chave: chaveAtual, classe: "" });
@@ -33,7 +43,7 @@ export default function TransicaoTela({ children }) {
   }
 
   // Terminou de animar: solta a classe (e o willChange junto).
-  // A animação usa fill "both", então o ponto final é igual ao естado
+  // A animação usa fill "both", então o ponto final é igual ao estado
   // natural do elemento — remover não muda nada visualmente.
   function aoTerminarAnimacao(e) {
     if (e.target !== e.currentTarget) return;

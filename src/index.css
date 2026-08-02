@@ -81,6 +81,12 @@ html, body, #root {
   color: var(--text);
 }
 
+/* Durante o gesto de voltar, o #root é arrastado e o que fica atrás é
+   o body. Mantê-lo na cor do app evita o "buraco" preto na lateral. */
+body {
+  background-color: var(--bg);
+}
+
 body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;

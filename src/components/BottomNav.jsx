@@ -1,4 +1,6 @@
+import { useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { TrilhoContext } from "./TrilhoContext.js";
 import { Home, Plus, User } from "lucide-react";
 import { useUserState } from "@/lib/userState";
 
@@ -7,8 +9,14 @@ const ROTAS_COM_NAVBAR = ["/dashboard", "/perfil"];
 export default function BottomNav({ ativo }) {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const dentroDoTrilho = useContext(TrilhoContext);
   const { nome, visitante } = useUserState();
+
+  /* Dentro do trilho deslizante (AbasDeslizantes), cada tela traria o
+     seu próprio rodapé e os dois andariam junto com o arrasto. Nesse
+     caso quem desenha o rodapé é o AbasDeslizantes, por fora.
+     (Todos os hooks acima desta linha: React exige ordem fixa.) */
+  if (dentroDoTrilho) return null;
 
   if (!ROTAS_COM_NAVBAR.includes(location.pathname)) return null;
 
