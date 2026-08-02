@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, memo, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { motion, useMotionValue, animate } from "framer-motion";
+import { motion, useMotionValue, animate, useDragControls } from "framer-motion";
 
 import Dashboard from "@/pages/Dashboard.jsx";
 import Perfil from "@/pages/Perfil.jsx";
@@ -57,6 +57,7 @@ export default function AbasDeslizantes() {
   const x = useMotionValue(-indiceDaRota * largura);
   const larguraRef = useRef(largura);
   const arrastandoRef = useRef(false);
+  const dragControls = useDragControls();
   const indiceRef = useRef(indice);
   indiceRef.current = indice;
 
@@ -93,6 +94,17 @@ export default function AbasDeslizantes() {
     () => ({ left: -(ABAS.length - 1) * largura, right: 0 }),
     [largura],
   );
+
+  /* O carrossel A/B do velocímetro tem arrasto próprio. Se o toque
+     começa dentro dele, o trilho das abas NÃO deve capturar o gesto —
+     senão arrastar o card levava a tela inteira para a outra aba. */
+  function talvezIniciarArrasto(e) {
+    const alvo = e.target;
+    if (alvo && alvo.closest && alvo.closest("[data-carrossel-velocimetro]")) {
+      return;
+    }
+    dragControls.start(e);
+  }
 
   function irPara(novo, velocidade = 0) {
     const destino = Math.max(0, Math.min(ABAS.length - 1, novo));
@@ -141,6 +153,9 @@ export default function AbasDeslizantes() {
       <TrilhoContext.Provider value={true}>
       <motion.div
         drag="x"
+        dragListener={false}
+        dragControls={dragControls}
+        onPointerDown={talvezIniciarArrasto}
         dragElastic={0}
         dragMomentum={false}
         dragConstraints={restricoes}

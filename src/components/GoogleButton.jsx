@@ -15,3 +15,4 @@ export default function GoogleButton({ label = "Continuar com Google", onClick }
     </button>
   );
 }
+

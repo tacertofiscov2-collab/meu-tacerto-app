@@ -14,6 +14,10 @@ import {
 
 const FOTO_KEY = "tacerto_foto_usuario";
 
+/* Marca de onde a navegação partiu: o TelaComVoltarReal usa isso para
+   mostrar a tela certa por trás quando o usuário arrasta para voltar. */
+const DE_PERFIL = { state: { de: "perfil" } };
+
 function Secao({ titulo, children }) {
   return (
     <div style={{ marginTop: 18 }}>
@@ -149,7 +153,7 @@ export default function Perfil() {
           <button
             onClick={() => navigate(-1)}
             aria-label="Voltar"
-            className="toque w-10 h-10 rounded-full flex items-center justify-center"
+            className="toque toque-escala w-10 h-10 rounded-full flex items-center justify-center"
             style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(14,14,16,0.82)", backdropFilter: "blur(6px) saturate(160%)", WebkitBackdropFilter: "blur(6px) saturate(160%)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)" }}
           >
             <ArrowLeft size={20} style={{ color: "var(--text)" }} />
@@ -192,23 +196,23 @@ export default function Perfil() {
 
         <div className="px-5">
           <Secao titulo="Geral">
-            <Item primeiro Icon={User} label="Editar perfil" onClick={() => navigate("/editar-perfil")} />
-            <Item Icon={Settings} label="Preferências" onClick={() => navigate("/preferencias")} />
+            <Item primeiro Icon={User} label="Editar perfil" onClick={() => navigate("/editar-perfil", DE_PERFIL)} />
+            <Item Icon={Settings} label="Preferências" onClick={() => navigate("/preferencias", DE_PERFIL)} />
             <Item Icon={contaItem.Icon} label={contaItem.label} onClick={contaItem.onClick} />
           </Secao>
 
           <Secao titulo="Meu MEI">
-            <Item primeiro Icon={Receipt} label="Histórico de lançamentos" onClick={() => navigate("/historico")} />
-            <Item Icon={TrendingUp} label={`Adicionar faturamento de ${anoAtual}`} onClick={() => navigate("/adicionar-faturamento")} />
-            <Item Icon={BarChart3} label={`Resumo de ${anoAtual}`} onClick={() => navigate("/perfil/resumo")} />
+            <Item primeiro Icon={Receipt} label="Histórico de lançamentos" onClick={() => navigate("/historico", DE_PERFIL)} />
+            <Item Icon={TrendingUp} label={`Adicionar faturamento de ${anoAtual}`} onClick={() => navigate("/adicionar-faturamento", DE_PERFIL)} />
+            <Item Icon={BarChart3} label={`Resumo de ${anoAtual}`} onClick={() => navigate("/perfil/resumo", DE_PERFIL)} />
           </Secao>
 
           <Secao titulo="Segurança e Privacidade">
             {!visitante && (
-              <Item primeiro Icon={Lock} label="Alterar senha" onClick={() => navigate("/alterar-senha")} />
+              <Item primeiro Icon={Lock} label="Alterar senha" onClick={() => navigate("/alterar-senha", DE_PERFIL)} />
             )}
-            <Item primeiro={visitante} Icon={Shield} label="Termos e Privacidade" onClick={() => navigate("/termos")} />
-            <Item Icon={Info} label="Sobre o TaCerto!" onClick={() => navigate("/sobre")} />
+            <Item primeiro={visitante} Icon={Shield} label="Termos e Privacidade" onClick={() => navigate("/termos", DE_PERFIL)} />
+            <Item Icon={Info} label="Sobre o TaCerto!" onClick={() => navigate("/sobre", DE_PERFIL)} />
           </Secao>
 
           <div style={{ marginTop: 24 }}>
@@ -306,7 +310,7 @@ export default function Perfil() {
                     <button
                       onClick={(e) => { e.stopPropagation(); setContaARemover(c); }}
                       aria-label={`Remover acesso da conta ${c.nome || ""}`}
-                      className="toque w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                      className="toque toque-escala w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                       style={{ marginLeft: 4 }}
                     >
                       <Trash2 size={17} style={{ color: "var(--text-tertiary)" }} />

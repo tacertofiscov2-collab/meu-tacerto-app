@@ -4,7 +4,6 @@ import SwipeBack from "./components/SwipeBack.jsx";
 import TransicaoTela from "./components/TransicaoTela.jsx";
 import AbasDeslizantes from "./components/AbasDeslizantes.jsx";
 import TelaComVoltarReal from "./components/TelaComVoltarReal.jsx";
-import Perfil from "./pages/Perfil.jsx";
 import ExcluirConta from "./pages/ExcluirConta.jsx";
 import Welcome from "./pages/Welcome.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
@@ -52,59 +51,72 @@ export default function App() {
           <Route path="/dashboard" element={<AbasDeslizantes />} />
           <Route path="/perfil" element={<AbasDeslizantes />} />
 
-          <Route path="/sobre" element={<Sobre />} />
-          <Route path="/termos" element={<Termos />} />
-          <Route path="/lancar" element={<Lancar />} />
-          <Route path="/lancar/limite-atingido" element={<LimiteAtingido />} />
-          <Route path="/historico" element={<Historico />} />
-          <Route path="/alertas" element={<Alertas />} />
-          <Route path="/faq" element={<Faq />} />
-          <Route path="/velocimetro" element={<Velocimetro />} />
-
           {/* ===================================================
-              Telas abertas a partir do Perfil: arrastar da borda
-              revela o Perfil de verdade por trás (framer-motion).
-              Estas rotas também saem da lista do SwipeBack.
+              Telas com deslize que revela a tela de ORIGEM real.
+              A origem vem do state do navigate:
+                navigate("/rota", { state: { de: "dashboard" } })
+              Sem state, cai no `padrao` da rota.
               Ver src/components/TelaComVoltarReal.jsx
               =================================================== */}
           <Route
             path="/editar-perfil"
-            element={
-              <TelaComVoltarReal anterior={<Perfil />}>
-                <EditarPerfil />
-              </TelaComVoltarReal>
-            }
+            element={<TelaComVoltarReal><EditarPerfil /></TelaComVoltarReal>}
           />
           <Route
             path="/preferencias"
-            element={
-              <TelaComVoltarReal anterior={<Perfil />}>
-                <Preferencias />
-              </TelaComVoltarReal>
-            }
+            element={<TelaComVoltarReal><Preferencias /></TelaComVoltarReal>}
           />
           <Route
             path="/contas"
-            element={
-              <TelaComVoltarReal anterior={<Perfil />}>
-                <Contas />
-              </TelaComVoltarReal>
-            }
+            element={<TelaComVoltarReal><Contas /></TelaComVoltarReal>}
           />
           <Route
             path="/alterar-senha"
-            element={
-              <TelaComVoltarReal anterior={<Perfil />}>
-                <AlterarSenha />
-              </TelaComVoltarReal>
-            }
+            element={<TelaComVoltarReal><AlterarSenha /></TelaComVoltarReal>}
+          />
+          <Route
+            path="/faq"
+            element={<TelaComVoltarReal><Faq /></TelaComVoltarReal>}
+          />
+          <Route
+            path="/sobre"
+            element={<TelaComVoltarReal><Sobre /></TelaComVoltarReal>}
+          />
+          <Route
+            path="/termos"
+            element={<TelaComVoltarReal><Termos /></TelaComVoltarReal>}
+          />
+          <Route
+            path="/excluir-conta"
+            element={<TelaComVoltarReal><ExcluirConta /></TelaComVoltarReal>}
+          />
+          <Route
+            path="/perfil/informacoes-fiscais"
+            element={<TelaComVoltarReal><InformacoesFiscais /></TelaComVoltarReal>}
+          />
+          {/* Abertas dos dois lados: o padrão é o Dashboard, mas o
+              Perfil manda `state: { de: "perfil" }` quando abre. */}
+          <Route
+            path="/historico"
+            element={<TelaComVoltarReal padrao="dashboard"><Historico /></TelaComVoltarReal>}
+          />
+          <Route
+            path="/perfil/resumo"
+            element={<TelaComVoltarReal padrao="dashboard"><ResumoPerfil /></TelaComVoltarReal>}
+          />
+          <Route
+            path="/alertas"
+            element={<TelaComVoltarReal padrao="dashboard"><Alertas /></TelaComVoltarReal>}
+          />
+          <Route
+            path="/regra-vinte"
+            element={<TelaComVoltarReal padrao="dashboard"><RegraVinte /></TelaComVoltarReal>}
           />
 
-          <Route path="/perfil/resumo" element={<ResumoPerfil />} />
-          <Route path="/perfil/informacoes-fiscais" element={<InformacoesFiscais />} />
-          <Route path="/regra-vinte" element={<RegraVinte />} />
+          <Route path="/lancar" element={<Lancar />} />
+          <Route path="/lancar/limite-atingido" element={<LimiteAtingido />} />
+          <Route path="/velocimetro" element={<Velocimetro />} />
           <Route path="/dev/simulador" element={<DevSimulador />} />
-          <Route path="/excluir-conta" element={<ExcluirConta />} />
           <Route path="/adicionar-faturamento" element={<AdicionarFaturamento />} />
           <Route path="/adicionar-faturamento/digitar" element={<AdicionarFaturamentoDigitar />} />
           <Route path="/adicionar-faturamento/enviar" element={<AdicionarFaturamentoEnviar />} />

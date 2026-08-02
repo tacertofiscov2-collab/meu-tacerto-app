@@ -14,20 +14,35 @@ import { useLocation, useNavigationType } from "react-router-dom";
  * entrasse um frame depois, a tela nova apareceria no lugar final
  * e só então pularia pra trás pra animar — que era a "vibrada".
  */
-/* Estas rotas vivem juntas no trilho deslizante (AbasDeslizantes) e
-   têm animação própria. Se o TransicaoTela também animasse, as duas
-   se sobreporiam e a tela "piscava" ao completar o gesto. */
+/* Estas rotas já têm o próprio gesto de transição (framer-motion) e
+   não devem passar pela animação CSS daqui — se passassem, as duas
+   animações rodariam juntas (uma por cima da outra) e ainda forçariam
+   um remount extra pela troca de key, causando a travadinha geral. */
 const ROTAS_DO_TRILHO = new Set(["/dashboard", "/perfil"]);
+
+const ROTAS_COM_VOLTAR_REAL = new Set([
+  "/editar-perfil", "/preferencias", "/contas", "/alterar-senha",
+  "/faq", "/sobre", "/termos", "/excluir-conta",
+  "/perfil/informacoes-fiscais", "/perfil/resumo",
+  "/historico", "/alertas", "/regra-vinte",
+]);
+
+const ROTAS_SEM_ANIMACAO_PROPRIA = new Set([
+  ...ROTAS_DO_TRILHO,
+  ...ROTAS_COM_VOLTAR_REAL,
+]);
 
 export default function TransicaoTela({ children }) {
   const location = useLocation();
   const tipoNav = useNavigationType(); // "PUSH" | "POP" | "REPLACE"
 
-  /* Dentro do trilho, a chave é sempre a mesma: assim o React não
-     remonta nada ao trocar de aba, e nenhuma animação é disparada. */
-  const noTrilho = ROTAS_DO_TRILHO.has(location.pathname);
-  const chaveAtual = noTrilho
-    ? "__trilho__"
+  /* Nessas rotas, a chave é sempre a mesma: assim o React não
+     remonta nada ao trocar de tela, e nenhuma animação daqui é
+     disparada — quem cuida da transição é o AbasDeslizantes ou o
+     TelaComVoltarReal, conforme o caso. */
+  const semAnimacaoPropria = ROTAS_SEM_ANIMACAO_PROPRIA.has(location.pathname);
+  const chaveAtual = semAnimacaoPropria
+    ? "__sem_animacao__"
     : location.pathname + location.search;
 
   // Estado inicial já com a rota atual: o primeiro carregamento não anima.

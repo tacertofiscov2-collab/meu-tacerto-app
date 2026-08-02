@@ -289,3 +289,4 @@ function Linha({ rotulo, valor, cor }) {
   );
 }
 
+

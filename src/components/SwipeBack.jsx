@@ -12,8 +12,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 const ROTAS_ABA = {};
 const ROTAS_SEM_VOLTAR = new Set([
   "/", "/onboarding", "/dashboard", "/perfil",
-  // usam TelaComVoltarReal:
+  // usam TelaComVoltarReal (gesto próprio, framer-motion):
   "/editar-perfil", "/preferencias", "/contas", "/alterar-senha",
+  "/faq", "/sobre", "/termos", "/excluir-conta",
+  "/perfil/informacoes-fiscais", "/perfil/resumo",
+  "/historico", "/alertas", "/regra-vinte",
 ]);
 
 const EDGE_PX = 30;

@@ -1,11 +1,10 @@
 import { useNavigate } from "react-router-dom";
-import { useRef, useState, useMemo, useEffect, useContext } from "react";
+import { useRef, useState, useMemo, useEffect } from "react";
 import { Bell, Gauge, TrendingUp, ChevronRight, Receipt, Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList, Copy, CornerUpLeft, Pencil, History, MessageSquarePlus, Trash2, Sparkles, MessageCircleQuestion } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
 import { useAppState } from "@/context/AppStateContext";
-import { AnimacaoTrilhoContext } from "@/components/AnimacaoTrilhoContext.js";
 import {
   LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO, FAIXAS_ORDEM, FAIXA_RANGE_LABEL,
   truncarNome,
@@ -14,25 +13,20 @@ import {
   lerConversas, salvarConversa, apagarConversa, novoIdConversa, rotuloData,
 } from "@/lib/chatHistorico";
 
+/* Marca de onde a navegação partiu: o TelaComVoltarReal usa isso para
+   mostrar a tela certa por trás quando o usuário arrasta para voltar. */
+const DE_DASHBOARD = { state: { de: "dashboard" } };
+
 const MESES_CURTO = [
   "jan", "fev", "mar", "abr", "mai", "jun",
   "jul", "ago", "set", "out", "nov", "dez",
 ];
 
-/* TESTE: enquanto o trilho de deslize está arrastando/animando,
-   desliga o backdrop-filter (vidro) desse elemento. Reduz a
-   quantidade de camadas de composição ativas durante a animação,
-   pra ver se isso elimina a travadinha residual. */
-function semBlurSeAnimando(base, animando) {
-  if (!animando) return base;
-  return { ...base, backdropFilter: "none", WebkitBackdropFilter: "none" };
-}
-
 const VIDRO = {
   background:
     "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(8,8,10,0.88)",
-  backdropFilter: "blur(6px) saturate(160%)",
-  WebkitBackdropFilter: "blur(6px) saturate(160%)",
+  backdropFilter: "blur(24px) saturate(160%)",
+  WebkitBackdropFilter: "blur(24px) saturate(160%)",
   border: "1px solid rgba(255,255,255,0.12)",
   boxShadow:
     "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)",
@@ -43,8 +37,8 @@ const VIDRO = {
 const VIDRO_SUAVE = {
   background:
     "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(8,8,10,0.88)",
-  backdropFilter: "blur(6px) saturate(160%)",
-  WebkitBackdropFilter: "blur(6px) saturate(160%)",
+  backdropFilter: "blur(24px) saturate(160%)",
+  WebkitBackdropFilter: "blur(24px) saturate(160%)",
   border: "1px solid rgba(255,255,255,0.12)",
   boxShadow:
     "inset 0 1px 0 0 rgba(255,255,255,0.26), inset 0 7px 16px -8px rgba(255,255,255,0.17), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)",
@@ -53,8 +47,8 @@ const VIDRO_SUAVE = {
 const VIDRO_CHAT = {
   background:
     "linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 24%, rgba(255,255,255,0) 58%), rgba(8,8,10,0.55)",
-  backdropFilter: "blur(6px) saturate(160%)",
-  WebkitBackdropFilter: "blur(6px) saturate(160%)",
+  backdropFilter: "blur(28px) saturate(160%)",
+  WebkitBackdropFilter: "blur(28px) saturate(160%)",
   border: "1px solid rgba(255,255,255,0.14)",
   boxShadow:
     "inset 0 1px 0 0 rgba(255,255,255,0.22), inset 0 7px 16px -8px rgba(255,255,255,0.14), 0 12px 36px rgba(0,0,0,0.5)",
@@ -191,16 +185,16 @@ function TelaDetalhes({
   return (
     <div
       className="card-b-fixo h-full flex flex-col overflow-hidden"
-      style={{ padding: 14, gap: 8, flex: "0 0 50%", width: "50%" }}
+      style={{ padding: 12, gap: 6, flex: "0 0 50%", width: "50%" }}
     >
       <button
         onClick={onSituacao}
         className="toque toque-escala relative rounded-2xl text-left shrink-0 overflow-hidden"
         style={{
-          paddingLeft: 16,
-          paddingRight: 12,
-          paddingTop: 12,
-          paddingBottom: 12,
+          paddingLeft: 14,
+          paddingRight: 10,
+          paddingTop: 10,
+          paddingBottom: 10,
           backgroundColor: "rgba(10,10,12,0.55)",
           boxShadow: `inset 3px 0 0 0 ${corFaixa}`,
         }}
@@ -216,7 +210,7 @@ function TelaDetalhes({
           <div className="flex-1 min-w-0">
             <p
               className="cb-rotulo font-bold uppercase"
-              style={{ color: corFaixa, letterSpacing: "0.09em", marginBottom: 4 }}
+              style={{ color: corFaixa, letterSpacing: "0.09em", marginBottom: 3 }}
             >
               Como estou
             </p>
@@ -266,14 +260,14 @@ function TelaDetalhes({
           onClick={onLancamentos}
           className="toque toque-escala rounded-2xl text-left shrink-0"
           style={{
-            paddingLeft: 16,
-            paddingRight: 16,
-            paddingTop: 10,
-            paddingBottom: 10,
+            paddingLeft: 14,
+            paddingRight: 14,
+            paddingTop: 8,
+            paddingBottom: 8,
             backgroundColor: "rgba(255, 255, 255, 0.07)",
           }}
         >
-          <div className="flex items-center" style={{ gap: 8, marginBottom: 6 }}>
+          <div className="flex items-center" style={{ gap: 8, marginBottom: 4 }}>
             <Receipt size={12} style={{ color: "var(--text-tertiary)" }} />
             <p
               className="cb-rotulo font-bold uppercase flex-1"
@@ -304,7 +298,7 @@ function TelaDetalhes({
         <div
           className="rounded-2xl shrink-0 flex items-center"
           style={{
-            padding: 14,
+            padding: 11,
             gap: 10,
             backgroundColor: "rgba(255, 255, 255, 0.07)",
           }}
@@ -319,14 +313,14 @@ function TelaDetalhes({
       <div
         className="rounded-2xl shrink-0"
         style={{
-          paddingLeft: 16,
-          paddingRight: 16,
-          paddingTop: 10,
-          paddingBottom: 10,
+          paddingLeft: 14,
+          paddingRight: 14,
+          paddingTop: 8,
+          paddingBottom: 8,
           backgroundColor: "rgba(255, 255, 255, 0.07)",
         }}
       >
-        <div className="flex items-center" style={{ gap: 8, marginBottom: 6 }}>
+        <div className="flex items-center" style={{ gap: 8, marginBottom: 4 }}>
           <TrendingUp size={12} style={{ color: "var(--text-tertiary)" }} />
           <p
             className="cb-rotulo font-bold uppercase"
@@ -352,22 +346,22 @@ function TelaDetalhes({
       <div
         className="rounded-2xl shrink-0"
         style={{
-          paddingLeft: 16,
-          paddingRight: 16,
-          paddingTop: 10,
-          paddingBottom: 10,
+          paddingLeft: 14,
+          paddingRight: 14,
+          paddingTop: 8,
+          paddingBottom: 8,
           backgroundColor: "rgba(255, 255, 255, 0.07)",
         }}
       >
         <p
           className="cb-rotulo font-bold uppercase"
-          style={{ color: "var(--text-secondary)", letterSpacing: "0.09em", marginBottom: 6 }}
+          style={{ color: "var(--text-secondary)", letterSpacing: "0.09em", marginBottom: 4 }}
         >
           Faixas de risco
         </p>
         <div
           className="flex rounded-full overflow-hidden"
-          style={{ height: 5, marginBottom: 6 }}
+          style={{ height: 5, marginBottom: 4 }}
         >
           {FAIXAS_ORDEM.map((f) => (
             <div
@@ -403,7 +397,6 @@ function CardVelocimetroCarrossel({
   rotuloPerfil, percentual, faturado, limite, mediaMensal, projecao,
   ultimos, onSituacao, onLancamentos, onResumo, onExcedente,
 }) {
-  const animando = useContext(AnimacaoTrilhoContext);
   const [pagina, setPagina] = useState(0);
   const [dragPx, setDragPx] = useState(0);
   const [arrastando, setArrastando] = useState(false);
@@ -499,7 +492,7 @@ function CardVelocimetroCarrossel({
   }
 
   const bgCard = {
-    ...semBlurSeAnimando(VIDRO, animando),
+    ...VIDRO,
     boxShadow:
       "inset 0 1px 0 0 rgba(255,255,255,0.22), inset 0 6px 14px -8px rgba(255,255,255,0.14), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)",
   };
@@ -657,8 +650,8 @@ function BolhaMensagem({ autor, texto, citando, onSegurar }) {
           background: doUsuario
             ? "linear-gradient(160deg, rgba(74,222,128,0.30) 0%, rgba(34,197,94,0.22) 55%, rgba(21,128,61,0.18) 100%)"
             : "linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.02) 100%)",
-          backdropFilter: "blur(6px) saturate(150%)",
-          WebkitBackdropFilter: "blur(6px) saturate(150%)",
+          backdropFilter: "blur(18px) saturate(150%)",
+          WebkitBackdropFilter: "blur(18px) saturate(150%)",
           border: doUsuario
             ? "1px solid rgba(74,222,128,0.35)"
             : "1px solid rgba(255,255,255,0.10)",
@@ -1204,8 +1197,8 @@ function ChatFiscoExpandido({
                 height: 44,
                 background:
                   "linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.02) 100%)",
-                backdropFilter: "blur(6px) saturate(150%)",
-                WebkitBackdropFilter: "blur(6px) saturate(150%)",
+                backdropFilter: "blur(18px) saturate(150%)",
+                WebkitBackdropFilter: "blur(18px) saturate(150%)",
                 border: "1px solid rgba(255,255,255,0.12)",
                 boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.16)",
                 transform: menuAnexo ? "rotate(45deg)" : "none",
@@ -1227,8 +1220,8 @@ function ChatFiscoExpandido({
                 cursor: "text",
                 background:
                   "linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.02) 100%)",
-                backdropFilter: "blur(6px) saturate(150%)",
-                WebkitBackdropFilter: "blur(6px) saturate(150%)",
+                backdropFilter: "blur(18px) saturate(150%)",
+                WebkitBackdropFilter: "blur(18px) saturate(150%)",
                 border: "1px solid rgba(255,255,255,0.12)",
                 boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.16)",
               }}
@@ -1424,7 +1417,6 @@ function CaixaFiscoExpandida({ onFechar, onEnviarPrimeira }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const animando = useContext(AnimacaoTrilhoContext);
   const {
     nome, tipoMEI, lancamentos, faturamentoAtual, limiteAtual, percentualAtual,
     mediaMensal, projecaoFimDoAno,
@@ -1577,10 +1569,10 @@ export default function Dashboard() {
           </div>
 
           <button
-            onClick={() => navigate("/alertas")}
+            onClick={() => navigate("/alertas", DE_DASHBOARD)}
             aria-label="Notificações"
             className="toque relative w-11 h-11 rounded-full flex items-center justify-center shrink-0"
-            style={{ ...semBlurSeAnimando(VIDRO, animando) }}
+            style={{ ...VIDRO }}
           >
             <Bell size={20} style={{ color: "var(--text)" }} />
             <span
@@ -1601,9 +1593,9 @@ export default function Dashboard() {
             projecao={projecaoFimDoAno}
             ultimos={ultimos}
             onSituacao={() => setPerguntasAberto(true)}
-            onLancamentos={() => navigate("/historico")}
-            onResumo={() => navigate("/perfil/resumo")}
-            onExcedente={() => navigate("/regra-vinte")}
+            onLancamentos={() => navigate("/historico", DE_DASHBOARD)}
+            onResumo={() => navigate("/perfil/resumo", DE_DASHBOARD)}
+            onExcedente={() => navigate("/regra-vinte", DE_DASHBOARD)}
           />
 
           {caixaExpandida && (
@@ -1635,7 +1627,7 @@ export default function Dashboard() {
                 style={{
                   width: 96,
                   height: 96,
-                  ...semBlurSeAnimando(VIDRO, animando),
+                  ...VIDRO,
                   border: "1.5px solid rgba(34,197,94,0.45)",
                 }}
               >
@@ -1667,7 +1659,7 @@ export default function Dashboard() {
               <span
                 className="toque flex-1 flex items-center gap-2 text-left min-w-0 rounded-full"
                 style={{
-                  ...semBlurSeAnimando(VIDRO_SUAVE, animando),
+                  ...VIDRO_SUAVE,
                   height: 48,
                   paddingLeft: 18,
                   paddingRight: 12,

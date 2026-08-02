@@ -242,3 +242,4 @@ export default function ModalFaturamentoInicial({ aberto, onClose, onSalvar }) {
     </div>
   );
 }
+

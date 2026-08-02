@@ -116,3 +116,4 @@ function Linha({ rotulo, valor, primeiro }) {
   );
 }
 
+
