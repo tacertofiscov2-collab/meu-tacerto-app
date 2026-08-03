@@ -22,36 +22,43 @@ const MESES_CURTO = [
   "jul", "ago", "set", "out", "nov", "dez",
 ];
 
+/* ===================================================================
+   VIDRO — os valores vêm do index.css e mudam com o tema.
+
+   No tema escuro o fundo é quase preto com brilhos brancos; no tema
+   claro, fundo quase branco com brilhos suaves. Ver as variáveis
+   --vidro-* em src/index.css.
+   =================================================================== */
 const VIDRO = {
   background:
-    "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(8,8,10,0.88)",
+    "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
   backdropFilter: "blur(24px) saturate(160%)",
   WebkitBackdropFilter: "blur(24px) saturate(160%)",
-  border: "1px solid rgba(255,255,255,0.12)",
+  border: "1px solid var(--vidro-borda)",
   boxShadow:
-    "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)",
+    "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
 };
 
 /* Reflexo reduzido: um pouco mais forte que o dos cards A/B.
    Usado nas barras do chat e na caixa expandida. */
 const VIDRO_SUAVE = {
   background:
-    "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(8,8,10,0.88)",
+    "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
   backdropFilter: "blur(24px) saturate(160%)",
   WebkitBackdropFilter: "blur(24px) saturate(160%)",
-  border: "1px solid rgba(255,255,255,0.12)",
+  border: "1px solid var(--vidro-borda)",
   boxShadow:
-    "inset 0 1px 0 0 rgba(255,255,255,0.26), inset 0 7px 16px -8px rgba(255,255,255,0.17), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)",
+    "inset 0 1px 0 0 var(--vidro-topo-medio), inset 0 7px 16px -8px var(--vidro-topo-fraco), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
 };
 
 const VIDRO_CHAT = {
   background:
-    "linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 24%, rgba(255,255,255,0) 58%), rgba(8,8,10,0.55)",
+    "linear-gradient(160deg, var(--vidro-brilho-2) 0%, var(--vidro-brilho-3) 24%, transparent 58%), var(--vidro-bg-leve)",
   backdropFilter: "blur(28px) saturate(160%)",
   WebkitBackdropFilter: "blur(28px) saturate(160%)",
-  border: "1px solid rgba(255,255,255,0.14)",
+  border: "1px solid var(--vidro-borda)",
   boxShadow:
-    "inset 0 1px 0 0 rgba(255,255,255,0.22), inset 0 7px 16px -8px rgba(255,255,255,0.14), 0 12px 36px rgba(0,0,0,0.5)",
+    "inset 0 1px 0 0 var(--vidro-topo-medio), inset 0 7px 16px -8px var(--vidro-topo-fraco), 0 12px 36px var(--vidro-sombra-forte)",
 };
 
 
@@ -195,7 +202,7 @@ function TelaDetalhes({
           paddingRight: 10,
           paddingTop: 10,
           paddingBottom: 10,
-          backgroundColor: "rgba(10,10,12,0.55)",
+          backgroundColor: "var(--vidro-bg-leve)",
           boxShadow: `inset 3px 0 0 0 ${corFaixa}`,
         }}
       >
@@ -264,7 +271,7 @@ function TelaDetalhes({
             paddingRight: 14,
             paddingTop: 8,
             paddingBottom: 8,
-            backgroundColor: "rgba(255, 255, 255, 0.07)",
+            backgroundColor: "var(--vidro-superficie)",
           }}
         >
           <div className="flex items-center" style={{ gap: 8, marginBottom: 4 }}>
@@ -300,7 +307,7 @@ function TelaDetalhes({
           style={{
             padding: 11,
             gap: 10,
-            backgroundColor: "rgba(255, 255, 255, 0.07)",
+            backgroundColor: "var(--vidro-superficie)",
           }}
         >
           <Receipt size={13} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
@@ -317,7 +324,7 @@ function TelaDetalhes({
           paddingRight: 14,
           paddingTop: 8,
           paddingBottom: 8,
-          backgroundColor: "rgba(255, 255, 255, 0.07)",
+          backgroundColor: "var(--vidro-superficie)",
         }}
       >
         <div className="flex items-center" style={{ gap: 8, marginBottom: 4 }}>
@@ -350,7 +357,7 @@ function TelaDetalhes({
           paddingRight: 14,
           paddingTop: 8,
           paddingBottom: 8,
-          backgroundColor: "rgba(255, 255, 255, 0.07)",
+          backgroundColor: "var(--vidro-superficie)",
         }}
       >
         <p
@@ -494,7 +501,7 @@ function CardVelocimetroCarrossel({
   const bgCard = {
     ...VIDRO,
     boxShadow:
-      "inset 0 1px 0 0 rgba(255,255,255,0.22), inset 0 6px 14px -8px rgba(255,255,255,0.14), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)",
+      "inset 0 1px 0 0 var(--vidro-topo-medio), inset 0 6px 14px -8px var(--vidro-topo-fraco), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
   };
 
   const larg = larguraCard || 1;
@@ -521,6 +528,11 @@ function CardVelocimetroCarrossel({
       onMouseUp={(e) => fim(e.clientX)}
       onMouseLeave={(e) => ativo.current && fim(e.clientX)}
     >
+      {/* Alerta visual: passou dos 100% do limite */}
+      {percentual > 100 && (
+        <BordaLuminosa raio={24} cor="239,68,68" corClara="248,113,113" />
+      )}
+
       <div className="flex-1 min-h-0 overflow-hidden">
         <div
           className="flex h-full"
@@ -649,15 +661,15 @@ function BolhaMensagem({ autor, texto, citando, onSegurar }) {
           borderRadius: doUsuario ? "18px 18px 5px 18px" : "18px 18px 18px 5px",
           background: doUsuario
             ? "linear-gradient(160deg, rgba(74,222,128,0.30) 0%, rgba(34,197,94,0.22) 55%, rgba(21,128,61,0.18) 100%)"
-            : "linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.02) 100%)",
+            : "linear-gradient(160deg, var(--vidro-brilho-2) 0%, var(--vidro-brilho-3) 45%, transparent 100%), var(--vidro-superficie)",
           backdropFilter: "blur(18px) saturate(150%)",
           WebkitBackdropFilter: "blur(18px) saturate(150%)",
           border: doUsuario
             ? "1px solid rgba(74,222,128,0.35)"
-            : "1px solid rgba(255,255,255,0.10)",
+            : "1px solid var(--vidro-borda)",
           boxShadow: doUsuario
-            ? "inset 0 1px 0 0 rgba(255,255,255,0.22), 0 4px 14px rgba(0,0,0,0.28)"
-            : "inset 0 1px 0 0 rgba(255,255,255,0.14), 0 4px 14px rgba(0,0,0,0.28)",
+            ? "inset 0 1px 0 0 var(--vidro-topo-medio), 0 4px 14px var(--vidro-sombra)"
+            : "inset 0 1px 0 0 var(--vidro-topo-fraco), 0 4px 14px var(--vidro-sombra)",
           color: "var(--text)",
           fontSize: 14.5,
           lineHeight: 1.4,
@@ -682,7 +694,7 @@ function BolhaMensagem({ autor, texto, citando, onSegurar }) {
             style={{
               padding: "6px 9px",
               marginBottom: 7,
-              backgroundColor: "rgba(0,0,0,0.28)",
+              backgroundColor: "var(--vidro-base)",
               borderLeft: "2.5px solid var(--primary)",
               color: "var(--text)",
               fontSize: 12.5,
@@ -763,7 +775,7 @@ function FiscoDigitando() {
         className="rounded-2xl flex items-center"
         style={{
           padding: "10px 14px",
-          backgroundColor: "rgba(255,255,255,0.08)",
+          backgroundColor: "var(--vidro-superficie)",
           gap: 4,
         }}
       >
@@ -820,8 +832,8 @@ function PainelPerguntas({ aberto, onFechar, faixa, corFaixa, onPerguntar }) {
             zIndex: 20,
             width: 30,
             height: 30,
-            backgroundColor: "rgba(0,0,0,0.55)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            backgroundColor: "var(--vidro-bg-leve)",
+            border: "1px solid var(--vidro-borda)",
           }}
         >
           <X size={15} style={{ color: "var(--text-secondary)" }} />
@@ -840,8 +852,8 @@ function PainelPerguntas({ aberto, onFechar, faixa, corFaixa, onPerguntar }) {
               style={{
                 gap: 11,
                 padding: "13px 14px",
-                backgroundColor: "rgba(255,255,255,0.07)",
-                border: "1px solid rgba(255,255,255,0.09)",
+                backgroundColor: "var(--vidro-superficie)",
+                border: "1px solid var(--vidro-borda)",
               }}
             >
               <span
@@ -901,7 +913,7 @@ function PainelHistorico({ aberto, onFechar, conversas, idAtual, onAbrir, onNova
             onClick={onNova}
             aria-label="Nova conversa"
             className="toque rounded-full flex items-center justify-center shrink-0"
-            style={{ width: 32, height: 32, backgroundColor: "rgba(255,255,255,0.08)" }}
+            style={{ width: 32, height: 32, backgroundColor: "var(--vidro-superficie)" }}
           >
             <MessageSquarePlus size={16} style={{ color: "var(--primary)" }} />
           </button>
@@ -910,7 +922,7 @@ function PainelHistorico({ aberto, onFechar, conversas, idAtual, onAbrir, onNova
             onClick={onFechar}
             aria-label="Fechar histórico"
             className="toque rounded-full flex items-center justify-center shrink-0"
-            style={{ width: 32, height: 32, backgroundColor: "rgba(255,255,255,0.08)" }}
+            style={{ width: 32, height: 32, backgroundColor: "var(--vidro-superficie)" }}
           >
             <X size={16} style={{ color: "var(--text-secondary)" }} />
           </button>
@@ -940,10 +952,10 @@ function PainelHistorico({ aberto, onFechar, conversas, idAtual, onAbrir, onNova
                   padding: "11px 12px",
                   backgroundColor: ativa
                     ? "rgba(34,197,94,0.12)"
-                    : "rgba(255,255,255,0.06)",
+                    : "var(--vidro-superficie-fraca)",
                   border: ativa
                     ? "1px solid rgba(34,197,94,0.35)"
-                    : "1px solid rgba(255,255,255,0.08)",
+                    : "1px solid var(--vidro-borda)",
                 }}
               >
                 <button
@@ -967,7 +979,7 @@ function PainelHistorico({ aberto, onFechar, conversas, idAtual, onAbrir, onNova
                   onClick={() => onApagar(c.id)}
                   aria-label="Apagar conversa"
                   className="toque rounded-full flex items-center justify-center shrink-0"
-                  style={{ width: 30, height: 30, backgroundColor: "rgba(255,255,255,0.06)" }}
+                  style={{ width: 30, height: 30, backgroundColor: "var(--vidro-superficie-fraca)" }}
                 >
                   <Trash2 size={14} style={{ color: "var(--text-tertiary)" }} />
                 </button>
@@ -1045,6 +1057,8 @@ function ChatFiscoExpandido({
           overflow: "hidden",
         }}
       >
+        <BordaLuminosa raio={28} />
+
         <div
           className="flex items-center gap-3 shrink-0"
           style={{ padding: "14px 16px" }}
@@ -1067,7 +1081,7 @@ function ChatFiscoExpandido({
             onClick={() => setHistoricoAberto(true)}
             aria-label="Histórico de conversas"
             className="toque rounded-full flex items-center justify-center shrink-0"
-            style={{ width: 32, height: 32, backgroundColor: "rgba(255,255,255,0.08)" }}
+            style={{ width: 32, height: 32, backgroundColor: "var(--vidro-superficie)" }}
           >
             <History size={16} style={{ color: "var(--text-secondary)" }} />
           </button>
@@ -1075,7 +1089,7 @@ function ChatFiscoExpandido({
             onClick={onFechar}
             aria-label="Fechar chat"
             className="toque rounded-full flex items-center justify-center shrink-0"
-            style={{ width: 32, height: 32, backgroundColor: "rgba(255,255,255,0.08)" }}
+            style={{ width: 32, height: 32, backgroundColor: "var(--vidro-superficie)" }}
           >
             <X size={16} style={{ color: "var(--text-secondary)" }} />
           </button>
@@ -1114,7 +1128,7 @@ function ChatFiscoExpandido({
                 gap: 10,
                 padding: "8px 10px",
                 marginBottom: 8,
-                backgroundColor: "rgba(255,255,255,0.06)",
+                backgroundColor: "var(--vidro-superficie-fraca)",
                 borderLeft: "3px solid var(--primary)",
               }}
             >
@@ -1138,7 +1152,7 @@ function ChatFiscoExpandido({
                 }}
                 aria-label="Cancelar"
                 className="toque rounded-full flex items-center justify-center shrink-0"
-                style={{ width: 26, height: 26, backgroundColor: "rgba(255,255,255,0.08)" }}
+                style={{ width: 26, height: 26, backgroundColor: "var(--vidro-superficie)" }}
               >
                 <X size={13} style={{ color: "var(--text-secondary)" }} />
               </button>
@@ -1196,11 +1210,11 @@ function ChatFiscoExpandido({
                 width: 44,
                 height: 44,
                 background:
-                  "linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.02) 100%)",
+                  "linear-gradient(160deg, var(--vidro-brilho-2) 0%, var(--vidro-brilho-3) 50%, transparent 100%), var(--vidro-superficie)",
                 backdropFilter: "blur(18px) saturate(150%)",
                 WebkitBackdropFilter: "blur(18px) saturate(150%)",
-                border: "1px solid rgba(255,255,255,0.12)",
-                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.16)",
+                border: "1px solid var(--vidro-borda)",
+                boxShadow: "inset 0 1px 0 0 var(--vidro-topo-medio)",
                 transform: menuAnexo ? "rotate(45deg)" : "none",
                 transition: "transform 300ms cubic-bezier(0.25,0.9,0.3,1)",
               }}
@@ -1219,11 +1233,11 @@ function ChatFiscoExpandido({
                 gap: 8,
                 cursor: "text",
                 background:
-                  "linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.02) 100%)",
+                  "linear-gradient(160deg, var(--vidro-brilho-2) 0%, var(--vidro-brilho-3) 50%, transparent 100%), var(--vidro-superficie)",
                 backdropFilter: "blur(18px) saturate(150%)",
                 WebkitBackdropFilter: "blur(18px) saturate(150%)",
-                border: "1px solid rgba(255,255,255,0.12)",
-                boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.16)",
+                border: "1px solid var(--vidro-borda)",
+                boxShadow: "inset 0 1px 0 0 var(--vidro-topo-medio)",
               }}
             >
               <input
@@ -1285,6 +1299,98 @@ function ChatFiscoExpandido({
   );
 }
 
+/** Borda pulsando — acende e apaga suavemente, com halo em volta.
+    Usada em verde no chat do Fisco e em vermelho no card do
+    velocímetro quando o usuário passa dos 100% do limite.
+    Funciona em qualquer navegador (não depende de @property). */
+function BordaLuminosa({ raio = 28, cor = "34,197,94", corClara = "74,222,128" }) {
+  const id = `pulsa-${cor.replace(/[^0-9]/g, "")}`;
+  return (
+    <>
+      <style>{`
+        @keyframes ${id} {
+          0%, 100% {
+            border-color: rgba(${cor},0.30);
+            box-shadow:
+              0 0 0 0 rgba(${cor},0),
+              inset 0 0 12px -6px rgba(${cor},0.35);
+          }
+          50% {
+            border-color: rgba(${corClara},0.85);
+            box-shadow:
+              0 0 18px 1px rgba(${cor},0.35),
+              inset 0 0 18px -4px rgba(${corClara},0.55);
+          }
+        }
+        .${id} {
+          animation: ${id} 2.4s ease-in-out infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .${id} { animation: none; }
+        }
+      `}</style>
+      <div
+        aria-hidden
+        className={`${id} pointer-events-none absolute`}
+        style={{
+          inset: 0,
+          borderRadius: raio,
+          border: `1.6px solid rgba(${cor},0.30)`,
+          zIndex: 3,
+        }}
+      />
+    </>
+  );
+}
+
+/** Luz verde correndo em volta da borda. Usada na barra fechada do
+    Fisco no dashboard, para chamar atenção. Fica girando o tempo todo,
+    mas o elemento é pequeno — o custo de repintura é baixo. */
+function BordaCorrendo({ raio = 999, espessura = 1.6 }) {
+  return (
+    <>
+      <style>{`
+        @property --anguloLuz {
+          syntax: '<angle>';
+          initial-value: 0deg;
+          inherits: false;
+        }
+        @keyframes girarLuz {
+          to { --anguloLuz: 360deg; }
+        }
+        .borda-correndo {
+          animation: girarLuz 3.2s linear infinite;
+        }
+        /* Safari antigo não suporta @property: a luz não gira, então
+           some — a borda normal do elemento continua ali. */
+        @supports not (background: conic-gradient(from 0deg, red, blue)) {
+          .borda-correndo { display: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .borda-correndo { animation: none; opacity: 0.5; }
+        }
+      `}</style>
+      <span
+        aria-hidden
+        className="borda-correndo pointer-events-none absolute"
+        style={{
+          inset: 0,
+          borderRadius: raio,
+          padding: espessura,
+          background:
+            "conic-gradient(from var(--anguloLuz), transparent 0%, transparent 62%, rgba(34,197,94,0.35) 74%, #4ade80 86%, rgba(134,239,172,0.9) 92%, transparent 100%)",
+          WebkitMask:
+            "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+          WebkitMaskComposite: "xor",
+          mask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+          maskComposite: "exclude",
+          zIndex: 2,
+        }}
+      />
+    </>
+  );
+}
+
 function CaixaFiscoExpandida({ onFechar, onEnviarPrimeira }) {
   const [rascunho, setRascunho] = useState("");
   const inputRef = useRef(null);
@@ -1305,23 +1411,25 @@ function CaixaFiscoExpandida({ onFechar, onEnviarPrimeira }) {
     <form
       onSubmit={submeter}
       onClick={() => inputRef.current?.focus()}
-      className="rounded-3xl flex flex-col"
+      className="rounded-3xl flex flex-col relative"
       style={{
         ...VIDRO_SUAVE,
         background:
-          "linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 24%, rgba(255,255,255,0) 58%), rgba(8,8,10,0.22)",
+          "linear-gradient(160deg, var(--vidro-brilho-2) 0%, var(--vidro-brilho-3) 24%, transparent 58%), var(--vidro-bg-transparente)",
         padding: 14,
         gap: 10,
         cursor: "text",
       }}
     >
+      <BordaLuminosa raio={24} />
+
       <div className="flex items-center justify-end">
         <button
           type="button"
           onClick={onFechar}
           aria-label="Fechar"
           className="toque rounded-full flex items-center justify-center shrink-0"
-          style={{ width: 26, height: 26, backgroundColor: "rgba(255,255,255,0.08)" }}
+          style={{ width: 26, height: 26, backgroundColor: "var(--vidro-superficie)" }}
         >
           <X size={14} style={{ color: "var(--text-secondary)" }} />
         </button>
@@ -1354,8 +1462,8 @@ function CaixaFiscoExpandida({ onFechar, onEnviarPrimeira }) {
             style={{
               width: 36,
               height: 36,
-              backgroundColor: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.10)",
+              backgroundColor: "var(--vidro-superficie)",
+              border: "1px solid var(--vidro-borda)",
             }}
           >
             <Camera size={17} style={{ color: "var(--text)" }} />
@@ -1368,8 +1476,8 @@ function CaixaFiscoExpandida({ onFechar, onEnviarPrimeira }) {
             style={{
               width: 36,
               height: 36,
-              backgroundColor: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.10)",
+              backgroundColor: "var(--vidro-superficie)",
+              border: "1px solid var(--vidro-borda)",
             }}
           >
             <ImageIcon size={17} style={{ color: "var(--text)" }} />
@@ -1382,8 +1490,8 @@ function CaixaFiscoExpandida({ onFechar, onEnviarPrimeira }) {
             style={{
               width: 36,
               height: 36,
-              backgroundColor: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.10)",
+              backgroundColor: "var(--vidro-superficie)",
+              border: "1px solid var(--vidro-borda)",
             }}
           >
             <FileText size={17} style={{ color: "var(--text)" }} />
@@ -1599,15 +1707,23 @@ export default function Dashboard() {
           />
 
           {caixaExpandida && (
-            <div
-              className="absolute z-40"
-              style={{ left: 20, right: 20, bottom: 12 }}
-            >
-              <CaixaFiscoExpandida
-                onFechar={() => setCaixaExpandida(false)}
-                onEnviarPrimeira={enviarPrimeiraMensagem}
+            <>
+              {/* Camada invisível: tocar fora da caixa fecha ela (e o
+                  teclado desce junto, porque o campo perde o foco). */}
+              <div
+                className="fixed inset-0 z-30"
+                onClick={() => setCaixaExpandida(false)}
               />
-            </div>
+              <div
+                className="absolute z-40"
+                style={{ left: 20, right: 20, bottom: 12 }}
+              >
+                <CaixaFiscoExpandida
+                  onFechar={() => setCaixaExpandida(false)}
+                  onEnviarPrimeira={enviarPrimeiraMensagem}
+                />
+              </div>
+            </>
           )}
 
           <button
@@ -1657,7 +1773,7 @@ export default function Dashboard() {
               </span>
 
               <span
-                className="toque flex-1 flex items-center gap-2 text-left min-w-0 rounded-full"
+                className="toque relative flex-1 flex items-center gap-2 text-left min-w-0 rounded-full"
                 style={{
                   ...VIDRO_SUAVE,
                   height: 48,
@@ -1666,6 +1782,8 @@ export default function Dashboard() {
                   marginTop: 24,
                 }}
               >
+                <BordaCorrendo />
+
                 <span
                   className="flex-1 truncate"
                   style={{
@@ -1715,3 +1833,6 @@ export default function Dashboard() {
     </div>
   );
 }
+
+
+

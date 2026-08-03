@@ -33,6 +33,9 @@ export default function BottomNav({ ativo }) {
 
   const ICON_SIZE = 26;
   const AVATAR_SIZE = 30;
+  /* Ilusão de ótica: um círculo cheio (a foto) parece menor que um
+     ícone vazado do mesmo tamanho. Por isso a foto ganha alguns px. */
+  const FOTO_SIZE = 34;
   const LABEL_SIZE = 11;
 
   const corTexto = (isAtivo) =>
@@ -47,13 +50,15 @@ export default function BottomNav({ ativo }) {
         left: 0,
         right: 0,
         zIndex: 50,
+        /* Cores vêm das variáveis --vidro-* do index.css: mudam
+           sozinhas entre o tema escuro e o claro. */
         background:
-          "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(8,8,10,0.88)",
+          "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
         backdropFilter: "blur(24px) saturate(160%)",
         WebkitBackdropFilter: "blur(24px) saturate(160%)",
-        borderTop: "1px solid rgba(255,255,255,0.12)",
+        borderTop: "1px solid var(--vidro-borda)",
         boxShadow:
-          "inset 0 1px 0 0 rgba(255,255,255,0.26), inset 0 7px 16px -8px rgba(255,255,255,0.17)",
+          "inset 0 1px 0 0 var(--vidro-topo-medio), inset 0 7px 16px -8px var(--vidro-topo-fraco)",
         paddingTop: 10,
         paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 18px)",
         paddingLeft: 13,
@@ -66,7 +71,7 @@ export default function BottomNav({ ativo }) {
       <button
         onClick={() => navigate("/dashboard")}
         aria-label="Início"
-        className="flex flex-col items-center gap-1 active:scale-95 transition"
+        className="flex flex-col items-center gap-1 transition"
         style={{ background: "none", border: "none", padding: 0 }}
       >
         <Home
@@ -85,7 +90,7 @@ export default function BottomNav({ ativo }) {
       <button
         onClick={() => navigate("/lancar")}
         aria-label="Lançar"
-        className="flex flex-col items-center active:scale-95 transition"
+        className="flex flex-col items-center transition"
         style={{ background: "none", border: "none", padding: 0 }}
       >
         <span
@@ -110,19 +115,24 @@ export default function BottomNav({ ativo }) {
       <button
         onClick={() => navigate("/perfil")}
         aria-label="Perfil"
-        className="flex flex-col items-center gap-1 active:scale-95 transition"
+        className="flex flex-col items-center gap-1 transition"
         style={{ background: "none", border: "none", padding: 0 }}
       >
         {foto ? (
           <span
             style={{
-              width: AVATAR_SIZE,
-              height: AVATAR_SIZE,
+              /* box-sizing: sem ele a borda somava ao tamanho e a foto
+                 era espremida, ficando menor que o círculo da inicial.
+                 O marginTop negativo compensa os px extras da foto,
+                 mantendo o rótulo "Perfil" alinhado com o "Início". */
+              marginTop: -(FOTO_SIZE - AVATAR_SIZE),
+              width: FOTO_SIZE,
+              height: FOTO_SIZE,
+              boxSizing: "border-box",
               borderRadius: "50%",
               overflow: "hidden",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              display: "block",
+              flexShrink: 0,
               border:
                 ativo === "perfil"
                   ? "1.5px solid var(--primary)"
@@ -133,10 +143,10 @@ export default function BottomNav({ ativo }) {
               src={foto}
               alt=""
               style={{
-                width: AVATAR_SIZE,
-                height: AVATAR_SIZE,
+                width: "100%",
+                height: "100%",
                 objectFit: "cover",
-                borderRadius: "50%",
+                display: "block",
               }}
             />
           </span>

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
 import TransicaoTela from "./components/TransicaoTela.jsx";
+import SplashScreen from "./components/SplashScreen.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Perfil from "./pages/Perfil.jsx";
 import ExcluirConta from "./pages/ExcluirConta.jsx";
@@ -54,6 +55,7 @@ import AdicionarFaturamentoColar from "./pages/AdicionarFaturamentoColar.jsx";
 export default function App() {
   return (
     <BrowserRouter>
+      <SplashScreen />
       <SwipeBack />
       <TransicaoTela>
         <Routes>
@@ -106,3 +108,6 @@ export default function App() {
     </BrowserRouter>
   );
 }
+
+
+

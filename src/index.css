@@ -29,6 +29,23 @@
   --barra-vidro-borda: rgba(255, 255, 255, 0.10);
 
   --toque: rgba(255, 255, 255, 0.09);
+
+  /* ---- VIDRO (tema escuro): fundo quase preto, brilhos brancos ---- */
+  --vidro-bg: rgba(8, 8, 10, 0.88);
+  --vidro-bg-leve: rgba(8, 8, 10, 0.55);
+  --vidro-bg-transparente: rgba(8, 8, 10, 0.22);
+  --vidro-borda: rgba(255, 255, 255, 0.12);
+  --vidro-brilho-1: rgba(255, 255, 255, 0.13);
+  --vidro-brilho-2: rgba(255, 255, 255, 0.05);
+  --vidro-brilho-3: rgba(255, 255, 255, 0.04);
+  --vidro-topo-forte: rgba(255, 255, 255, 0.40);
+  --vidro-topo-medio: rgba(255, 255, 255, 0.26);
+  --vidro-topo-fraco: rgba(255, 255, 255, 0.17);
+  --vidro-base: rgba(0, 0, 0, 0.30);
+  --vidro-sombra: rgba(0, 0, 0, 0.38);
+  --vidro-sombra-forte: rgba(0, 0, 0, 0.50);
+  --vidro-superficie: rgba(255, 255, 255, 0.07);
+  --vidro-superficie-fraca: rgba(255, 255, 255, 0.05);
 }
 
 .theme-light {
@@ -54,6 +71,26 @@
   --barra-vidro-borda: rgba(15, 15, 17, 0.10);
 
   --toque: rgba(15, 15, 17, 0.07);
+
+  /* ---- VIDRO (tema claro): fundo quase branco, sombras suaves ----
+     O mesmo efeito, invertido: em vez de um preto translúcido com
+     brilho branco, um branco translúcido com sombra cinza. Sem isso
+     os cards viravam manchas escuras sobre o fundo claro. */
+  --vidro-bg: rgba(255, 255, 255, 0.88);
+  --vidro-bg-leve: rgba(255, 255, 255, 0.62);
+  --vidro-bg-transparente: rgba(255, 255, 255, 0.55);
+  --vidro-borda: rgba(15, 15, 17, 0.10);
+  --vidro-brilho-1: rgba(255, 255, 255, 0.85);
+  --vidro-brilho-2: rgba(255, 255, 255, 0.45);
+  --vidro-brilho-3: rgba(255, 255, 255, 0.35);
+  --vidro-topo-forte: rgba(255, 255, 255, 0.95);
+  --vidro-topo-medio: rgba(255, 255, 255, 0.75);
+  --vidro-topo-fraco: rgba(255, 255, 255, 0.55);
+  --vidro-base: rgba(15, 15, 17, 0.07);
+  --vidro-sombra: rgba(15, 15, 17, 0.10);
+  --vidro-sombra-forte: rgba(15, 15, 17, 0.16);
+  --vidro-superficie: rgba(15, 15, 17, 0.045);
+  --vidro-superficie-fraca: rgba(15, 15, 17, 0.03);
 }
 
 .font-small { --font-scale: 0.92; }
@@ -62,6 +99,11 @@
 
 /* ===================================================================
    FONTE: só o TEXTO escala. Caixas ficam fixas.
+
+   O html mantém 16px SEMPRE. Assim todo rem (paddings, margens,
+   alturas do Tailwind) fica constante e nenhum card cresce.
+   A preferência do usuário entra só no zoom do texto, aplicado
+   com font-size relativo no body.
    =================================================================== */
 html {
   font-size: 16px;
@@ -69,16 +111,24 @@ html {
 
 body {
   font-size: calc(1rem * var(--font-scale));
-  background-color: var(--bg);
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  overscroll-behavior: none;
-  overflow-x: hidden;
 }
 
 html, body, #root {
   background-color: var(--bg);
   color: var(--text);
+}
+
+/* Durante o gesto de voltar, o #root é arrastado e o que fica atrás é
+   o body. Mantê-lo na cor do app evita o "buraco" preto na lateral. */
+body {
+  background-color: var(--bg);
+}
+
+body {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  overflow-x: hidden;
 }
 
 /* ===================================================================
@@ -92,11 +142,15 @@ select,
 }
 
 /* ===================================================================
-   Menu nativo do iOS
+   Menu nativo do iOS ("Copiar / Buscar Seleção / Pesquisar") não deve
+   aparecer ao segurar o dedo na interface. Fica liberado APENAS em
+   campos de texto, onde o usuário precisa selecionar e editar.
    =================================================================== */
 body {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
 }
 
@@ -106,10 +160,13 @@ textarea,
 .selecionavel {
   -webkit-touch-callout: default;
   -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
   user-select: text;
 }
 
-/* Classes de texto do Tailwind */
+/* Classes de texto do Tailwind passam a escalar via em,
+   herdando o zoom do body em vez do rem fixo do html. */
 .text-xs   { font-size: 0.75em  !important; }
 .text-sm   { font-size: 0.875em !important; }
 .text-base { font-size: 1em     !important; }
@@ -118,12 +175,13 @@ textarea,
 .text-2xl  { font-size: 1.5em   !important; }
 .text-3xl  { font-size: 1.875em !important; }
 
-/* Telas fixas e rolagem */
+/* Telas fixas: usa em qualquer página que NÃO deve rolar */
 .tela-fixa {
   height: 100dvh;
   overflow: hidden;
 }
 
+/* Telas com rolagem controlada (Perfil, Histórico) */
 .tela-rolavel {
   height: 100dvh;
   overflow: hidden;
@@ -135,10 +193,24 @@ textarea,
   -webkit-overflow-scrolling: touch;
 }
 
-/* Enquadramento sem rolagem (Safari / iPhone) */
+/* ===================================================================
+   NOVO v13.1 — ENQUADRAMENTO SEM ROLAGEM (iPhone / Safari)
+
+   Problema: no Safari do iPhone, 100vh mede a tela SEM a barra de
+   endereço. Toda tela montada com min-h-screen fica mais alta que o
+   espaço visível, e o que está embaixo (o botão) some atrás da barra.
+
+   Solução: dvh (altura real, já descontando a barra) + safe-area.
+   =================================================================== */
+
+/* --- ATENÇÃO: única alteração de comportamento existente. ---
+   Faz min-h-screen / h-screen do Tailwind medirem a tela real.
+   Se causar qualquer efeito indesejado, apague estas 3 linhas. */
 .min-h-screen { min-height: 100dvh !important; }
 .h-screen     { height: 100dvh !important; }
 
+/* Container de tela que se enquadra sozinha, sem rolar.
+   Uso: <div className="tela-enquadrada"> */
 .tela-enquadrada {
   height: 100dvh;
   max-height: 100dvh;
@@ -148,6 +220,7 @@ textarea,
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Miolo que ocupa o que sobrou entre cabeçalho e rodapé */
 .corpo-flex {
   flex: 1 1 auto;
   min-height: 0;
@@ -155,19 +228,24 @@ textarea,
   flex-direction: column;
 }
 
+/* Empurrador: come o espaço que sobra em vez de deixar vazio morto */
 .espaco-flex {
   flex: 1 1 auto;
   min-height: 0;
 }
 
+/* Rodapé que nunca fica atrás da barra do Safari */
 .rodape-seguro {
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
 }
 
+/* Topo respeitando o notch, quando a tela não usa cabeçalho padrão */
 .topo-seguro {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+/* Bloco de conteúdo que pode encolher um pouco em tela curta,
+   sem quebrar o layout (usado nas telas mais cheias) */
 .encolhivel {
   flex: 0 1 auto;
   min-height: 0;
@@ -196,18 +274,26 @@ textarea,
   transition: background-color 9999s ease-in-out 0s !important;
 }
 
-/* === Card B: enquadrado perfeitamente sem espaço morto === */
+/* === Botão pill com glow verde ao pressionar === */
+.btn-pill-tacerto {
+  position: relative;
+  transition: transform 140ms ease, box-shadow 200ms ease, background-color 200ms ease;
+}
+.btn-pill-tacerto:active:not(:disabled) {
+  transform: scale(0.975);
+  background-color: rgba(34, 197, 94, 0.10) !important;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.14),
+              0 0 18px 2px rgba(34, 197, 94, 0.22);
+}
+
+/* === Card B: texto em px absoluto (não escala nem com o body) === */
 .card-b-fixo {
   font-size: 13px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: space-between !important;
-  height: 100% !important;
 }
-.card-b-fixo .cb-rotulo { font-size: 9px !important; line-height: 1.1 !important; }
-.card-b-fixo .cb-titulo { font-size: 13.5px !important; line-height: 1.2 !important; }
-.card-b-fixo .cb-linha  { font-size: 11.5px !important; line-height: 1.2 !important; }
-.card-b-fixo .cb-mini   { font-size: 7.5px !important; line-height: 1 !important; }
+.card-b-fixo .cb-rotulo { font-size: 9px !important; }
+.card-b-fixo .cb-titulo { font-size: 13.5px !important; }
+.card-b-fixo .cb-linha  { font-size: 11.5px !important; }
+.card-b-fixo .cb-mini   { font-size: 7.5px !important; }
 
 /* === Barra do Fisco: vidro fosco === */
 .barra-fisco {
@@ -217,8 +303,14 @@ textarea,
   border: 1px solid var(--barra-vidro-borda);
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.20),
               inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: border-color 200ms ease, background-color 200ms ease;
+}
+.barra-fisco:active {
+  border-color: rgba(34, 197, 94, 0.45);
+  background-color: rgba(34, 197, 94, 0.06);
 }
 
+/* alias mantido para o chat */
 .barra-flutuante {
   background-color: var(--barra-vidro);
   backdrop-filter: blur(20px) saturate(150%);
@@ -258,51 +350,42 @@ button:active:not(:disabled),
   box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.35),
               inset 0 -1.5px 0 rgba(0, 0, 0, 0.18),
               0 3px 10px rgba(34, 197, 94, 0.4);
+  transition: transform 150ms cubic-bezier(0.3, 1.4, 0.5, 1), box-shadow 180ms ease;
 }
 .theme-light .btn-enviar-fisco {
   background: linear-gradient(160deg, #34d399 0%, #16a34a 48%, #15803d 100%);
 }
 .btn-enviar-fisco:active:not(:disabled) {
-  transform: scale(0.95) !important;
+  transform: scale(0.9);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25),
               0 1px 4px rgba(34, 197, 94, 0.3);
 }
 
-.btn-pill-tacerto:active:not(:disabled) {
-  background-color: rgba(34, 197, 94, 0.10) !important;
-  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.14),
-              0 0 18px 2px rgba(34, 197, 94, 0.22);
+/* === Feedback de toque ===
+   O realce retangular de fundo foi removido: em opções largas (as
+   linhas do Perfil, por exemplo) ele virava uma "sombra" pesada.
+   O feedback é só o encolhimento suave, definido de uma vez no bloco
+   EFEITO TÁTIL MACIO acima — mesma sensação em todo o app. */
+.toque {
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* ===================================================================
-   TRANSIÇÃO DE TELA BLINDADA (150ms + Pointer Events Bloqueados no Frame 0)
-   =================================================================== */
+/* === Transição entre telas === */
 @keyframes telaEntraDireita {
-  from { transform: translate3d(16px, 0, 0); }
-  to   { transform: translate3d(0, 0, 0);    }
+  from { transform: translateX(24px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
 }
 @keyframes telaEntraEsquerda {
-  from { transform: translate3d(-16px, 0, 0); }
-  to   { transform: translate3d(0, 0, 0);     }
+  from { transform: translateX(-24px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
 }
 
 .tela-anima-avancar {
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  perspective: 1000px;
-  -webkit-perspective: 1000px;
-  pointer-events: none;
-  animation: telaEntraDireita 150ms cubic-bezier(0.1, 0.9, 0.2, 1) both;
+  animation: telaEntraDireita 260ms cubic-bezier(0.22, 0.8, 0.3, 1) both;
 }
 .tela-anima-voltar {
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  perspective: 1000px;
-  -webkit-perspective: 1000px;
-  pointer-events: none;
-  animation: telaEntraEsquerda 150ms cubic-bezier(0.1, 0.9, 0.2, 1) both;
+  animation: telaEntraEsquerda 260ms cubic-bezier(0.22, 0.8, 0.3, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

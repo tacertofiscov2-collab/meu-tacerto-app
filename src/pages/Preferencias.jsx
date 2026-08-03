@@ -11,6 +11,11 @@ const KEY_FONTE = "tacerto_fonte";
 const KEY_PUSH = "tacerto_push";
 const KEY_LEMBRETE = "tacerto_lembrete_das";
 
+/* O tema oficial do TaCerto! é o ESCURO. O claro e o automático só
+   entram se o usuário escolher — por isso o padrão em todo lugar é
+   "escuro", nunca "auto". */
+const TEMA_PADRAO = "escuro";
+
 export function temaEfetivo(escolha) {
   if (escolha === "claro") return "claro";
   if (escolha === "escuro") return "escuro";
@@ -39,7 +44,7 @@ function CardOpcao({ Icon, label, sub, ativo, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="flex-1 rounded-2xl px-3 py-3 flex flex-col items-center gap-1.5 transition active:scale-[0.98]"
+      className="flex-1 rounded-2xl px-3 py-3 flex flex-col items-center gap-1.5 transition"
       style={{
         backgroundColor: ativo ? "var(--surface-selected)" : "var(--field)",
         opacity: ativo ? 1 : 0.55,
@@ -100,8 +105,8 @@ export default function Preferencias() {
   const navigate = useNavigate();
 
   const [tema, setTema] = useState(() => {
-    if (typeof window === "undefined") return "auto";
-    return localStorage.getItem(KEY_TEMA) || "auto";
+    if (typeof window === "undefined") return TEMA_PADRAO;
+    return localStorage.getItem(KEY_TEMA) || TEMA_PADRAO;
   });
   const [fonte, setFonte] = useState(() => {
     if (typeof window === "undefined") return "medium";
@@ -171,7 +176,7 @@ export default function Preferencias() {
           onClick={() => navigate(-1)}
           aria-label="Voltar"
           className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
-          style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(14,14,16,0.82)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)" }}
+          style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
         >
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
         </button>
@@ -191,18 +196,20 @@ export default function Preferencias() {
           >
             Tema do app
           </p>
+          {/* Escuro primeiro: é o tema oficial e o padrão do app. */}
           <div className="flex gap-2">
+            <CardOpcao
+              Icon={Moon}
+              label="Escuro"
+              sub="Padrão"
+              ativo={tema === "escuro"}
+              onClick={() => setTema("escuro")}
+            />
             <CardOpcao
               Icon={Sun}
               label="Claro"
               ativo={tema === "claro"}
               onClick={() => setTema("claro")}
-            />
-            <CardOpcao
-              Icon={Moon}
-              label="Escuro"
-              ativo={tema === "escuro"}
-              onClick={() => setTema("escuro")}
             />
             <CardOpcao
               Icon={Wand2}
@@ -223,7 +230,7 @@ export default function Preferencias() {
           </p>
           <div
             className="rounded-2xl px-4 py-3"
-            style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(14,14,16,0.82)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)" }}
+            style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
           >
             <div className="flex items-end justify-between gap-2">
               {[
@@ -236,7 +243,7 @@ export default function Preferencias() {
                   <button
                     key={op.v}
                     onClick={() => setFonte(op.v)}
-                    className="flex-1 flex flex-col items-center gap-2 py-2 rounded-xl transition active:scale-[0.98]"
+                    className="flex-1 flex flex-col items-center gap-2 py-2 rounded-xl transition"
                     style={{
                       backgroundColor: ativo
                         ? "var(--surface-selected)"
@@ -277,7 +284,7 @@ export default function Preferencias() {
 
           <div
             className="rounded-2xl px-4 py-3 flex items-center gap-3"
-            style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0) 58%), rgba(14,14,16,0.82)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "inset 0 1.5px 0 0 rgba(255,255,255,0.40), inset 0 9px 20px -8px rgba(255,255,255,0.28), inset 0 -1.5px 0 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.38)" }}
+            style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
           >
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
@@ -333,7 +340,7 @@ export default function Preferencias() {
                   <button
                     key={op.valor}
                     onClick={() => setLembrete(op.valor)}
-                    className="py-2 rounded-xl text-[13px] flex items-center justify-center gap-1.5 transition active:scale-[0.98]"
+                    className="py-2 rounded-xl text-[13px] flex items-center justify-center gap-1.5 transition"
                     style={{
                       backgroundColor: ativo
                         ? "var(--surface-selected)"
@@ -357,4 +364,3 @@ export default function Preferencias() {
     </div>
   );
 }
-

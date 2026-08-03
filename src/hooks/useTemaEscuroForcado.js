@@ -4,18 +4,25 @@ const KEY_TEMA = "tacerto_tema";
 
 /**
  * Hook para telas que devem SEMPRE aparecer no tema escuro (o tema
- * oficial da marca), independente da preferência salva pelo usuário
- * em Preferências (ex: Login, Cadastro, Onboarding, Welcome).
+ * oficial da marca), independente da preferência salva pelo usuário.
  *
- * Ao montar: remove "theme-light" do <html>, forçando escuro.
- * Ao desmontar: restaura a preferência salva do usuário, para o
- * resto do app continuar respeitando a escolha dele normalmente.
+ * Regra do app:
+ *   - ANTES de entrar (Welcome, Login, primeiro cadastro, Onboarding):
+ *     sempre escuro — é a vitrine da marca.
+ *   - DEPOIS de entrar (mesmo como visitante): tudo segue a escolha
+ *     feita em Preferências.
  *
- * Uso: no topo do componente da tela, chamar apenas:
- *   useTemaEscuroForcado();
+ * Por isso o hook aceita um parâmetro: telas que servem aos dois
+ * fluxos (o /cadastro, por exemplo) passam `false` quando foram
+ * abertas de dentro do app.
+ *
+ * Uso:
+ *   useTemaEscuroForcado();          // sempre escuro
+ *   useTemaEscuroForcado(condicao);  // escuro só se a condição for true
  */
-export default function useTemaEscuroForcado() {
+export default function useTemaEscuroForcado(ativo = true) {
   useEffect(() => {
+    if (!ativo) return;
     if (typeof document === "undefined") return;
     const root = document.documentElement;
 
@@ -26,11 +33,12 @@ export default function useTemaEscuroForcado() {
       // Ao sair da tela, restaura a preferência real do usuário.
       if (typeof window === "undefined") return;
       try {
-        const escolha = localStorage.getItem(KEY_TEMA) || "auto";
+        const escolha = localStorage.getItem(KEY_TEMA) || "escuro";
         let modo;
         if (escolha === "claro") modo = "claro";
         else if (escolha === "escuro") modo = "escuro";
         else {
+          // "auto": claro de dia, escuro à noite.
           const h = new Date().getHours();
           modo = h >= 6 && h < 18 ? "claro" : "escuro";
         }
@@ -40,5 +48,5 @@ export default function useTemaEscuroForcado() {
         // Se der qualquer erro, mantém escuro (o padrão do app).
       }
     };
-  }, []);
+  }, [ativo]);
 }

@@ -337,3 +337,7 @@ export function useAppState() {
   if (!ctx) throw new Error("useAppState precisa estar dentro de <AppStateProvider>");
   return ctx;
 }
+
+
+
+

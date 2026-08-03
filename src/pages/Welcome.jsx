@@ -379,14 +379,16 @@ export default function Welcome() {
         ))}
       </div>
 
-      {/* Card inferior único: verde fosco discreto (tom da linha do celular),
-          bordas arredondadas, encostado embaixo do celular. Contém o texto
-          do slide ativo + dots + botões. Fora dele = preto. */}
+      {/* Card inferior único: preto translúcido, sem reflexo, com apenas
+          uma linha verde discreta em volta. Contém o texto do slide
+          ativo + dots + botões. */}
       <div className="shrink-0" style={{ padding: "0 10px", paddingBottom: "calc(10px + env(safe-area-inset-bottom))" }}>
         <div
           style={{
-            background: "rgba(34,197,94,0.11)",
-            border: "1px solid rgba(34,197,94,0.28)",
+            background: "var(--vidro-bg)",
+            backdropFilter: "blur(6px) saturate(160%)",
+            WebkitBackdropFilter: "blur(6px) saturate(160%)",
+            border: "1px solid rgba(34,197,94,0.35)",
             borderRadius: 26,
             padding: "16px 18px 18px",
           }}
@@ -430,3 +432,6 @@ export default function Welcome() {
     </div>
   );
 }
+
+
+

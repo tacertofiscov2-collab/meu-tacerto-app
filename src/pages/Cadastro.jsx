@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { ArrowLeft, Eye, EyeOff, Mail, Gauge } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -9,8 +9,17 @@ import { setUserState } from "@/lib/userState";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 
 export default function Cadastro() {
-  useTemaEscuroForcado();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  /* Esta tela serve a dois fluxos:
+       - Welcome → "Criar conta": usuário ainda não entrou, tema escuro
+         forçado (é a vitrine da marca).
+       - Perfil → "Cadastrar conta": usuário já está dentro do app, então
+         a tela segue o tema que ele escolheu em Preferências.
+     O Perfil marca a origem com state: { de: "perfil" }. */
+  const veioDeDentro = location.state?.de === "perfil";
+  useTemaEscuroForcado(!veioDeDentro);
   const [contato, setContato] = useState("");
   const [senha, setSenha] = useState("");
   const [showSenha, setShowSenha] = useState(false);
