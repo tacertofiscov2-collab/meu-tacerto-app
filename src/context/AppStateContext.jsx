@@ -5,6 +5,7 @@ import {
   calcularPercentual,
   faixaDoVelocimetro,
 } from "@/lib/fiscal";
+import { supabase } from "@/lib/supabase";
 
 const STORAGE_KEY = "tacerto_app_state";
 const EVT = "tacerto-user-changed";
@@ -81,6 +82,84 @@ const AppStateContext = createContext(null);
 export function AppStateProvider({ children }) {
   const [state, setState] = useState(hidratar);
   const first = useRef(true);
+
+  // ------------------------------------------------------------------
+  // PONTE COM O SUPABASE AUTH
+  //
+  // O login do Supabase (Login.jsx / Cadastro.jsx) guarda a sessão, mas o
+  // resto do app decidia "logado ou não" só pelo localStorage — as duas
+  // metades não conversavam. Este efeito conecta as duas:
+  //   - Ao logar: busca o perfil na tabela `perfis` e joga pro estado.
+  //   - Ao deslogar: marca visitante e limpa identidade.
+  // Assim `visitante` passa a refletir a sessão REAL do Supabase.
+  // ------------------------------------------------------------------
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let ativo = true;
+
+    async function carregarPerfil(user) {
+      if (!user) {
+        // Sem sessão → visitante. Não apaga lançamentos locais (modo demo).
+        if (!ativo) return;
+        setState((s) => ({ ...s, visitante: true, email: null }));
+        return;
+      }
+      // Tem sessão → busca o perfil no banco
+      try {
+        const { data: perfil } = await supabase
+          .from("perfis")
+          .select("nome, tipo_mei, mes_abertura, ano_abertura, email")
+          .eq("id", user.id)
+          .single();
+
+        if (!ativo) return;
+
+        setState((s) => ({
+          ...s,
+          visitante: false,
+          email: perfil?.email || user.email || s.email,
+          nome: perfil?.nome || s.nome,
+          tipoMEI: normalizarTipo(perfil?.tipo_mei || s.tipoMEI),
+          mesAnoAbertura:
+            perfil?.mes_abertura && perfil?.ano_abertura
+              ? { mes: Number(perfil.mes_abertura), ano: Number(perfil.ano_abertura) }
+              : s.mesAnoAbertura,
+        }));
+
+        // Busca os lançamentos do usuário no banco e substitui os locais.
+        const { data: lancs } = await supabase
+          .from("lancamentos")
+          .select("id, descricao, valor, data")
+          .eq("user_id", user.id)
+          .order("data", { ascending: false });
+
+        if (!ativo) return;
+        setState((s) => ({
+          ...s,
+          lancamentos: Array.isArray(lancs)
+            ? lancs.map((l) => ({ ...l, valor: Number(l.valor) || 0 }))
+            : s.lancamentos,
+        }));
+      } catch {
+        // Falha ao buscar perfil não deve derrubar a sessão.
+        if (!ativo) return;
+        setState((s) => ({ ...s, visitante: false, email: user.email || s.email }));
+      }
+    }
+
+    // 1) Estado inicial: já tem sessão salva?
+    supabase.auth.getUser().then(({ data }) => carregarPerfil(data?.user || null));
+
+    // 2) Reage a login/logout em tempo real.
+    const { data: sub } = supabase.auth.onAuthStateChange((_evento, sessao) => {
+      carregarPerfil(sessao?.user || null);
+    });
+
+    return () => {
+      ativo = false;
+      sub?.subscription?.unsubscribe?.();
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -175,6 +254,9 @@ export function AppStateProvider({ children }) {
   }, []);
 
   const adicionarLancamento = useCallback((l) => {
+    // id temporário local — o banco gera o id definitivo; reconciliamos abaixo.
+    const idLocal = uuid();
+    let novo;
     setState((s) => {
       const data = l.data || new Date().toISOString();
       const d = new Date(data);
@@ -185,14 +267,43 @@ export function AppStateProvider({ children }) {
       const descricao =
         (l.descricao && l.descricao.trim()) ||
         `${ordinal(mesmoMes + 1)} Lançamento de ${MESES[d.getMonth()]}`;
-      const novo = {
-        id: uuid(),
+      novo = {
+        id: idLocal,
         descricao,
         valor: Number(l.valor) || 0,
         data,
       };
       return { ...s, lancamentos: [novo, ...s.lancamentos] };
     });
+
+    // Grava no banco (se logado) e troca o id local pelo id real do banco.
+    (async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        const user = userData?.user;
+        if (!user || !novo) return;
+        const { data: inserido } = await supabase
+          .from("lancamentos")
+          .insert({
+            user_id: user.id,
+            descricao: novo.descricao,
+            valor: novo.valor,
+            data: novo.data,
+          })
+          .select("id")
+          .single();
+        if (inserido?.id) {
+          setState((s) => ({
+            ...s,
+            lancamentos: s.lancamentos.map((x) =>
+              x.id === idLocal ? { ...x, id: inserido.id } : x,
+            ),
+          }));
+        }
+      } catch {
+        /* visitante ou falha de rede — segue só no local */
+      }
+    })();
   }, []);
 
   const atualizarLancamento = useCallback((id, dados) => {
@@ -200,14 +311,53 @@ export function AppStateProvider({ children }) {
       ...s,
       lancamentos: s.lancamentos.map((l) => (l.id === id ? { ...l, ...dados } : l)),
     }));
+
+    // Espelha a edição no banco (só os campos que o banco conhece).
+    (async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData?.user) return;
+        const patch = {};
+        if (dados.descricao !== undefined) patch.descricao = dados.descricao;
+        if (dados.valor !== undefined) patch.valor = Number(dados.valor) || 0;
+        if (dados.data !== undefined) patch.data = dados.data;
+        if (Object.keys(patch).length === 0) return;
+        await supabase.from("lancamentos").update(patch).eq("id", id);
+      } catch {
+        /* visitante ou falha de rede — segue só no local */
+      }
+    })();
   }, []);
 
   const removerLancamento = useCallback((id) => {
     setState((s) => ({ ...s, lancamentos: s.lancamentos.filter((l) => l.id !== id) }));
+
+    // Espelha a remoção no banco.
+    (async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData?.user) return;
+        await supabase.from("lancamentos").delete().eq("id", id);
+      } catch {
+        /* visitante ou falha de rede — segue só no local */
+      }
+    })();
   }, []);
 
   const removerTodosLancamentos = useCallback(() => {
     setState((s) => ({ ...s, lancamentos: [] }));
+
+    // Espelha no banco: apaga todos os lançamentos do usuário logado.
+    (async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        const user = userData?.user;
+        if (!user) return;
+        await supabase.from("lancamentos").delete().eq("user_id", user.id);
+      } catch {
+        /* visitante ou falha de rede — segue só no local */
+      }
+    })();
   }, []);
 
   const setTipoMEI = useCallback((t) => {
@@ -337,7 +487,3 @@ export function useAppState() {
   if (!ctx) throw new Error("useAppState precisa estar dentro de <AppStateProvider>");
   return ctx;
 }
-
-
-
-

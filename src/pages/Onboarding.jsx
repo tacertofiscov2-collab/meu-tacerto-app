@@ -121,15 +121,13 @@ export default function Onboarding() {
     try {
       const { data } = await supabase.auth.getUser();
       if (data.user) {
-        await supabase.from("perfis").upsert({
-          id: data.user.id,
+        await supabase.from("perfis").update({
           nome,
-          perfil: tipoMei,
-          plano: "gratuito",
-          mei_esse_ano: meiEsseAno,
-          mes_abertura_mei: mesMei ? parseInt(mesMei) : null,
-          limite_personalizado: limiteFinal,
-        });
+          tipo_mei: tipoCanonico,
+          mes_abertura: meiEsseAno && mesMei ? parseInt(mesMei) : null,
+          ano_abertura: meiEsseAno && mesMei ? anoAtual : null,
+          atualizado_em: new Date().toISOString(),
+        }).eq("id", data.user.id);
       }
     } catch { /* visitante */ }
     navigate("/dashboard");
@@ -422,7 +420,3 @@ export default function Onboarding() {
     </div>
   );
 }
-
-
-
-

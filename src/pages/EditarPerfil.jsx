@@ -7,6 +7,7 @@ import {
 import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
 import { useUserState } from "@/lib/userState";
+import { supabase } from "@/lib/supabase";
 import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 
 const FOTO_KEY = "tacerto_foto_usuario";
@@ -20,6 +21,34 @@ const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
+
+/**
+ * Grava os campos de perfil na tabela `perfis` do Supabase.
+ *
+ * Recebe os valores JÁ RESOLVIDOS (não lê do estado do React), porque
+ * setState é assíncrono: logo após um setTipo/setAbertura o estado ainda
+ * tem o valor antigo. Passando explícito, gravamos o que o usuário
+ * acabou de escolher.
+ *
+ * Só grava os campos presentes no patch (undefined é ignorado).
+ * Silencioso para visitante (sem sessão) — igual ao resto do app.
+ */
+async function sincronizarPerfilNoBanco(patch) {
+  try {
+    const { data } = await supabase.auth.getUser();
+    if (!data?.user) return; // visitante: nada a fazer
+
+    const update = { atualizado_em: new Date().toISOString() };
+    if (patch.nome !== undefined) update.nome = patch.nome;
+    if (patch.tipo !== undefined) update.tipo_mei = patch.tipo;
+    if (patch.mesAbertura !== undefined) update.mes_abertura = patch.mesAbertura;
+    if (patch.anoAbertura !== undefined) update.ano_abertura = patch.anoAbertura;
+
+    await supabase.from("perfis").update(update).eq("id", data.user.id);
+  } catch {
+    /* falha de rede/visitante — não quebra a tela */
+  }
+}
 
 function LinhaFiscal({ Icon, label, valor, onClick, perigo }) {
   return (
@@ -121,7 +150,9 @@ export default function EditarPerfil() {
   }
 
   function salvarAlteracoes() {
-    salvarNome(nome.trim());
+    const nomeLimpo = nome.trim();
+    salvarNome(nomeLimpo);
+    sincronizarPerfilNoBanco({ nome: nomeLimpo });
     setSalvo(true);
     setTimeout(() => setSalvo(false), 1800);
   }
@@ -308,7 +339,11 @@ export default function EditarPerfil() {
         mes={mesAbertura}
         ano={anoAbertura}
         onFechar={() => setCalendarioAberto(false)}
-        onSelecionarMesAno={(m, a) => { setAbertura(m, a); setCalendarioAberto(false); }}
+        onSelecionarMesAno={(m, a) => {
+          setAbertura(m, a);
+          sincronizarPerfilNoBanco({ mesAbertura: m, anoAbertura: a });
+          setCalendarioAberto(false);
+        }}
       />
 
       {menuFoto && (
@@ -441,7 +476,10 @@ export default function EditarPerfil() {
               </button>
               <button
                 onClick={() => {
-                  if (perfilPendente) setTipo(perfilPendente);
+                  if (perfilPendente) {
+                    setTipo(perfilPendente);
+                    sincronizarPerfilNoBanco({ tipo: perfilPendente });
+                  }
                   setConfirmarTroca(false);
                   setPerfilPendente(null);
                 }}
@@ -457,8 +495,3 @@ export default function EditarPerfil() {
     </div>
   );
 }
-
-
-
-
-

@@ -4,7 +4,7 @@ import { ArrowLeft, Eye, EyeOff, Mail, Gauge } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { detectMode } from "@/components/SmartContactInput";
 import AuthError, { translateAuthError } from "@/components/AuthError";
-import { adicionarConta, lerContas } from "@/lib/contas";
+import { adicionarConta } from "@/lib/contas";
 import { setUserState } from "@/lib/userState";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 
@@ -47,16 +47,36 @@ export default function Cadastro() {
     await supabase.auth.signInWithPassword({ email: contato, password: senha });
 
     // Multi-conta: sempre APPEND ao array, nunca sobrescreve.
-    const contasAntes = lerContas();
     // Preserva o nome já digitado (ex.: visitante que passou pelo onboarding).
     const nomeExistente = (typeof window !== "undefined" ? localStorage.getItem("tacerto_nome") : "") || "";
     const nomeFinal = nomeExistente.trim() || contato.split("@")[0];
     adicionarConta({ nome: nomeFinal, email: contato });
     setUserState({ nome: nomeFinal, email: contato, visitante: false });
 
+    // Decide onboarding pelo BANCO, não pelo aparelho: se o perfil deste
+    // usuário ainda não tem os campos fiscais preenchidos (mes_abertura),
+    // ele nunca completou o onboarding → manda pro onboarding.
+    // (O trigger cria a linha em `perfis` no cadastro, mas com esses campos
+    // NULL; só o onboarding os preenche.)
+    let precisaOnboarding = true;
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (user) {
+        const { data: perfil } = await supabase
+          .from("perfis")
+          .select("mes_abertura")
+          .eq("id", user.id)
+          .single();
+        // Já tem mes_abertura preenchido → onboarding já foi feito.
+        if (perfil && perfil.mes_abertura != null) precisaOnboarding = false;
+      }
+    } catch {
+      /* falha de rede → por segurança, mostra o onboarding */
+    }
+
     setLoading(false);
-    // Primeira conta → onboarding. Adição de conta → dashboard.
-    navigate(contasAntes.length === 0 ? "/onboarding" : "/dashboard");
+    navigate(precisaOnboarding ? "/onboarding" : "/dashboard");
   }
 
 
