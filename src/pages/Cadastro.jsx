@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
-import { ArrowLeft, Eye, EyeOff, Mail, Gauge } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Mail, Gauge, MailCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { detectMode } from "@/components/SmartContactInput";
 import AuthError, { translateAuthError } from "@/components/AuthError";
@@ -25,6 +25,10 @@ export default function Cadastro() {
   const [showSenha, setShowSenha] = useState(false);
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
+  // Quando a confirmação de e-mail está LIGADA no Supabase, o cadastro não
+  // loga na hora — mostramos esta tela pedindo para confirmar o e-mail.
+  const [aguardandoConfirmacao, setAguardandoConfirmacao] = useState(false);
+  const [emailConfirmacao, setEmailConfirmacao] = useState("");
 
   const fieldStyle = {
     backgroundColor: "var(--field)",
@@ -39,13 +43,27 @@ export default function Cadastro() {
     if (mode === "phone") return setErro("Cadastro por telefone em breve. Use e-mail.");
     if (senha.length < 8) return setErro("A senha precisa ter pelo menos 8 caracteres.");
     setLoading(true);
-    const { error } = await supabase.auth.signUp({ email: contato, password: senha });
+
+    const { data: signUpData, error } = await supabase.auth.signUp({
+      email: contato,
+      password: senha,
+    });
     if (error) {
       setLoading(false);
       return setErro(translateAuthError(error.message));
     }
-    await supabase.auth.signInWithPassword({ email: contato, password: senha });
 
+    // Detecta o modo pela resposta do Supabase:
+    //  - session preenchida  → confirmação de e-mail DESLIGADA (entra direto).
+    //  - session null        → confirmação de e-mail LIGADA (precisa confirmar).
+    if (!signUpData?.session) {
+      setLoading(false);
+      setEmailConfirmacao(contato);
+      setAguardandoConfirmacao(true);
+      return;
+    }
+
+    // --- Confirmação desligada: fluxo normal (entra na hora) ---
     // Multi-conta: sempre APPEND ao array, nunca sobrescreve.
     // Preserva o nome já digitado (ex.: visitante que passou pelo onboarding).
     const nomeExistente = (typeof window !== "undefined" ? localStorage.getItem("tacerto_nome") : "") || "";
@@ -83,6 +101,60 @@ export default function Cadastro() {
   function handleGoogle() {
     // TODO: configurar Google OAuth no Supabase depois
     setErro("Login com Google em breve.");
+  }
+
+  // Tela de "confira seu e-mail" — aparece quando a confirmação está ligada.
+  if (aguardandoConfirmacao) {
+    return (
+      <div
+        className="min-h-screen min-h-[100dvh] w-full flex flex-col"
+        style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
+      >
+        <div className="px-4 pt-5 shrink-0">
+          <button
+            onClick={() => setAguardandoConfirmacao(false)}
+            aria-label="Voltar"
+            className="w-10 h-10 flex items-center justify-center rounded-lg hover:opacity-80"
+            style={{ color: "var(--text)" }}
+          >
+            <ArrowLeft size={22} strokeWidth={2} />
+          </button>
+        </div>
+
+        <div className="flex-1 flex flex-col justify-center px-6 pb-6">
+          <div className="max-w-sm w-full mx-auto text-center">
+            <div className="flex justify-center mb-5">
+              <span
+                className="w-20 h-20 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: "var(--field)" }}
+              >
+                <MailCheck size={40} strokeWidth={2} style={{ color: "var(--primary)" }} />
+              </span>
+            </div>
+
+            <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>
+              Confirme seu e-mail
+            </h1>
+            <p className="text-sm mt-3 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+              Enviamos um link de confirmação para{" "}
+              <span style={{ color: "var(--text)", fontWeight: 600 }}>{emailConfirmacao}</span>.
+              Abra seu e-mail e clique no link para ativar sua conta. Depois, é só entrar.
+            </p>
+            <p className="text-xs mt-3" style={{ color: "var(--text-tertiary)" }}>
+              Não chegou? Verifique a caixa de spam ou lixo eletrônico.
+            </p>
+
+            <button
+              onClick={() => navigate("/login")}
+              className="w-full mt-7 py-3.5 rounded-xl font-medium text-sm hover:opacity-90"
+              style={{ backgroundColor: "var(--primary)", color: "var(--primary-contrast)" }}
+            >
+              Ir para o login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

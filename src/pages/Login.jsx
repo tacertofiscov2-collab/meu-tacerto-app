@@ -24,9 +24,35 @@ export default function Login() {
     }
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email: contato, password: senha });
+    if (error) {
+      setLoading(false);
+      return setErro(translateAuthError(error.message) || "E-mail ou senha incorretos.");
+    }
+
+    // Decide onboarding pelo BANCO: se o perfil deste usuário ainda não tem
+    // os campos fiscais preenchidos (mes_abertura), ele nunca completou o
+    // onboarding → manda pro onboarding. Isso cobre o caso de quem confirmou
+    // o e-mail e está entrando pela primeira vez (não passou pelo Cadastro),
+    // e também quem abandonou o cadastro antes de terminar o onboarding.
+    let precisaOnboarding = true;
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (user) {
+        const { data: perfil } = await supabase
+          .from("perfis")
+          .select("mes_abertura")
+          .eq("id", user.id)
+          .single();
+        if (perfil && perfil.mes_abertura != null) precisaOnboarding = false;
+      }
+    } catch {
+      /* falha de rede → por segurança, manda pro dashboard (usuário já logado) */
+      precisaOnboarding = false;
+    }
+
     setLoading(false);
-    if (error) return setErro(translateAuthError(error.message) || "E-mail ou senha incorretos.");
-    navigate("/dashboard");
+    navigate(precisaOnboarding ? "/onboarding" : "/dashboard");
   }
 
   const fieldStyle = {
@@ -166,7 +192,3 @@ export default function Login() {
     </div>
   );
 }
-
-
-
-
