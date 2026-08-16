@@ -1,8 +1,9 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ArrowLeft, Check, Info } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
+import { supabase } from "@/lib/supabase";
 
 function Checkbox({ checked, onChange, ariaLabel }) {
   return (
@@ -32,9 +33,10 @@ export default function ExcluirConta() {
   const [ck2, setCk2] = useState(false);
   const [motivo, setMotivo] = useState("");
   const [palavra, setPalavra] = useState("");
+  const [excluindo, setExcluindo] = useState(false);
 
   const podeContinuar = ck1 && ck2;
-  const podeExcluir = palavra === "EXCLUIR";
+  const podeExcluir = palavra.trim().toUpperCase() === "EXCLUIR";
 
   const cardStyle = {
     backgroundColor: "var(--surface)",
@@ -52,7 +54,10 @@ export default function ExcluirConta() {
     else navigate(-1);
   }
 
-  function excluirDefinitivo() {
+  async function excluirDefinitivo() {
+    if (excluindo) return;
+    setExcluindo(true);
+
     // salvar feedback (se houver motivo)
     if (motivo.trim()) {
       try {
@@ -63,10 +68,34 @@ export default function ExcluirConta() {
         localStorage.setItem("tacerto_feedback_exclusoes", JSON.stringify(lista));
       } catch {}
     }
-    // reset completo
+
+    // 1) Apaga a conta NO SERVIDOR (Auth + tabelas via cascade) chamando
+    //    a Edge Function. Sem isso, a conta continuaria viva no Supabase.
     try {
-      resetarConta();
-    } catch {}
+      const { data: sessao } = await supabase.auth.getSession();
+      const token = sessao?.session?.access_token;
+      if (!token) {
+        toast.error("Sua sessão expirou. Entre de novo para excluir.");
+        setExcluindo(false);
+        return;
+      }
+      const { error } = await supabase.functions.invoke("excluir-conta", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (error) {
+        toast.error("Não foi possível excluir agora. Tente de novo.");
+        setExcluindo(false);
+        return;
+      }
+    } catch {
+      toast.error("Falha de conexão. Tente de novo.");
+      setExcluindo(false);
+      return;
+    }
+
+    // 2) Servidor OK: agora desloga e limpa o aparelho.
+    try { await supabase.auth.signOut(); } catch {}
+    try { resetarConta(); } catch {}
     try {
       localStorage.removeItem("tacerto_app_state");
       localStorage.removeItem("tacerto_contas");
@@ -227,16 +256,16 @@ export default function ExcluirConta() {
 
             <div className="pt-2 space-y-3">
               <button
-                disabled={!podeExcluir}
+                disabled={!podeExcluir || excluindo}
                 onClick={() => podeExcluir && excluirDefinitivo()}
                 className="w-full py-4 rounded-xl font-semibold transition-opacity"
                 style={{
-                  backgroundColor: podeExcluir ? "#ef4444" : "var(--field)",
-                  color: podeExcluir ? "#ffffff" : "var(--text-secondary)",
-                  cursor: podeExcluir ? "pointer" : "not-allowed",
+                  backgroundColor: podeExcluir && !excluindo ? "#ef4444" : "var(--field)",
+                  color: podeExcluir && !excluindo ? "#ffffff" : "var(--text-secondary)",
+                  cursor: podeExcluir && !excluindo ? "pointer" : "not-allowed",
                 }}
               >
-                Excluir conta definitivamente
+                {excluindo ? "Excluindo..." : "Excluir conta definitivamente"}
               </button>
               <button
                 onClick={() => navigate("/perfil")}
@@ -252,9 +281,3 @@ export default function ExcluirConta() {
     </div>
   );
 }
-
-
-
-
-
-
