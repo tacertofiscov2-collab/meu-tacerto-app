@@ -2,53 +2,151 @@
    HISTÓRICO DE CONVERSAS DO CHAT DO FISCO
    ===================================================================
 
-   ⚠️  QUANDO O SUPABASE ESTIVER PRONTO, MUDE APENAS ESTE ARQUIVO.  ⚠️
+   As 5 funções públicas (lerConversas, lerConversa, salvarConversa,
+   apagarConversa, apagarTodasConversas) continuam SÍNCRONAS — o chat
+   as chama esperando resposta na hora. Por baixo, elas operam sobre um
+   CACHE em memória (espelhado no localStorage) e disparam a gravação no
+   Supabase em SEGUNDO PLANO, sem travar a interface.
 
-   O chat inteiro conversa SÓ com as funções daqui — ele não sabe
-   (nem precisa saber) se as conversas estão no aparelho ou na nuvem.
+   Fluxo:
+     - Ao logar, o Dashboard chama `carregarConversasDoBanco()` uma vez.
+       Isso busca as conversas do usuário no Supabase e enche o cache.
+     - lerConversas() devolve o cache na hora (rápido, síncrono).
+     - salvarConversa()/apagarConversa() atualizam o cache + localStorage
+       imediatamente E espelham no banco em background.
+     - Visitante (sem sessão): tudo funciona só no local, como antes.
 
-   Para migrar para o Supabase:
-     1. Crie a tabela `conversas` (id, user_id, titulo, mensagens,
-        criada_em, atualizada_em).
-     2. Reescreva as 5 funções abaixo usando o cliente do Supabase.
-     3. Pronto. Nenhum outro arquivo do app precisa mudar.
-
-   Enquanto isso, tudo fica salvo no localStorage do aparelho.
-   Limitação conhecida: se o usuário trocar de celular ou limpar os
-   dados do navegador, o histórico se perde. É por isso que a
-   migração para o Supabase importa.
+   Nomes de coluna do banco (snake_case) x objeto do app (camelCase):
+     banco:  id, user_id, titulo, mensagens(jsonb), criada_em, atualizada_em
+     app:    id, titulo, mensagens, criadaEm, atualizadaEm
+   As funções de tradução ficam logo abaixo.
    =================================================================== */
 
+   import { supabase } from "@/lib/supabase";
+
    const CHAVE = "tacerto_conversas_fisco";
-   const MAX_CONVERSAS = 50; // guarda as 50 mais recentes
+   const MAX_CONVERSAS = 50; // guarda as 50 mais recentes no cache local
    
-   /** Lê todas as conversas, da mais recente para a mais antiga. */
-   export function lerConversas() {
+   // Cache em memória — fonte síncrona para o chat.
+   let cache = null;
+   
+   // ---- localStorage: base do cache (sobrevive a reload, funciona deslogado) ----
+   
+   function lerLocal() {
      if (typeof window === "undefined") return [];
      try {
        const bruto = localStorage.getItem(CHAVE);
        if (!bruto) return [];
        const lista = JSON.parse(bruto);
-       if (!Array.isArray(lista)) return [];
-       return lista.sort(
-         (a, b) => new Date(b.atualizadaEm) - new Date(a.atualizadaEm),
-       );
+       return Array.isArray(lista) ? lista : [];
      } catch {
        return [];
      }
    }
    
-   /** Busca uma conversa específica pelo id. */
+   function gravarLocal(lista) {
+     if (typeof window === "undefined") return;
+     try {
+       localStorage.setItem(CHAVE, JSON.stringify(lista.slice(0, MAX_CONVERSAS)));
+     } catch {
+       // Sem espaço: tenta guardar só as 10 mais recentes.
+       try {
+         localStorage.setItem(CHAVE, JSON.stringify(lista.slice(0, 10)));
+       } catch {
+         /* desiste em silêncio — não vale quebrar o chat por causa disso */
+       }
+     }
+   }
+   
+   function garantirCache() {
+     if (cache === null) cache = lerLocal();
+     return cache;
+   }
+   
+   function ordenar(lista) {
+     return [...lista].sort(
+       (a, b) => new Date(b.atualizadaEm) - new Date(a.atualizadaEm),
+     );
+   }
+   
+   // Escreve o cache (e o localStorage) de uma vez.
+   function setCache(lista) {
+     cache = ordenar(lista).slice(0, MAX_CONVERSAS);
+     gravarLocal(cache);
+     return cache;
+   }
+   
+   // ---- tradução banco <-> app ----
+   
+   function doBanco(row) {
+     return {
+       id: row.id,
+       titulo: row.titulo,
+       mensagens: Array.isArray(row.mensagens) ? row.mensagens : [],
+       criadaEm: row.criada_em,
+       atualizadaEm: row.atualizada_em,
+     };
+   }
+   
+   // ---- sessão ----
+   
+   async function usuarioLogado() {
+     try {
+       const { data } = await supabase.auth.getUser();
+       return data?.user || null;
+     } catch {
+       return null;
+     }
+   }
+   
+   // ===================================================================
+   // API PÚBLICA
+   // ===================================================================
+   
+   /**
+    * Carrega as conversas do usuário logado a partir do banco e enche o
+    * cache. Deve ser chamada uma vez ao logar (o Dashboard faz isso).
+    * É assíncrona — retorna a lista já pronta, mas o chat NÃO depende de
+    * esperar por ela: enquanto isso, lerConversas() já devolve o cache local.
+    */
+   export async function carregarConversasDoBanco() {
+     const user = await usuarioLogado();
+     if (!user) {
+       // Visitante: cache é só o que estiver no local.
+       return garantirCache();
+     }
+     try {
+       const { data } = await supabase
+         .from("conversas")
+         .select("id, titulo, mensagens, criada_em, atualizada_em")
+         .eq("user_id", user.id)
+         .order("atualizada_em", { ascending: false });
+   
+       if (Array.isArray(data)) {
+         return setCache(data.map(doBanco));
+       }
+     } catch {
+       /* falha de rede — mantém o cache local */
+     }
+     return garantirCache();
+   }
+   
+   /** Lê todas as conversas, da mais recente para a mais antiga (síncrono). */
+   export function lerConversas() {
+     return ordenar(garantirCache());
+   }
+   
+   /** Busca uma conversa específica pelo id (síncrono). */
    export function lerConversa(id) {
-     return lerConversas().find((c) => c.id === id) || null;
+     return garantirCache().find((c) => c.id === id) || null;
    }
    
    /**
     * Salva (cria ou atualiza) uma conversa.
+    * Atualiza o cache na hora e espelha no banco em segundo plano.
     * O título sai da primeira mensagem do usuário, cortado.
     */
    export function salvarConversa(id, mensagens) {
-     if (typeof window === "undefined") return null;
      if (!Array.isArray(mensagens) || mensagens.length === 0) return null;
    
      const primeiraDoUsuario = mensagens.find((m) => m.autor === "user");
@@ -57,7 +155,7 @@
        : "Conversa";
    
      const agora = new Date().toISOString();
-     const lista = lerConversas();
+     const lista = garantirCache();
      const existente = lista.find((c) => c.id === id);
    
      const conversa = {
@@ -68,43 +166,58 @@
        atualizadaEm: agora,
      };
    
-     const novaLista = [conversa, ...lista.filter((c) => c.id !== id)].slice(
-       0,
-       MAX_CONVERSAS,
-     );
+     setCache([conversa, ...lista.filter((c) => c.id !== id)]);
    
-     try {
-       localStorage.setItem(CHAVE, JSON.stringify(novaLista));
-     } catch {
-       // Sem espaço no localStorage: descarta as mais antigas e tenta de novo.
+     // Espelha no banco em segundo plano (só se logado).
+     (async () => {
+       const user = await usuarioLogado();
+       if (!user) return;
        try {
-         localStorage.setItem(CHAVE, JSON.stringify(novaLista.slice(0, 10)));
+         await supabase.from("conversas").upsert({
+           id,
+           user_id: user.id,
+           titulo,
+           mensagens,
+           criada_em: conversa.criadaEm,
+           atualizada_em: conversa.atualizadaEm,
+         });
        } catch {
-         /* desiste em silêncio — não vale quebrar o chat por causa disso */
+         /* falha de rede — fica salvo no local, sincroniza depois */
        }
-     }
+     })();
+   
      return conversa;
    }
    
-   /** Apaga uma conversa. */
+   /** Apaga uma conversa (cache na hora + banco em segundo plano). */
    export function apagarConversa(id) {
-     if (typeof window === "undefined") return;
-     try {
-       const lista = lerConversas().filter((c) => c.id !== id);
-       localStorage.setItem(CHAVE, JSON.stringify(lista));
-     } catch {
-       /* ignora */
-     }
+     const lista = garantirCache();
+     setCache(lista.filter((c) => c.id !== id));
+   
+     (async () => {
+       const user = await usuarioLogado();
+       if (!user) return;
+       try {
+         await supabase.from("conversas").delete().eq("id", id);
+       } catch {
+         /* ignora */
+       }
+     })();
    }
    
-   /** Apaga tudo. */
+   /** Apaga tudo (cache na hora + banco em segundo plano). */
    export function apagarTodasConversas() {
-     if (typeof window === "undefined") return;
-     try {
-       localStorage.removeItem(CHAVE);
-     } catch {
-       /* ignora */
-     }
+     setCache([]);
+   
+     (async () => {
+       const user = await usuarioLogado();
+       if (!user) return;
+       try {
+         await supabase.from("conversas").delete().eq("user_id", user.id);
+       } catch {
+         /* ignora */
+       }
+     })();
    }
    
    /** Gera um id novo para uma conversa. */
