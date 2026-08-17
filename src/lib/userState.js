@@ -1,5 +1,4 @@
 import { useAppState } from "@/context/AppStateContext";
-
 /**
  * userState.js — camada de compatibilidade sobre AppStateContext.
  *
@@ -10,12 +9,9 @@ import { useAppState } from "@/context/AppStateContext";
  * Agora useUserState() é só uma ponte de nomes para useAppState(),
  * garantindo uma ÚNICA fonte de verdade.
  */
-
 const FOTO_KEY = "tacerto_foto_usuario";
-
 export function useUserState() {
   const app = useAppState();
-
   return {
     nome: app.nome || "",
     email: app.email || null,
@@ -34,7 +30,6 @@ export function useUserState() {
     setAbertura: (mes, ano) => app.setMesAnoAbertura(mes, ano),
   };
 }
-
 // Utilitário síncrono para código fora de componentes React (ex: guards de rota).
 export function getUserState() {
   if (typeof window === "undefined") {
@@ -77,12 +72,17 @@ export function getUserState() {
     };
   }
 }
-
 export function setUserState(patch) {
   // Mantido por compatibilidade com chamadas antigas fora de componentes
   // (ex: Onboarding antes de navegar). Escreve nas chaves legadas que o
   // AppStateContext lê na migração/sync — o próprio contexto absorve o patch
   // no próximo evento "tacerto-user-changed".
+  //
+  // IMPORTANTE (mês/ano de abertura): quando o patch traz `null` — caso de
+  // quem abriu o MEI em anos anteriores e responde "já faz tempo" no
+  // onboarding — a chave precisa ser REMOVIDA, não ignorada. Antes, `null`
+  // não fazia nada e uma data antiga do aparelho continuava valendo, fazendo
+  // o Editar perfil mostrar uma data em vez de "Não informado".
   if (typeof window === "undefined") return;
   try {
     if (patch.nome != null) localStorage.setItem("tacerto_nome", String(patch.nome));
@@ -90,14 +90,24 @@ export function setUserState(patch) {
     if (patch.tipo != null) localStorage.setItem("tacerto_tipo", String(patch.tipo));
     if (patch.visitante != null)
       localStorage.setItem("tacerto_visitante", patch.visitante ? "true" : "false");
-    if (patch.mesAbertura != null)
+
+    // mês de abertura: grava quando tem valor, LIMPA quando vem null explícito
+    if (patch.mesAbertura != null) {
       localStorage.setItem("tacerto_mes_abertura", String(patch.mesAbertura));
-    if (patch.anoAbertura != null)
+    } else if ("mesAbertura" in patch) {
+      localStorage.removeItem("tacerto_mes_abertura");
+    }
+
+    // ano de abertura: mesma regra
+    if (patch.anoAbertura != null) {
       localStorage.setItem("tacerto_ano_abertura", String(patch.anoAbertura));
+    } else if ("anoAbertura" in patch) {
+      localStorage.removeItem("tacerto_ano_abertura");
+    }
+
     window.dispatchEvent(new Event("tacerto-user-changed"));
   } catch {}
 }
-
 export function setVisitante(v) {
   if (typeof window === "undefined") return;
   try {
@@ -105,5 +115,4 @@ export function setVisitante(v) {
     window.dispatchEvent(new Event("tacerto-user-changed"));
   } catch {}
 }
-
 export { FOTO_KEY };

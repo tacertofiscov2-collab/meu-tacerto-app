@@ -1,24 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Briefcase, CalendarDays, Check, Trash2, ChevronRight,
+  ArrowLeft, Briefcase, CalendarDays, Check, Pencil, Trash2, X, ChevronRight,
 } from "lucide-react";
 
 import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
 import { useUserState } from "@/lib/userState";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 
-// ---------------------------------------------------------------------
-// Espaçamentos ajustáveis desta tela.
-// A SOMA de ACIMA + ABAIXO do avatar define onde começam os cards:
-// mudando um e compensando no outro, só a bola se move.
-// ---------------------------------------------------------------------
-const ESPACO_ACIMA_AVATAR = 28;
-const ESPACO_ABAIXO_AVATAR = 28;
-const ESPACO_ANTES_INFO_PESSOAIS = 32;
-const ESPACO_ANTES_PERFIL_FISCAL = 8;
+const FOTO_KEY = "tacerto_foto_usuario";
 
 const LABEL_PERFIL = {
   MEI: "MEI (outras atividades)",
@@ -96,6 +89,7 @@ function LinhaFiscal({ Icon, label, valor, onClick, perigo }) {
 
 export default function EditarPerfil() {
   const navigate = useNavigate();
+  const fileRef = useRef(null);
 
   const {
     nome: nomeSalvo, email, visitante, tipo, mesAbertura, anoAbertura,
@@ -106,8 +100,14 @@ export default function EditarPerfil() {
   const [selecionarTipo, setSelecionarTipo] = useState(false);
   const [perfilPendente, setPerfilPendente] = useState(null);
   const [confirmarTroca, setConfirmarTroca] = useState(false);
+  const [menuFoto, setMenuFoto] = useState(false);
   const [calendarioAberto, setCalendarioAberto] = useState(false);
   const [salvo, setSalvo] = useState(false);
+
+  const [foto, setFoto] = useState(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(FOTO_KEY) || null;
+  });
 
   const temMudanca = nome.trim() !== (nomeSalvo || "").trim() && nome.trim() !== "";
 
@@ -124,6 +124,75 @@ export default function EditarPerfil() {
     mesAbertura && anoAbertura
       ? `${MESES[Number(mesAbertura) - 1]} de ${anoAbertura}`
       : "Não informado";
+
+  function imagemParaJpeg(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const max = 512;
+        let w = img.width, h = img.height;
+        if (w > h && w > max) { h = h * (max / w); w = max; }
+        else if (h > max) { w = w * (max / h); h = max; }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("x"))), "image/jpeg", 0.85);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("x")); };
+      img.src = url;
+    });
+  }
+
+  async function handleFoto(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setMenuFoto(false);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const b64 = reader.result;
+      try {
+        localStorage.setItem(FOTO_KEY, b64);
+        window.dispatchEvent(new Event("tacerto-user-changed"));
+      } catch {}
+      setFoto(b64);
+    };
+    reader.readAsDataURL(file);
+
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user) return;
+
+      let blob;
+      try { blob = await imagemParaJpeg(file); }
+      catch { toast.error("Nao consegui ler essa imagem. Tente outra."); return; }
+
+      const caminho = `${user.id}/avatar.jpg`;
+      const { error: upErr } = await supabase.storage
+        .from("avatares")
+        .upload(caminho, blob, { upsert: true, contentType: "image/jpeg" });
+      if (upErr) { toast.error("Falha ao enviar a foto. Tente de novo."); return; }
+
+      const { data: pub } = supabase.storage.from("avatares").getPublicUrl(caminho);
+      const url = pub?.publicUrl ? `${pub.publicUrl}?t=${Date.now()}` : null;
+      if (!url) return;
+      await supabase.from("perfis").update({ foto_url: url }).eq("id", user.id);
+      try { localStorage.setItem(FOTO_KEY, url); } catch {}
+      setFoto(url);
+      window.dispatchEvent(new Event("tacerto-user-changed"));
+    } catch {}
+  }
+  function removerFoto() {
+    try {
+      localStorage.removeItem(FOTO_KEY);
+      window.dispatchEvent(new Event("tacerto-user-changed"));
+    } catch {}
+    setFoto(null);
+    setMenuFoto(false);
+  }
 
   function salvarAlteracoes() {
     const nomeLimpo = nome.trim();
@@ -163,42 +232,54 @@ export default function EditarPerfil() {
         className="conteudo-rolavel hide-scrollbar px-5"
         style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom))" }}
       >
-        {/* Avatar: só a inicial. A opção de foto foi retirada no piloto
-            (será reativada quando o app for empacotado como nativo). */}
-        <div
-          className="flex flex-col items-center"
-          style={{ paddingTop: ESPACO_ACIMA_AVATAR, paddingBottom: ESPACO_ABAIXO_AVATAR }}
-        >
-          <div
-            className="rounded-full overflow-hidden shrink-0 flex items-center justify-center"
-            style={{
-              width: 80,
-              height: 80,
-              minWidth: 80,
-              minHeight: 80,
-              boxSizing: "border-box",
-              flexShrink: 0,
-              background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
-              backdropFilter: "blur(6px) saturate(160%)",
-              WebkitBackdropFilter: "blur(6px) saturate(160%)",
-              border: "1px solid var(--vidro-borda)",
-              boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
-            }}
-            aria-label="Avatar"
-          >
-            <span className="font-bold" style={{ color: "var(--primary)", fontSize: 34 }}>
-              {inicial || "?"}
-            </span>
+        <div className="flex flex-col items-center pt-2 pb-4">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => { if (!visitante) setMenuFoto(true); }}
+              className="block w-20 h-20 rounded-full overflow-hidden active:opacity-80"
+              style={{
+                backgroundColor: "var(--field)",
+                cursor: visitante ? "default" : "pointer",
+              }}
+              aria-label={visitante ? "Avatar" : "Alterar foto"}
+            >
+              {foto && !visitante ? (
+                <img src={foto} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="font-bold" style={{ color: "var(--primary)", fontSize: 32 }}>
+                    {inicial}
+                  </span>
+                </div>
+              )}
+            </button>
+            {!visitante && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setMenuFoto(true)}
+                  aria-label="Editar foto"
+                  className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center shadow"
+                  style={{ backgroundColor: "var(--primary)" }}
+                >
+                  <Pencil size={14} style={{ color: "var(--primary-contrast)" }} />
+                </button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFoto}
+                />
+              </>
+            )}
           </div>
         </div>
 
         <p
           className="text-[12px] font-semibold uppercase mb-2"
-          style={{
-            color: "var(--text-tertiary)",
-            letterSpacing: "0.06em",
-            marginTop: ESPACO_ANTES_INFO_PESSOAIS,
-          }}
+          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
         >
           Informações pessoais
         </p>
@@ -222,7 +303,7 @@ export default function EditarPerfil() {
               spellCheck={false}
               onChange={(e) => setNome(e.target.value)}
               placeholder="Seu nome"
-              className="w-full bg-transparent text-[15px] font-semibold outline-none"
+              className="campo-tacerto w-full bg-transparent text-[15px] font-semibold outline-none"
               style={{ color: "var(--text)", border: "none", boxShadow: "none" }}
             />
           </div>
@@ -266,12 +347,8 @@ export default function EditarPerfil() {
         )}
 
         <p
-          className="text-[12px] font-semibold uppercase mb-2"
-          style={{
-            color: "var(--text-tertiary)",
-            letterSpacing: "0.06em",
-            marginTop: ESPACO_ANTES_PERFIL_FISCAL,
-          }}
+          className="text-[12px] font-semibold uppercase mb-2 mt-4"
+          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
         >
           Perfil fiscal
         </p>
@@ -313,6 +390,55 @@ export default function EditarPerfil() {
           setCalendarioAberto(false);
         }}
       />
+
+      {menuFoto && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+          onClick={() => setMenuFoto(false)}
+        >
+          <div
+            className="w-full max-w-md p-4 space-y-2"
+            style={{
+              backgroundColor: "var(--surface)",
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-1 pb-1">
+              <p className="text-base font-bold" style={{ color: "var(--text)" }}>
+                Foto de perfil
+              </p>
+              <button
+                onClick={() => setMenuFoto(false)}
+                aria-label="Fechar"
+                className="w-8 h-8 rounded-full flex items-center justify-center"
+                style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
+              >
+                <X size={16} style={{ color: "var(--text)" }} />
+              </button>
+            </div>
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="w-full py-3.5 rounded-xl font-semibold text-sm"
+              style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
+            >
+              {foto ? "Trocar foto" : "Escolher foto"}
+            </button>
+            {foto && (
+              <button
+                onClick={removerFoto}
+                className="w-full py-3.5 rounded-xl font-semibold text-sm"
+                style={{ backgroundColor: "var(--field)", color: "var(--danger)" }}
+              >
+                Remover foto
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {selecionarTipo && (
         <div
