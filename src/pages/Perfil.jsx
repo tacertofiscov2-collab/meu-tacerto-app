@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
 import {
@@ -96,7 +96,9 @@ export default function Perfil() {
   }, []);
 
   const totalContas = contas.length;
-  const temMultiplas = !visitante && totalContas >= 2;
+  // MULTI-CONTA: escondido no piloto (vira plano pago na monetização).
+  // Para reativar, restaure: !visitante && totalContas >= 2
+  const temMultiplas = false;
   const nomeExibido = nome && nome.trim() ? nome : "Visitante";
   const inicial = (nomeExibido || "?").trim().charAt(0).toUpperCase();
   const anoAtual = new Date().getFullYear();
@@ -140,13 +142,15 @@ export default function Perfil() {
     if (restantes.length === 0) setSeletorAberto(false);
   }
 
-  let contaItem;
+  // MULTI-CONTA escondido no piloto (vira plano pago na monetização).
+  // Visitante ainda pode cadastrar; quem já está logado não vê opção de
+  // adicionar/trocar conta. Para reativar, restaure o if/else completo:
+  //   if (visitante) { ...Cadastrar conta... }
+  //   else if (totalContas <= 1) { ...Adicionar nova conta... }
+  //   else { ...Trocar de conta (setSeletorAberto)... }
+  let contaItem = null;
   if (visitante) {
     contaItem = { Icon: UserPlus, label: "Cadastrar conta", onClick: () => navigate("/cadastro", DE_PERFIL) };
-  } else if (totalContas <= 1) {
-    contaItem = { Icon: UserPlus, label: "Adicionar nova conta", onClick: () => navigate("/cadastro", DE_PERFIL) };
-  } else {
-    contaItem = { Icon: Users, label: "Trocar de conta", onClick: () => setSeletorAberto(true) };
   }
 
   return (
@@ -226,7 +230,7 @@ export default function Perfil() {
           <Secao titulo="Geral" primeira>
             <Item Icon={User} label="Editar perfil" onClick={() => navigate("/editar-perfil", DE_PERFIL)} />
             <Item Icon={Settings} label="Preferências" onClick={() => navigate("/preferencias", DE_PERFIL)} />
-            <Item Icon={contaItem.Icon} label={contaItem.label} onClick={contaItem.onClick} />
+            {contaItem && <Item Icon={contaItem.Icon} label={contaItem.label} onClick={contaItem.onClick} />}
           </Secao>
 
           <Secao titulo="Meu MEI">

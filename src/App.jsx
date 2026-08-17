@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+﻿import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
 import TransicaoTela from "./components/TransicaoTela.jsx";
@@ -21,7 +21,6 @@ import Historico from "./pages/Historico.jsx";
 import Alertas from "./pages/Alertas.jsx";
 import Preferencias from "./pages/Preferencias.jsx";
 import Faq from "./pages/Faq.jsx";
-import Contas from "./pages/Contas.jsx";
 import Velocimetro from "./pages/Velocimetro.jsx";
 import AlterarSenha from "./pages/AlterarSenha.jsx";
 import EditarPerfil from "./pages/EditarPerfil.jsx";
@@ -35,21 +34,21 @@ import AdicionarFaturamentoEnviar from "./pages/AdicionarFaturamentoEnviar.jsx";
 import AdicionarFaturamentoColar from "./pages/AdicionarFaturamentoColar.jsx";
 
 /* ===================================================================
-   NAVEGAÇÃO POR GESTO — DESATIVADA DE PROPÓSITO
+   NAVEGAÃ‡ÃƒO POR GESTO â€” DESATIVADA DE PROPÃ“SITO
 
-   O gesto de "arrastar para voltar" entre telas foi desligado. Não é
-   bug esquecido: a decisão está documentada em PENDENCIAS_FUTURAS.md,
+   O gesto de "arrastar para voltar" entre telas foi desligado. NÃ£o Ã©
+   bug esquecido: a decisÃ£o estÃ¡ documentada em PENDENCIAS_FUTURAS.md,
    na raiz do projeto. Resumo: dentro do navegador o resultado nunca
-   ficou 100% liso, e a solução correta é empacotar com Capacitor
-   antes do lançamento, ganhando o gesto nativo do próprio sistema.
+   ficou 100% liso, e a soluÃ§Ã£o correta Ã© empacotar com Capacitor
+   antes do lanÃ§amento, ganhando o gesto nativo do prÃ³prio sistema.
 
    Os componentes AbasDeslizantes.jsx, TelaComVoltarReal.jsx e
    VoltarAnimadoContext.js continuam no projeto, prontos para quando
-   for a hora — só não estão mais em uso aqui.
+   for a hora â€” sÃ³ nÃ£o estÃ£o mais em uso aqui.
 
-   CONTINUAM ATIVOS (não mexer): os slides do Welcome e o carrossel
-   A/B do velocímetro no Dashboard. Esses são deslizes INTERNOS de
-   componente, funcionam bem e não dependem de nada disto.
+   CONTINUAM ATIVOS (nÃ£o mexer): os slides do Welcome e o carrossel
+   A/B do velocÃ­metro no Dashboard. Esses sÃ£o deslizes INTERNOS de
+   componente, funcionam bem e nÃ£o dependem de nada disto.
    =================================================================== */
 
 export default function App() {
@@ -71,7 +70,6 @@ export default function App() {
 
           <Route path="/editar-perfil" element={<EditarPerfil />} />
           <Route path="/preferencias" element={<Preferencias />} />
-          <Route path="/contas" element={<Contas />} />
           <Route path="/alterar-senha" element={<AlterarSenha />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/sobre" element={<Sobre />} />

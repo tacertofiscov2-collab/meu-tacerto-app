@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+﻿import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import {
   Gauge, TrendingUp, ChevronRight, ArrowLeft, Pencil, FileUp, Plus,
@@ -353,14 +353,15 @@ export default function Welcome() {
         </span>
       </div>
 
-      <div ref={scrollerRef} className="flex-1 min-h-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar" style={{ touchAction: "pan-x" }}>
+      <div ref={scrollerRef} className="min-h-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar" style={{ touchAction: "pan-x" }}>
         {SLIDES.map(({ Mini }, i) => (
           <div key={i} className="min-w-full snap-center flex flex-col min-h-0">
-            <div className="flex-1 min-h-0 flex justify-center px-6 pt-2">
+            <div className="flex justify-center px-6 pt-2">
               <div className="w-full flex flex-col min-h-0" style={{ maxWidth: 250 }}>
                 <div
-                  className="relative w-full flex flex-col flex-1 min-h-0"
+                  className="relative w-full flex flex-col"
                   style={{
+                    height: "48dvh",
                     borderTopLeftRadius: 34,
                     borderTopRightRadius: 34,
                     borderLeft: "1.5px solid rgba(34,197,94,0.55)",
@@ -413,16 +414,6 @@ export default function Welcome() {
           <button onClick={() => navigate("/cadastro")} className="w-full py-2.5 rounded-xl font-semibold transition-opacity hover:opacity-90" style={{ backgroundColor: VERDE, color: "var(--primary-contrast)", fontSize: 13 }}>
             Criar conta
           </button>
-          <button
-            onClick={() => {
-              try { localStorage.setItem("tacerto_visitante", "true"); } catch {}
-              navigate("/onboarding");
-            }}
-            className="w-full py-2.5 rounded-xl font-semibold transition-opacity hover:opacity-90"
-            style={{ backgroundColor: "var(--field)", color: "var(--text-secondary)", border: "1px solid var(--border)", marginTop: 9, fontSize: 13 }}
-          >
-            Entrar sem conta
-          </button>
           <p className="text-center text-sm mt-3.5" style={{ color: "var(--text-secondary)" }}>
             Já tem conta?{" "}
             <button onClick={() => navigate("/login")} className="font-semibold" style={{ color: VERDE }}>Entrar</button>
@@ -432,6 +423,3 @@ export default function Welcome() {
     </div>
   );
 }
-
-
-
