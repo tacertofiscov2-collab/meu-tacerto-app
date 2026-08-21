@@ -32,23 +32,24 @@ import AdicionarFaturamento from "./pages/AdicionarFaturamento.jsx";
 import AdicionarFaturamentoDigitar from "./pages/AdicionarFaturamentoDigitar.jsx";
 import AdicionarFaturamentoEnviar from "./pages/AdicionarFaturamentoEnviar.jsx";
 import AdicionarFaturamentoColar from "./pages/AdicionarFaturamentoColar.jsx";
+import ChatFiscoPagina from "./pages/ChatFiscoPagina.jsx";
 
 /* ===================================================================
-   NAVEGAÃ‡ÃƒO POR GESTO â€” DESATIVADA DE PROPÃ“SITO
+   NAVEGACAO POR GESTO - DESATIVADA DE PROPOSITO
 
-   O gesto de "arrastar para voltar" entre telas foi desligado. NÃ£o Ã©
-   bug esquecido: a decisÃ£o estÃ¡ documentada em PENDENCIAS_FUTURAS.md,
+   O gesto de "arrastar para voltar" entre telas foi desligado. Nao e
+   bug esquecido: a decisao esta documentada em PENDENCIAS_FUTURAS.md,
    na raiz do projeto. Resumo: dentro do navegador o resultado nunca
-   ficou 100% liso, e a soluÃ§Ã£o correta Ã© empacotar com Capacitor
-   antes do lanÃ§amento, ganhando o gesto nativo do prÃ³prio sistema.
+   ficou 100% liso, e a solucao correta e empacotar com Capacitor
+   antes do lancamento, ganhando o gesto nativo do proprio sistema.
 
    Os componentes AbasDeslizantes.jsx, TelaComVoltarReal.jsx e
    VoltarAnimadoContext.js continuam no projeto, prontos para quando
-   for a hora â€” sÃ³ nÃ£o estÃ£o mais em uso aqui.
+   for a hora - so nao estao mais em uso aqui.
 
-   CONTINUAM ATIVOS (nÃ£o mexer): os slides do Welcome e o carrossel
-   A/B do velocÃ­metro no Dashboard. Esses sÃ£o deslizes INTERNOS de
-   componente, funcionam bem e nÃ£o dependem de nada disto.
+   CONTINUAM ATIVOS (nao mexer): os slides do Welcome e o carrossel
+   A/B do velocimetro no Dashboard. Esses sao deslizes INTERNOS de
+   componente, funcionam bem e nao dependem de nada disto.
    =================================================================== */
 
 export default function App() {
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="/perfil/resumo" element={<ResumoPerfil />} />
           <Route path="/alertas" element={<Alertas />} />
           <Route path="/regra-vinte" element={<RegraVinte />} />
+          <Route path="/fisco" element={<ChatFiscoPagina />} />
 
           <Route path="/lancar" element={<Lancar />} />
           <Route path="/lancar/limite-atingido" element={<LimiteAtingido />} />
@@ -106,6 +108,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-
-
-

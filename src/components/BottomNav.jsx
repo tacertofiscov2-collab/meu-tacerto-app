@@ -2,7 +2,6 @@ import { useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TrilhoContext } from "./TrilhoContext.js";
 import { Home, Plus, User } from "lucide-react";
-import { useUserState } from "@/lib/userState";
 
 const ROTAS_COM_NAVBAR = ["/dashboard", "/perfil"];
 
@@ -10,7 +9,6 @@ export default function BottomNav({ ativo }) {
   const navigate = useNavigate();
   const location = useLocation();
   const dentroDoTrilho = useContext(TrilhoContext);
-  const { nome, visitante } = useUserState();
 
   /* Dentro do trilho deslizante (AbasDeslizantes), cada tela traria o
      seu próprio rodapé e os dois andariam junto com o arrasto. Nesse
@@ -25,10 +23,6 @@ export default function BottomNav({ ativo }) {
       ? localStorage.getItem("tacerto_foto_usuario") ||
         localStorage.getItem("tacerto_foto") ||
         null
-      : null;
-  const inicial =
-    !visitante && nome && nome !== "Usuário"
-      ? String(nome).trim().charAt(0).toUpperCase()
       : null;
 
   const ICON_SIZE = 26;
@@ -122,9 +116,9 @@ export default function BottomNav({ ativo }) {
           <span
             style={{
               /* box-sizing: sem ele a borda somava ao tamanho e a foto
-                 era espremida, ficando menor que o círculo da inicial.
-                 O marginTop negativo compensa os px extras da foto,
-                 mantendo o rótulo "Perfil" alinhado com o "Início". */
+                 era espremida, ficando menor que o ícone. O marginTop
+                 negativo compensa os px extras da foto, mantendo o
+                 rótulo "Perfil" alinhado com o "Início". */
               marginTop: -(FOTO_SIZE - AVATAR_SIZE),
               width: FOTO_SIZE,
               height: FOTO_SIZE,
@@ -150,23 +144,9 @@ export default function BottomNav({ ativo }) {
               }}
             />
           </span>
-        ) : inicial ? (
-          <span
-            style={{
-              width: AVATAR_SIZE,
-              height: AVATAR_SIZE,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: corTexto(ativo === "perfil"),
-              fontSize: 17,
-              fontWeight: 700,
-              lineHeight: 1,
-            }}
-          >
-            {inicial}
-          </span>
         ) : (
+          /* Sem foto: o boneco simples, no mesmo tamanho da casinha e
+             sem círculo em volta (antes aqui aparecia a inicial do nome). */
           <User
             size={ICON_SIZE}
             strokeWidth={ativo === "perfil" ? 2.5 : 2}

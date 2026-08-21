@@ -1,5 +1,6 @@
 ﻿import { useNavigate } from "react-router-dom";
 import { useRef, useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Bell, Gauge, TrendingUp, ChevronRight, Receipt, Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList, Copy, CornerUpLeft, Pencil, History, MessageSquarePlus, Trash2, Sparkles, MessageCircleQuestion } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
@@ -14,9 +15,14 @@ import {
   carregarConversasDoBanco,
 } from "@/lib/chatHistorico";
 
-/* Marca de onde a navegaÃ§Ã£o partiu: o TelaComVoltarReal usa isso para
-   mostrar a tela certa por trÃ¡s quando o usuÃ¡rio arrasta para voltar. */
+/* Marca de onde a navegação partiu: o TelaComVoltarReal usa isso para
+   mostrar a tela certa por trás quando o usuário arrasta para voltar. */
 const DE_DASHBOARD = { state: { de: "dashboard" } };
+
+/* Altura maxima do campo da caixinha do Fisco (em px). Ele cresce com o
+   texto ate esse limite e depois rola por dentro, com a barra de rolagem
+   visivel. ~150px da umas 6 linhas. */
+const MAX_ALTURA_CAIXA_FISCO = 150;
 
 const MESES_CURTO = [
   "jan", "fev", "mar", "abr", "mai", "jun",
@@ -24,10 +30,10 @@ const MESES_CURTO = [
 ];
 
 /* ===================================================================
-   VIDRO â€” os valores vÃªm do index.css e mudam com o tema.
+   VIDRO — os valores vêm do index.css e mudam com o tema.
 
-   No tema escuro o fundo Ã© quase preto com brilhos brancos; no tema
-   claro, fundo quase branco com brilhos suaves. Ver as variÃ¡veis
+   No tema escuro o fundo é quase preto com brilhos brancos; no tema
+   claro, fundo quase branco com brilhos suaves. Ver as variáveis
    --vidro-* em src/index.css.
    =================================================================== */
 const VIDRO = {
@@ -63,60 +69,60 @@ const VIDRO_CHAT = {
 };
 
 
-/* Perguntas sugeridas por situaÃ§Ã£o. Tocar numa delas abre o chat do
-   Fisco jÃ¡ com a pergunta enviada. */
+/* Perguntas sugeridas por situação. Tocar numa delas abre o chat do
+   Fisco já com a pergunta enviada. */
 const PERGUNTAS_POR_FAIXA = {
   tranquilo: [
     "Quanto ainda posso faturar este ano?",
-    "Quando vence o DAS e quanto Ã©?",
-    "Preciso emitir nota em todo serviÃ§o?",
+    "Quando vence o DAS e quanto é?",
+    "Preciso emitir nota em todo serviço?",
     "O que acontece se eu atrasar o DAS?",
-    "Como funciona a declaraÃ§Ã£o anual (DASN)?",
-    "Posso ter funcionÃ¡rio sendo MEI?",
+    "Como funciona a declaração anual (DASN)?",
+    "Posso ter funcionário sendo MEI?",
     "Tenho direito a aposentadoria?",
     "E se eu ficar doente, recebo alguma coisa?",
     "Posso ter mais de um MEI?",
-    "Preciso de conta bancÃ¡ria separada?",
+    "Preciso de conta bancária separada?",
   ],
   fique_de_olho: [
     "Quanto ainda posso faturar este ano?",
     "Estou no ritmo certo para o ano?",
-    "Quando vence o DAS e quanto Ã©?",
+    "Quando vence o DAS e quanto é?",
     "O que acontece se eu passar do limite?",
-    "Preciso emitir nota em todo serviÃ§o?",
-    "Como funciona a declaraÃ§Ã£o anual (DASN)?",
-    "Posso ter funcionÃ¡rio sendo MEI?",
+    "Preciso emitir nota em todo serviço?",
+    "Como funciona a declaração anual (DASN)?",
+    "Posso ter funcionário sendo MEI?",
     "Tenho direito a aposentadoria?",
     "O que acontece se eu atrasar o DAS?",
-    "Preciso de conta bancÃ¡ria separada?",
+    "Preciso de conta bancária separada?",
   ],
   atencao: [
     "O que acontece se eu passar do limite?",
     "Quanto ainda posso faturar sem estourar?",
     "Posso adiantar recebimentos para o ano que vem?",
-    "O que Ã© a regra dos 20%?",
-    "Como faÃ§o para virar ME?",
+    "O que é a regra dos 20%?",
+    "Como faço para virar ME?",
     "Vou pagar mais imposto se mudar de categoria?",
     "Estou no ritmo certo para o ano?",
     "Perco meus direitos se sair do MEI?",
-    "Quando vence o DAS e quanto Ã©?",
-    "Devo parar de faturar atÃ© dezembro?",
+    "Quando vence o DAS e quanto é?",
+    "Devo parar de faturar até dezembro?",
   ],
   perto_do_limite: [
     "Quanto ainda posso faturar sem estourar?",
     "O que acontece se eu passar do limite?",
-    "O que Ã© a regra dos 20%?",
+    "O que é a regra dos 20%?",
     "Posso adiantar recebimentos para o ano que vem?",
-    "Como faÃ§o para virar ME?",
+    "Como faço para virar ME?",
     "Vou pagar mais imposto se mudar de categoria?",
-    "Devo parar de faturar atÃ© dezembro?",
+    "Devo parar de faturar até dezembro?",
     "Perco meus direitos se sair do MEI?",
     "Preciso avisar a Receita de alguma coisa?",
     "Quanto tempo tenho para regularizar?",
   ],
   estourou: [
     "Passei do limite. E agora, o que fazer?",
-    "O que Ã© a regra dos 20%?",
+    "O que é a regra dos 20%?",
     "Vou ter que virar ME? Como funciona?",
     "Quanto vou pagar de imposto sobre o excesso?",
     "Perco meus direitos de MEI?",
@@ -193,7 +199,16 @@ function TelaDetalhes({
   return (
     <div
       className="card-b-fixo h-full flex flex-col overflow-hidden"
-      style={{ padding: 12, gap: 6, flex: "0 0 50%", width: "50%" }}
+      style={{
+        padding: 12,
+        gap: 6,
+        flex: "0 0 50%",
+        width: "50%",
+        // Cada card mantem a altura natural e o espaco que sobra e
+        // distribuido entre eles - assim nao fica buraco no fim, com ou
+        // sem lancamentos.
+        justifyContent: "space-between",
+      }}
     >
       <button
         onClick={onSituacao}
@@ -229,7 +244,7 @@ function TelaDetalhes({
               {info.resumo}
             </p>
 
-            {/* Deixa explÃ­cito que o card abre as dÃºvidas */}
+            {/* Deixa explícito que o card abre as dúvidas */}
             <span
               className="inline-flex items-center rounded-full"
               style={{
@@ -245,7 +260,7 @@ function TelaDetalhes({
                 className="cb-rotulo font-bold uppercase"
                 style={{ color: corFaixa, letterSpacing: "0.06em" }}
               >
-                Tirar dÃºvidas
+                Tirar dúvidas
               </span>
             </span>
           </div>
@@ -281,7 +296,7 @@ function TelaDetalhes({
               className="cb-rotulo font-bold uppercase flex-1"
               style={{ color: "var(--text-secondary)", letterSpacing: "0.09em" }}
             >
-              Ãšltimos lanÃ§amentos
+              Últimos lançamentos
             </p>
             <ChevronRight size={13} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
           </div>
@@ -303,17 +318,44 @@ function TelaDetalhes({
           </div>
         </button>
       ) : (
+        /* Estado vazio: em vez de uma linha solta num card grande, um
+           bloco centrado com icone em destaque e a dica do proximo passo.
+           A borda tracejada e a convencao visual de "ainda nao tem nada
+           aqui" - deixa claro que nao e um card quebrado. */
         <div
-          className="rounded-2xl shrink-0 flex items-center"
+          className="rounded-2xl shrink-0 flex flex-col items-center justify-center text-center overflow-hidden"
           style={{
-            padding: 11,
-            gap: 10,
-            backgroundColor: "var(--vidro-superficie)",
+            minHeight: 92,
+            padding: 10,
+            gap: 5,
+            backgroundColor: "var(--vidro-superficie-fraca)",
+            border: "1px dashed var(--vidro-borda)",
           }}
         >
-          <Receipt size={13} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
-          <p className="cb-linha" style={{ color: "var(--text-secondary)" }}>
-            Nenhum lanÃ§amento ainda
+          <span
+            className="rounded-full flex items-center justify-center shrink-0"
+            style={{
+              width: 28,
+              height: 28,
+              backgroundColor: hexToRgba(corFaixa, 0.14),
+              border: `1px solid ${hexToRgba(corFaixa, 0.28)}`,
+            }}
+          >
+            <Receipt size={14} strokeWidth={2.1} style={{ color: corFaixa }} />
+          </span>
+
+          <p
+            className="cb-titulo font-semibold leading-tight shrink-0"
+            style={{ color: "var(--text)" }}
+          >
+            Nenhum lançamento ainda
+          </p>
+
+          <p
+            className="cb-linha leading-tight shrink-0"
+            style={{ color: "var(--text-tertiary)" }}
+          >
+            Toque no <span style={{ color: corFaixa, fontWeight: 700 }}>+</span> para começar
           </p>
         </div>
       )}
@@ -339,7 +381,7 @@ function TelaDetalhes({
         </div>
         <div className="flex items-baseline justify-between" style={{ gap: 8, marginBottom: 4 }}>
           <span className="cb-linha" style={{ color: "var(--text-secondary)" }}>
-            MÃ©dia por mÃªs
+            Média por mês
           </span>
           <Valor px={12.5} peso={700} autoAjustar>{mediaMensal}</Valor>
         </div>
@@ -798,8 +840,8 @@ function FiscoDigitando() {
   );
 }
 
-/** Painel sÃ³ com as perguntas sugeridas conforme a situaÃ§Ã£o.
-    Fecha no "Ã—" ou clicando fora. */
+/** Painel só com as perguntas sugeridas conforme a situação.
+    Fecha no "×" ou clicando fora. */
 function PainelPerguntas({ aberto, onFechar, faixa, corFaixa, onPerguntar }) {
   if (!aberto) return null;
   const perguntas = perguntasDaSituacao(faixa);
@@ -921,7 +963,7 @@ function PainelHistorico({ aberto, onFechar, conversas, idAtual, onAbrir, onNova
           <button
             type="button"
             onClick={onFechar}
-            aria-label="Fechar histÃ³rico"
+            aria-label="Fechar histórico"
             className="toque rounded-full flex items-center justify-center shrink-0"
             style={{ width: 32, height: 32, backgroundColor: "var(--vidro-superficie)" }}
           >
@@ -972,7 +1014,7 @@ function PainelHistorico({ aberto, onFechar, conversas, idAtual, onAbrir, onNova
                     {c.titulo}
                   </p>
                   <p style={{ color: "var(--text-tertiary)", fontSize: 11.5, marginTop: 2 }}>
-                    {rotuloData(c.atualizadaEm)} Â· {c.mensagens.length} mensagens
+                    {rotuloData(c.atualizadaEm)} · {c.mensagens.length} mensagens
                   </p>
                 </button>
                 <button
@@ -1076,11 +1118,11 @@ function ChatFiscoExpandido({
           </span>
           <div className="flex-1 min-w-0">
             <p className="font-bold" style={{ color: "var(--text)", fontSize: 15 }}>Fisco</p>
-            <p style={{ color: "var(--primary)", fontSize: 11.5 }}>â— Online</p>
+            <p style={{ color: "var(--primary)", fontSize: 11.5 }}>â— Online</p>
           </div>
           <button
             onClick={() => setHistoricoAberto(true)}
-            aria-label="HistÃ³rico de conversas"
+            aria-label="Histórico de conversas"
             className="toque rounded-full flex items-center justify-center shrink-0"
             style={{ width: 32, height: 32, backgroundColor: "var(--vidro-superficie)" }}
           >
@@ -1201,7 +1243,7 @@ function ChatFiscoExpandido({
           )}
 
           <form onSubmit={submeter} className="flex items-center gap-2">
-            {/* "+" FORA da barra, Ã  esquerda */}
+            {/* "+" FORA da barra, à  esquerda */}
             <button
               type="button"
               onClick={() => setMenuAnexo((v) => !v)}
@@ -1223,7 +1265,7 @@ function ChatFiscoExpandido({
               <Plus size={21} strokeWidth={2.4} style={{ color: "var(--text)" }} />
             </button>
 
-            {/* Barra maior, sem texto placeholder, com mic/aviÃ£o DENTRO Ã  direita */}
+            {/* Barra maior, sem texto placeholder, com mic/avião DENTRO à  direita */}
             <div
               className="flex-1 min-w-0 flex items-center rounded-full"
               onClick={() => inputChatRef.current?.focus()}
@@ -1268,7 +1310,7 @@ function ChatFiscoExpandido({
               ) : (
                 <button
                   type="button"
-                  aria-label="Gravar Ã¡udio"
+                  aria-label="Gravar áudio"
                   className="toque rounded-full flex items-center justify-center shrink-0"
                   style={{ width: 40, height: 40 }}
                 >
@@ -1300,10 +1342,10 @@ function ChatFiscoExpandido({
   );
 }
 
-/** Borda pulsando â€” acende e apaga suavemente, com halo em volta.
+/** Borda pulsando — acende e apaga suavemente, com halo em volta.
     Usada em verde no chat do Fisco e em vermelho no card do
-    velocÃ­metro quando o usuÃ¡rio passa dos 100% do limite.
-    Funciona em qualquer navegador (nÃ£o depende de @property). */
+    velocímetro quando o usuário passa dos 100% do limite.
+    Funciona em qualquer navegador (não depende de @property). */
 function BordaLuminosa({ raio = 28, cor = "34,197,94", corClara = "74,222,128" }) {
   const id = `pulsa-${cor.replace(/[^0-9]/g, "")}`;
   return (
@@ -1345,8 +1387,8 @@ function BordaLuminosa({ raio = 28, cor = "34,197,94", corClara = "74,222,128" }
 }
 
 /** Luz verde correndo em volta da borda. Usada na barra fechada do
-    Fisco no dashboard, para chamar atenÃ§Ã£o. Fica girando o tempo todo,
-    mas o elemento Ã© pequeno â€” o custo de repintura Ã© baixo. */
+    Fisco no dashboard, para chamar atenção. Fica girando o tempo todo,
+    mas o elemento é pequeno — o custo de repintura é baixo. */
 function BordaCorrendo({ raio = 999, espessura = 1.6 }) {
   return (
     <>
@@ -1362,8 +1404,8 @@ function BordaCorrendo({ raio = 999, espessura = 1.6 }) {
         .borda-correndo {
           animation: girarLuz 3.2s linear infinite;
         }
-        /* Safari antigo nÃ£o suporta @property: a luz nÃ£o gira, entÃ£o
-           some â€” a borda normal do elemento continua ali. */
+        /* Safari antigo não suporta @property: a luz não gira, então
+           some — a borda normal do elemento continua ali. */
         @supports not (background: conic-gradient(from 0deg, red, blue)) {
           .borda-correndo { display: none; }
         }
@@ -1392,7 +1434,7 @@ function BordaCorrendo({ raio = 999, espessura = 1.6 }) {
   );
 }
 
-function CaixaFiscoExpandida({ onFechar, onEnviarPrimeira }) {
+function CaixaFiscoExpandida({ onEnviarPrimeira }) {
   const [rascunho, setRascunho] = useState("");
   const inputRef = useRef(null);
 
@@ -1406,6 +1448,8 @@ function CaixaFiscoExpandida({ onFechar, onEnviarPrimeira }) {
     if (!texto) return;
     onEnviarPrimeira(texto);
     setRascunho("");
+    // Volta o campo pro tamanho inicial (ele cresceu enquanto digitava).
+    if (inputRef.current) inputRef.current.style.height = "auto";
   }
 
   return (
@@ -1420,27 +1464,26 @@ function CaixaFiscoExpandida({ onFechar, onEnviarPrimeira }) {
         padding: 14,
         gap: 10,
         cursor: "text",
+        // Avisa o navegador pra preparar a camada do vidro antes da
+        // animacao de entrada. Sem isso, o Safari pintava o backdrop-filter
+        // um frame depois e a caixinha aparecia so com a borda.
+        willChange: "backdrop-filter",
       }}
     >
       <BordaLuminosa raio={24} />
 
-      <div className="flex items-center justify-end">
-        <button
-          type="button"
-          onClick={onFechar}
-          aria-label="Fechar"
-          className="toque rounded-full flex items-center justify-center shrink-0"
-          style={{ width: 26, height: 26, backgroundColor: "var(--vidro-superficie)" }}
-        >
-          <X size={14} style={{ color: "var(--text-secondary)" }} />
-        </button>
-      </div>
-
       <textarea
         ref={inputRef}
         value={rascunho}
-        onChange={(e) => setRascunho(e.target.value)}
         rows={2}
+        onChange={(e) => {
+          setRascunho(e.target.value);
+          // Cresce com o texto ate MAX_ALTURA_CAIXA_FISCO; passando disso,
+          // para de crescer e rola por dentro (barra de rolagem visivel).
+          const el = e.target;
+          el.style.height = "auto";
+          el.style.height = `${Math.min(el.scrollHeight, MAX_ALTURA_CAIXA_FISCO)}px`;
+        }}
         className="w-full resize-none"
         style={{
           background: "none",
@@ -1449,7 +1492,10 @@ function CaixaFiscoExpandida({ onFechar, onEnviarPrimeira }) {
           color: "var(--text)",
           caretColor: "var(--primary)",
           fontSize: 15,
+          lineHeight: 1.4,
           fontFamily: "inherit",
+          maxHeight: MAX_ALTURA_CAIXA_FISCO,
+          overflowY: "auto",
         }}
       />
 
@@ -1512,7 +1558,7 @@ function CaixaFiscoExpandida({ onFechar, onEnviarPrimeira }) {
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            aria-label="Gravar Ã¡udio"
+            aria-label="Gravar áudio"
             className="toque rounded-full flex items-center justify-center shrink-0"
             style={{ width: 38, height: 38 }}
           >
@@ -1521,6 +1567,151 @@ function CaixaFiscoExpandida({ onFechar, onEnviarPrimeira }) {
         )}
       </div>
     </form>
+  );
+}
+
+/* Caixa expandida do Fisco.
+
+   Em vez de "crescer" a partir da barra do dashboard, ela e criada como
+   um elemento novo que aparece suavemente ancorado ao teclado.
+
+   Como funciona o posicionamento (a parte que antes falhava): montamos um
+   container que ocupa EXATAMENTE a area visivel (o espaco que sobra acima
+   do teclado) e colocamos a caixa no fim dele. Assim ela fica acima do
+   teclado por construcao - sem calcular posicao, entao nao tem como errar
+   e ficar escondida. Vive num portal, fora da arvore do dashboard. */
+function CaixaFiscoFlutuante({ onFechar, onEnviarPrimeira }) {
+  const areaRef = useRef(null);
+  // Enquanto "fechando", roda a animacao de saida; so depois disso o
+  // componente e removido de verdade (senao sumia do nada).
+  const [fechando, setFechando] = useState(false);
+
+  function fecharSuave() {
+    if (fechando) return;
+    setFechando(true);
+    setTimeout(onFechar, 200);
+  }
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+    const area = areaRef.current;
+    if (!vv || !area) return;
+
+    // TRAVA A ROLAGEM DO DASHBOARD enquanto a caixinha esta aberta. Com o
+    // teclado aberto o iOS libera o scroll da pagina (pra "revelar" o que
+    // esta atras do teclado) e dava pra rolar o dashboard inteiro por
+    // tras. Aqui: overflow travado + bloqueio do arrasto fora do campo.
+    const htmlEl = document.documentElement;
+    const bodyEl = document.body;
+    const overflowHtmlAntes = htmlEl.style.overflow;
+    const overflowBodyAntes = bodyEl.style.overflow;
+    htmlEl.style.overflow = "hidden";
+    bodyEl.style.overflow = "hidden";
+
+    const bloquearArrasto = (e) => {
+      // Deixa rolar so dentro do proprio campo de texto (quando o texto
+      // passa do tamanho da caixa).
+      const alvo = e.target;
+      if (alvo && alvo.tagName === "TEXTAREA") return;
+      e.preventDefault();
+    };
+    document.addEventListener("touchmove", bloquearArrasto, { passive: false });
+
+    // Faz o container acompanhar a area visivel. Como a caixa esta
+    // alinhada ao fim dele, ela acompanha o teclado naturalmente.
+    const ajustar = () => {
+      const teclado = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      area.style.top = `${vv.offsetTop}px`;
+      area.style.height = `${vv.height}px`;
+      // Com teclado aberto, cola perto dele; sem teclado, um respiro maior.
+      area.style.paddingBottom = teclado > 60 ? "10px" : "26px";
+    };
+
+    // Perdeu o foco = teclado descendo: a caixa fecha junto e o dashboard
+    // volta ao normal. A checagem evita fechar quando o foco so pulou pra
+    // outro campo por um instante.
+    const aoSair = () => {
+      setTimeout(() => {
+        const a = document.activeElement;
+        const digitando = a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA");
+        if (!digitando) fecharSuave();
+      }, 80);
+    };
+
+    ajustar();
+    vv.addEventListener("resize", ajustar);
+    vv.addEventListener("scroll", ajustar);
+    document.addEventListener("focusout", aoSair);
+    return () => {
+      vv.removeEventListener("resize", ajustar);
+      vv.removeEventListener("scroll", ajustar);
+      document.removeEventListener("focusout", aoSair);
+      // Devolve a rolagem do dashboard ao fechar a caixinha.
+      document.removeEventListener("touchmove", bloquearArrasto);
+      htmlEl.style.overflow = overflowHtmlAntes;
+      bodyEl.style.overflow = overflowBodyAntes;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return createPortal(
+    <>
+      <style>{`
+        @keyframes caixaFiscoEntra {
+          from { opacity: 0.35; transform: translateY(12px) scale(0.99); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes caixaFiscoSai {
+          from { opacity: 1; transform: translateY(0) scale(1); }
+          to   { opacity: 0; transform: translateY(14px) scale(0.985); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .caixa-fisco-anima { animation: none !important; }
+        }
+      `}</style>
+
+      {/* Fundo: fecha ao tocar fora */}
+      <div
+        className="fixed inset-0"
+        style={{
+          zIndex: 60,
+          opacity: fechando ? 0 : 1,
+          transition: "opacity 200ms ease-out",
+        }}
+        onClick={fecharSuave}
+      />
+
+      {/* Container = area visivel (acima do teclado). A caixa fica no fim
+          dele, entao nunca cai atras do teclado. */}
+      <div
+        ref={areaRef}
+        className="fixed flex flex-col justify-end"
+        style={{
+          zIndex: 61,
+          left: 0,
+          right: 0,
+          top: 0,
+          height: "100dvh",
+          paddingLeft: 20,
+          paddingRight: 20,
+          paddingBottom: 26,
+          pointerEvents: "none",
+        }}
+      >
+        <div
+          className="caixa-fisco-anima"
+          style={{
+            pointerEvents: "auto",
+            animation: fechando
+              ? "caixaFiscoSai 200ms cubic-bezier(0.4,0,1,1) forwards"
+              : "caixaFiscoEntra 240ms cubic-bezier(0.22,0.61,0.36,1)",
+          }}
+        >
+          <CaixaFiscoExpandida onEnviarPrimeira={onEnviarPrimeira} />
+        </div>
+      </div>
+    </>,
+    document.body,
   );
 }
 
@@ -1542,7 +1733,7 @@ export default function Dashboard() {
   // Painel de perguntas sugeridas (abre pelo card "Como estou")
   const [perguntasAberto, setPerguntasAberto] = useState(false);
 
-  // HistÃ³rico de conversas (ver src/lib/chatHistorico.js)
+  // Histórico de conversas (ver src/lib/chatHistorico.js)
   const [conversas, setConversas] = useState([]);
   const [idConversa, setIdConversa] = useState(null);
 
@@ -1552,7 +1743,7 @@ export default function Dashboard() {
     carregarConversasDoBanco().then((lista) => setConversas(lista));
   }, []);
 
-  // Salva sempre que a conversa muda (e nÃ£o estÃ¡ no meio de uma resposta).
+  // Salva sempre que a conversa muda (e não está no meio de uma resposta).
   useEffect(() => {
     if (!idConversa || mensagens.length === 0 || digitando) return;
     salvarConversa(idConversa, mensagens);
@@ -1583,55 +1774,16 @@ export default function Dashboard() {
     }
   }
 
-  function responderComoFisco() {
-    setDigitando(true);
-    setTimeout(() => {
-      setDigitando(false);
-      setMensagens((m) => [
-        ...m,
-        {
-          id: Date.now() + 1,
-          autor: "fisco",
-          texto: "Ainda estou aprendendo a responder de verdade, mas em breve vou te ajudar com isso!",
-        },
-      ]);
-    }, 1400);
-  }
-
+  // Abre a pagina do chat do Fisco (/fisco) levando a primeira mensagem.
+  // A pagina cria a conversa, mostra a mensagem e dispara a resposta.
   function enviarPrimeiraMensagem(texto) {
-    const minhaMsg = { id: Date.now(), autor: "user", texto };
-    setIdConversa(novoIdConversa());
-    setMensagens([minhaMsg]);
     setCaixaExpandida(false);
-    setChatAberto(true);
-    responderComoFisco();
-  }
-
-  function enviarMensagem(texto, respondendo) {
-    const minhaMsg = {
-      id: Date.now(),
-      autor: "user",
-      texto,
-      ...(respondendo ? { citando: respondendo.texto } : {}),
-    };
-    if (!idConversa) setIdConversa(novoIdConversa());
-    setMensagens((m) => [...m, minhaMsg]);
-    responderComoFisco();
+    navigate("/fisco", { state: { primeiraMensagem: texto } });
   }
 
   function perguntarAoFisco(texto) {
-    const minhaMsg = { id: Date.now(), autor: "user", texto };
-    setIdConversa(novoIdConversa());
-    setMensagens([minhaMsg]);
     setPerguntasAberto(false);
-    setChatAberto(true);
-    responderComoFisco();
-  }
-
-  function editarMensagem(id, novoTexto) {
-    setMensagens((m) =>
-      m.map((msg) => (msg.id === id ? { ...msg, texto: novoTexto } : msg)),
-    );
+    navigate("/fisco", { state: { primeiraMensagem: texto } });
   }
 
   const ultimos = useMemo(
@@ -1680,7 +1832,7 @@ export default function Dashboard() {
 
           <button
             onClick={() => navigate("/alertas", DE_DASHBOARD)}
-            aria-label="NotificaÃ§Ãµes"
+            aria-label="Notificações"
             className="toque relative w-11 h-11 rounded-full flex items-center justify-center shrink-0"
             style={{ ...VIDRO }}
           >
@@ -1709,23 +1861,10 @@ export default function Dashboard() {
           />
 
           {caixaExpandida && (
-            <>
-              {/* Camada invisÃ­vel: tocar fora da caixa fecha ela (e o
-                  teclado desce junto, porque o campo perde o foco). */}
-              <div
-                className="fixed inset-0 z-30"
-                onClick={() => setCaixaExpandida(false)}
-              />
-              <div
-                className="absolute z-40"
-                style={{ left: 20, right: 20, bottom: 12 }}
-              >
-                <CaixaFiscoExpandida
-                  onFechar={() => setCaixaExpandida(false)}
-                  onEnviarPrimeira={enviarPrimeiraMensagem}
-                />
-              </div>
-            </>
+            <CaixaFiscoFlutuante
+              onFechar={() => setCaixaExpandida(false)}
+              onEnviarPrimeira={enviarPrimeiraMensagem}
+            />
           )}
 
           <button
@@ -1737,7 +1876,6 @@ export default function Dashboard() {
               padding: 0,
               marginTop: 4,
               marginBottom: 12,
-              visibility: caixaExpandida ? "hidden" : "visible",
             }}
           >
               <span
@@ -1782,6 +1920,9 @@ export default function Dashboard() {
                   paddingLeft: 18,
                   paddingRight: 12,
                   marginTop: 24,
+                  // So a barrinha some quando a caixa expandida esta aberta.
+                  // A foto do Fisco fica fixa, inclusive durante o fecho.
+                  visibility: caixaExpandida ? "hidden" : "visible",
                 }}
               >
                 <BordaCorrendo />
@@ -1822,8 +1963,8 @@ export default function Dashboard() {
         onFechar={() => setChatAberto(false)}
         mensagens={mensagens}
         digitando={digitando}
-        onEnviar={enviarMensagem}
-        onEditarMensagem={editarMensagem}
+        onEnviar={() => {}}
+        onEditarMensagem={() => {}}
         conversas={conversas}
         idAtual={idConversa}
         onAbrirConversa={abrirConversa}
@@ -1831,10 +1972,9 @@ export default function Dashboard() {
         onApagarConversa={removerConversa}
       />
 
-      <BottomNav ativo="inicio" />
+      {/* O rodape some enquanto a caixinha do Fisco esta aberta: ele
+          ficava por cima dela e "roubava" o espaco acima do teclado. */}
+      {!caixaExpandida && <BottomNav ativo="inicio" />}
     </div>
   );
 }
-
-
-
