@@ -4,9 +4,10 @@
     <meta charset="UTF-8" />
     <!--
       interactive-widget=resizes-content: faz o navegador REDIMENSIONAR o
-      conteúdo quando o teclado virtual abre/fecha, em vez de só empurrar a
+      conteudo quando o teclado virtual abre/fecha, em vez de so empurrar a
       tela. Sem isso, depois de digitar num campo a tela fica deslocada e
-      não volta sozinha ao fechar o teclado.
+      nao volta sozinha ao fechar o teclado. Funciona no Chrome/Android;
+      no Safari/iOS quem resolve e o script abaixo.
     -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -19,5 +20,44 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Reposiciona a janela no topo quando o teclado do Safari/iOS
+      // fecha. Sem isso a tela fica deslocada e nao volta sozinha
+      // (bug descrito na Parte 7 do handoff). Dispara 3 vezes com
+      // atrasos diferentes porque a animacao do teclado no iOS
+      // demora e um unico disparo pega o viewport no meio do
+      // movimento, antes dele assentar.
+      //
+      // So age quando o teclado esta FECHANDO (viewport voltou perto
+      // do tamanho cheio) - se disparasse tambem ao ABRIR, brigava
+      // com o proprio navegador durante a animacao de abertura e
+      // deixava o teclado nascer por cima de caixas de texto que
+      // focam sozinhas ao aparecer (ex.: a caixa "Pergunte ao Fisco").
+      (function () {
+        function voltarParaOTopo() {
+          window.scrollTo(0, 0);
+        }
+
+        function tecladoFechou() {
+          if (!window.visualViewport) return true;
+          return window.visualViewport.height >= window.innerHeight - 60;
+        }
+
+        document.addEventListener("focusout", function () {
+          setTimeout(function () { if (tecladoFechou()) voltarParaOTopo(); }, 50);
+          setTimeout(function () { if (tecladoFechou()) voltarParaOTopo(); }, 150);
+          setTimeout(function () { if (tecladoFechou()) voltarParaOTopo(); }, 350);
+        });
+
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener("resize", function () {
+            if (!tecladoFechou()) return;
+            setTimeout(voltarParaOTopo, 50);
+            setTimeout(voltarParaOTopo, 150);
+            setTimeout(voltarParaOTopo, 350);
+          });
+        }
+      })();
+    </script>
   </body>
 </html>
