@@ -30,6 +30,15 @@ const MESES = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
 
+/* Formata enquanto digita: (11) 98765-4321 */
+function formatarTelefone(valor) {
+  const d = String(valor).replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 2) return d;
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
 /**
  * Grava os campos de perfil na tabela `perfis` do Supabase.
  *
@@ -51,6 +60,7 @@ async function sincronizarPerfilNoBanco(patch) {
     if (patch.tipo !== undefined) update.tipo_mei = patch.tipo;
     if (patch.mesAbertura !== undefined) update.mes_abertura = patch.mesAbertura;
     if (patch.anoAbertura !== undefined) update.ano_abertura = patch.anoAbertura;
+    if (patch.whatsapp !== undefined) update.whatsapp = patch.whatsapp;
 
     await supabase.from("perfis").update(update).eq("id", data.user.id);
   } catch {
@@ -103,21 +113,62 @@ export default function EditarPerfil() {
   } = useUserState();
 
   const [nome, setNome] = useState(nomeSalvo || "");
+  /* WhatsApp: canal de atendimento do TaCerto. Vive na coluna `whatsapp`
+     da tabela `perfis` — a mesma que o Cadastro grava. Guardamos com o
+     +55 no banco e mostramos só os dígitos locais na tela. */
+  const [whats, setWhats] = useState("");
+  const [whatsSalvo, setWhatsSalvo] = useState("");
   const [selecionarTipo, setSelecionarTipo] = useState(false);
   const [perfilPendente, setPerfilPendente] = useState(null);
   const [confirmarTroca, setConfirmarTroca] = useState(false);
   const [calendarioAberto, setCalendarioAberto] = useState(false);
   const [salvo, setSalvo] = useState(false);
 
-  const temMudanca = nome.trim() !== (nomeSalvo || "").trim() && nome.trim() !== "";
+  const mudouNome = nome.trim() !== (nomeSalvo || "").trim() && nome.trim() !== "";
+  const mudouWhats = whats.replace(/\D/g, "") !== whatsSalvo.replace(/\D/g, "");
+  const temMudanca = mudouNome || mudouWhats;
 
   useEffect(() => { setNome(nomeSalvo || ""); }, [nomeSalvo]);
+
+  // Busca o WhatsApp salvo no banco ao abrir a tela.
+  useEffect(() => {
+    let ativo = true;
+    (async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        const user = userData?.user;
+        if (!user) return; // visitante
+        const { data } = await supabase
+          .from("perfis")
+          .select("whatsapp")
+          .eq("id", user.id)
+          .single();
+        if (!ativo) return;
+        if (data?.whatsapp) {
+          const local = formatarTelefone(String(data.whatsapp).replace(/^\+55/, ""));
+          setWhats(local);
+          setWhatsSalvo(local);
+        }
+      } catch {
+        /* coluna ausente ou falha de rede — campo fica vazio */
+      }
+    })();
+    return () => { ativo = false; };
+  }, []);
 
   const inicial = (nome || "?").trim().charAt(0).toUpperCase();
 
   const cardStyle = {
     backgroundColor: "var(--surface)",
     border: "1px solid var(--border)",
+  };
+
+  const vidroCampo = {
+    background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
+    backdropFilter: "blur(24px) saturate(160%)",
+    WebkitBackdropFilter: "blur(24px) saturate(160%)",
+    border: "1px solid var(--vidro-borda)",
+    boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
   };
 
   const subAbertura =
@@ -127,8 +178,13 @@ export default function EditarPerfil() {
 
   function salvarAlteracoes() {
     const nomeLimpo = nome.trim();
+    const digitos = whats.replace(/\D/g, "");
     salvarNome(nomeLimpo);
-    sincronizarPerfilNoBanco({ nome: nomeLimpo });
+    sincronizarPerfilNoBanco({
+      nome: nomeLimpo,
+      whatsapp: digitos ? `+55${digitos}` : null,
+    });
+    setWhatsSalvo(whats);
     setSalvo(true);
     setTimeout(() => setSalvo(false), 1800);
   }
@@ -204,10 +260,7 @@ export default function EditarPerfil() {
         </p>
 
         <div className="space-y-2">
-          <div
-            className="rounded-2xl px-4 py-2.5"
-            style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
-          >
+          <div className="rounded-2xl px-4 py-2.5" style={vidroCampo}>
             <label
               className="block text-[11px] mb-0.5"
               style={{ color: "var(--text-tertiary)" }}
@@ -246,6 +299,34 @@ export default function EditarPerfil() {
             >
               {visitante ? "Sem e-mail cadastrado" : email || "—"}
             </p>
+          </div>
+
+          {/* WhatsApp — editável, no mesmo formato do campo Nome */}
+          <div className="rounded-2xl px-4 py-2.5" style={vidroCampo}>
+            <label
+              className="block text-[11px] mb-0.5"
+              style={{ color: "var(--text-tertiary)" }}
+            >
+              WhatsApp
+            </label>
+            <div className="flex items-center gap-2">
+              <span
+                className="text-[15px] shrink-0"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                +55
+              </span>
+              <input
+                type="tel"
+                inputMode="numeric"
+                value={whats}
+                onChange={(e) => setWhats(formatarTelefone(e.target.value))}
+                placeholder="(00) 00000-0000"
+                autoComplete="off"
+                className="flex-1 min-w-0 bg-transparent text-[15px] font-semibold outline-none placeholder:font-normal placeholder:opacity-50"
+                style={{ color: "var(--text)", border: "none", boxShadow: "none" }}
+              />
+            </div>
           </div>
         </div>
 

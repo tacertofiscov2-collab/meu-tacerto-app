@@ -76,8 +76,8 @@ export default function Onboarding() {
       : step;
 
   const fieldStyle = {
-    backgroundColor: "var(--field)",
-    border: "1px solid var(--border)",
+    backgroundColor: "transparent",
+    border: "1px solid rgba(255,255,255,0.22)",
     color: "var(--text)",
   };
 
@@ -99,7 +99,7 @@ export default function Onboarding() {
       backgroundColor: selecionado ? "rgba(34,197,94,0.07)" : "var(--field)",
       border: selecionado
         ? "1px solid var(--primary)"
-        : "1px solid transparent",
+        : "1px solid rgba(255,255,255,0.22)",
       opacity: claro ? 1 : 0.42,
       transition:
         "background-color 180ms ease, border-color 180ms ease, opacity 180ms ease",
@@ -124,6 +124,7 @@ export default function Onboarding() {
         await supabase.from("perfis").update({
           nome,
           tipo_mei: tipoCanonico,
+          onboarding_ok: true,
           mes_abertura: meiEsseAno && mesMei ? parseInt(mesMei) : null,
           ano_abertura: meiEsseAno && mesMei ? anoAtual : null,
           atualizado_em: new Date().toISOString(),
@@ -374,8 +375,8 @@ export default function Onboarding() {
                   <div
                     className="rounded-xl px-4 py-3"
                     style={{
-                      backgroundColor: "var(--field)",
-                      border: "1px solid var(--border)",
+                      backgroundColor: "transparent",
+                      border: "1px solid rgba(255,255,255,0.22)",
                     }}
                   >
                     {/* MUD 4 — ícone neutro, não verde */}
