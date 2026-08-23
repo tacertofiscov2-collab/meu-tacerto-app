@@ -16,10 +16,7 @@ const MESES_ABREV = [
 
 function Bloco({ label, children, cor }) {
   return (
-    <div
-      className="rounded-2xl px-4 py-3 flex-1 min-w-0"
-      style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
-    >
+    <div className="card-tacerto rounded-2xl px-4 py-3 flex-1 min-w-0">
       <p className="text-[11px]" style={{ color: cor || "var(--text-tertiary)" }}>
         {label}
       </p>
@@ -79,10 +76,7 @@ export default function ResumoPerfil() {
         className="conteudo-rolavel hide-scrollbar px-5"
         style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom))" }}
       >
-        <p
-          className="text-[12px] font-semibold uppercase mt-3 mb-2"
-          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
-        >
+        <p className="text-[14px] mt-3 mb-3" style={{ color: "var(--text-tertiary)" }}>
           Este ano
         </p>
 
@@ -115,17 +109,11 @@ export default function ResumoPerfil() {
           </Bloco>
         </div>
 
-        <p
-          className="text-[12px] font-semibold uppercase mt-4 mb-2"
-          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
-        >
+        <p className="text-[14px] mt-4 mb-3" style={{ color: "var(--text-tertiary)" }}>
           Meu ritmo
         </p>
 
-        <div
-          className="rounded-2xl px-4 py-3"
-          style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
-        >
+        <div className="card-tacerto rounded-2xl px-4 py-3">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp size={16} style={{ color: "var(--primary)" }} />
             <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
@@ -149,17 +137,11 @@ export default function ResumoPerfil() {
           </div>
         </div>
 
-        <p
-          className="text-[12px] font-semibold uppercase mt-4 mb-2"
-          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
-        >
+        <p className="text-[14px] mt-4 mb-3" style={{ color: "var(--text-tertiary)" }}>
           Por mês
         </p>
 
-        <div
-          className="rounded-2xl px-3 pt-3 pb-3"
-          style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
-        >
+        <div className="card-tacerto rounded-2xl px-3 pt-3 pb-3">
           <div
             className="flex items-end justify-between gap-1"
             style={{ height: 132 }}
@@ -203,8 +185,3 @@ export default function ResumoPerfil() {
     </div>
   );
 }
-
-
-
-
-

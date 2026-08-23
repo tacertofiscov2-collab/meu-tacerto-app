@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
-  Info,
   Pencil,
   FileUp,
   Plus,
@@ -14,13 +13,12 @@ function OpcaoCard({ Icon, titulo, descricao, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="toque toque-escala w-full flex items-start gap-3 rounded-2xl text-left"
+      className="toque toque-escala card-tacerto w-full flex items-start gap-3 rounded-2xl text-left"
       style={{
         paddingLeft: 14,
         paddingRight: 12,
         paddingTop: 11,
         paddingBottom: 11,
-        backgroundColor: "var(--surface-raised)",
       }}
     >
       <Icon
@@ -92,12 +90,15 @@ export default function AdicionarFaturamento() {
           onClick={() => navigate(-1)}
           aria-label="Voltar"
           className="toque toque-escala w-10 h-10 rounded-full flex items-center justify-center"
-          style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
+          style={{
+            border: "1px solid var(--border)",
+            backgroundColor: "transparent",
+          }}
         >
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
         </button>
         <h1
-          className="text-lg font-bold flex-1 text-center pr-10"
+          className="text-lg font-bold"
           style={{ color: "var(--text)" }}
         >
           Adicionar faturamento
@@ -113,49 +114,36 @@ export default function AdicionarFaturamento() {
           paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
         }}
       >
-        <p
-          className="leading-snug shrink-0"
-          style={{ color: "var(--text-secondary)", fontSize: 12.5 }}
-        >
-          Começou a usar o app no meio do ano? Registre aqui o que já faturou
-          antes. Você tem 4 formas de fazer isso:
-        </p>
-
-        <div
-          className="flex items-start gap-2 rounded-xl shrink-0"
-          style={{
-            marginTop: 10,
-            paddingLeft: 12,
-            paddingRight: 12,
-            paddingTop: 9,
-            paddingBottom: 9,
-            backgroundColor: "var(--field)",
-          }}
-        >
-          <Info
-            size={14}
-            style={{ color: "var(--primary)" }}
-            className="shrink-0"
-          />
+        <div className="shrink-0" style={{ marginTop: 10, marginBottom: 18 }}>
           <p
-            className="leading-snug"
-            style={{ color: "var(--text-secondary)", fontSize: 11 }}
+            className="font-semibold leading-snug"
+            style={{ color: "var(--text)", fontSize: 14.5 }}
           >
-            Registre todo tipo de receita — dinheiro, Pix, cartão, transferência.
-            Não importa se emitiu nota fiscal ou não.
+            Começou a usar o app no meio do ano?
+          </p>
+          <p
+            className="leading-relaxed"
+            style={{
+              color: "var(--text-secondary)",
+              fontSize: 12.5,
+              marginTop: 4,
+            }}
+          >
+            Registre aqui o que já faturou antes — vale dinheiro, Pix, cartão
+            ou transferência, não importa se emitiu nota fiscal. Escolha uma
+            das 4 formas abaixo:
           </p>
         </div>
 
         <div
           className="shrink-0"
-          style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}
+          style={{ display: "flex", flexDirection: "column", gap: 8 }}
         >
           {opcoes.map((op) => (
             <OpcaoCard key={op.titulo} {...op} />
           ))}
         </div>
 
-        {/* Respiro elástico empurra o disclaimer pra base */}
         <div className="flex-1 min-h-0" aria-hidden />
 
         <p
@@ -174,8 +162,3 @@ export default function AdicionarFaturamento() {
     </div>
   );
 }
-
-
-
-
-

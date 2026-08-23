@@ -11,6 +11,9 @@ import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import { useAppState } from "@/context/AppStateContext";
 
+/* HISTORICO v2 — cards no padrao .card-tacerto (index.css).
+   Setinha de voltar e os modais mantidos como estavam. */
+
 const DISMISS_KEY = "tacerto:hist_faturamento_dismissed";
 
 const MESES = [
@@ -92,10 +95,7 @@ export default function Historico() {
         style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
       >
         {mostrarFaturamento && (
-          <div
-            className="rounded-2xl px-4 py-3.5 mt-2"
-            style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
-          >
+          <div className="card-tacerto rounded-2xl px-4 py-3.5 mt-2">
             <div className="flex items-start gap-3">
               <div
                 className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
@@ -133,8 +133,8 @@ export default function Historico() {
 
         {/* Busca — fora de qualquer barra, no padrão de bloco */}
         <div
-          className="rounded-2xl flex items-center gap-2.5 px-4 mt-3"
-          style={{ backgroundColor: "var(--field)", minHeight: 50 }}
+          className="card-tacerto rounded-2xl flex items-center gap-2.5 px-4 mt-3"
+          style={{ minHeight: 50 }}
         >
           <Search size={18} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
           <input
@@ -150,8 +150,8 @@ export default function Historico() {
         {/* Período */}
         <button
           onClick={() => setSeletorAberto(true)}
-          className="w-full rounded-2xl flex items-center gap-3 px-4 mt-2.5 active:opacity-80"
-          style={{ backgroundColor: "var(--field)", minHeight: 58 }}
+          className="card-tacerto w-full rounded-2xl flex items-center gap-3 px-4 mt-2.5 active:opacity-80"
+          style={{ minHeight: 58 }}
         >
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
@@ -171,10 +171,7 @@ export default function Historico() {
         </button>
 
         {/* Total */}
-        <div
-          className="rounded-2xl px-4 py-3.5 mt-2.5"
-          style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
-        >
+        <div className="card-tacerto rounded-2xl px-4 py-3.5 mt-2.5">
           <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
             Total de {MESES[mesIdx]}
           </p>
@@ -186,8 +183,8 @@ export default function Historico() {
         {/* Novo lançamento */}
         <button
           onClick={() => navigate("/lancar")}
-          className="w-full rounded-2xl flex items-center gap-3 px-4 mt-2.5 active:opacity-80"
-          style={{ backgroundColor: "var(--field)", minHeight: 52 }}
+          className="card-tacerto w-full rounded-2xl flex items-center gap-3 px-4 mt-2.5 active:opacity-80"
+          style={{ minHeight: 52 }}
         >
           <Plus size={20} strokeWidth={2.2} style={{ color: "var(--primary)" }} className="shrink-0" />
           <span className="text-[15px] font-semibold" style={{ color: "var(--text)" }}>
@@ -204,10 +201,7 @@ export default function Historico() {
         </p>
 
         {filtrados.length === 0 ? (
-          <div
-            className="rounded-2xl py-10 flex flex-col items-center gap-3"
-            style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
-          >
+          <div className="card-tacerto rounded-2xl py-10 flex flex-col items-center gap-3">
             <div
               className="w-13 h-13 rounded-full flex items-center justify-center"
               style={{ backgroundColor: "var(--surface)", width: 52, height: 52 }}
@@ -223,8 +217,7 @@ export default function Historico() {
             {filtrados.map((l) => (
               <div
                 key={l.id}
-                className="rounded-2xl px-4 py-3 flex items-center gap-3"
-                style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
+                className="card-tacerto rounded-2xl px-4 py-3 flex items-center gap-3"
               >
                 <TrendingUp
                   size={19}
@@ -324,8 +317,3 @@ export default function Historico() {
     </div>
   );
 }
-
-
-
-
-

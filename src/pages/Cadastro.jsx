@@ -8,6 +8,8 @@ import { setUserState } from "@/lib/userState";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 
 /* ===================================================================
+   CADASTRO v3 — setinha volta para a Welcome (ou para o Perfil)
+
    CADASTRO EM DUAS ETAPAS
 
    1) WHATSAPP  — o caminho principal. O atendimento do TaCerto acontece
@@ -323,8 +325,20 @@ export default function Cadastro() {
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       <div className="px-4 pt-5 shrink-0">
+        {/* Para onde a seta volta, em ordem:
+              1. etapa interna (email/verificar/whatsapp_depois) -> etapa 1
+              2. quem entrou por Perfil > Cadastrar conta        -> /perfil
+              3. todo o resto                                    -> / (slides)
+            NAO usar navigate(-1): como Cadastro e Login apontam um para o
+            outro, "voltar uma pagina" devolvia para a outra tela de acesso. */}
         <button
-          onClick={() => (etapa === "email" || etapa === "verificar" ? setEtapa("whatsapp") : navigate(-1))}
+          onClick={() => {
+            if (etapa === "email" || etapa === "verificar" || etapa === "whatsapp_depois") {
+              setErro("");
+              return setEtapa("whatsapp");
+            }
+            navigate(veioDeDentro ? "/perfil" : "/", { replace: true });
+          }}
           aria-label="Voltar"
           className="w-10 h-10 flex items-center justify-center rounded-lg hover:opacity-80"
           style={{ color: "var(--text)" }}
@@ -466,6 +480,16 @@ export default function Cadastro() {
                     )}
                   </span>
                   {etapa === "whatsapp" ? "Continuar com E-mail" : "Continuar com WhatsApp"}
+                </button>
+
+                {/* Saida para quem ja tem conta — espelha o "Nao tem conta?" do Login */}
+                <button
+                  onClick={() => navigate("/login", { replace: true })}
+                  className="w-full text-center text-sm pt-3"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Já tem conta?{" "}
+                  <span style={{ color: "var(--primary)", fontWeight: 600 }}>Entrar</span>
                 </button>
               </div>
             </>

@@ -14,12 +14,6 @@ export default function AlterarSenha() {
   const [ok, setOk] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const fieldStyle = {
-    backgroundColor: "var(--field)",
-    border: "1px solid var(--border)",
-    color: "var(--text)",
-  };
-
   async function handleSalvar() {
     setErro("");
     setOk(false);
@@ -64,43 +58,54 @@ export default function AlterarSenha() {
             Crie uma nova senha para sua conta.
           </p>
 
-          <div className="mt-5 space-y-3">
-            <div className="relative">
-              <input
-                type={showAtual ? "text" : "password"}
-                placeholder="Senha atual"
-                value={senhaAtual}
-                onChange={(e) => setSenhaAtual(e.target.value)}
-                className="w-full px-4 py-3.5 pr-11 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
-                style={fieldStyle}
-              />
-              <button
-                type="button"
-                onClick={() => setShowAtual(!showAtual)}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                {showAtual ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+          <div className="mt-5 space-y-4">
+            <div>
+              <label className="block text-[14px] mb-1.5" style={{ color: "var(--text)" }}>
+                Senha atual
+              </label>
+              <div className="card-tacerto rounded-2xl px-4 py-4 flex items-center gap-3">
+                <input
+                  type={showAtual ? "text" : "password"}
+                  value={senhaAtual}
+                  onChange={(e) => setSenhaAtual(e.target.value)}
+                  autoComplete="off"
+                  className="flex-1 min-w-0 bg-transparent text-[16px] font-semibold outline-none"
+                  style={{ color: "var(--text)", border: "none", boxShadow: "none" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAtual(!showAtual)}
+                  className="shrink-0"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {showAtual ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
-            <div className="relative">
-              <input
-                type={showNova ? "text" : "password"}
-                placeholder="Nova senha (mín. 8 caracteres)"
-                value={novaSenha}
-                onChange={(e) => setNovaSenha(e.target.value)}
-                className="w-full px-4 py-3.5 pr-11 rounded-xl text-sm focus:outline-none focus:ring-2 placeholder:opacity-70"
-                style={fieldStyle}
-              />
-              <button
-                type="button"
-                onClick={() => setShowNova(!showNova)}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                {showNova ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+            <div>
+              <label className="block text-[14px] mb-1.5" style={{ color: "var(--text)" }}>
+                Nova senha
+              </label>
+              <div className="card-tacerto rounded-2xl px-4 py-4 flex items-center gap-3">
+                <input
+                  type={showNova ? "text" : "password"}
+                  value={novaSenha}
+                  onChange={(e) => setNovaSenha(e.target.value)}
+                  placeholder="Mínimo 8 caracteres"
+                  autoComplete="off"
+                  className="flex-1 min-w-0 bg-transparent text-[16px] font-semibold outline-none placeholder:font-normal placeholder:opacity-50"
+                  style={{ color: "var(--text)", border: "none", boxShadow: "none" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNova(!showNova)}
+                  className="shrink-0"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {showNova ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             {erro && <AuthError>{erro}</AuthError>}
@@ -131,8 +136,3 @@ export default function AlterarSenha() {
     </div>
   );
 }
-
-
-
-
-

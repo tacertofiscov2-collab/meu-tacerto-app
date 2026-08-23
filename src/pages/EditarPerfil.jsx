@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Briefcase, CalendarDays, Check, Trash2, ChevronRight,
+  ArrowLeft, Check, Trash2, ChevronRight, CheckCircle2, AlertCircle,
 } from "lucide-react";
 
 import Valor from "../components/Valor.jsx";
@@ -10,6 +10,21 @@ import { useUserState } from "@/lib/userState";
 import { supabase } from "@/lib/supabase";
 import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 
+/* ===================================================================
+   EDITARPERFIL v4 — rotulo FORA do card (cabecalho original mantido)
+
+   Mudanca de layout: o rotulo ("Nome", "E-mail"...) saiu de dentro do
+   card e foi para cima dele. O card fica so com o dado, em negrito e
+   com mais altura. Os titulos de secao viraram caixa normal, sem o
+   uppercase espacado.
+
+   SELO DE VERIFICADO: aparece so no E-mail, e le o dado REAL do
+   Supabase (email_confirmed_at). O WhatsApp NAO tem selo de proposito
+   — a verificacao por SMS ainda nao existe (a tela de codigo aceita
+   qualquer numero), entao um "verificado" ali seria mentira. Quando o
+   provedor de SMS entrar, e so ligar o mesmo componente aqui.
+   =================================================================== */
+
 // ---------------------------------------------------------------------
 // Espaçamentos ajustáveis desta tela.
 // A SOMA de ACIMA + ABAIXO do avatar define onde começam os cards:
@@ -17,8 +32,7 @@ import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 // ---------------------------------------------------------------------
 const ESPACO_ACIMA_AVATAR = 28;
 const ESPACO_ABAIXO_AVATAR = 28;
-const ESPACO_ANTES_INFO_PESSOAIS = 32;
-const ESPACO_ANTES_PERFIL_FISCAL = 8;
+const ESPACO_ENTRE_SECOES = 26;
 
 const LABEL_PERFIL = {
   MEI: "MEI (outras atividades)",
@@ -68,39 +82,49 @@ async function sincronizarPerfilNoBanco(patch) {
   }
 }
 
-function LinhaFiscal({ Icon, label, valor, onClick, perigo }) {
+/* Titulo de secao: caixa normal, cinza, discreto. */
+function TituloSecao({ children, primeiro }) {
   return (
-    <button
-      onClick={onClick}
-      className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left active:opacity-75 transition"
-      style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
+    <p
+      className="text-[14px] mb-3"
+      style={{
+        color: "var(--text-tertiary)",
+        marginTop: primeiro ? 0 : ESPACO_ENTRE_SECOES,
+      }}
     >
-      <Icon
-        size={20}
-        strokeWidth={2}
-        style={{ color: perigo ? "var(--danger)" : "var(--primary)" }}
-        className="shrink-0"
-      />
-      <div className="flex-1 min-w-0">
-        <p
-          className="text-[15px] font-semibold leading-tight"
-          style={{ color: perigo ? "var(--danger)" : "var(--text)" }}
+      {children}
+    </p>
+  );
+}
+
+/* Rotulo do campo: fica FORA do card, logo acima dele. */
+function Rotulo({ children }) {
+  return (
+    <label className="block text-[14px] mb-1.5" style={{ color: "var(--text)" }}>
+      {children}
+    </label>
+  );
+}
+
+/* Linha de escolha (Tipo de MEI, Data de abertura): o card mostra o
+   valor atual e a seta indica que abre um seletor. */
+function CampoEscolha({ rotulo, valor, onClick }) {
+  return (
+    <div>
+      <Rotulo>{rotulo}</Rotulo>
+      <button
+        onClick={onClick}
+        className="card-tacerto w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-left active:opacity-75 transition"
+      >
+        <span
+          className="flex-1 min-w-0 truncate text-[16px] font-semibold"
+          style={{ color: "var(--text)" }}
         >
-          {label}
-        </p>
-        {valor && (
-          <p
-            className="text-[12px] mt-0.5 truncate"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            {valor}
-          </p>
-        )}
-      </div>
-      {!perigo && (
-        <ChevronRight size={17} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
-      )}
-    </button>
+          {valor}
+        </span>
+        <ChevronRight size={18} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+      </button>
+    </div>
   );
 }
 
@@ -123,6 +147,10 @@ export default function EditarPerfil() {
   const [confirmarTroca, setConfirmarTroca] = useState(false);
   const [calendarioAberto, setCalendarioAberto] = useState(false);
   const [salvo, setSalvo] = useState(false);
+  /* Vem do proprio Supabase (email_confirmed_at). null = ainda carregando,
+     para nao piscar o icone errado no primeiro instante. */
+  const [emailConfirmado, setEmailConfirmado] = useState(null);
+  const [avisoReenvio, setAvisoReenvio] = useState("");
 
   const mudouNome = nome.trim() !== (nomeSalvo || "").trim() && nome.trim() !== "";
   const mudouWhats = whats.replace(/\D/g, "") !== whatsSalvo.replace(/\D/g, "");
@@ -130,7 +158,7 @@ export default function EditarPerfil() {
 
   useEffect(() => { setNome(nomeSalvo || ""); }, [nomeSalvo]);
 
-  // Busca o WhatsApp salvo no banco ao abrir a tela.
+  // Busca o WhatsApp salvo e o estado de confirmação do e-mail.
   useEffect(() => {
     let ativo = true;
     (async () => {
@@ -138,6 +166,8 @@ export default function EditarPerfil() {
         const { data: userData } = await supabase.auth.getUser();
         const user = userData?.user;
         if (!user) return; // visitante
+        if (ativo) setEmailConfirmado(Boolean(user.email_confirmed_at));
+
         const { data } = await supabase
           .from("perfis")
           .select("whatsapp")
@@ -156,19 +186,28 @@ export default function EditarPerfil() {
     return () => { ativo = false; };
   }, []);
 
+  /* Reenvia o e-mail de confirmação. O Supabase limita a 2 e-mails por
+     hora, então a mensagem de erro precisa aparecer para o usuário não
+     ficar clicando achando que funcionou. */
+  async function reenviarVerificacao() {
+    setAvisoReenvio("");
+    try {
+      const { error } = await supabase.auth.resend({ type: "signup", email });
+      setAvisoReenvio(
+        error
+          ? "Não foi possível reenviar agora. Tente de novo mais tarde."
+          : "Enviamos um novo link para o seu e-mail."
+      );
+    } catch {
+      setAvisoReenvio("Não foi possível reenviar agora. Tente de novo mais tarde.");
+    }
+  }
+
   const inicial = (nome || "?").trim().charAt(0).toUpperCase();
 
   const cardStyle = {
     backgroundColor: "var(--surface)",
     border: "1px solid var(--border)",
-  };
-
-  const vidroCampo = {
-    background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
-    backdropFilter: "blur(24px) saturate(160%)",
-    WebkitBackdropFilter: "blur(24px) saturate(160%)",
-    border: "1px solid var(--vidro-borda)",
-    boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
   };
 
   const subAbertura =
@@ -217,7 +256,7 @@ export default function EditarPerfil() {
 
       <div
         className="conteudo-rolavel hide-scrollbar px-5"
-        style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
       >
         {/* Avatar: só a inicial. A opção de foto foi retirada no piloto
             (será reativada quando o app for empacotado como nativo). */}
@@ -248,25 +287,12 @@ export default function EditarPerfil() {
           </div>
         </div>
 
-        <p
-          className="text-[12px] font-semibold uppercase mb-2"
-          style={{
-            color: "var(--text-tertiary)",
-            letterSpacing: "0.06em",
-            marginTop: ESPACO_ANTES_INFO_PESSOAIS,
-          }}
-        >
-          Informações pessoais
-        </p>
+        {/* ================= INFORMACOES PESSOAIS ================= */}
+        <TituloSecao primeiro>Informações pessoais</TituloSecao>
 
-        <div className="space-y-2">
-          <div className="rounded-2xl px-4 py-2.5" style={vidroCampo}>
-            <label
-              className="block text-[11px] mb-0.5"
-              style={{ color: "var(--text-tertiary)" }}
-            >
-              Nome
-            </label>
+        <div>
+          <Rotulo>Nome</Rotulo>
+          <div className="card-tacerto rounded-2xl px-4 py-4">
             <input
               value={nome}
               maxLength={LIMITE_NOME_INPUT}
@@ -275,67 +301,83 @@ export default function EditarPerfil() {
               spellCheck={false}
               onChange={(e) => setNome(e.target.value)}
               placeholder="Seu nome"
-              className="w-full bg-transparent text-[15px] font-semibold outline-none"
+              className="w-full bg-transparent text-[16px] font-semibold outline-none"
               style={{ color: "var(--text)", border: "none", boxShadow: "none" }}
             />
           </div>
+        </div>
 
-          <div
-            className="rounded-2xl px-4 py-2.5"
-            style={{ backgroundColor: "var(--field)", opacity: 0.75 }}
-          >
-            <label
-              className="block text-[11px] mb-0.5"
-              style={{ color: "var(--text-tertiary)" }}
-            >
-              E-mail
-            </label>
-            <p
-              className="w-full text-[15px] truncate"
-              style={{
-                color: visitante || !email ? "var(--text-secondary)" : "var(--text)",
-              }}
-              title={visitante ? "" : email || ""}
-            >
-              {visitante ? "Sem e-mail cadastrado" : email || "—"}
-            </p>
+        {/* ================= INFORMACOES DE CONTATO ================= */}
+        <TituloSecao>Informações de contato</TituloSecao>
+
+        <div className="space-y-4">
+          <div>
+            <Rotulo>E-mail</Rotulo>
+            <div className="card-tacerto rounded-2xl px-4 py-4 flex items-center gap-3">
+              <p
+                className="flex-1 min-w-0 truncate text-[16px] font-semibold"
+                style={{ color: visitante || !email ? "var(--text-tertiary)" : "var(--text)" }}
+                title={visitante ? "" : email || ""}
+              >
+                {visitante ? "Sem e-mail cadastrado" : email || "—"}
+              </p>
+              {/* Selo com o dado real do Supabase. Enquanto carrega
+                  (null), nao mostra nada. */}
+              {!visitante && email && emailConfirmado === true && (
+                <CheckCircle2 size={20} style={{ color: "var(--primary)" }} className="shrink-0" />
+              )}
+              {!visitante && email && emailConfirmado === false && (
+                <AlertCircle size={20} style={{ color: "#f59e0b" }} className="shrink-0" />
+              )}
+            </div>
+
+            {!visitante && email && emailConfirmado === false && (
+              <button
+                onClick={reenviarVerificacao}
+                className="mt-2 text-[14px] font-medium"
+                style={{ color: "var(--primary)" }}
+              >
+                Reenviar verificação
+              </button>
+            )}
+            {avisoReenvio && (
+              <p className="mt-2 text-[13px]" style={{ color: "var(--text-secondary)" }}>
+                {avisoReenvio}
+              </p>
+            )}
           </div>
 
-          {/* WhatsApp — editável, no mesmo formato do campo Nome */}
-          <div className="rounded-2xl px-4 py-2.5" style={vidroCampo}>
-            <label
-              className="block text-[11px] mb-0.5"
-              style={{ color: "var(--text-tertiary)" }}
-            >
-              WhatsApp
-            </label>
-            <div className="flex items-center gap-2">
-              <span
-                className="text-[15px] shrink-0"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                +55
-              </span>
-              <input
-                type="tel"
-                inputMode="numeric"
-                value={whats}
-                onChange={(e) => setWhats(formatarTelefone(e.target.value))}
-                placeholder="(00) 00000-0000"
-                autoComplete="off"
-                className="flex-1 min-w-0 bg-transparent text-[15px] font-semibold outline-none placeholder:font-normal placeholder:opacity-50"
-                style={{ color: "var(--text)", border: "none", boxShadow: "none" }}
-              />
+          <div>
+            <Rotulo>WhatsApp</Rotulo>
+            <div className="card-tacerto rounded-2xl px-4 py-4">
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-[16px] font-semibold shrink-0"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  +55
+                </span>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  value={whats}
+                  onChange={(e) => setWhats(formatarTelefone(e.target.value))}
+                  placeholder="(00) 00000-0000"
+                  autoComplete="off"
+                  className="flex-1 min-w-0 bg-transparent text-[16px] font-semibold outline-none placeholder:font-normal placeholder:opacity-50"
+                  style={{ color: "var(--text)", border: "none", boxShadow: "none" }}
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {(temMudanca || salvo) && (
-          <div className="pt-2.5">
+          <div className="pt-4">
             <button
               onClick={salvarAlteracoes}
               disabled={salvo}
-              className="w-full py-3 rounded-2xl font-semibold text-sm transition active:scale-[0.99]"
+              className="w-full py-3.5 rounded-2xl font-semibold text-sm transition active:scale-[0.99]"
               style={{
                 backgroundColor: salvo ? "var(--field)" : "var(--primary)",
                 color: salvo ? "var(--primary)" : "var(--primary-contrast)",
@@ -346,39 +388,33 @@ export default function EditarPerfil() {
           </div>
         )}
 
-        <p
-          className="text-[12px] font-semibold uppercase mb-2"
-          style={{
-            color: "var(--text-tertiary)",
-            letterSpacing: "0.06em",
-            marginTop: ESPACO_ANTES_PERFIL_FISCAL,
-          }}
-        >
-          Perfil fiscal
-        </p>
+        {/* ================= PERFIL FISCAL ================= */}
+        <TituloSecao>Perfil fiscal</TituloSecao>
 
-        <div className="space-y-2">
-          <LinhaFiscal
-            Icon={Briefcase}
-            label="Tipo de MEI"
-            valor={LABEL_PERFIL[tipo]}
+        <div className="space-y-4">
+          <CampoEscolha
+            rotulo="Tipo de MEI"
+            valor={LABEL_PERFIL[tipo] || "Não informado"}
             onClick={() => setSelecionarTipo(true)}
           />
-          <LinhaFiscal
-            Icon={CalendarDays}
-            label="Data de abertura"
+          <CampoEscolha
+            rotulo="Data de abertura"
             valor={subAbertura}
             onClick={() => setCalendarioAberto(true)}
           />
         </div>
 
-        <div className="pt-4">
-          <LinhaFiscal
-            Icon={Trash2}
-            label="Excluir conta"
-            perigo
+        {/* Excluir conta: sem card, so o icone e o texto. */}
+        <div className="pt-8">
+          <button
             onClick={() => navigate("/excluir-conta")}
-          />
+            className="flex items-center gap-2.5 active:opacity-70 transition"
+          >
+            <Trash2 size={20} strokeWidth={2} style={{ color: "var(--danger)" }} />
+            <span className="text-[16px] font-medium" style={{ color: "var(--danger)" }}>
+              Excluir conta
+            </span>
+          </button>
         </div>
       </div>
 

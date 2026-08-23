@@ -6,6 +6,11 @@ import {
 
 import BottomNav from "../components/BottomNav.jsx";
 
+/* PREFERENCIAS v2 — cards no padrao .card-tacerto (index.css).
+   Setinha de voltar mantida com vidro. Botoes de selecao internos
+   (tamanho de fonte, dias do lembrete) nao foram alterados: o fundo
+   deles e o que mostra qual esta escolhido. */
+
 const KEY_TEMA = "tacerto_tema";
 const KEY_FONTE = "tacerto_fonte";
 const KEY_PUSH = "tacerto_push";
@@ -44,9 +49,9 @@ function CardOpcao({ Icon, label, sub, ativo, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="flex-1 rounded-2xl px-3 py-3 flex flex-col items-center gap-1.5 transition"
+      className="card-tacerto flex-1 rounded-2xl px-3 py-3 flex flex-col items-center gap-1.5 transition"
       style={{
-        backgroundColor: ativo ? "var(--surface-selected)" : "var(--field)",
+        borderColor: ativo ? "var(--primary)" : undefined,
         opacity: ativo ? 1 : 0.55,
       }}
     >
@@ -228,10 +233,7 @@ export default function Preferencias() {
           >
             Tamanho da fonte
           </p>
-          <div
-            className="rounded-2xl px-4 py-3"
-            style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
-          >
+          <div className="card-tacerto rounded-2xl px-4 py-3">
             <div className="flex items-end justify-between gap-2">
               {[
                 { v: "small", label: "Pequena", tam: 13 },
@@ -282,10 +284,7 @@ export default function Preferencias() {
             Notificações
           </p>
 
-          <div
-            className="rounded-2xl px-4 py-3 flex items-center gap-3"
-            style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
-          >
+          <div className="card-tacerto rounded-2xl px-4 py-3 flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
               style={{ backgroundColor: "var(--surface)" }}
@@ -307,9 +306,8 @@ export default function Preferencias() {
           </div>
 
           <div
-            className="rounded-2xl px-4 pt-3 pb-3 mt-2"
+            className="card-tacerto rounded-2xl px-4 pt-3 pb-3 mt-2"
             style={{
-              backgroundColor: "var(--field)",
               opacity: push ? 1 : 0.45,
               pointerEvents: push ? "auto" : "none",
             }}
