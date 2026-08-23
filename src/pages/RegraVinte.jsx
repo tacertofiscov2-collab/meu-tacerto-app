@@ -66,7 +66,7 @@ export default function RegraVinte() {
           onClick={() => navigate(-1)}
           aria-label="Voltar"
           className="toque toque-escala w-10 h-10 rounded-full flex items-center justify-center"
-          style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
+          style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
         >
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
         </button>
@@ -159,7 +159,7 @@ export default function RegraVinte() {
         {/* Explicação da régua */}
         <div
           className="rounded-2xl px-4 py-3.5 mt-2.5"
-          style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
+          style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
         >
           <p
             className="text-[11px] font-semibold uppercase mb-2"
@@ -204,7 +204,7 @@ export default function RegraVinte() {
             <div
               key={i}
               className="rounded-2xl px-4 py-3.5 flex gap-3"
-              style={{ background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)", backdropFilter: "blur(24px) saturate(160%)", WebkitBackdropFilter: "blur(24px) saturate(160%)", border: "1px solid var(--vidro-borda)", boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)" }}
+              style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
             >
               <span
                 className="rounded-full flex items-center justify-center shrink-0"
