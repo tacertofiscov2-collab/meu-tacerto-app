@@ -1,7 +1,7 @@
 ﻿import { useNavigate } from "react-router-dom";
 import { useRef, useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Bell, Gauge, TrendingUp, ChevronRight, Receipt, Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList, Copy, CornerUpLeft, Pencil, History, MessageSquarePlus, Trash2, Sparkles, MessageCircleQuestion } from "lucide-react";
+import { Bell, Gauge, TrendingUp, ChevronRight, Receipt, Send, X, Mic, Image as ImageIcon, Camera, FileText, Sparkles, MessageCircleQuestion } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
@@ -10,10 +10,19 @@ import {
   LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO, FAIXAS_ORDEM, FAIXA_RANGE_LABEL,
   truncarNome,
 } from "@/lib/fiscal";
-import {
-  lerConversas, salvarConversa, apagarConversa, novoIdConversa, rotuloData,
-  carregarConversasDoBanco,
-} from "@/lib/chatHistorico";
+/* DASHBOARD v3 — cabecalho no painel de perguntas + limpeza do chat morto.
+
+   1) O painel de perguntas abria com um vazio grande no topo (o espaco
+      reservado para o X). Agora esse espaco tem titulo: rotulo na cor da
+      faixa, o resumo da situacao atual e o que fazer. Ver PainelPerguntas.
+
+   2) REMOVIDO o ChatFiscoExpandido e seus auxiliares (BolhaMensagem,
+      MenuMensagem, FiscoDigitando, PainelHistorico). Era uma copia
+      inteira do chat que NUNCA abria: so seria acionada por
+      abrirConversa/novaConversa, que por sua vez so eram chamadas de
+      dentro dele mesmo. Alem disso o onEnviar era funcao vazia.
+      O chat de verdade vive em src/components/ChatFiscoUI.jsx, usado
+      pela pagina /fisco. Aqui o dashboard so navega pra la.
 
 /* Marca de onde a navegação partiu: o TelaComVoltarReal usa isso para
    mostrar a tela certa por trás quando o usuário arrasta para voltar. */
@@ -665,184 +674,45 @@ function CardVelocimetroCarrossel({
   );
 }
 
-function BolhaMensagem({ autor, texto, citando, onSegurar }) {
-  const doUsuario = autor === "user";
-  const timerRef = useRef(null);
-  const [pressionada, setPressionada] = useState(false);
-
-  function iniciarPressao() {
-    setPressionada(true);
-    timerRef.current = setTimeout(() => {
-      setPressionada(false);
-      onSegurar?.();
-    }, 450);
-  }
-  function cancelarPressao() {
-    setPressionada(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = null;
-  }
-
-  return (
-    <div
-      className="flex w-full"
-      style={{ justifyContent: doUsuario ? "flex-end" : "flex-start" }}
-    >
-      <div
-        className="relative"
-        onTouchStart={iniciarPressao}
-        onTouchEnd={cancelarPressao}
-        onTouchMove={cancelarPressao}
-        onTouchCancel={cancelarPressao}
-        onMouseDown={iniciarPressao}
-        onMouseUp={cancelarPressao}
-        onMouseLeave={cancelarPressao}
-        onContextMenu={(e) => { e.preventDefault(); onSegurar?.(); }}
-        style={{
-          maxWidth: "80%",
-          padding: "10px 14px",
-          borderRadius: doUsuario ? "18px 18px 5px 18px" : "18px 18px 18px 5px",
-          background: doUsuario
-            ? "linear-gradient(160deg, rgba(74,222,128,0.30) 0%, rgba(34,197,94,0.22) 55%, rgba(21,128,61,0.18) 100%)"
-            : "linear-gradient(160deg, var(--vidro-brilho-2) 0%, var(--vidro-brilho-3) 45%, transparent 100%), var(--vidro-superficie)",
-          backdropFilter: "blur(18px) saturate(150%)",
-          WebkitBackdropFilter: "blur(18px) saturate(150%)",
-          border: doUsuario
-            ? "1px solid rgba(74,222,128,0.35)"
-            : "1px solid var(--vidro-borda)",
-          boxShadow: doUsuario
-            ? "inset 0 1px 0 0 var(--vidro-topo-medio), 0 4px 14px var(--vidro-sombra)"
-            : "inset 0 1px 0 0 var(--vidro-topo-fraco), 0 4px 14px var(--vidro-sombra)",
-          color: "var(--text)",
-          fontSize: 14.5,
-          lineHeight: 1.4,
-          whiteSpace: "pre-wrap",
-          overflowWrap: "anywhere",
-          wordBreak: "break-word",
-          WebkitTouchCallout: "none",
-          WebkitUserSelect: "none",
-          MozUserSelect: "none",
-          msUserSelect: "none",
-          userSelect: "none",
-          WebkitTapHighlightColor: "transparent",
-          cursor: "pointer",
-          transform: pressionada ? "scale(0.975)" : "scale(1)",
-          filter: pressionada ? "brightness(1.18)" : "none",
-          transition: "transform 420ms cubic-bezier(0.25,0.9,0.3,1), filter 420ms ease",
-        }}
-      >
-        {citando && (
-          <div
-            className="rounded-lg"
-            style={{
-              padding: "6px 9px",
-              marginBottom: 7,
-              backgroundColor: "var(--vidro-base)",
-              borderLeft: "2.5px solid var(--primary)",
-              color: "var(--text)",
-              fontSize: 12.5,
-              lineHeight: 1.35,
-              opacity: 0.9,
-              whiteSpace: "pre-wrap",
-              overflowWrap: "anywhere",
-              wordBreak: "break-word",
-            }}
-          >
-            {citando}
-          </div>
-        )}
-        {texto}
-      </div>
-    </div>
-  );
-}
-
-/** Menu que abre ao segurar uma mensagem */
-function MenuMensagem({ msg, onFechar, onCopiar, onEditar, onResponder }) {
-  if (!msg) return null;
-  const doUsuario = msg.autor === "user";
-
-  const itens = [
-    { Icon: Copy, label: "Copiar", acao: onCopiar },
-    { Icon: CornerUpLeft, label: "Responder", acao: onResponder },
-    ...(doUsuario ? [{ Icon: Pencil, label: "Editar", acao: onEditar }] : []),
-  ];
-
-  return (
-    <div
-      className="fixed inset-0 z-[80] flex items-center justify-center"
-      style={{ background: "rgba(0,0,0,0.45)", animation: "menuMsgFade 320ms ease-out" }}
-      onClick={onFechar}
-    >
-      <style>{`
-        @keyframes menuMsgFade {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes menuMsgPop {
-          from { opacity: 0; transform: scale(0.94) translateY(6px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-      `}</style>
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="rounded-2xl overflow-hidden"
-        style={{
-          ...VIDRO_SUAVE,
-          minWidth: 190,
-          padding: 6,
-          animation: "menuMsgPop 380ms cubic-bezier(0.25,0.9,0.3,1)",
-        }}
-      >
-        {itens.map(({ Icon, label, acao }) => (
-          <button
-            key={label}
-            type="button"
-            onClick={() => { acao?.(); onFechar(); }}
-            className="toque w-full flex items-center rounded-xl"
-            style={{ gap: 11, padding: "11px 13px" }}
-          >
-            <Icon size={17} style={{ color: "var(--primary)" }} />
-            <span style={{ color: "var(--text)", fontSize: 14.5 }}>{label}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function FiscoDigitando() {
-  return (
-    <div className="flex w-full" style={{ justifyContent: "flex-start" }}>
-      <div
-        className="rounded-2xl flex items-center"
-        style={{
-          padding: "10px 14px",
-          backgroundColor: "var(--vidro-superficie)",
-          gap: 4,
-        }}
-      >
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="rounded-full"
-            style={{
-              width: 6,
-              height: 6,
-              backgroundColor: "var(--text-tertiary)",
-              animation: "piscaFisco 1.1s infinite",
-              animationDelay: `${i * 0.16}s`,
-            }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 /** Painel só com as perguntas sugeridas conforme a situação.
-    Fecha no "×" ou clicando fora. */
+    Fecha no "×" ou clicando fora.
+
+    O topo tem um cabeçalho ligado à SITUAÇÃO ATUAL: o rótulo na cor da
+    faixa, o mesmo resumo que aparece no card "Como estou" (que é o botão
+    que abre este painel) e uma linha dizendo o que fazer. Antes esse
+    espaço era só um vazio reservado para o "×". */
 function PainelPerguntas({ aberto, onFechar, faixa, corFaixa, onPerguntar }) {
+  const listaRef = useRef(null);
+
+  /* TRAVA A ROLAGEM DO DASHBOARD enquanto o painel esta aberto. Sem
+     isso, arrastar o dedo fora do painel rolava a tela atras. Mesma
+     tecnica da caixinha do Fisco: overflow travado no html/body +
+     bloqueio do arrasto — liberado so DENTRO da lista de perguntas,
+     que precisa rolar. */
+  useEffect(() => {
+    if (!aberto) return;
+
+    const htmlEl = document.documentElement;
+    const bodyEl = document.body;
+    const overflowHtmlAntes = htmlEl.style.overflow;
+    const overflowBodyAntes = bodyEl.style.overflow;
+    htmlEl.style.overflow = "hidden";
+    bodyEl.style.overflow = "hidden";
+
+    const bloquearArrasto = (e) => {
+      const lista = listaRef.current;
+      if (lista && lista.contains(e.target)) return; // deixa a lista rolar
+      e.preventDefault();
+    };
+    document.addEventListener("touchmove", bloquearArrasto, { passive: false });
+
+    return () => {
+      document.removeEventListener("touchmove", bloquearArrasto);
+      htmlEl.style.overflow = overflowHtmlAntes;
+      bodyEl.style.overflow = overflowBodyAntes;
+    };
+  }, [aberto]);
+
   if (!aberto) return null;
   const perguntas = perguntasDaSituacao(faixa);
 
@@ -863,6 +733,19 @@ function PainelPerguntas({ aberto, onFechar, faixa, corFaixa, onPerguntar }) {
           animation: "menuMsgPop 340ms cubic-bezier(0.25,0.9,0.3,1)",
         }}
       >
+        {/* As animacoes ficavam no MenuMensagem do chat que existia aqui.
+            Com ele removido, elas moram neste painel — que e quem usa. */}
+        <style>{`
+          @keyframes menuMsgFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes menuMsgPop {
+            from { opacity: 0; transform: scale(0.94) translateY(6px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+          }
+        `}</style>
+
         <button
           type="button"
           onClick={onFechar}
@@ -882,9 +765,30 @@ function PainelPerguntas({ aberto, onFechar, faixa, corFaixa, onPerguntar }) {
           <X size={15} style={{ color: "var(--text-secondary)" }} />
         </button>
 
+        {/* Cabeçalho: só o título, centralizado. O padding igual nos dois
+            lados (52) é o que mantém o texto no centro real do painel,
+            já que o "×" flutua por cima do canto direito. */}
         <div
+          className="shrink-0 text-center"
+          style={{ padding: "16px 52px 12px" }}
+        >
+          <p
+            className="font-bold uppercase"
+            style={{
+              /* Branco sempre: nao acompanha a cor da faixa. */
+              color: "var(--text)",
+              fontSize: 13,
+              letterSpacing: "0.09em",
+            }}
+          >
+            Tirar dúvidas
+          </p>
+        </div>
+
+        <div
+          ref={listaRef}
           className="flex-1 min-h-0 overflow-y-auto hide-scrollbar"
-          style={{ padding: "48px 12px 12px", display: "flex", flexDirection: "column", gap: 8 }}
+          style={{ padding: "0 12px 12px", display: "flex", flexDirection: "column", gap: 8 }}
         >
           {perguntas.map((p) => (
             <button
@@ -916,428 +820,6 @@ function PainelPerguntas({ aberto, onFechar, faixa, corFaixa, onPerguntar }) {
           ))}
         </div>
       </div>
-    </div>
-  );
-}
-
-/** Painel com a lista de conversas salvas */
-function PainelHistorico({ aberto, onFechar, conversas, idAtual, onAbrir, onNova, onApagar }) {
-  if (!aberto) return null;
-
-  return (
-    <div
-      className="absolute inset-0 z-[20] flex flex-col"
-      style={{ background: "rgba(0,0,0,0.35)", animation: "menuMsgFade 260ms ease-out" }}
-      onClick={onFechar}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="flex flex-col h-full"
-        style={{
-          ...VIDRO_CHAT,
-          border: "none",
-          borderRadius: 0,
-          animation: "painelEntra 300ms cubic-bezier(0.25,0.9,0.3,1)",
-        }}
-      >
-        <style>{`
-          @keyframes painelEntra {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-        `}</style>
-
-        <div className="flex items-center gap-3 shrink-0" style={{ padding: "14px 16px" }}>
-          <p className="flex-1 font-bold" style={{ color: "var(--text)", fontSize: 15 }}>
-            Conversas
-          </p>
-          <button
-            type="button"
-            onClick={onNova}
-            aria-label="Nova conversa"
-            className="toque rounded-full flex items-center justify-center shrink-0"
-            style={{ width: 32, height: 32, backgroundColor: "var(--vidro-superficie)" }}
-          >
-            <MessageSquarePlus size={16} style={{ color: "var(--primary)" }} />
-          </button>
-          <button
-            type="button"
-            onClick={onFechar}
-            aria-label="Fechar histórico"
-            className="toque rounded-full flex items-center justify-center shrink-0"
-            style={{ width: 32, height: 32, backgroundColor: "var(--vidro-superficie)" }}
-          >
-            <X size={16} style={{ color: "var(--text-secondary)" }} />
-          </button>
-        </div>
-
-        <div
-          className="flex-1 min-h-0 overflow-y-auto"
-          style={{ padding: "0 12px 12px", display: "flex", flexDirection: "column", gap: 8 }}
-        >
-          {conversas.length === 0 && (
-            <p
-              className="text-center"
-              style={{ color: "var(--text-tertiary)", fontSize: 13.5, marginTop: 24 }}
-            >
-              Nenhuma conversa salva ainda.
-            </p>
-          )}
-
-          {conversas.map((c) => {
-            const ativa = c.id === idAtual;
-            return (
-              <div
-                key={c.id}
-                className="rounded-2xl flex items-center"
-                style={{
-                  gap: 10,
-                  padding: "11px 12px",
-                  backgroundColor: ativa
-                    ? "rgba(34,197,94,0.12)"
-                    : "var(--vidro-superficie-fraca)",
-                  border: ativa
-                    ? "1px solid rgba(34,197,94,0.35)"
-                    : "1px solid var(--vidro-borda)",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => onAbrir(c.id)}
-                  className="toque flex-1 min-w-0 text-left"
-                  style={{ background: "none", border: "none", padding: 0 }}
-                >
-                  <p
-                    className="truncate"
-                    style={{ color: "var(--text)", fontSize: 14, fontWeight: 600 }}
-                  >
-                    {c.titulo}
-                  </p>
-                  <p style={{ color: "var(--text-tertiary)", fontSize: 11.5, marginTop: 2 }}>
-                    {rotuloData(c.atualizadaEm)} · {c.mensagens.length} mensagens
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onApagar(c.id)}
-                  aria-label="Apagar conversa"
-                  className="toque rounded-full flex items-center justify-center shrink-0"
-                  style={{ width: 30, height: 30, backgroundColor: "var(--vidro-superficie-fraca)" }}
-                >
-                  <Trash2 size={14} style={{ color: "var(--text-tertiary)" }} />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ChatFiscoExpandido({
-  aberto, onFechar, mensagens, digitando, onEnviar, onEditarMensagem,
-  conversas, idAtual, onAbrirConversa, onNovaConversa, onApagarConversa,
-}) {
-  const [rascunho, setRascunho] = useState("");
-  const [menuAnexo, setMenuAnexo] = useState(false);
-  const [historicoAberto, setHistoricoAberto] = useState(false);
-  const [msgMenu, setMsgMenu] = useState(null);
-  const [respondendo, setRespondendo] = useState(null);
-  const [editando, setEditando] = useState(null);
-  const fimRef = useRef(null);
-  const inputChatRef = useRef(null);
-
-  useEffect(() => {
-    if (aberto) fimRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [mensagens, digitando, aberto]);
-
-  if (!aberto) return null;
-
-  function submeter(e) {
-    e.preventDefault();
-    const texto = rascunho.trim();
-    if (!texto) return;
-    if (editando) {
-      onEditarMensagem?.(editando.id, texto);
-      setEditando(null);
-    } else {
-      onEnviar(texto, respondendo);
-    }
-    setRespondendo(null);
-    setRascunho("");
-  }
-
-  function copiarTexto(t) {
-    try {
-      navigator.clipboard?.writeText(t);
-    } catch {}
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-[70] flex items-stretch justify-center"
-      style={{ background: "rgba(0,0,0,0.55)" }}
-      onClick={onFechar}
-    >
-      <style>{`
-        @keyframes piscaFisco {
-          0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
-          30% { opacity: 1; transform: translateY(-2px); }
-        }
-      `}</style>
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="flex flex-col relative"
-        style={{
-          ...VIDRO_CHAT,
-          position: "absolute",
-          top: 84,
-          left: 12,
-          right: 12,
-          bottom: "calc(100px + env(safe-area-inset-bottom))",
-          borderRadius: 28,
-          overflow: "hidden",
-        }}
-      >
-        <BordaLuminosa raio={28} />
-
-        <div
-          className="flex items-center gap-3 shrink-0"
-          style={{ padding: "14px 16px" }}
-        >
-          <span
-            className="relative rounded-full overflow-hidden shrink-0 flex items-center justify-center"
-            style={{ width: 40, height: 40, border: "1.5px solid rgba(34,197,94,0.45)" }}
-          >
-            <img
-              src="/fisco-perfil.png"
-              alt="Fisco"
-              style={{ width: "108%", height: "108%", objectFit: "cover", objectPosition: "50% 18%" }}
-            />
-          </span>
-          <div className="flex-1 min-w-0">
-            <p className="font-bold" style={{ color: "var(--text)", fontSize: 15 }}>Fisco</p>
-            <p style={{ color: "var(--primary)", fontSize: 11.5 }}>â— Online</p>
-          </div>
-          <button
-            onClick={() => setHistoricoAberto(true)}
-            aria-label="Histórico de conversas"
-            className="toque rounded-full flex items-center justify-center shrink-0"
-            style={{ width: 32, height: 32, backgroundColor: "var(--vidro-superficie)" }}
-          >
-            <History size={16} style={{ color: "var(--text-secondary)" }} />
-          </button>
-          <button
-            onClick={onFechar}
-            aria-label="Fechar chat"
-            className="toque rounded-full flex items-center justify-center shrink-0"
-            style={{ width: 32, height: 32, backgroundColor: "var(--vidro-superficie)" }}
-          >
-            <X size={16} style={{ color: "var(--text-secondary)" }} />
-          </button>
-        </div>
-
-        <PainelHistorico
-          aberto={historicoAberto}
-          onFechar={() => setHistoricoAberto(false)}
-          conversas={conversas}
-          idAtual={idAtual}
-          onAbrir={(id) => { onAbrirConversa(id); setHistoricoAberto(false); }}
-          onNova={() => { onNovaConversa(); setHistoricoAberto(false); }}
-          onApagar={onApagarConversa}
-        />
-
-        <div className="flex-1 min-h-0 overflow-y-auto" style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
-          {mensagens.map((m) => (
-            <BolhaMensagem
-              key={m.id}
-              autor={m.autor}
-              texto={m.texto}
-              citando={m.citando}
-              onSegurar={() => setMsgMenu(m)}
-            />
-          ))}
-          {digitando && <FiscoDigitando />}
-          <div ref={fimRef} />
-        </div>
-
-        <div className="shrink-0 relative" style={{ padding: 12 }}>
-          {/* Contexto: respondendo ou editando */}
-          {(respondendo || editando) && (
-            <div
-              className="flex items-center rounded-xl"
-              style={{
-                gap: 10,
-                padding: "8px 10px",
-                marginBottom: 8,
-                backgroundColor: "var(--vidro-superficie-fraca)",
-                borderLeft: "3px solid var(--primary)",
-              }}
-            >
-              <div className="flex-1 min-w-0">
-                <p style={{ color: "var(--primary)", fontSize: 11.5, fontWeight: 700 }}>
-                  {editando ? "Editando" : "Respondendo"}
-                </p>
-                <p
-                  className="truncate"
-                  style={{ color: "var(--text-secondary)", fontSize: 13 }}
-                >
-                  {(editando || respondendo).texto}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setRespondendo(null);
-                  setEditando(null);
-                  setRascunho("");
-                }}
-                aria-label="Cancelar"
-                className="toque rounded-full flex items-center justify-center shrink-0"
-                style={{ width: 26, height: 26, backgroundColor: "var(--vidro-superficie)" }}
-              >
-                <X size={13} style={{ color: "var(--text-secondary)" }} />
-              </button>
-            </div>
-          )}
-
-          {/* Menu de anexos, abre acima do "+" */}
-          {menuAnexo && (
-            <>
-              <div
-                className="fixed inset-0"
-                style={{ zIndex: 5 }}
-                onClick={() => setMenuAnexo(false)}
-              />
-              <div
-                className="absolute rounded-2xl overflow-hidden"
-                style={{
-                  ...VIDRO_SUAVE,
-                  zIndex: 10,
-                  left: 12,
-                  bottom: 70,
-                  minWidth: 178,
-                  padding: 6,
-                }}
-              >
-                {[
-                  { Icon: Camera, label: "Foto" },
-                  { Icon: ImageIcon, label: "Galeria" },
-                  { Icon: FileText, label: "Documento" },
-                  { Icon: ClipboardList, label: "Extrato" },
-                ].map(({ Icon, label }) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => setMenuAnexo(false)}
-                    className="toque w-full flex items-center rounded-xl"
-                    style={{ gap: 11, padding: "10px 12px" }}
-                  >
-                    <Icon size={17} style={{ color: "var(--primary)" }} />
-                    <span style={{ color: "var(--text)", fontSize: 14.5 }}>{label}</span>
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-
-          <form onSubmit={submeter} className="flex items-center gap-2">
-            {/* "+" FORA da barra, à  esquerda */}
-            <button
-              type="button"
-              onClick={() => setMenuAnexo((v) => !v)}
-              aria-label="Anexar"
-              className="toque rounded-full flex items-center justify-center shrink-0"
-              style={{
-                width: 44,
-                height: 44,
-                background:
-                  "linear-gradient(160deg, var(--vidro-brilho-2) 0%, var(--vidro-brilho-3) 50%, transparent 100%), var(--vidro-superficie)",
-                backdropFilter: "blur(18px) saturate(150%)",
-                WebkitBackdropFilter: "blur(18px) saturate(150%)",
-                border: "1px solid var(--vidro-borda)",
-                boxShadow: "inset 0 1px 0 0 var(--vidro-topo-medio)",
-                transform: menuAnexo ? "rotate(45deg)" : "none",
-                transition: "transform 300ms cubic-bezier(0.25,0.9,0.3,1)",
-              }}
-            >
-              <Plus size={21} strokeWidth={2.4} style={{ color: "var(--text)" }} />
-            </button>
-
-            {/* Barra maior, sem texto placeholder, com mic/avião DENTRO à  direita */}
-            <div
-              className="flex-1 min-w-0 flex items-center rounded-full"
-              onClick={() => inputChatRef.current?.focus()}
-              style={{
-                height: 52,
-                paddingLeft: 18,
-                paddingRight: 6,
-                gap: 8,
-                cursor: "text",
-                background:
-                  "linear-gradient(160deg, var(--vidro-brilho-2) 0%, var(--vidro-brilho-3) 50%, transparent 100%), var(--vidro-superficie)",
-                backdropFilter: "blur(18px) saturate(150%)",
-                WebkitBackdropFilter: "blur(18px) saturate(150%)",
-                border: "1px solid var(--vidro-borda)",
-                boxShadow: "inset 0 1px 0 0 var(--vidro-topo-medio)",
-              }}
-            >
-              <input
-                ref={inputChatRef}
-                value={rascunho}
-                onChange={(e) => setRascunho(e.target.value)}
-                className="flex-1 min-w-0"
-                style={{
-                  background: "none",
-                  border: "none",
-                  outline: "none",
-                  color: "var(--text)",
-                  caretColor: "var(--primary)",
-                  fontSize: 15,
-                }}
-              />
-
-              {rascunho.trim() ? (
-                <button
-                  type="submit"
-                  aria-label="Enviar"
-                  className="toque rounded-full flex items-center justify-center shrink-0"
-                  style={{ width: 40, height: 40 }}
-                >
-                  <Send size={20} strokeWidth={2.1} style={{ color: "var(--text)" }} />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  aria-label="Gravar áudio"
-                  className="toque rounded-full flex items-center justify-center shrink-0"
-                  style={{ width: 40, height: 40 }}
-                >
-                  <Mic size={20} strokeWidth={2.1} style={{ color: "var(--text)" }} />
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <MenuMensagem
-        msg={msgMenu}
-        onFechar={() => setMsgMenu(null)}
-        onCopiar={() => copiarTexto(msgMenu?.texto || "")}
-        onResponder={() => {
-          setRespondendo(msgMenu);
-          setEditando(null);
-          setTimeout(() => inputChatRef.current?.focus(), 50);
-        }}
-        onEditar={() => {
-          setEditando(msgMenu);
-          setRespondendo(null);
-          setRascunho(msgMenu?.texto || "");
-          setTimeout(() => inputChatRef.current?.focus(), 50);
-        }}
-      />
     </div>
   );
 }
@@ -1726,53 +1208,12 @@ export default function Dashboard() {
   const saudacao = saudacaoPorHora();
 
   const [caixaExpandida, setCaixaExpandida] = useState(false);
-  const [chatAberto, setChatAberto] = useState(false);
-  const [mensagens, setMensagens] = useState([]);
-  const [digitando, setDigitando] = useState(false);
 
   // Painel de perguntas sugeridas (abre pelo card "Como estou")
   const [perguntasAberto, setPerguntasAberto] = useState(false);
 
-  // Histórico de conversas (ver src/lib/chatHistorico.js)
-  const [conversas, setConversas] = useState([]);
-  const [idConversa, setIdConversa] = useState(null);
-
-  // Carrega a lista de conversas salvas ao montar.
-  useEffect(() => {
-    setConversas(lerConversas());
-    carregarConversasDoBanco().then((lista) => setConversas(lista));
-  }, []);
-
-  // Salva sempre que a conversa muda (e não está no meio de uma resposta).
-  useEffect(() => {
-    if (!idConversa || mensagens.length === 0 || digitando) return;
-    salvarConversa(idConversa, mensagens);
-    setConversas(lerConversas());
-  }, [mensagens, digitando, idConversa]);
-
-  function abrirConversa(id) {
-    const c = lerConversas().find((x) => x.id === id);
-    if (!c) return;
-    setIdConversa(c.id);
-    setMensagens(c.mensagens);
-    setChatAberto(true);
-  }
-
-  function novaConversa() {
-    setIdConversa(null);
-    setMensagens([]);
-    setChatAberto(true);
-  }
-
-  function removerConversa(id) {
-    apagarConversa(id);
-    const restantes = lerConversas();
-    setConversas(restantes);
-    if (id === idConversa) {
-      setIdConversa(null);
-      setMensagens([]);
-    }
-  }
+  /* O historico de conversas nao vive mais aqui: quem cuida dele e a
+     pagina /fisco (ver ChatFiscoPagina + lib/chatHistorico). */
 
   // Abre a pagina do chat do Fisco (/fisco) levando a primeira mensagem.
   // A pagina cria a conversa, mostra a mensagem e dispara a resposta.
@@ -1956,20 +1397,6 @@ export default function Dashboard() {
         faixa={faixaDoVelocimetro(percentualAtual)}
         corFaixa={FAIXA_INFO[faixaDoVelocimetro(percentualAtual)].cor}
         onPerguntar={perguntarAoFisco}
-      />
-
-      <ChatFiscoExpandido
-        aberto={chatAberto}
-        onFechar={() => setChatAberto(false)}
-        mensagens={mensagens}
-        digitando={digitando}
-        onEnviar={() => {}}
-        onEditarMensagem={() => {}}
-        conversas={conversas}
-        idAtual={idConversa}
-        onAbrirConversa={abrirConversa}
-        onNovaConversa={novaConversa}
-        onApagarConversa={removerConversa}
       />
 
       {/* O rodape some enquanto a caixinha do Fisco esta aberta: ele

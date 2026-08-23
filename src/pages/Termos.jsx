@@ -8,6 +8,22 @@ import Brand from "@/components/Brand";
 import BottomNav from "../components/BottomNav.jsx";
 import { SectionTitle } from "../components/FlatList.jsx";
 
+/* ===================================================================
+   TERMOS v2 — ROLAGEM DESTRAVADA
+
+   O que estava errado: esta tela era min-h-screen e rolava a PAGINA
+   INTEIRA (scroll do documento). Só que o script do index.html devolve
+   a janela ao topo escutando visualViewport.resize — e no Safari do
+   iPhone esse evento dispara tambem quando a barra de endereco encolhe
+   ao rolar. Resultado: rolava, a barra mudava, e o scrollTo(0,0) puxava
+   de volta. A rolagem parecia travada.
+
+   Correcao: o padrao do resto do app — .tela-rolavel na raiz e
+   .conteudo-rolavel (filho DIRETO) no miolo. A rolagem passa a
+   acontecer dentro do container, onde o window.scrollTo nao alcanca.
+   O header e o BottomNav ficam fixos fora da area que rola.
+   =================================================================== */
+
 const SECOES = [
   {
     titulo: "O que coletamos",
@@ -47,10 +63,10 @@ export default function Termos() {
 
   return (
     <div
-      className="min-h-screen min-h-[100dvh] w-full"
+      className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <header className="px-5 pt-5 pb-1 flex items-center gap-3">
+      <header className="px-5 pt-5 pb-1 flex items-center gap-3 shrink-0">
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
@@ -64,8 +80,10 @@ export default function Termos() {
         </h1>
       </header>
 
+      {/* Filho DIRETO de .tela-rolavel — e disso que depende o
+          overflow-y: auto definido no index.css. */}
       <div
-        className="max-w-md mx-auto px-5"
+        className="conteudo-rolavel hide-scrollbar w-full max-w-md mx-auto px-5"
         style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
       >
         <div className="flex items-center gap-1.5 mt-2">
@@ -136,8 +154,3 @@ export default function Termos() {
     </div>
   );
 }
-
-
-
-
-

@@ -8,6 +8,25 @@ import { rotuloData } from "@/lib/chatHistorico";
 /* ===================================================================
    CHAT DO FISCO — componentes compartilhados
 
+   CHATFISCOUI v3 — TEMA CLARO + BARRA QUE REAPARECE (nao segue o teclado)
+
+   A pagina deixou de ANIMAR A ALTURA atras do teclado (era um
+   'height 260ms', que dava a sensacao de arrastar). Agora usa a mesma
+   tecnica da caixinha do dashboard: a pagina e ancorada na area visivel
+   NA HORA, sem transicao, e a barra de digitar REAPARECE com um fade
+   curto. Ver o efeito do visualViewport e a animacao barraFiscoEntra.
+
+   O que estava errado: o fundo desta tela era um gradiente ESCURO
+   escrito na mao (rgba(24,24,27,...)), enquanto os textos usavam
+   var(--text). No tema claro o texto vira preto e ficava preto sobre
+   fundo escuro — ilegivel. O mesmo valia para o veu branco da barra de
+   digitar (rgba(255,255,255,0.04)), invisivel sobre fundo claro.
+
+   Agora existe uma versao clara de cada um desses valores, escolhida
+   pelo tema atual. O tema e lido da classe .theme-light no <html> (a
+   mesma que Preferencias liga/desliga) e um MutationObserver mantem o
+   chat em dia se o usuario trocar o tema com a tela aberta.
+
    Estes componentes eram parte do Dashboard.jsx (na janela flutuante).
    Foram movidos pra ca para que a PAGINA /fisco e (no futuro) qualquer
    outra tela usem exatamente o mesmo chat, sem duplicar codigo.
@@ -23,6 +42,46 @@ import { rotuloData } from "@/lib/chatHistorico";
    ate esse limite - igual WhatsApp - e depois passa a rolar por dentro.
    ~120px da aproximadamente 5 linhas. Aumente/diminua a gosto. */
 const MAX_ALTURA_CAMPO = 150;
+
+/* ---- FUNDO DA TELA, um para cada tema ----
+   O escuro simula o reflexo do dashboard atras do vidro: halo verde no
+   alto (o velocimetro) e brilhos suaves. O claro faz o mesmo desenho,
+   so que sobre branco: o halo verde continua, os brilhos viram luz e o
+   fundo termina em cinza bem claro. */
+const FUNDO_ESCURO = `
+  radial-gradient(120% 55% at 50% 8%, rgba(34,197,94,0.16) 0%, rgba(34,197,94,0.05) 38%, transparent 68%),
+  radial-gradient(80% 40% at 12% 24%, rgba(255,255,255,0.06) 0%, transparent 60%),
+  radial-gradient(70% 35% at 88% 70%, rgba(255,255,255,0.04) 0%, transparent 60%),
+  linear-gradient(160deg, rgba(24,24,27,0.92) 0%, rgba(12,12,14,0.96) 55%, rgba(8,8,10,0.98) 100%)
+`;
+
+const FUNDO_CLARO = `
+  radial-gradient(120% 55% at 50% 8%, rgba(22,163,74,0.16) 0%, rgba(22,163,74,0.05) 38%, transparent 68%),
+  radial-gradient(80% 40% at 12% 24%, rgba(255,255,255,0.85) 0%, transparent 60%),
+  radial-gradient(70% 35% at 88% 70%, rgba(15,15,17,0.03) 0%, transparent 60%),
+  linear-gradient(160deg, rgba(255,255,255,0.98) 0%, rgba(246,246,247,0.98) 55%, rgba(238,238,241,1) 100%)
+`;
+
+/* Le o tema atual pela classe do <html> — a mesma que Preferencias
+   coloca e tira. Reage a troca de tema com a tela aberta. */
+function useTemaClaro() {
+  const [claro, setClaro] = useState(() =>
+    typeof document !== "undefined" &&
+    document.documentElement.classList.contains("theme-light")
+  );
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const alvo = document.documentElement;
+    const ler = () => setClaro(alvo.classList.contains("theme-light"));
+    ler();
+    const obs = new MutationObserver(ler);
+    obs.observe(alvo, { attributes: true, attributeFilter: ["class"] });
+    return () => obs.disconnect();
+  }, []);
+
+  return claro;
+}
 
 const VIDRO_SUAVE = {
   background:
@@ -87,7 +146,7 @@ export function BordaLuminosa({ raio = 28, cor = "34,197,94", corClara = "74,222
   );
 }
 
-function BolhaMensagem({ autor, texto, citando, onSegurar }) {
+function BolhaMensagem({ autor, texto, citando, onSegurar, temaClaro }) {
   const doUsuario = autor === "user";
   const timerRef = useRef(null);
   const [pressionada, setPressionada] = useState(false);
@@ -104,6 +163,16 @@ function BolhaMensagem({ autor, texto, citando, onSegurar }) {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = null;
   }
+
+  /* No tema claro o verde precisa de mais corpo: as mesmas opacidades
+     do tema escuro somem sobre fundo branco. */
+  const fundoUsuario = temaClaro
+    ? "linear-gradient(160deg, rgba(22,163,74,0.20) 0%, rgba(22,163,74,0.14) 55%, rgba(21,128,61,0.12) 100%)"
+    : "linear-gradient(160deg, rgba(74,222,128,0.30) 0%, rgba(34,197,94,0.22) 55%, rgba(21,128,61,0.18) 100%)";
+
+  const bordaUsuario = temaClaro
+    ? "1px solid rgba(22,163,74,0.40)"
+    : "1px solid rgba(74,222,128,0.35)";
 
   return (
     <div
@@ -135,12 +204,12 @@ function BolhaMensagem({ autor, texto, citando, onSegurar }) {
           padding: "10px 14px",
           borderRadius: doUsuario ? "18px 18px 5px 18px" : "18px 18px 18px 5px",
           background: doUsuario
-            ? "linear-gradient(160deg, rgba(74,222,128,0.30) 0%, rgba(34,197,94,0.22) 55%, rgba(21,128,61,0.18) 100%)"
+            ? fundoUsuario
             : "linear-gradient(160deg, var(--vidro-brilho-2) 0%, var(--vidro-brilho-3) 45%, transparent 100%), var(--vidro-superficie)",
           backdropFilter: "blur(10px) saturate(140%)",
           WebkitBackdropFilter: "blur(10px) saturate(140%)",
           border: doUsuario
-            ? "1px solid rgba(74,222,128,0.35)"
+            ? bordaUsuario
             : "1px solid var(--vidro-borda)",
           boxShadow: doUsuario
             ? "inset 0 1px 0 0 var(--vidro-topo-medio), 0 4px 14px var(--vidro-sombra)"
@@ -406,6 +475,7 @@ export default function ChatFiscoUI({
   mensagens, digitando, onEnviar, onEditarMensagem, onFechar,
   conversas, idAtual, onAbrirConversa, onNovaConversa, onApagarConversa,
 }) {
+  const temaClaro = useTemaClaro();
   const [rascunho, setRascunho] = useState("");
   const [menuAnexo, setMenuAnexo] = useState(false);
   const [historicoAberto, setHistoricoAberto] = useState(false);
@@ -416,27 +486,44 @@ export default function ChatFiscoUI({
   const inputChatRef = useRef(null);
   const areaMensagensRef = useRef(null);
   const raizRef = useRef(null);
+  const barraRef = useRef(null);
 
-  // Ajusta a ALTURA da pagina conforme o teclado, direto no DOM (sem
-  // re-render do React, que adicionava atraso). Quando o teclado abre, a
-  // pagina encolhe pra 100dvh menos a altura do teclado. A barra fica no
-  // fim do espaco reduzido e a area de mensagens (flex-1) se ajusta
-  // sozinha - o scroll passa a funcionar e a ultima mensagem nunca fica
-  // escondida atras da barra. Encolher a altura tambem evita o teclado
-  // "por cima" que acontecia com a barra flutuando.
+  /* Veu e borda da barra de digitar e do "+". No escuro e um veu branco
+     sobre fundo escuro; no claro precisa ser o contrario, senao o campo
+     some no branco. */
+  const veuCampo = temaClaro ? "rgba(15,15,17,0.04)" : "rgba(255,255,255,0.04)";
+  const bordaCampo = temaClaro
+    ? "1px solid rgba(15,15,17,0.18)"
+    : "1px solid rgba(255,255,255,0.14)";
+
+  // Ancora a pagina na area visivel (o espaco acima do teclado) DIRETO no
+  // DOM, sem re-render do React e SEM TRANSICAO DE ALTURA. E a mesma
+  // tecnica da caixinha do dashboard: em vez de a pagina "perseguir" o
+  // teclado animando a altura, ela ja nasce no lugar certo e quem da a
+  // suavidade e o fade da barra de digitar (barraFiscoEntra).
   useEffect(() => {
     const vv = window.visualViewport;
     const raiz = raizRef.current;
     if (!vv || !raiz) return;
 
-    const aplicar = (teclado, animar) => {
-      raiz.style.transition = animar
-        ? "height 260ms cubic-bezier(0.22,0.61,0.36,1)"
-        : "none";
+    // Reinicia a animacao da barra. O 'none' + leitura do offsetWidth
+    // forca o navegador a aplicar o reset antes de comecar de novo —
+    // sem isso, a animacao so roda na primeira vez.
+    const reaparecerBarra = () => {
+      const barra = barraRef.current;
+      if (!barra) return;
+      barra.style.animation = "none";
+      void barra.offsetWidth;
+      barra.style.animation = "barraFiscoEntra 240ms cubic-bezier(0.22,0.61,0.36,1)";
+    };
+
+    const aplicar = (teclado) => {
+      // Sem transicao: o reposicionamento e instantaneo.
+      raiz.style.transition = "none";
       if (teclado > 0) {
         // Ancora a pagina NA VIEWPORT VISIVEL: fixed + top acompanhando o
         // offsetTop. So mudar a altura nao bastava - o container ficava
-        // presto no topo do documento e o rodape (a barra) caia fora da
+        // preso no topo do documento e o rodape (a barra) caia fora da
         // vista, escondido atras do teclado.
         raiz.style.position = "fixed";
         raiz.style.top = `${vv.offsetTop}px`;
@@ -452,22 +539,30 @@ export default function ChatFiscoUI({
       }
     };
 
+    // Guarda se o teclado estava aberto, para tocar o fade so na
+    // TROCA de estado — e nao a cada micro-evento da viewport.
+    let tecladoAberto = false;
+
     const seguir = () => {
       const teclado = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      // Anima a altura de forma suave (nao "seca"). O scroll pro fim NAO
-      // fica aqui: se ficasse, disparava a cada micro-evento da viewport
-      // e a tela "desfixava e reenquadrava". O scroll acontece so quando
-      // chega mensagem nova (outro efeito, mais abaixo).
-      aplicar(teclado > 60 ? teclado : 0, true);
+      const aberto = teclado > 60;
+      // O scroll pro fim NAO fica aqui: se ficasse, disparava a cada
+      // micro-evento da viewport e a tela "desfixava e reenquadrava".
+      // O scroll acontece so quando chega mensagem nova (efeito abaixo).
+      aplicar(aberto ? teclado : 0);
+      if (aberto !== tecladoAberto) {
+        tecladoAberto = aberto;
+        reaparecerBarra();
+      }
     };
 
     // AO CHEGAR NA PAGINA: vindo do dashboard, o teclado da caixinha
     // ainda pode estar aberto/descendo. Ligar o seguidor por TEMPO nao
     // resolvia (se o teclado ainda estivesse aberto, a pagina encolhia e
-    // depois voltava - o "salto"). Entao a pagina so passa a seguir o
+    // depois voltava - o "salto"). Entao a pagina so passa a acompanhar o
     // teclado QUANDO O USUARIO TOCA NO CAMPO DAQUI. Ate la, ela fica
     // enquadrada em tela cheia e ignora qualquer movimento do teclado.
-    aplicar(0, false);
+    aplicar(0);
 
     let seguindo = false;
 
@@ -486,7 +581,7 @@ export default function ChatFiscoUI({
       vv.removeEventListener("scroll", seguir);
     };
 
-    // O usuario tocou num campo desta pagina: a partir daqui, seguimos.
+    // O usuario tocou num campo desta pagina: a partir daqui, acompanha.
     const aoFocar = (e) => {
       const t = e.target;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) {
@@ -494,13 +589,15 @@ export default function ChatFiscoUI({
       }
     };
 
-    // Perdeu o foco: devolve a tela cheia e para de seguir.
+    // Perdeu o foco: devolve a tela cheia, com a barra reaparecendo.
     const aoSair = () => {
       setTimeout(() => {
         const a = document.activeElement;
         const digitando = a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA");
         if (!digitando) {
-          aplicar(0, true);
+          aplicar(0);
+          tecladoAberto = false;
+          reaparecerBarra();
           desligarSeguidor();
         }
       }, 60);
@@ -571,12 +668,8 @@ export default function ChatFiscoUI({
         // escuro translucido por cima. Desenhar o dashboard de verdade
         // aqui e aplicar blur seria pesado demais no celular; isto da o
         // mesmo efeito visual sem custo.
-        background: `
-          radial-gradient(120% 55% at 50% 8%, rgba(34,197,94,0.16) 0%, rgba(34,197,94,0.05) 38%, transparent 68%),
-          radial-gradient(80% 40% at 12% 24%, rgba(255,255,255,0.06) 0%, transparent 60%),
-          radial-gradient(70% 35% at 88% 70%, rgba(255,255,255,0.04) 0%, transparent 60%),
-          linear-gradient(160deg, rgba(24,24,27,0.92) 0%, rgba(12,12,14,0.96) 55%, rgba(8,8,10,0.98) 100%)
-        `,
+        // Uma versao para cada tema — ver FUNDO_ESCURO / FUNDO_CLARO.
+        background: temaClaro ? FUNDO_CLARO : FUNDO_ESCURO,
         color: "var(--text)",
         overflow: "hidden",
         // Impede o arrasto horizontal de "vazar" e acionar o gesto de
@@ -594,6 +687,16 @@ export default function ChatFiscoUI({
         @keyframes piscaFisco {
           0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
           30% { opacity: 1; transform: translateY(-2px); }
+        }
+        /* A barra de digitar nao acompanha o teclado arrastando: ela
+           reaparece no lugar certo com este fade curto — o mesmo desenho
+           da caixinha do dashboard (caixaFiscoEntra). */
+        @keyframes barraFiscoEntra {
+          from { opacity: 0.35; transform: translateY(12px) scale(0.99); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .barra-fisco-anima { animation: none !important; }
         }
       `}</style>
 
@@ -665,6 +768,7 @@ export default function ChatFiscoUI({
             autor={m.autor}
             texto={m.texto}
             citando={m.citando}
+            temaClaro={temaClaro}
             onSegurar={() => setMsgMenu(m)}
           />
         ))}
@@ -673,7 +777,8 @@ export default function ChatFiscoUI({
       </div>
 
       <div
-        className="relative"
+        ref={barraRef}
+        className="relative barra-fisco-anima"
         style={{
           // Flutua sobre as mensagens: sai do fluxo e fica ancorado no
           // fundo do container. Assim nao existe mais a faixa preta atras
@@ -777,10 +882,10 @@ export default function ChatFiscoUI({
               width: 44,
               height: 44,
               // Mesmo tratamento da barra: quase 100% transparente.
-              background: "rgba(255,255,255,0.04)",
+              background: veuCampo,
               backdropFilter: "blur(10px) saturate(140%)",
               WebkitBackdropFilter: "blur(10px) saturate(140%)",
-              border: "1px solid rgba(255,255,255,0.14)",
+              border: bordaCampo,
               transform: menuAnexo ? "rotate(45deg)" : "none",
               transition: "transform 300ms cubic-bezier(0.25,0.9,0.3,1)",
             }}
@@ -802,10 +907,10 @@ export default function ChatFiscoUI({
               cursor: "text",
               // Quase 100% transparente: so um veu de vidro e uma borda
               // sutil pra delimitar o campo, deixando o fundo aparecer.
-              background: "rgba(255,255,255,0.04)",
+              background: veuCampo,
               backdropFilter: "blur(10px) saturate(140%)",
               WebkitBackdropFilter: "blur(10px) saturate(140%)",
-              border: "1px solid rgba(255,255,255,0.14)",
+              border: bordaCampo,
             }}
           >
             <textarea

@@ -10,7 +10,12 @@
       no Safari/iOS quem resolve e o script abaixo.
     -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <!--
+      Icone da aba. O favicon.ico que veio do Lovable (o coracao) continua
+      na pasta public, mas nao e mais usado: o navegador prefere o SVG
+      declarado aqui. Para trocar o desenho, edite public/favicon.svg.
+    -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap" rel="stylesheet" />
@@ -33,22 +38,25 @@
       // com o proprio navegador durante a animacao de abertura e
       // deixava o teclado nascer por cima de caixas de texto que
       // focam sozinhas ao aparecer (ex.: a caixa "Pergunte ao Fisco").
+      //
+      // ATENCAO: este scrollTo tambem dispara quando a barra de
+      // endereco do Safari encolhe ao rolar. Por isso as telas longas
+      // devem rolar num container interno (.tela-rolavel +
+      // .conteudo-rolavel do index.css), e nao na pagina inteira -
+      // era o que travava a rolagem da tela de Termos.
       (function () {
         function voltarParaOTopo() {
           window.scrollTo(0, 0);
         }
-
         function tecladoFechou() {
           if (!window.visualViewport) return true;
           return window.visualViewport.height >= window.innerHeight - 60;
         }
-
         document.addEventListener("focusout", function () {
           setTimeout(function () { if (tecladoFechou()) voltarParaOTopo(); }, 50);
           setTimeout(function () { if (tecladoFechou()) voltarParaOTopo(); }, 150);
           setTimeout(function () { if (tecladoFechou()) voltarParaOTopo(); }, 350);
         });
-
         if (window.visualViewport) {
           window.visualViewport.addEventListener("resize", function () {
             if (!tecladoFechou()) return;

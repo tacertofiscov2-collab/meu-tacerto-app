@@ -6,6 +6,12 @@ import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
 import { dataMinimaLancamento, LIMITE_VALOR_LANCAMENTO } from "@/lib/fiscal";
 
+/* LANCAR v4 — barras no padrao .card-tacerto, botao de salvar sem brilho
+   Campo de valor, descricao, data e o bloco "Ultimo lancamento" saem do
+   fundo chapado (--field / --surface) e passam a ser fundo do app com
+   moldura fina. A SETA DE VOLTAR nao foi alterada. O botao verde de
+   salvar e o tracejado do estado vazio tambem seguem como estavam. */
+
 // Teto em centavos, derivado da constante única em fiscal.js
 const MAX_CENTAVOS = Math.round(LIMITE_VALOR_LANCAMENTO * 100);
 const MAX_DIGITOS = String(MAX_CENTAVOS).length;
@@ -145,8 +151,7 @@ export default function Lancar() {
   const dataValida = dataCompleta && validarDataBR(dataBR);
   const mostrarErroData = dataCompleta && !dataValida;
 
-  const msgErroData = (() => {
-    if (!mostrarErroData) return "";
+  const msgErroData = (() => {    if (!mostrarErroData) return "";
     const iso = brToISO(dataBR);
     if (iso && iso > hojeISO()) return "Não dá pra lançar uma data futura";
     if (iso && iso < dataMin) {
@@ -190,18 +195,6 @@ export default function Lancar() {
     navigate("/dashboard");
   }
 
-  const fieldStyle = {
-    backgroundColor: "var(--field)",
-    border: "1px solid var(--border)",
-    color: "var(--text)",
-  };
-
-  const dataFieldStyle = {
-    backgroundColor: "var(--field)",
-    border: `1px solid ${mostrarErroData ? "#ef4444" : "var(--border)"}`,
-    color: "var(--text)",
-  };
-
   return (
     <div
       className="tela-fixa w-full flex flex-col"
@@ -237,7 +230,10 @@ export default function Lancar() {
             >
               Valor
             </label>
-            <div className="flex items-center rounded-xl overflow-hidden" style={fieldStyle}>
+            <div
+              className="card-tacerto flex items-center rounded-xl overflow-hidden"
+              style={{ color: "var(--text)" }}
+            >
               <span
                 className="font-bold"
                 style={{
@@ -291,9 +287,9 @@ export default function Lancar() {
               maxLength={LIMITE_DESCRICAO}
               onChange={(e) => setDescricao(e.target.value)}
               placeholder="Descrição (opcional)"
-              className="campo-tacerto w-full rounded-xl placeholder:opacity-70"
+              className="campo-tacerto card-tacerto w-full rounded-xl placeholder:opacity-70"
               style={{
-                ...fieldStyle,
+                color: "var(--text)",
                 minHeight: 46,
                 paddingLeft: 16,
                 paddingRight: 16,
@@ -310,9 +306,11 @@ export default function Lancar() {
               Data
             </label>
             <div
-              className="flex items-center rounded-xl"
+              className="card-tacerto flex items-center rounded-xl"
               style={{
-                ...dataFieldStyle,
+                color: "var(--text)",
+                /* Só o erro sobrescreve a moldura padrão do card. */
+                borderColor: mostrarErroData ? "#ef4444" : undefined,
                 minHeight: 46,
                 paddingLeft: 16,
                 paddingRight: 16,
@@ -352,15 +350,13 @@ export default function Lancar() {
             </p>
             {ultimoLancamento ? (
               <div
-                className="w-full rounded-xl flex items-center"
+                className="card-tacerto w-full rounded-xl flex items-center"
                 style={{
                   gap: 12,
                   paddingLeft: 16,
                   paddingRight: 16,
                   paddingTop: 11,
                   paddingBottom: 11,
-                  backgroundColor: "var(--surface)",
-                  border: "1px solid var(--border)",
                 }}
               >
                 <TrendingUp
@@ -388,12 +384,12 @@ export default function Lancar() {
               </div>
             ) : (
               <div
-                className="w-full rounded-xl text-center"
+                className="card-tacerto w-full rounded-xl text-center"
                 style={{
                   paddingTop: 14,
                   paddingBottom: 14,
-                  backgroundColor: "var(--surface)",
-                  border: "1px dashed var(--border)",
+                  /* Tracejado mantido: e ele que diz "vazio". */
+                  borderStyle: "dashed",
                 }}
               >
                 <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
@@ -421,9 +417,8 @@ export default function Lancar() {
       <div
         className="shrink-0 px-5"
         style={{
-          paddingTop: 12,
+          paddingTop: 14,
           backgroundColor: "var(--bg)",
-          borderTop: "1px solid var(--border)",
           paddingBottom: "calc(env(safe-area-inset-bottom) + 14px)",
         }}
       >
@@ -431,13 +426,15 @@ export default function Lancar() {
           <button
             onClick={handleSalvar}
             disabled={salvando || centavos <= 0 || !dataValida}
-            className="toque toque-escala w-full rounded-xl font-semibold disabled:opacity-50"
+            className="toque toque-escala w-full rounded-2xl font-bold disabled:opacity-40"
             style={{
-              paddingTop: 13,
-              paddingBottom: 13,
-              fontSize: 14.5,
+              paddingTop: 16,
+              paddingBottom: 16,
+              fontSize: 15.5,
+              letterSpacing: "0.01em",
               backgroundColor: "var(--primary)",
               color: "var(--primary-contrast)",
+              transition: "opacity 200ms ease",
             }}
           >
             {salvando ? "Salvando..." : "Salvar lançamento"}
@@ -447,8 +444,3 @@ export default function Lancar() {
     </div>
   );
 }
-
-
-
-
-
