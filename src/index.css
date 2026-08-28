@@ -414,9 +414,118 @@ button:active:not(:disabled),
   animation: telaEntraEsquerda 260ms cubic-bezier(0.22, 0.8, 0.3, 1) both;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .tela-anima-avancar,
-  .tela-anima-voltar {
-    animation: none;
+/* =========================================
+   VERSÃO DESKTOP (PAINEL EXPANSIVO PARA PC)
+   ========================================= */
+   @media (min-width: 1024px) {
+    /* 1. O fundo geral do monitor com margem para respiro */
+    body {
+      background-color: #090d16 !important;
+      background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #090d16 70%) !important;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      min-height: 100vh !important;
+      margin: 0 !important;
+      overflow-y: auto !important; /* Permite rolagem suave se a tela for menor */
+      padding: 30px 0 !important;
+    }
+  
+    /* 2. A janela principal do painel (Larga e elegante) */
+    #root {
+      width: 90vw !important;
+      max-width: 1100px !important;
+      min-height: 700px !important;
+      height: auto !important; /* Ajusta a altura automaticamente para não cortar nada */
+      max-height: none !important;
+      border-radius: 16px !important;
+      
+      /* Sombra de janela flutuante e borda sutil de vidro */
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 
+                  0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+      
+      /* Efeito de vidro fosco refinado */
+      background: rgba(18, 24, 38, 0.88) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+      
+      display: flex !important;
+      flex-direction: column !important;
+      position: relative !important;
+      overflow: hidden !important;
+    }
+  
+    /* 3. Conteúdo interno fluindo perfeitamente no painel */
+    #root > * {
+      width: 100% !important;
+      height: auto !important;
+      min-height: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      box-sizing: border-box !important;
+      
+      /* Esconde a barra de rolagem padrão mantendo o scroll limpo */
+      scrollbar-width: none !important;
+    }
+  
+    #root > *::-webkit-scrollbar {
+      display: none !important;
+    }
   }
-}
+  
+/* =========================================
+   VERSÃO DESKTOP (PAINEL CLEAN E CHIQUE)
+   ========================================= */
+   @media (min-width: 1024px) {
+    /* 1. O fundo geral do monitor */
+    body {
+      background-color: #090d16 !important;
+      background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #090d16 70%) !important;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      min-height: 100vh !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+    }
+  
+    /* 2. O container principal expandido para PC */
+    #root {
+      width: 92vw !important;
+      max-width: 1280px !important;
+      height: 88vh !important;
+      max-height: 850px !important;
+      border-radius: 20px !important;
+      
+      /* Sombra profunda estilo software de desktop moderno */
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 
+                  0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+      
+      /* Efeito de vidro sofisticado */
+      background: rgba(18, 24, 38, 0.75) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+      
+      overflow: hidden !important;
+      position: relative !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+  
+    /* 3. Adaptação do conteúdo interno para o modo desktop */
+    #root > * {
+      width: 100% !important;
+      height: 100% !important;
+      max-height: 100% !important;
+      overflow-y: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+      
+      /* Esconde a barra de rolagem feia mantendo a funcionalidade */
+      scrollbar-width: none !important;
+    }
+  
+    #root > *::-webkit-scrollbar {
+      display: none !important;
+    }
+  }
