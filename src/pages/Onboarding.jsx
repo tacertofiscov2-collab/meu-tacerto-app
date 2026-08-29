@@ -52,7 +52,6 @@ export default function Onboarding() {
   const [searchParams] = useSearchParams();
   const origemGoogle = searchParams.get("origem") === "google";
 
-  // step 0 = WhatsApp, "verificar" = codigo, 1 = nome, 2 = tipo MEI, 3 = abertura
   const [step, setStep] = useState(origemGoogle ? 0 : 1);
   const [erro, setErro] = useState("");
 
@@ -138,7 +137,6 @@ export default function Onboarding() {
     if (codigo.replace(/\D/g, "").length < 4) {
       return setErro("Digite o codigo que enviamos.");
     }
-    // Sem provedor ativo: qualquer codigo de 4+ digitos passa.
     setCodigo("");
     setStep(1);
   }
@@ -201,20 +199,21 @@ export default function Onboarding() {
             <Gauge size={48} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
           </div>
 
-          <div className="shrink-0">
-            <Progress step={progressStep} />
-          </div>
+          {step !== 0 && step !== "verificar" && (
+            <div className="shrink-0">
+              <Progress step={progressStep} />
+            </div>
+          )}
 
           {/* ====== STEP 0: WHATSAPP ====== */}
           {step === 0 && (
             <div className="shrink-0">
               <h1
-                className="text-2xl font-bold text-center mb-2"
+                className="text-2xl font-bold text-center mb-5"
                 style={{ color: "var(--text)" }}
               >
                 Qual e o seu WhatsApp?
               </h1>
-            
 
               <div className="flex items-stretch gap-2">
                 <div
