@@ -33,6 +33,7 @@ import AdicionarFaturamentoDigitar from "./pages/AdicionarFaturamentoDigitar.jsx
 import AdicionarFaturamentoEnviar from "./pages/AdicionarFaturamentoEnviar.jsx";
 import AdicionarFaturamentoColar from "./pages/AdicionarFaturamentoColar.jsx";
 import ChatFiscoPagina from "./pages/ChatFiscoPagina.jsx";
+import AuthCallback from "./pages/AuthCallback.jsx";
 
 /* ===================================================================
    NAVEGACAO POR GESTO - DESATIVADA DE PROPOSITO
@@ -63,6 +64,7 @@ export default function App() {
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/esqueci-senha" element={<EsqueciSenha />} />
           <Route path="/cadastro-obrigatorio" element={<CadastroObrigatorio />} />
 

@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   ArrowLeft, ArrowRight, Briefcase, Truck, CheckCircle2, Clock, Gauge, CalendarDays,
@@ -12,9 +12,22 @@ import Valor from "@/components/Valor";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 
 const MESES = [
-  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Janeiro", "Fevereiro", "Marco", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
+
+function formatarTelefone(valor) {
+  const d = String(valor).replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 2) return d;
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
+function telefoneValido(valor) {
+  const d = String(valor).replace(/\D/g, "");
+  return d.length === 10 || d.length === 11;
+}
 
 function Progress({ step }) {
   return (
@@ -36,16 +49,21 @@ function Progress({ step }) {
 export default function Onboarding() {
   useTemaEscuroForcado();
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
+  const [searchParams] = useSearchParams();
+  const origemGoogle = searchParams.get("origem") === "google";
+
+  // step 0 = WhatsApp, "verificar" = codigo, 1 = nome, 2 = tipo MEI, 3 = abertura
+  const [step, setStep] = useState(origemGoogle ? 0 : 1);
   const [erro, setErro] = useState("");
 
+  const [telefone, setTelefone] = useState("");
+  const [codigo, setCodigo] = useState("");
   const [nome, setNome] = useState("");
   const [tipoMei, setTipoMei] = useState("");
   const [meiEsseAno, setMeiEsseAno] = useState(null);
   const [mesMei, setMesMei] = useState("");
   const [seletorMes, setSeletorMes] = useState(false);
 
-  // Onboarding ignora a preferência de fonte — sempre tamanho padrão.
   useEffect(() => {
     const root = document.documentElement;
     const anteriores = [];
@@ -73,7 +91,7 @@ export default function Onboarding() {
   const progressStep =
     step === 3
       ? meiEsseAno === false || (meiEsseAno === true && mesMei) ? 3 : 2
-      : step;
+      : step === 0 || step === "verificar" ? 1 : step;
 
   const fieldStyle = {
     backgroundColor: "transparent",
@@ -81,7 +99,6 @@ export default function Onboarding() {
     color: "var(--text)",
   };
 
-  // MUD 5 — botão pill padronizado, com seta e glow ao pressionar
   const btnPrincipal = {
     backgroundColor: "transparent",
     border: "1.5px solid var(--primary)",
@@ -92,7 +109,6 @@ export default function Onboarding() {
   const btnPrincipalClasse =
     "btn-pill-tacerto mx-auto flex items-center justify-center gap-2 rounded-full font-semibold text-[15px] disabled:opacity-35";
 
-  // MUD 3 e 4 — selecionado = borda verde discreta; não selecionado = apagado
   function estiloCard(selecionado, algoSelecionado) {
     const claro = !algoSelecionado || selecionado;
     return {
@@ -104,6 +120,27 @@ export default function Onboarding() {
       transition:
         "background-color 180ms ease, border-color 180ms ease, opacity 180ms ease",
     };
+  }
+
+  async function salvarWhatsapp(userId) {
+    const digitos = telefone.replace(/\D/g, "");
+    if (!digitos || !userId) return;
+    try {
+      await supabase
+        .from("perfis")
+        .update({ whatsapp: `+55${digitos}` })
+        .eq("id", userId);
+    } catch { /* coluna ainda nao criada ou falha de rede */ }
+  }
+
+  function conferirCodigo() {
+    setErro("");
+    if (codigo.replace(/\D/g, "").length < 4) {
+      return setErro("Digite o codigo que enviamos.");
+    }
+    // Sem provedor ativo: qualquer codigo de 4+ digitos passa.
+    setCodigo("");
+    setStep(1);
   }
 
   async function handleFinalizar() {
@@ -121,6 +158,7 @@ export default function Onboarding() {
     try {
       const { data } = await supabase.auth.getUser();
       if (data.user) {
+        await salvarWhatsapp(data.user.id);
         await supabase.from("perfis").update({
           nome,
           tipo_mei: tipoCanonico,
@@ -135,7 +173,9 @@ export default function Onboarding() {
   }
 
   function handleBack() {
-    if (step > 1) setStep(step - 1);
+    if (step === "verificar") { setErro(""); setStep(0); }
+    else if (step === 1 && origemGoogle) { setErro(""); setStep(0); }
+    else if (step > 1) setStep(step - 1);
     else navigate(-1);
   }
 
@@ -155,7 +195,6 @@ export default function Onboarding() {
         </button>
       </div>
 
-      {/* Bloco central com altura fixa: cabeçalho + conteúdo + rodapé do passo */}
       <div className="flex-1 min-h-0 flex flex-col px-6 overflow-hidden">
         <div className="max-w-sm w-full mx-auto flex-1 min-h-0 flex flex-col justify-center">
           <div className="flex justify-center mb-5 shrink-0">
@@ -166,6 +205,157 @@ export default function Onboarding() {
             <Progress step={progressStep} />
           </div>
 
+          {/* ====== STEP 0: WHATSAPP ====== */}
+          {step === 0 && (
+            <div className="shrink-0">
+              <h1
+                className="text-2xl font-bold text-center mb-2"
+                style={{ color: "var(--text)" }}
+              >
+                Qual e o seu WhatsApp?
+              </h1>
+            
+
+              <div className="flex items-stretch gap-2">
+                <div
+                  className="flex items-center justify-center gap-1.5 px-3.5 rounded-xl text-sm shrink-0"
+                  style={fieldStyle}
+                >
+                  <span aria-hidden style={{ fontSize: 16 }}>🇧🇷</span>
+                  <span style={{ color: "var(--text-secondary)" }}>+55</span>
+                </div>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="(00) 00000-0000"
+                  value={telefone}
+                  onChange={(e) => { setTelefone(formatarTelefone(e.target.value)); if (erro) setErro(""); }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && telefoneValido(telefone)) {
+                      setErro("");
+                      setStep("verificar");
+                    }
+                  }}
+                  className="campo-tacerto flex-1 min-w-0 px-4 py-3.5 rounded-xl text-sm focus:outline-none placeholder:opacity-70"
+                  style={fieldStyle}
+                  autoFocus
+                />
+              </div>
+
+              <div style={{ minHeight: 26 }} className="flex items-center justify-center mt-1">
+                {erro && (
+                  <p className="text-center text-[13px]" style={{ color: "var(--danger)" }}>
+                    {erro}
+                  </p>
+                )}
+              </div>
+
+              <button
+                onClick={() => {
+                  if (!telefoneValido(telefone)) {
+                    return setErro("Digite um numero de WhatsApp valido com DDD.");
+                  }
+                  setErro("");
+                  setStep("verificar");
+                }}
+                disabled={!telefoneValido(telefone)}
+                className={btnPrincipalClasse}
+                style={btnPrincipal}
+              >
+                Continuar
+                <ArrowRight size={18} strokeWidth={2.4} />
+              </button>
+            </div>
+          )}
+
+          {/* ====== STEP VERIFICAR: CODIGO ====== */}
+          {step === "verificar" && (
+            <div className="shrink-0">
+              <h1
+                className="text-2xl font-bold text-center mb-2"
+                style={{ color: "var(--text)" }}
+              >
+                Confirme seu WhatsApp
+              </h1>
+              <p
+                className="text-sm text-center mb-6 leading-relaxed"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Enviamos um codigo para{" "}
+                <span style={{ color: "var(--text)", fontWeight: 600 }}>+55 {telefone}</span>
+              </p>
+
+              <div className="relative">
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  value={codigo}
+                  maxLength={6}
+                  autoFocus
+                  onChange={(e) => { setCodigo(e.target.value.replace(/\D/g, "").slice(0, 6)); if (erro) setErro(""); }}
+                  onKeyDown={(e) => { if (e.key === "Enter") conferirCodigo(); }}
+                  className="absolute inset-0 w-full h-full opacity-0"
+                  style={{ caretColor: "transparent" }}
+                  aria-label="Codigo de verificacao"
+                />
+                <div className="flex items-center justify-center gap-2 pointer-events-none">
+                  {[0, 1, 2, 3, 4, 5].map((i) => {
+                    const preenchido = codigo.length > i;
+                    const atual = codigo.length === i;
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-center justify-center rounded-xl"
+                        style={{
+                          width: 46,
+                          height: 56,
+                          fontSize: 24,
+                          fontWeight: 700,
+                          color: "var(--text)",
+                          backgroundColor: "transparent",
+                          border: `1px solid ${
+                            atual || preenchido
+                              ? "var(--primary)"
+                              : "rgba(255,255,255,0.22)"
+                          }`,
+                        }}
+                      >
+                        {codigo[i] || ""}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-5 space-y-3">
+                {erro && (
+                  <p className="text-center text-[13px]" style={{ color: "var(--danger)" }}>
+                    {erro}
+                  </p>
+                )}
+
+                <button
+                  onClick={conferirCodigo}
+                  disabled={codigo.length < 4}
+                  className={btnPrincipalClasse}
+                  style={btnPrincipal}
+                >
+                  Validar codigo
+                  <ArrowRight size={18} strokeWidth={2.4} />
+                </button>
+
+                <button
+                  onClick={() => setErro("Reenvio disponivel quando o envio de codigo for ativado.")}
+                  className="w-full text-center text-sm pt-1"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Reenviar codigo
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ====== STEP 1: NOME ====== */}
           {step === 1 && (
             <div className="shrink-0">
               <h1
@@ -197,7 +387,6 @@ export default function Onboarding() {
                 style={fieldStyle}
               />
 
-              {/* Altura reservada — evita o layout pular quando o erro aparece */}
               <div style={{ minHeight: 26 }} className="flex items-center justify-center">
                 {erro && (
                   <p className="text-center text-[13px]" style={{ color: "var(--danger)" }}>
@@ -220,13 +409,14 @@ export default function Onboarding() {
             </div>
           )}
 
+          {/* ====== STEP 2: TIPO MEI ====== */}
           {step === 2 && (
             <div className="shrink-0">
               <h1
                 className="text-2xl font-bold text-center mb-5"
                 style={{ color: "var(--text)" }}
               >
-                Qual é o seu MEI?
+                Qual e o seu MEI?
               </h1>
 
               <div className="space-y-2.5">
@@ -245,7 +435,6 @@ export default function Onboarding() {
                       className="w-full flex items-center gap-3.5 p-3.5 rounded-xl text-left"
                       style={estiloCard(sel, !!tipoMei)}
                     >
-                      {/* MUD 3 — sem fundo verde, só o ícone */}
                       <Ico
                         size={24}
                         strokeWidth={1.75}
@@ -286,19 +475,20 @@ export default function Onboarding() {
             </div>
           )}
 
+          {/* ====== STEP 3: ABERTURA ====== */}
           {step === 3 && (
             <div className="shrink-0">
               <h1
                 className="text-2xl font-bold text-center mb-5"
                 style={{ color: "var(--text)" }}
               >
-                Você abriu seu MEI em {anoAtual}?
+                Voce abriu seu MEI em {anoAtual}?
               </h1>
 
               <div className="grid grid-cols-2 gap-2.5">
                 {[
                   { v: true, Icon: CheckCircle2, l: "Sim, esse ano" },
-                  { v: false, Icon: Clock, l: "Não, já faz tempo" },
+                  { v: false, Icon: Clock, l: "Nao, ja faz tempo" },
                 ].map((o) => {
                   const sel = meiEsseAno === o.v;
                   const Ico = o.Icon;
@@ -323,7 +513,6 @@ export default function Onboarding() {
                 })}
               </div>
 
-              {/* Área reservada — mantém o botão no mesmo lugar nos dois casos */}
               <div style={{ minHeight: 96 }} className="pt-3">
                 {meiEsseAno === true && (
                   <>
@@ -331,9 +520,8 @@ export default function Onboarding() {
                       className="text-xs font-medium mb-1.5"
                       style={{ color: "var(--text-secondary)" }}
                     >
-                      Qual mês você abriu?
+                      Qual mes voce abriu?
                     </p>
-                    {/* MUD 6 — mês e limite na MESMA LINHA, ícone de calendário */}
                     <button
                       onClick={() => setSeletorMes(true)}
                       className="w-full px-4 py-3 flex items-center justify-between gap-3 rounded-xl"
@@ -347,7 +535,7 @@ export default function Onboarding() {
                             color: mesMei ? "var(--text)" : "var(--text-secondary)",
                           }}
                         >
-                          {mesMei ? MESES[parseInt(mesMei) - 1] : "Selecione o mês"}
+                          {mesMei ? MESES[parseInt(mesMei) - 1] : "Selecione o mes"}
                         </span>
                         {mesMei && (
                           <>
@@ -355,7 +543,7 @@ export default function Onboarding() {
                               className="shrink-0 text-sm"
                               style={{ color: "var(--text-tertiary)" }}
                             >
-                              ·
+                              .
                             </span>
                             <span
                               className="min-w-0 flex items-center"
@@ -379,7 +567,6 @@ export default function Onboarding() {
                       border: "1px solid rgba(255,255,255,0.22)",
                     }}
                   >
-                    {/* MUD 4 — ícone neutro, não verde */}
                     <p
                       className="text-xs font-medium inline-flex items-center gap-1.5"
                       style={{ color: "var(--text)" }}
@@ -401,7 +588,7 @@ export default function Onboarding() {
                 className={btnPrincipalClasse}
                 style={btnPrincipal}
               >
-                Começar a usar
+                Comecar a usar
                 <ArrowRight size={18} strokeWidth={2.4} />
               </button>
             </div>
@@ -411,7 +598,7 @@ export default function Onboarding() {
 
       <SeletorMesAno
         aberto={seletorMes}
-        titulo="Mês de abertura"
+        titulo="Mes de abertura"
         mes={mesMei ? parseInt(mesMei) : null}
         ano={anoAtual}
         comAno={false}

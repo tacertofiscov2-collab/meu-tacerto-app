@@ -253,14 +253,13 @@ export default function Cadastro() {
     setErro("");
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/dashboard` },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
     if (error) setErro(translateAuthError(error.message));
   }
 
   function handleGoogle() {
-    // Trocar por: entrarCom("google") quando o provider estiver ligado.
-    setErro("Login com Google em breve.");
+    entrarCom("google");
   }
 
   // Tela de "confira seu e-mail" — aparece quando a confirmação está ligada.
