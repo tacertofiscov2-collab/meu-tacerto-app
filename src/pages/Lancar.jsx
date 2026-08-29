@@ -4,13 +4,24 @@ import { ArrowLeft, Calendar as CalendarIcon, TrendingUp } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
 import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
+import PendenciasEntradas from "../components/PendenciasEntradas.jsx";
 import { dataMinimaLancamento, LIMITE_VALOR_LANCAMENTO } from "@/lib/fiscal";
 
-/* LANCAR v4 — barras no padrao .card-tacerto, botao de salvar sem brilho
-   Campo de valor, descricao, data e o bloco "Ultimo lancamento" saem do
-   fundo chapado (--field / --surface) e passam a ser fundo do app com
-   moldura fina. A SETA DE VOLTAR nao foi alterada. O botao verde de
-   salvar e o tracejado do estado vazio tambem seguem como estavam. */
+/* LANCAR v5 — faixa de pendencias do Open Finance no topo
+
+   Acima do campo Valor entra o <PendenciasEntradas />: a faixa que
+   avisa o que caiu na conta e ainda nao foi classificado. Ela so
+   aparece quando HA pendencia — sem nada pendente, o componente nao
+   renderiza e a tela fica exatamente como era.
+
+   Nao aparece no modo edicao: ali a pessoa esta consertando um
+   lancamento especifico, nao registrando entrada nova.
+
+   A pergunta feita ali é so "isso é faturamento?". A pergunta sobre
+   emitir nota fiscal acontece no WhatsApp, depois.
+
+   Da v4: barras no padrao .card-tacerto, botao de salvar sem brilho.
+   A SETA DE VOLTAR nao foi alterada. */
 
 // Teto em centavos, derivado da constante única em fiscal.js
 const MAX_CENTAVOS = Math.round(LIMITE_VALOR_LANCAMENTO * 100);
@@ -151,7 +162,8 @@ export default function Lancar() {
   const dataValida = dataCompleta && validarDataBR(dataBR);
   const mostrarErroData = dataCompleta && !dataValida;
 
-  const msgErroData = (() => {    if (!mostrarErroData) return "";
+  const msgErroData = (() => {
+    if (!mostrarErroData) return "";
     const iso = brToISO(dataBR);
     if (iso && iso > hojeISO()) return "Não dá pra lançar uma data futura";
     if (iso && iso < dataMin) {
@@ -223,6 +235,12 @@ export default function Lancar() {
           className="max-w-md mx-auto"
           style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 8 }}
         >
+          {/* PENDÊNCIAS DO OPEN FINANCE
+              Só aparece quando há entrada esperando classificação. Sem
+              nada pendente, o componente não renderiza e os campos
+              ficam no lugar de sempre. */}
+          {!modoEdicao && <PendenciasEntradas />}
+
           <div>
             <label
               className="block"
