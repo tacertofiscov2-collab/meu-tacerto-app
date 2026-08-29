@@ -78,10 +78,7 @@
   /* ---- CARD PADRAO (tema claro): moldura escura sobre fundo claro ---- */
   --card-borda: rgba(15, 15, 17, 0.20);
 
-  /* ---- VIDRO (tema claro): fundo quase branco, sombras suaves ----
-     O mesmo efeito, invertido: em vez de um preto translúcido com
-     brilho branco, um branco translúcido com sombra cinza. Sem isso
-     os cards viravam manchas escuras sobre o fundo claro. */
+  /* ---- VIDRO (tema claro): fundo quase branco, sombras suaves ---- */
   --vidro-bg: rgba(255, 255, 255, 0.88);
   --vidro-bg-leve: rgba(255, 255, 255, 0.62);
   --vidro-bg-transparente: rgba(255, 255, 255, 0.55);
@@ -103,14 +100,6 @@
 .font-medium { --font-scale: 1; }
 .font-large { --font-scale: 1.12; }
 
-/* ===================================================================
-   FONTE: só o TEXTO escala. Caixas ficam fixas.
-
-   O html mantém 16px SEMPRE. Assim todo rem (paddings, margens,
-   alturas do Tailwind) fica constante e nenhum card cresce.
-   A preferência do usuário entra só no zoom do texto, aplicado
-   com font-size relativo no body.
-   =================================================================== */
 html {
   font-size: 16px;
 }
@@ -124,8 +113,6 @@ html, body, #root {
   color: var(--text);
 }
 
-/* Durante o gesto de voltar, o #root é arrastado e o que fica atrás é
-   o body. Mantê-lo na cor do app evita o "buraco" preto na lateral. */
 body {
   background-color: var(--bg);
 }
@@ -137,9 +124,6 @@ body {
   overflow-x: hidden;
 }
 
-/* ===================================================================
-   CURSOR (caret) VERDE em todos os campos do app.
-   =================================================================== */
 input,
 textarea,
 select,
@@ -147,11 +131,6 @@ select,
   caret-color: var(--primary);
 }
 
-/* ===================================================================
-   Menu nativo do iOS ("Copiar / Buscar Seleção / Pesquisar") não deve
-   aparecer ao segurar o dedo na interface. Fica liberado APENAS em
-   campos de texto, onde o usuário precisa selecionar e editar.
-   =================================================================== */
 body {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -171,8 +150,6 @@ textarea,
   user-select: text;
 }
 
-/* Classes de texto do Tailwind passam a escalar via em,
-   herdando o zoom do body em vez do rem fixo do html. */
 .text-xs   { font-size: 0.75em  !important; }
 .text-sm   { font-size: 0.875em !important; }
 .text-base { font-size: 1em     !important; }
@@ -181,13 +158,11 @@ textarea,
 .text-2xl  { font-size: 1.5em   !important; }
 .text-3xl  { font-size: 1.875em !important; }
 
-/* Telas fixas: usa em qualquer página que NÃO deve rolar */
 .tela-fixa {
   height: 100dvh;
   overflow: hidden;
 }
 
-/* Telas com rolagem controlada (Perfil, Histórico) */
 .tela-rolavel {
   height: 100dvh;
   overflow: hidden;
@@ -199,24 +174,9 @@ textarea,
   -webkit-overflow-scrolling: touch;
 }
 
-/* ===================================================================
-   NOVO v13.1 — ENQUADRAMENTO SEM ROLAGEM (iPhone / Safari)
-
-   Problema: no Safari do iPhone, 100vh mede a tela SEM a barra de
-   endereço. Toda tela montada com min-h-screen fica mais alta que o
-   espaço visível, e o que está embaixo (o botão) some atrás da barra.
-
-   Solução: dvh (altura real, já descontando a barra) + safe-area.
-   =================================================================== */
-
-/* --- ATENÇÃO: única alteração de comportamento existente. ---
-   Faz min-h-screen / h-screen do Tailwind medirem a tela real.
-   Se causar qualquer efeito indesejado, apague estas 3 linhas. */
 .min-h-screen { min-height: 100dvh !important; }
 .h-screen     { height: 100dvh !important; }
 
-/* Container de tela que se enquadra sozinha, sem rolar.
-   Uso: <div className="tela-enquadrada"> */
 .tela-enquadrada {
   height: 100dvh;
   max-height: 100dvh;
@@ -226,7 +186,6 @@ textarea,
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Miolo que ocupa o que sobrou entre cabeçalho e rodapé */
 .corpo-flex {
   flex: 1 1 auto;
   min-height: 0;
@@ -234,24 +193,19 @@ textarea,
   flex-direction: column;
 }
 
-/* Empurrador: come o espaço que sobra em vez de deixar vazio morto */
 .espaco-flex {
   flex: 1 1 auto;
   min-height: 0;
 }
 
-/* Rodapé que nunca fica atrás da barra do Safari */
 .rodape-seguro {
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
 }
 
-/* Topo respeitando o notch, quando a tela não usa cabeçalho padrão */
 .topo-seguro {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
-/* Bloco de conteúdo que pode encolher um pouco em tela curta,
-   sem quebrar o layout (usado nas telas mais cheias) */
 .encolhivel {
   flex: 0 1 auto;
   min-height: 0;
@@ -261,18 +215,6 @@ textarea,
 .hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 
-/* ===================================================================
-   INDEX v2 — CARD PADRAO DO APP (.card-tacerto)
-
-   O visual dos botoes das telas de acesso: fundo do proprio app,
-   uma moldura fina clara em volta, sem brilho, sem gradiente e sem
-   sombra. Substitui o efeito "vidro" nos cards de conteudo.
-
-   Uso: className="card-tacerto rounded-2xl px-4 py-2.5"
-   (o arredondamento continua vindo do Tailwind, tela a tela)
-
-   Para mudar o card no app inteiro, mexa AQUI — nao nas telas.
-   =================================================================== */
 .card-tacerto {
   background: transparent;
   border: 1px solid var(--card-borda);
@@ -281,7 +223,6 @@ textarea,
   -webkit-backdrop-filter: none;
 }
 
-/* === Foco verde + mata autofill amarelo do Safari === */
 .campo-tacerto:focus,
 .campo-tacerto:focus-visible {
   outline: none !important;
@@ -300,7 +241,6 @@ textarea,
   transition: background-color 9999s ease-in-out 0s !important;
 }
 
-/* === Botão pill com glow verde ao pressionar === */
 .btn-pill-tacerto {
   position: relative;
   transition: transform 140ms ease, box-shadow 200ms ease, background-color 200ms ease;
@@ -312,7 +252,6 @@ textarea,
               0 0 18px 2px rgba(34, 197, 94, 0.22);
 }
 
-/* === Card B: texto em px absoluto (não escala nem com o body) === */
 .card-b-fixo {
   font-size: 13px !important;
 }
@@ -321,7 +260,6 @@ textarea,
 .card-b-fixo .cb-linha  { font-size: 11.5px !important; }
 .card-b-fixo .cb-mini   { font-size: 7.5px !important; }
 
-/* === Barra do Fisco: vidro fosco === */
 .barra-fisco {
   background-color: var(--barra-vidro);
   backdrop-filter: blur(20px) saturate(150%);
@@ -336,7 +274,6 @@ textarea,
   background-color: rgba(34, 197, 94, 0.06);
 }
 
-/* alias mantido para o chat */
 .barra-flutuante {
   background-color: var(--barra-vidro);
   backdrop-filter: blur(20px) saturate(150%);
@@ -345,9 +282,6 @@ textarea,
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.20);
 }
 
-/* ===================================================================
-   EFEITO TÁTIL MACIO (Botões, Opções e Setas de Voltar)
-   =================================================================== */
 button, 
 .click-macio,
 .toque,
@@ -370,7 +304,6 @@ button:active:not(:disabled),
   transition: transform 50ms ease-out, opacity 50ms ease-out;
 }
 
-/* Botão de envio especial */
 .btn-enviar-fisco {
   background: linear-gradient(160deg, #4ade80 0%, #22c55e 48%, #15803d 100%);
   box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.35),
@@ -387,17 +320,11 @@ button:active:not(:disabled),
               0 1px 4px rgba(34, 197, 94, 0.3);
 }
 
-/* === Feedback de toque ===
-   O realce retangular de fundo foi removido: em opções largas (as
-   linhas do Perfil, por exemplo) ele virava uma "sombra" pesada.
-   O feedback é só o encolhimento suave, definido de uma vez no bloco
-   EFEITO TÁTIL MACIO acima — mesma sensação em todo o app. */
 .toque {
   position: relative;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* === Transição entre telas === */
 @keyframes telaEntraDireita {
   from { transform: translateX(24px); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
@@ -415,117 +342,49 @@ button:active:not(:disabled),
 }
 
 /* =========================================
-   VERSÃO DESKTOP (PAINEL EXPANSIVO PARA PC)
+   VERSAO DESKTOP
    ========================================= */
-   @media (min-width: 1024px) {
-    /* 1. O fundo geral do monitor com margem para respiro */
-    body {
-      background-color: #090d16 !important;
-      background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #090d16 70%) !important;
-      display: flex !important;
-      justify-content: center !important;
-      align-items: center !important;
-      min-height: 100vh !important;
-      margin: 0 !important;
-      overflow-y: auto !important; /* Permite rolagem suave se a tela for menor */
-      padding: 30px 0 !important;
-    }
-  
-    /* 2. A janela principal do painel (Larga e elegante) */
-    #root {
-      width: 90vw !important;
-      max-width: 1100px !important;
-      min-height: 700px !important;
-      height: auto !important; /* Ajusta a altura automaticamente para não cortar nada */
-      max-height: none !important;
-      border-radius: 16px !important;
-      
-      /* Sombra de janela flutuante e borda sutil de vidro */
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 
-                  0 0 0 1px rgba(255, 255, 255, 0.08) !important;
-      
-      /* Efeito de vidro fosco refinado */
-      background: rgba(18, 24, 38, 0.88) !important;
-      backdrop-filter: blur(20px) !important;
-      -webkit-backdrop-filter: blur(20px) !important;
-      
-      display: flex !important;
-      flex-direction: column !important;
-      position: relative !important;
-      overflow: hidden !important;
-    }
-  
-    /* 3. Conteúdo interno fluindo perfeitamente no painel */
-    #root > * {
-      width: 100% !important;
-      height: auto !important;
-      min-height: 100% !important;
-      display: flex !important;
-      flex-direction: column !important;
-      box-sizing: border-box !important;
-      
-      /* Esconde a barra de rolagem padrão mantendo o scroll limpo */
-      scrollbar-width: none !important;
-    }
-  
-    #root > *::-webkit-scrollbar {
-      display: none !important;
-    }
+@media (min-width: 1024px) {
+  body {
+    background-color: #090d16 !important;
+    background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #090d16 70%) !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    overflow-y: auto !important;
+    padding: 30px 0 !important;
   }
-  
-/* =========================================
-   VERSÃO DESKTOP (PAINEL CLEAN E CHIQUE)
-   ========================================= */
-   @media (min-width: 1024px) {
-    /* 1. O fundo geral do monitor */
-    body {
-      background-color: #090d16 !important;
-      background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #090d16 70%) !important;
-      display: flex !important;
-      justify-content: center !important;
-      align-items: center !important;
-      min-height: 100vh !important;
-      margin: 0 !important;
-      overflow: hidden !important;
-    }
-  
-    /* 2. O container principal expandido para PC */
-    #root {
-      width: 92vw !important;
-      max-width: 1280px !important;
-      height: 88vh !important;
-      max-height: 850px !important;
-      border-radius: 20px !important;
-      
-      /* Sombra profunda estilo software de desktop moderno */
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 
-                  0 0 0 1px rgba(255, 255, 255, 0.08) !important;
-      
-      /* Efeito de vidro sofisticado */
-      background: rgba(18, 24, 38, 0.75) !important;
-      backdrop-filter: blur(20px) !important;
-      -webkit-backdrop-filter: blur(20px) !important;
-      
-      overflow: hidden !important;
-      position: relative !important;
-      display: flex !important;
-      flex-direction: column !important;
-    }
-  
-    /* 3. Adaptação do conteúdo interno para o modo desktop */
-    #root > * {
-      width: 100% !important;
-      height: 100% !important;
-      max-height: 100% !important;
-      overflow-y: auto !important;
-      display: flex !important;
-      flex-direction: column !important;
-      
-      /* Esconde a barra de rolagem feia mantendo a funcionalidade */
-      scrollbar-width: none !important;
-    }
-  
-    #root > *::-webkit-scrollbar {
-      display: none !important;
-    }
+
+  #root {
+    width: 390px !important;
+    max-width: 390px !important;
+    height: 844px !important;
+    max-height: 90vh !important;
+    border-radius: 40px !important;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7),
+                0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+    background: var(--bg) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    overflow: hidden !important;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
+
+  #root > * {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+    scrollbar-width: none !important;
+  }
+
+  #root > *::-webkit-scrollbar {
+    display: none !important;
+  }
+}
