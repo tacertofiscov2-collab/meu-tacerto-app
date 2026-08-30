@@ -1,3 +1,4 @@
+/* ONBOARDING-VERIFICAR-SCROLL v1 */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -269,7 +270,14 @@ export default function Onboarding() {
 
           {/* ====== STEP VERIFICAR: CODIGO ====== */}
           {step === "verificar" && (
-            <div className="shrink-0">
+            <div
+              className="w-full"
+              style={{
+                overflowY: "auto",
+                WebkitOverflowScrolling: "touch",
+                paddingBottom: 32,
+              }}
+            >
               <h1
                 className="text-2xl font-bold text-center mb-2"
                 style={{ color: "var(--text)" }}
