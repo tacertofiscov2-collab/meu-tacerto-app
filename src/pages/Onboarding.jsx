@@ -1,6 +1,6 @@
-/* ONBOARDING-VERIFICAR-SCROLL v1 */
+/* ONBOARDING-VERIFICAR-SCROLL v3 */
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft, ArrowRight, Briefcase, Truck, CheckCircle2, Clock, Gauge, CalendarDays,
 } from "lucide-react";
@@ -64,6 +64,8 @@ export default function Onboarding() {
   const [mesMei, setMesMei] = useState("");
   const [seletorMes, setSeletorMes] = useState(false);
 
+  const inputCodigoRef = useRef(null);
+
   useEffect(() => {
     const root = document.documentElement;
     const anteriores = [];
@@ -79,6 +81,13 @@ export default function Onboarding() {
       anteriores.forEach((c) => root.classList.add(c));
     };
   }, []);
+
+  // Foca o input oculto quando o step verificar abre
+  useEffect(() => {
+    if (step === "verificar" && inputCodigoRef.current) {
+      setTimeout(() => inputCodigoRef.current?.focus(), 100);
+    }
+  }, [step]);
 
   const anoAtual = new Date().getFullYear();
   const tipoCanonico = tipoMei === "MEI_CAMINHONEIRO" ? "MEI_CAMINHONEIRO" : "MEI";
@@ -178,11 +187,37 @@ export default function Onboarding() {
     else navigate(-1);
   }
 
+  const isVerificar = step === "verificar";
+
   return (
     <div
       className="tela-fixa w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
+      {/* Input oculto do codigo — fora do scroll para nao bloquear iOS */}
+      {isVerificar && (
+        <input
+          ref={inputCodigoRef}
+          type="tel"
+          inputMode="numeric"
+          value={codigo}
+          maxLength={6}
+          onChange={(e) => { setCodigo(e.target.value.replace(/\D/g, "").slice(0, 6)); if (erro) setErro(""); }}
+          onKeyDown={(e) => { if (e.key === "Enter") conferirCodigo(); }}
+          aria-label="Codigo de verificacao"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: 1,
+            height: 1,
+            opacity: 0,
+            pointerEvents: "none",
+            caretColor: "transparent",
+          }}
+        />
+      )}
+
       <div className="px-4 pt-5 shrink-0 flex items-center">
         <button
           onClick={handleBack}
@@ -194,9 +229,15 @@ export default function Onboarding() {
         </button>
       </div>
 
-      <div className="flex-1 min-h-0 flex flex-col px-6 overflow-hidden">
-        <div className="max-w-sm w-full mx-auto flex-1 min-h-0 flex flex-col justify-center">
-          <div className="flex justify-center mb-5 shrink-0">
+      <div
+        className="flex-1 min-h-0 flex flex-col px-6"
+        style={{ overflowY: isVerificar ? "auto" : "hidden", WebkitOverflowScrolling: "touch" }}
+      >
+        <div
+          className="max-w-sm w-full mx-auto flex-1 min-h-0 flex flex-col"
+          style={{ justifyContent: isVerificar ? "flex-start" : "center" }}
+        >
+          <div className="flex justify-center mb-5 shrink-0" style={{ marginTop: isVerificar ? 24 : 0 }}>
             <Gauge size={48} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
           </div>
 
@@ -271,12 +312,9 @@ export default function Onboarding() {
           {/* ====== STEP VERIFICAR: CODIGO ====== */}
           {step === "verificar" && (
             <div
-              className="w-full"
-              style={{
-                overflowY: "auto",
-                WebkitOverflowScrolling: "touch",
-                paddingBottom: 32,
-              }}
+              className="w-full shrink-0"
+              style={{ paddingBottom: 48 }}
+              onClick={() => inputCodigoRef.current?.focus()}
             >
               <h1
                 className="text-2xl font-bold text-center mb-2"
@@ -292,46 +330,35 @@ export default function Onboarding() {
                 <span style={{ color: "var(--text)", fontWeight: 600 }}>+55 {telefone}</span>
               </p>
 
-              <div className="relative">
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  value={codigo}
-                  maxLength={6}
-                  autoFocus
-                  onChange={(e) => { setCodigo(e.target.value.replace(/\D/g, "").slice(0, 6)); if (erro) setErro(""); }}
-                  onKeyDown={(e) => { if (e.key === "Enter") conferirCodigo(); }}
-                  className="absolute inset-0 w-full h-full opacity-0"
-                  style={{ caretColor: "transparent" }}
-                  aria-label="Codigo de verificacao"
-                />
-                <div className="flex items-center justify-center gap-2 pointer-events-none">
-                  {[0, 1, 2, 3, 4, 5].map((i) => {
-                    const preenchido = codigo.length > i;
-                    const atual = codigo.length === i;
-                    return (
-                      <div
-                        key={i}
-                        className="flex items-center justify-center rounded-xl"
-                        style={{
-                          width: 46,
-                          height: 56,
-                          fontSize: 24,
-                          fontWeight: 700,
-                          color: "var(--text)",
-                          backgroundColor: "transparent",
-                          border: `1px solid ${
-                            atual || preenchido
-                              ? "var(--primary)"
-                              : "rgba(255,255,255,0.22)"
-                          }`,
-                        }}
-                      >
-                        {codigo[i] || ""}
-                      </div>
-                    );
-                  })}
-                </div>
+              <div
+                className="flex items-center justify-center gap-2"
+                onClick={() => inputCodigoRef.current?.focus()}
+              >
+                {[0, 1, 2, 3, 4, 5].map((i) => {
+                  const preenchido = codigo.length > i;
+                  const atual = codigo.length === i;
+                  return (
+                    <div
+                      key={i}
+                      className="flex items-center justify-center rounded-xl"
+                      style={{
+                        width: 46,
+                        height: 56,
+                        fontSize: 24,
+                        fontWeight: 700,
+                        color: "var(--text)",
+                        backgroundColor: "transparent",
+                        border: `1px solid ${
+                          atual || preenchido
+                            ? "var(--primary)"
+                            : "rgba(255,255,255,0.22)"
+                        }`,
+                      }}
+                    >
+                      {codigo[i] || ""}
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="mt-5 space-y-3">
@@ -454,7 +481,7 @@ export default function Onboarding() {
                           style={{ color: "var(--text)" }}
                         >
                           {o.titulo}
-                        </div>
+                        div>
                         <div
                           className="text-[12px] mt-0.5 flex items-center gap-1"
                           style={{ color: "var(--text-secondary)" }}
