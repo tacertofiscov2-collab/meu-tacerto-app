@@ -1,6 +1,6 @@
-/* LANCAR v6 — verificacao real de WhatsApp via Edge Functions (Z-API) */
+/* LANCAR v7 — tela do codigo sobe quando o teclado abre (iOS) */
 import { useNavigate, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { ArrowLeft, Eye, EyeOff, Mail, Gauge, MailCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import AuthError, { translateAuthError } from "@/components/AuthError";
@@ -9,7 +9,7 @@ import { setUserState } from "@/lib/userState";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 
 /* ===================================================================
-   CADASTRO v6 — setinha volta para a Welcome (ou para o Perfil)
+   CADASTRO v7 — setinha volta para a Welcome (ou para o Perfil)
 
    CADASTRO EM DUAS ETAPAS
 
@@ -18,20 +18,23 @@ import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
    2) E-MAIL    — e-mail + senha, que é o que o Supabase usa de fato para
       autenticar. O WhatsApp coletado na etapa 1 é salvo no perfil.
 
-   VERIFICACAO DE WHATSAPP — AGORA E DE VERDADE (30/08/2026)
+   VERIFICACAO DE WHATSAPP — DE VERDADE (30/08/2026)
    O codigo e enviado pela Edge Function "enviar-codigo" (que chama a
-   Z-API) e validado pela Edge Function "verificar-codigo". A tela de 6
-   quadradinhos continua igual; so o miolo virou real.
+   Z-API) e validado pela Edge Function "verificar-codigo".
+
+   NOVO NA v7 — TECLADO NAO COBRE MAIS O BOTAO (so na tela do codigo):
+   Quando a pessoa toca nos 6 quadradinhos, o teclado do iPhone sobe e
+   cobria o botao "Validar codigo". Agora, ao focar o campo, a tela rola
+   sozinha (scrollIntoView) para deixar o botao logo acima do teclado.
+   Isso vale SO para a tela de codigo, como pedido.
 
    COMO O WHATSAPP E SALVO — SEM DUPLICAR:
    - Caminho A (comeca pelo WhatsApp): quando a pessoa verifica o codigo,
-     a conta ainda nao existe. Entao verificamos SEM userId (a Edge
-     Function so confere o codigo). O numero e gravado depois, no
-     handleCadastrar(), quando a conta nasce. E o comportamento de sempre.
+     a conta ainda nao existe. Verificamos SEM userId (a Edge Function so
+     confere o codigo). O numero e gravado depois, no handleCadastrar().
    - Caminho B (comeca por e-mail e informa o WhatsApp depois): a conta ja
-     existe, entao verificamos COM userId e a Edge Function grava o numero
-     na hora. Nesse caso NAO chamamos salvarWhatsapp() de novo, para nao
-     gravar duas vezes.
+     existe, verificamos COM userId e a Edge Function grava o numero na
+     hora. Nesse caso NAO chamamos salvarWhatsapp() de novo.
 
    PENDÊNCIA DE BANCO: para o número ser salvo, a tabela `perfis` precisa
    da coluna `whatsapp`. SQL:
@@ -88,6 +91,25 @@ export default function Cadastro() {
   const [destinoPosVerificacao, setDestinoPosVerificacao] = useState("email");
   // Trava o botao "Reenviar" por alguns segundos para nao spammar.
   const [reenviando, setReenviando] = useState(false);
+
+  // Referencia da area dos botoes (validar/reenviar) na tela do codigo.
+  // Usada para rolar a tela e mostrar o botao acima do teclado no iPhone.
+  const acoesCodigoRef = useRef(null);
+
+  /* Quando o campo do codigo recebe o foco (teclado abrindo), rola a tela
+     para o botao "Validar codigo" ficar visivel logo acima do teclado.
+     O atraso deixa o teclado comecar a subir antes de a gente rolar, se
+     nao a conta do espaco sai errada no iOS. So afeta a tela do codigo. */
+  function aoFocarCodigo() {
+    setTimeout(() => {
+      if (acoesCodigoRef.current) {
+        acoesCodigoRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }, 300);
+  }
 
   /* Fundo preto (do proprio app) com moldura clara em volta - em vez do
      cinza do --field, que deixava as barras "pesadas". */
@@ -580,6 +602,7 @@ export default function Cadastro() {
                     value={codigo}
                     maxLength={6}
                     autoFocus
+                    onFocus={aoFocarCodigo}
                     onChange={(e) => setCodigo(e.target.value.replace(/\D/g, "").slice(0, 6))}
                     onKeyDown={(e) => { if (e.key === "Enter") conferirCodigo(); }}
                     className="absolute inset-0 w-full h-full opacity-0"
@@ -615,7 +638,11 @@ export default function Cadastro() {
                   </div>
                 </div>
 
-                <div className="mt-5 space-y-3">
+                {/* Area dos botoes — a referencia aqui faz a tela rolar
+                    ate este ponto quando o teclado abre (iPhone), deixando
+                    o "Validar codigo" logo acima do teclado. O scroll-mt
+                    reserva um respiro no topo ao rolar. */}
+                <div ref={acoesCodigoRef} className="mt-5 space-y-3 scroll-mt-24">
                   {erro && <AuthError>{erro}</AuthError>}
 
                   <button
