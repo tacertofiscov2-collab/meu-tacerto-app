@@ -1,3 +1,4 @@
+/* LANCAR v6 — verificacao real de WhatsApp via Edge Functions (Z-API) */
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { ArrowLeft, Eye, EyeOff, Mail, Gauge, MailCheck } from "lucide-react";
@@ -8,7 +9,7 @@ import { setUserState } from "@/lib/userState";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 
 /* ===================================================================
-   CADASTRO v3 — setinha volta para a Welcome (ou para o Perfil)
+   CADASTRO v6 — setinha volta para a Welcome (ou para o Perfil)
 
    CADASTRO EM DUAS ETAPAS
 
@@ -17,15 +18,23 @@ import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
    2) E-MAIL    — e-mail + senha, que é o que o Supabase usa de fato para
       autenticar. O WhatsApp coletado na etapa 1 é salvo no perfil.
 
-   POR QUE NÃO LOGIN DIRETO POR TELEFONE: o Supabase só autentica por
-   telefone via SMS (Twilio e afins), que tem custo por mensagem. Como o
-   número aqui serve para ATENDIMENTO, e não como senha, coletamos o
-   WhatsApp e mantemos a autenticação por e-mail — sem custo nenhum.
+   VERIFICACAO DE WHATSAPP — AGORA E DE VERDADE (30/08/2026)
+   O codigo e enviado pela Edge Function "enviar-codigo" (que chama a
+   Z-API) e validado pela Edge Function "verificar-codigo". A tela de 6
+   quadradinhos continua igual; so o miolo virou real.
+
+   COMO O WHATSAPP E SALVO — SEM DUPLICAR:
+   - Caminho A (comeca pelo WhatsApp): quando a pessoa verifica o codigo,
+     a conta ainda nao existe. Entao verificamos SEM userId (a Edge
+     Function so confere o codigo). O numero e gravado depois, no
+     handleCadastrar(), quando a conta nasce. E o comportamento de sempre.
+   - Caminho B (comeca por e-mail e informa o WhatsApp depois): a conta ja
+     existe, entao verificamos COM userId e a Edge Function grava o numero
+     na hora. Nesse caso NAO chamamos salvarWhatsapp() de novo, para nao
+     gravar duas vezes.
 
    PENDÊNCIA DE BANCO: para o número ser salvo, a tabela `perfis` precisa
-   da coluna `whatsapp`. Enquanto ela não existir, o cadastro funciona
-   normalmente e o número é apenas ignorado (ver salvarWhatsapp abaixo).
-   SQL para criar:
+   da coluna `whatsapp`. SQL:
        alter table perfis add column if not exists whatsapp text;
    =================================================================== */
 
@@ -77,6 +86,8 @@ export default function Cadastro() {
   const [codigo, setCodigo] = useState("");
   // Para onde ir depois de verificar o código.
   const [destinoPosVerificacao, setDestinoPosVerificacao] = useState("email");
+  // Trava o botao "Reenviar" por alguns segundos para nao spammar.
+  const [reenviando, setReenviando] = useState(false);
 
   /* Fundo preto (do proprio app) com moldura clara em volta - em vez do
      cinza do --field, que deixava as barras "pesadas". */
@@ -94,7 +105,10 @@ export default function Cadastro() {
 
   /* Salva o WhatsApp no perfil. Silencioso de propósito: se a coluna
      ainda não existir no banco, o cadastro não pode quebrar por causa
-     disso — o número simplesmente não é gravado. */
+     disso — o número simplesmente não é gravado.
+     OBS: no caminho B (WhatsApp depois da conta), quem grava e a Edge
+     Function verificar-codigo. Aqui so grava no caminho A (conta nasce
+     no handleCadastrar com o numero ja verificado). */
   async function salvarWhatsapp(userId) {
     const digitos = telefone.replace(/\D/g, "");
     if (!digitos || !userId) return;
@@ -108,44 +122,101 @@ export default function Cadastro() {
     }
   }
 
-  function irParaEmail() {
+  /* Envia o codigo de verificacao pelo WhatsApp (Edge Function ->
+     Z-API). Retorna true se conseguiu enviar, false se falhou. */
+  async function enviarCodigoWhatsapp() {
+    try {
+      const { data, error } = await supabase.functions.invoke("enviar-codigo", {
+        body: { telefone },
+      });
+      if (error || data?.error) {
+        setErro(
+          (data && data.error) ||
+            "Não foi possível enviar o código agora. Tente de novo em instantes."
+        );
+        return false;
+      }
+      return true;
+    } catch {
+      setErro("Não foi possível enviar o código agora. Tente de novo em instantes.");
+      return false;
+    }
+  }
+
+  // Caminho A: valida o telefone, ENVIA o codigo e vai para a tela de
+  // verificacao. So avanca se o envio der certo.
+  async function irParaEmail() {
     setErro("");
     if (!telefoneValido(telefone)) {
       return setErro("Digite um número de WhatsApp válido com DDD.");
     }
+    setLoading(true);
+    const enviou = await enviarCodigoWhatsapp();
+    setLoading(false);
+    if (!enviou) return;
+    setDestinoPosVerificacao("email_topo"); // depois de verificar, pede e-mail/senha
     setEtapa("verificar");
   }
 
   /* ===================================================================
-     VERIFICAÇÃO DO WHATSAPP — TELA PRONTA, ENVIO AINDA NÃO
+     VERIFICAÇÃO DO WHATSAPP — AGORA DE VERDADE
 
-     Hoje NENHUM código é enviado: não há provedor de SMS/WhatsApp
-     contratado. A tela existe para o fluxo ficar completo e aceita
-     qualquer código de 4+ dígitos, só para testes.
+     O codigo foi enviado pela Edge Function "enviar-codigo". Aqui a gente
+     chama a Edge Function "verificar-codigo" para conferir. Ela devolve
+     erro amigavel quando o codigo esta errado, expirado, ou teve
+     tentativas demais.
 
-     PARA ATIVAR DE VERDADE:
-       1. Contratar um provedor (Twilio, MessageBird...) — custo por
-          mensagem, ~R$0,10 a R$0,30.
-       2. Supabase → Authentication → Providers → Phone → colar as
-          credenciais do provedor.
-       3. Trocar `enviarCodigo` por:
-            supabase.auth.signInWithOtp({ phone: `+55${digitos}` })
-          e `conferirCodigo` por:
-            supabase.auth.verifyOtp({ phone, token: codigo, type: "sms" })
+     userId: so mandamos quando a conta ja existe (caminho B). No caminho
+     A a conta ainda nao nasceu, entao vai sem userId e o numero e gravado
+     depois, no handleCadastrar.
      =================================================================== */
-  function conferirCodigo() {
+  async function conferirCodigo() {
     setErro("");
-    if (codigo.replace(/\D/g, "").length < 4) {
-      return setErro("Digite o código que enviamos.");
+    if (codigo.replace(/\D/g, "").length < 6) {
+      return setErro("Digite os 6 números do código que enviamos.");
     }
-    // Sem provedor: qualquer código passa. Ver bloco acima.
-    setCodigo("");
-    if (destinoPosVerificacao === "concluir") {
-      salvarWhatsapp(userIdPosCadastro);
-      navigate(destinoPosCadastro);
-      return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("verificar-codigo", {
+        body: {
+          telefone,
+          codigo,
+          // so vai userId quando a conta ja existe (caminho B)
+          userId: userIdPosCadastro || undefined,
+        },
+      });
+      if (error || data?.error) {
+        setLoading(false);
+        return setErro((data && data.error) || "Código incorreto. Tente novamente.");
+      }
+
+      setLoading(false);
+      setCodigo("");
+
+      // Caminho B: a conta ja existe e a Edge Function ja gravou o
+      // WhatsApp. So navega — sem salvarWhatsapp() de novo.
+      if (destinoPosVerificacao === "concluir") {
+        navigate(destinoPosCadastro);
+        return;
+      }
+      // Caminho A: segue para e-mail/senha. O numero sera gravado no
+      // handleCadastrar, quando a conta nascer.
+      setEtapa(destinoPosVerificacao);
+    } catch {
+      setLoading(false);
+      setErro("Código incorreto. Tente novamente.");
     }
-    setEtapa(destinoPosVerificacao);
+  }
+
+  // Reenviar: envia um codigo novo pelo WhatsApp, com trava anti-spam.
+  async function reenviarCodigo() {
+    if (reenviando) return;
+    setErro("");
+    setReenviando(true);
+    const enviou = await enviarCodigoWhatsapp();
+    if (enviou) setErro("Enviamos um novo código para o seu WhatsApp.");
+    // libera o botao depois de 30s
+    setTimeout(() => setReenviando(false), 30000);
   }
 
   async function handleCadastrar() {
@@ -195,7 +266,8 @@ export default function Cadastro() {
       const user = userData?.user;
       if (user) {
         setUserIdPosCadastro(user.id);
-        // Guarda o WhatsApp coletado na etapa 1 (se houver).
+        // Caminho A: o numero ja foi verificado antes da conta existir.
+        // Agora que a conta nasceu, grava o WhatsApp coletado na etapa 1.
         await salvarWhatsapp(user.id);
 
         const { data: perfil } = await supabase
@@ -212,7 +284,7 @@ export default function Cadastro() {
     setLoading(false);
     const destino = precisaOnboarding ? "/onboarding" : "/dashboard";
 
-    // Sem WhatsApp ainda? Pede antes de seguir.
+    // Sem WhatsApp ainda? Pede antes de seguir (caminho B).
     if (!telefone) {
       setDestinoPosCadastro(destino);
       setEtapa("whatsapp_depois");
@@ -221,34 +293,24 @@ export default function Cadastro() {
     navigate(destino);
   }
 
-  // Salva o WhatsApp informado na etapa pós-cadastro e segue.
+  // Caminho B: pessoa criou a conta por e-mail e agora informa o WhatsApp.
+  // Valida, ENVIA o codigo e vai para a tela de verificacao.
   async function concluirComWhatsapp() {
     setErro("");
     if (!telefoneValido(telefone)) {
       return setErro("Digite um número de WhatsApp válido com DDD.");
     }
+    setLoading(true);
+    const enviou = await enviarCodigoWhatsapp();
+    setLoading(false);
+    if (!enviou) return;
     setDestinoPosVerificacao("concluir");
     setEtapa("verificar");
   }
 
   /* ===================================================================
-     LOGIN SOCIAL (Google)
-
-     Os botões já estão prontos. Para ATIVAR de verdade, faltam dois
-     passos fora do código:
-
-       1. Supabase → Authentication → Sign In / Providers → habilitar o
-          provider (Google) e colar as credenciais.
-       2. Criar o app no console do provedor:
-          - Google:   console.cloud.google.com  (OAuth Client ID)
-          Em ambos, a URL de callback é:
-          https://txejrqynagsfhteaofai.supabase.co/auth/v1/callback
-
-     Feito isso, é só trocar o corpo das funções abaixo por
-     `entrarCom("google")` / `entrarCom("facebook")`.
+     LOGIN SOCIAL (Google) — ativo.
      =================================================================== */
-
-  // eslint-disable-next-line no-unused-vars
   async function entrarCom(provider) {
     setErro("");
     const { error } = await supabase.auth.signInWithOAuth({
@@ -558,19 +620,20 @@ export default function Cadastro() {
 
                   <button
                     onClick={conferirCodigo}
-                    disabled={codigo.length < 4}
+                    disabled={loading || codigo.length < 6}
                     className="w-full py-3 rounded-xl font-medium text-sm hover:opacity-90 disabled:opacity-40"
                     style={{ backgroundColor: "transparent", color: "var(--primary)", border: "1px solid var(--primary)" }}
                   >
-                    Validar código
+                    {loading ? "Aguarde..." : "Validar código"}
                   </button>
 
                   <button
-                    onClick={() => setErro("Reenvio disponível quando o envio de código for ativado.")}
-                    className="w-full text-center text-sm pt-1"
+                    onClick={reenviarCodigo}
+                    disabled={reenviando}
+                    className="w-full text-center text-sm pt-1 disabled:opacity-40"
                     style={{ color: "var(--text-secondary)" }}
                   >
-                    Reenviar código
+                    {reenviando ? "Código reenviado" : "Reenviar código"}
                   </button>
                 </div>
               </div>

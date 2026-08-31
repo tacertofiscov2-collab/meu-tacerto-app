@@ -82,7 +82,6 @@ export default function Onboarding() {
     };
   }, []);
 
-  // Foca o input oculto quando o step verificar abre
   useEffect(() => {
     if (step === "verificar" && inputCodigoRef.current) {
       setTimeout(() => inputCodigoRef.current?.focus(), 100);
@@ -194,7 +193,6 @@ export default function Onboarding() {
       className="tela-fixa w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      {/* Input oculto do codigo — fora do scroll para nao bloquear iOS */}
       {isVerificar && (
         <input
           ref={inputCodigoRef}
@@ -481,7 +479,7 @@ export default function Onboarding() {
                           style={{ color: "var(--text)" }}
                         >
                           {o.titulo}
-                        div>
+                        </div>
                         <div
                           className="text-[12px] mt-0.5 flex items-center gap-1"
                           style={{ color: "var(--text-secondary)" }}
