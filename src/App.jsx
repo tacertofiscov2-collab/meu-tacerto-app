@@ -18,6 +18,7 @@ import Lancar from "./pages/Lancar.jsx";
 import LimiteAtingido from "./pages/LimiteAtingido.jsx";
 import EmConstrucao from "./pages/EmConstrucao.jsx";
 import Historico from "./pages/Historico.jsx";
+import HistoricoNotas from "./pages/HistoricoNotas.jsx";
 import Alertas from "./pages/Alertas.jsx";
 import Preferencias from "./pages/Preferencias.jsx";
 import Faq from "./pages/Faq.jsx";
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="/excluir-conta" element={<ExcluirConta />} />
           <Route path="/perfil/informacoes-fiscais" element={<InformacoesFiscais />} />
           <Route path="/historico" element={<Historico />} />
+          <Route path="/notas-fiscais" element={<HistoricoNotas />} />
           <Route path="/perfil/resumo" element={<ResumoPerfil />} />
           <Route path="/alertas" element={<Alertas />} />
           <Route path="/regra-vinte" element={<RegraVinte />} />

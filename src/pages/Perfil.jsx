@@ -4,7 +4,7 @@ import BottomNav from "../components/BottomNav.jsx";
 import {
   ArrowLeft, User, Settings, Info, Shield, Users, Lock, LogOut,
   ChevronDown, ChevronRight, UserPlus, X, Check, Receipt, TrendingUp, BarChart3,
-  Trash2,
+  Trash2, FileText,
 } from "lucide-react";
 
 import { useUserState, setUserState } from "@/lib/userState";
@@ -238,6 +238,7 @@ export default function Perfil() {
 
           <Secao titulo="Meu MEI">
             <Item Icon={Receipt} label="Histórico de lançamentos" onClick={() => navigate("/historico", DE_PERFIL)} />
+            <Item Icon={FileText} label="Histórico de notas fiscais" onClick={() => navigate("/notas-fiscais", DE_PERFIL)} />
             <Item Icon={TrendingUp} label={`Adicionar faturamento de ${anoAtual}`} onClick={() => navigate("/adicionar-faturamento", DE_PERFIL)} />
             <Item Icon={BarChart3} label={`Resumo de ${anoAtual}`} onClick={() => navigate("/perfil/resumo", DE_PERFIL)} />
           </Secao>
