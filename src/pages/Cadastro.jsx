@@ -1,4 +1,4 @@
-/* LANCAR v7 — tela do codigo sobe quando o teclado abre (iOS) */
+/* LANCAR v10 — apos verificar o WhatsApp vai para "Agora seus dados de acesso" */
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useRef } from "react";
 import { ArrowLeft, Eye, EyeOff, Mail, Gauge, MailCheck } from "lucide-react";
@@ -7,6 +7,22 @@ import AuthError, { translateAuthError } from "@/components/AuthError";
 import { adicionarConta } from "@/lib/contas";
 import { setUserState } from "@/lib/userState";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
+
+/* ===================================================================
+   ⚙️ INTERRUPTOR DO MODO PREVIA — MUDE SO ESTA LINHA
+
+   true  = MODO PREVIA (para mostrar o app para outras pessoas)
+           A tela do codigo continua aparecendo igual, mas:
+           - NAO envia nada pela Z-API
+           - Aceita QUALQUER codigo de 6 numeros
+           - Nao trava se a Z-API cair ou o trial expirar
+
+   false = MODO REAL (verificacao de verdade pela Z-API)
+           So funciona com a Z-API conectada e o plano ativo.
+
+   COMO VOLTAR PARA O REAL: troque true por false, salve, pronto.
+   =================================================================== */
+const MODO_PREVIA = true;
 
 /* ===================================================================
    CADASTRO v7 — setinha volta para a Welcome (ou para o Perfil)
@@ -145,8 +161,10 @@ export default function Cadastro() {
   }
 
   /* Envia o codigo de verificacao pelo WhatsApp (Edge Function ->
-     Z-API). Retorna true se conseguiu enviar, false se falhou. */
+     Z-API). Retorna true se conseguiu enviar, false se falhou.
+     NO MODO PREVIA: nao chama nada e devolve true, para o fluxo seguir. */
   async function enviarCodigoWhatsapp() {
+    if (MODO_PREVIA) return true;
     try {
       const { data, error } = await supabase.functions.invoke("enviar-codigo", {
         body: { telefone },
@@ -176,7 +194,7 @@ export default function Cadastro() {
     const enviou = await enviarCodigoWhatsapp();
     setLoading(false);
     if (!enviou) return;
-    setDestinoPosVerificacao("email_topo"); // depois de verificar, pede e-mail/senha
+    setDestinoPosVerificacao("email"); // depois de verificar, pede e-mail/senha
     setEtapa("verificar");
   }
 
@@ -197,6 +215,21 @@ export default function Cadastro() {
     if (codigo.replace(/\D/g, "").length < 6) {
       return setErro("Digite os 6 números do código que enviamos.");
     }
+
+    /* MODO PREVIA: aceita qualquer codigo de 6 numeros e segue o fluxo
+       normal, sem chamar a Edge Function. A tela continua identica. */
+    if (MODO_PREVIA) {
+      setCodigo("");
+      if (destinoPosVerificacao === "concluir") {
+        // aqui a conta ja existe, entao grava o numero direto
+        salvarWhatsapp(userIdPosCadastro);
+        navigate(destinoPosCadastro);
+        return;
+      }
+      setEtapa(destinoPosVerificacao);
+      return;
+    }
+
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("verificar-codigo", {
@@ -235,6 +268,11 @@ export default function Cadastro() {
     if (reenviando) return;
     setErro("");
     setReenviando(true);
+    if (MODO_PREVIA) {
+      setErro("Modo demonstração: digite qualquer 6 números para continuar.");
+      setTimeout(() => setReenviando(false), 5000);
+      return;
+    }
     const enviou = await enviarCodigoWhatsapp();
     if (enviou) setErro("Enviamos um novo código para o seu WhatsApp.");
     // libera o botao depois de 30s
@@ -473,7 +511,7 @@ export default function Cadastro() {
                     <input
                       type="email"
                       inputMode="email"
-                      placeholder="E-mail"
+                      placeholder="Digite seu e-mail"
                       value={contato}
                       onChange={(e) => setContato(e.target.value)}
                       className="campo-tacerto w-full px-4 py-3.5 rounded-xl text-sm focus:outline-none placeholder:opacity-70"

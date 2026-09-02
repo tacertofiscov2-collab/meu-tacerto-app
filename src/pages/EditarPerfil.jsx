@@ -1,3 +1,4 @@
+/* LANCAR v6 — aviso de e-mail pendente como chip dentro do card */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -11,18 +12,38 @@ import { supabase } from "@/lib/supabase";
 import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 
 /* ===================================================================
-   EDITARPERFIL v4 — rotulo FORA do card (cabecalho original mantido)
+   EDITARPERFIL v5 — rotulo FORA do card (cabecalho original mantido)
 
    Mudanca de layout: o rotulo ("Nome", "E-mail"...) saiu de dentro do
    card e foi para cima dele. O card fica so com o dado, em negrito e
    com mais altura. Os titulos de secao viraram caixa normal, sem o
    uppercase espacado.
 
-   SELO DE VERIFICADO: aparece so no E-mail, e le o dado REAL do
-   Supabase (email_confirmed_at). O WhatsApp NAO tem selo de proposito
-   — a verificacao por SMS ainda nao existe (a tela de codigo aceita
-   qualquer numero), entao um "verificado" ali seria mentira. Quando o
-   provedor de SMS entrar, e so ligar o mesmo componente aqui.
+   SELO DE VERIFICADO NO E-MAIL — COMO E DECIDIDO (v5):
+
+   ANTES a tela lia `email_confirmed_at` do Supabase. So que a
+   confirmacao de e-mail esta DESLIGADA no projeto, e nesse modo o
+   Supabase preenche esse campo sozinho no cadastro. Resultado: TODO
+   mundo aparecia com o selo verde, mesmo sem nunca ter confirmado
+   nada. O selo estava mentindo.
+
+   AGORA o criterio e a ORIGEM da conta:
+     - Entrou pelo GOOGLE  -> o proprio Google ja validou o e-mail
+                              dele, entao o selo verde e verdade.
+     - Entrou por e-mail   -> ninguem confirmou nada ainda, entao
+       e senha                mostra o aviso laranja de pendente.
+
+   POR QUE NAO LIGAR A CONFIRMACAO NO SUPABASE: ligando, ninguem entra
+   no app antes de abrir o e-mail e clicar no link. Isso trava o
+   cadastro logo na porta. A decisao foi NAO obrigar agora — a
+   verificacao vira obrigatoria so em dois momentos, mais para frente:
+     1) recuperar a senha
+     2) assinar o plano pago
+   (Conectar o Open Finance NAO exige verificacao, por decisao de
+   produto tomada em 02/09/2026.)
+
+   O WhatsApp NAO tem selo de proposito — mesmo com a verificacao real
+   funcionando no cadastro, esta tela ainda nao le esse estado.
    =================================================================== */
 
 // ---------------------------------------------------------------------
@@ -51,6 +72,18 @@ function formatarTelefone(valor) {
   if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
   if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
+/* Descobre se a conta nasceu de um login social do Google.
+   O Supabase guarda isso em dois lugares e nem sempre os dois vem
+   preenchidos, entao olhamos os dois por seguranca. */
+function contaVeioDoGoogle(user) {
+  if (!user) return false;
+  if (user.app_metadata?.provider === "google") return true;
+  const lista = user.app_metadata?.providers || [];
+  if (Array.isArray(lista) && lista.includes("google")) return true;
+  const identidades = user.identities || [];
+  return identidades.some((i) => i?.provider === "google");
 }
 
 /**
@@ -147,8 +180,8 @@ export default function EditarPerfil() {
   const [confirmarTroca, setConfirmarTroca] = useState(false);
   const [calendarioAberto, setCalendarioAberto] = useState(false);
   const [salvo, setSalvo] = useState(false);
-  /* Vem do proprio Supabase (email_confirmed_at). null = ainda carregando,
-     para nao piscar o icone errado no primeiro instante. */
+  /* true so quando a conta veio do Google (ver bloco no topo).
+     null = ainda carregando, para nao piscar o icone errado. */
   const [emailConfirmado, setEmailConfirmado] = useState(null);
   const [avisoReenvio, setAvisoReenvio] = useState("");
 
@@ -158,7 +191,7 @@ export default function EditarPerfil() {
 
   useEffect(() => { setNome(nomeSalvo || ""); }, [nomeSalvo]);
 
-  // Busca o WhatsApp salvo e o estado de confirmação do e-mail.
+  // Busca o WhatsApp salvo e a origem da conta (Google ou e-mail).
   useEffect(() => {
     let ativo = true;
     (async () => {
@@ -166,7 +199,8 @@ export default function EditarPerfil() {
         const { data: userData } = await supabase.auth.getUser();
         const user = userData?.user;
         if (!user) return; // visitante
-        if (ativo) setEmailConfirmado(Boolean(user.email_confirmed_at));
+        // Verde so para quem entrou pelo Google; o resto fica pendente.
+        if (ativo) setEmailConfirmado(contaVeioDoGoogle(user));
 
         const { data } = await supabase
           .from("perfis")
@@ -188,7 +222,11 @@ export default function EditarPerfil() {
 
   /* Reenvia o e-mail de confirmação. O Supabase limita a 2 e-mails por
      hora, então a mensagem de erro precisa aparecer para o usuário não
-     ficar clicando achando que funcionou. */
+     ficar clicando achando que funcionou.
+
+     OBS: enquanto a confirmacao de e-mail estiver DESLIGADA no painel do
+     Supabase, nao existe link para enviar e este botao vai avisar que
+     nao foi possivel. E o comportamento esperado por enquanto. */
   async function reenviarVerificacao() {
     setAvisoReenvio("");
     try {
@@ -321,28 +359,24 @@ export default function EditarPerfil() {
               >
                 {visitante ? "Sem e-mail cadastrado" : email || "—"}
               </p>
-              {/* Selo com o dado real do Supabase. Enquanto carrega
+              {/* Verde so para conta vinda do Google. Enquanto carrega
                   (null), nao mostra nada. */}
               {!visitante && email && emailConfirmado === true && (
                 <CheckCircle2 size={20} style={{ color: "var(--primary)" }} className="shrink-0" />
               )}
+              {/* Pendente: so o icone laranja, sem chip. O texto fica
+                  embaixo do card. */}
               {!visitante && email && emailConfirmado === false && (
                 <AlertCircle size={20} style={{ color: "#f59e0b" }} className="shrink-0" />
               )}
             </div>
 
+            {/* Aviso simples embaixo do card. Por enquanto e so visual —
+                clicar nao dispara nada. O fluxo de verificacao ainda
+                sera desenhado (decisao do Ruan em 02/09/2026). */}
             {!visitante && email && emailConfirmado === false && (
-              <button
-                onClick={reenviarVerificacao}
-                className="mt-2 text-[14px] font-medium"
-                style={{ color: "var(--primary)" }}
-              >
-                Reenviar verificação
-              </button>
-            )}
-            {avisoReenvio && (
-              <p className="mt-2 text-[13px]" style={{ color: "var(--text-secondary)" }}>
-                {avisoReenvio}
+              <p className="mt-2 text-[13px]" style={{ color: "#f59e0b" }}>
+                Verificação pendente
               </p>
             )}
           </div>
