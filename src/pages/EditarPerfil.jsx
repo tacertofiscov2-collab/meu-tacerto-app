@@ -1,4 +1,4 @@
-/* LANCAR v6 — aviso de e-mail pendente como chip dentro do card */
+/* EDITARPERFIL v8 — contato minimalista: icone no campo, acao em pilula ao lado */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,39 +12,73 @@ import { supabase } from "@/lib/supabase";
 import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 
 /* ===================================================================
-   EDITARPERFIL v5 — rotulo FORA do card (cabecalho original mantido)
+   EDITARPERFIL v8 — CONTATO MINIMALISTA
 
-   Mudanca de layout: o rotulo ("Nome", "E-mail"...) saiu de dentro do
-   card e foi para cima dele. O card fica so com o dado, em negrito e
-   com mais altura. Os titulos de secao viraram caixa normal, sem o
-   uppercase espacado.
+   O QUE MUDOU DA v7 PARA A v8 (pedido do Fernando, 16/09/2026):
+     - Sairam as duas linhas de texto abaixo dos campos
+       ("Verificacao pendente" / "Numero verificado" e os links).
+     - O icone de estado agora vive DENTRO do card, na ponta direita.
+     - A acao do e-mail virou um botao em pilula AO LADO do card.
+     - O card do WhatsApp inteiro e clicavel para trocar o numero —
+       sem link visivel, mas com a saida preservada.
 
-   SELO DE VERIFICADO NO E-MAIL — COMO E DECIDIDO (v5):
+   O BOTAO CARREGA O ESTADO, EM VEZ DE UMA LEGENDA:
+       "Verificar"  -> parado, pronto para enviar
+       "Enviado"    -> confirmacao rapida (2s)
+       "45s"        -> contagem ate poder reenviar
+       "Salvar"     -> o e-mail no campo e diferente do da conta
+   Texto escrito so aparece quando da ERRO, e some ao digitar.
 
-   ANTES a tela lia `email_confirmed_at` do Supabase. So que a
-   confirmacao de e-mail esta DESLIGADA no projeto, e nesse modo o
-   Supabase preenche esse campo sozinho no cadastro. Resultado: TODO
-   mundo aparecia com o selo verde, mesmo sem nunca ter confirmado
-   nada. O selo estava mentindo.
+   POR QUE O CAMPO DE E-MAIL PENDENTE E EDITAVEL:
+     Se a pessoa errou uma letra no cadastro, ela precisa conseguir
+     corrigir. Travar um campo nao verificado tranca a pessoa fora da
+     conta. Quando o endereco digitado e diferente do salvo, o botao
+     chama updateUser(): o Supabase manda o link para o endereco NOVO
+     e so troca quando o link e aberto — um erro de digitacao nunca
+     perde a conta.
 
-   AGORA o criterio e a ORIGEM da conta:
-     - Entrou pelo GOOGLE  -> o proprio Google ja validou o e-mail
-                              dele, entao o selo verde e verdade.
-     - Entrou por e-mail   -> ninguem confirmou nada ainda, entao
-       e senha                mostra o aviso laranja de pendente.
+   POR QUE O WHATSAPP SO TRAVA SE JA TIVER NUMERO:
+     Quem entrou pelo Google pode nao ter informado WhatsApp. Se o
+     campo travasse sempre, essa pessoa nunca conseguiria cadastrar o
+     primeiro numero. Sem numero -> campo aberto.
 
-   POR QUE NAO LIGAR A CONFIRMACAO NO SUPABASE: ligando, ninguem entra
-   no app antes de abrir o e-mail e clicar no link. Isso trava o
-   cadastro logo na porta. A decisao foi NAO obrigar agora — a
-   verificacao vira obrigatoria so em dois momentos, mais para frente:
-     1) recuperar a senha
-     2) assinar o plano pago
-   (Conectar o Open Finance NAO exige verificacao, por decisao de
-   produto tomada em 02/09/2026.)
+   AS DUAS CHAVES ABAIXO
+     Com false, tudo aparece montado mas as acoes avisam que a funcao
+     ainda nao esta disponivel.
 
-   O WhatsApp NAO tem selo de proposito — mesmo com a verificacao real
-   funcionando no cadastro, esta tela ainda nao le esse estado.
+       VERIFICACAO_EMAIL_ATIVA
+         Ligar quando "Confirm email" for ATIVADO no painel do
+         Supabase (Authentication -> Providers -> Email). Com ele
+         desligado nao existe link para enviar.
+
+       VERIFICACAO_WHATSAPP_ATIVA
+         Ligar quando a Z-API voltar a funcionar. A infraestrutura ja
+         existe: as Edge Functions "enviar-codigo" e "verificar-codigo"
+         estao no projeto, e a segunda grava o numero em `perfis`
+         sozinha quando recebe um userId.
+
+     ATENCAO: o Cadastro.jsx tem a sua propria chave (MODO_PREVIA).
+     Ao ligar a Z-API, as DUAS precisam ser trocadas. Unificar as duas
+     num src/lib/flags.js e a proxima tarefa combinada.
+
+   SELO DE VERIFICADO NO E-MAIL — CRITERIO (herdado da v5)
+     A tela NAO le `email_confirmed_at`: com a confirmacao desligada
+     o Supabase preenche esse campo sozinho e todo mundo aparecia como
+     verificado. O criterio e a ORIGEM da conta:
+       - veio do GOOGLE -> o Google ja validou, selo verde e verdade
+       - veio por senha -> pendente, icone laranja
+     Quando VERIFICACAO_EMAIL_ATIVA virar true, revisar: com a
+     confirmacao ligada, `email_confirmed_at` volta a ser confiavel.
    =================================================================== */
+
+/* Ligar quando "Confirm email" estiver ATIVO no painel do Supabase. */
+const VERIFICACAO_EMAIL_ATIVA = false;
+
+/* Ligar quando a Z-API voltar (ver MODO_PREVIA no Cadastro.jsx). */
+const VERIFICACAO_WHATSAPP_ATIVA = false;
+
+/* Segundos de espera entre um envio e o proximo. */
+const ESPERA_REENVIO = 60;
 
 // ---------------------------------------------------------------------
 // Espaçamentos ajustáveis desta tela.
@@ -72,6 +106,13 @@ function formatarTelefone(valor) {
   if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
   if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
+/* Checagem simples de formato. Nao tenta validar se o endereco existe —
+   quem faz isso e o link de confirmacao. Serve so para evitar o envio
+   de algo obviamente quebrado, como um endereco com barra no meio. */
+function emailPareceValido(valor) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(valor).trim());
 }
 
 /* Descobre se a conta nasceu de um login social do Google.
@@ -183,13 +224,49 @@ export default function EditarPerfil() {
   /* true so quando a conta veio do Google (ver bloco no topo).
      null = ainda carregando, para nao piscar o icone errado. */
   const [emailConfirmado, setEmailConfirmado] = useState(null);
-  const [avisoReenvio, setAvisoReenvio] = useState("");
+
+  /* E-mail editavel enquanto pendente. Comeca com o valor salvo. */
+  const [emailCampo, setEmailCampo] = useState(email || "");
+  /* Mensagem de ERRO, e so de erro — o caminho normal nao escreve nada
+     na tela, o proprio botao mostra o estado. */
+  const [erroContato, setErroContato] = useState("");
+  const [enviandoEmail, setEnviandoEmail] = useState(false);
+  const [enviado, setEnviado] = useState(false);
+  const [espera, setEspera] = useState(0);
+
+  /* WhatsApp so fica travado quando JA existe numero salvo.
+     Sem numero, o campo continua aberto para cadastrar o primeiro. */
+  const whatsTravado = !visitante && whatsSalvo !== "";
 
   const mudouNome = nome.trim() !== (nomeSalvo || "").trim() && nome.trim() !== "";
-  const mudouWhats = whats.replace(/\D/g, "") !== whatsSalvo.replace(/\D/g, "");
+  const mudouWhats =
+    !whatsTravado && whats.replace(/\D/g, "") !== whatsSalvo.replace(/\D/g, "");
   const temMudanca = mudouNome || mudouWhats;
 
+  /* O e-mail no campo mudou em relacao ao da conta? Muda o texto do
+     botao para "Salvar", avisando que vai trocar de endereco. */
+  const emailMudou =
+    emailCampo.trim().toLowerCase() !== String(email || "").trim().toLowerCase();
+
+  /* Pendente = mostra campo editavel + botao de acao ao lado. */
+  const emailPendente = !visitante && !!email && emailConfirmado === false;
+
   useEffect(() => { setNome(nomeSalvo || ""); }, [nomeSalvo]);
+  useEffect(() => { setEmailCampo(email || ""); }, [email]);
+
+  /* Contagem regressiva do botao. */
+  useEffect(() => {
+    if (espera <= 0) return undefined;
+    const t = setTimeout(() => setEspera((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [espera]);
+
+  /* "Enviado" fica visivel 2s e entao cede lugar a contagem. */
+  useEffect(() => {
+    if (!enviado) return undefined;
+    const t = setTimeout(() => setEnviado(false), 2000);
+    return () => clearTimeout(t);
+  }, [enviado]);
 
   // Busca o WhatsApp salvo e a origem da conta (Google ou e-mail).
   useEffect(() => {
@@ -220,25 +297,53 @@ export default function EditarPerfil() {
     return () => { ativo = false; };
   }, []);
 
-  /* Reenvia o e-mail de confirmação. O Supabase limita a 2 e-mails por
-     hora, então a mensagem de erro precisa aparecer para o usuário não
-     ficar clicando achando que funcionou.
+  /* Dispara a verificacao do e-mail.
+     - endereco IGUAL ao da conta  -> resend(), reenvia o link
+     - endereco DIFERENTE          -> updateUser(), que manda o link
+       para o endereco novo e so troca quando o link for aberto */
+  async function verificarEmail() {
+    if (enviandoEmail || espera > 0) return;
 
-     OBS: enquanto a confirmacao de e-mail estiver DESLIGADA no painel do
-     Supabase, nao existe link para enviar e este botao vai avisar que
-     nao foi possivel. E o comportamento esperado por enquanto. */
-  async function reenviarVerificacao() {
-    setAvisoReenvio("");
-    try {
-      const { error } = await supabase.auth.resend({ type: "signup", email });
-      setAvisoReenvio(
-        error
-          ? "Não foi possível reenviar agora. Tente de novo mais tarde."
-          : "Enviamos um novo link para o seu e-mail."
-      );
-    } catch {
-      setAvisoReenvio("Não foi possível reenviar agora. Tente de novo mais tarde.");
+    setErroContato("");
+
+    const novo = emailCampo.trim().toLowerCase();
+
+    if (!emailPareceValido(novo)) {
+      setErroContato("Digite um e-mail válido.");
+      return;
     }
+
+    if (!VERIFICACAO_EMAIL_ATIVA) {
+      setErroContato("A verificação por e-mail ainda não está disponível.");
+      return;
+    }
+
+    setEnviandoEmail(true);
+    try {
+      const { error } = emailMudou
+        ? await supabase.auth.updateUser({ email: novo })
+        : await supabase.auth.resend({ type: "signup", email: novo });
+
+      if (error) {
+        setErroContato("Não foi possível enviar agora. Tente de novo mais tarde.");
+      } else {
+        setEnviado(true);
+        setEspera(ESPERA_REENVIO);
+      }
+    } catch {
+      setErroContato("Não foi possível enviar agora. Tente de novo mais tarde.");
+    } finally {
+      setEnviandoEmail(false);
+    }
+  }
+
+  /* Troca de WhatsApp: o card travado inteiro leva para ca. */
+  function alterarWhatsapp() {
+    if (!VERIFICACAO_WHATSAPP_ATIVA) {
+      setErroContato("A alteração de WhatsApp estará disponível em breve.");
+      return;
+    }
+    navigate("/alterar-whatsapp");
   }
 
   const inicial = (nome || "?").trim().charAt(0).toUpperCase();
@@ -272,6 +377,15 @@ export default function EditarPerfil() {
     setPerfilPendente(novo);
     setConfirmarTroca(true);
   }
+
+  /* O botao carrega o estado — por isso nao ha legenda na tela. */
+  let textoBotaoEmail = "Verificar";
+  if (enviandoEmail) textoBotaoEmail = "...";
+  else if (enviado) textoBotaoEmail = "Enviado";
+  else if (espera > 0) textoBotaoEmail = `${espera}s`;
+  else if (emailMudou) textoBotaoEmail = "Salvar";
+
+  const botaoEmailInativo = enviandoEmail || espera > 0 || enviado;
 
   return (
     <div
@@ -351,59 +465,115 @@ export default function EditarPerfil() {
         <div className="space-y-4">
           <div>
             <Rotulo>E-mail</Rotulo>
-            <div className="card-tacerto rounded-2xl px-4 py-4 flex items-center gap-3">
-              <p
-                className="flex-1 min-w-0 truncate text-[16px] font-semibold"
-                style={{ color: visitante || !email ? "var(--text-tertiary)" : "var(--text)" }}
-                title={visitante ? "" : email || ""}
-              >
-                {visitante ? "Sem e-mail cadastrado" : email || "—"}
-              </p>
-              {/* Verde so para conta vinda do Google. Enquanto carrega
-                  (null), nao mostra nada. */}
-              {!visitante && email && emailConfirmado === true && (
-                <CheckCircle2 size={20} style={{ color: "var(--primary)" }} className="shrink-0" />
-              )}
-              {/* Pendente: so o icone laranja, sem chip. O texto fica
-                  embaixo do card. */}
-              {!visitante && email && emailConfirmado === false && (
-                <AlertCircle size={20} style={{ color: "#f59e0b" }} className="shrink-0" />
-              )}
-            </div>
 
-            {/* Aviso simples embaixo do card. Por enquanto e so visual —
-                clicar nao dispara nada. O fluxo de verificacao ainda
-                sera desenhado (decisao do Ruan em 02/09/2026). */}
-            {!visitante && email && emailConfirmado === false && (
-              <p className="mt-2 text-[13px]" style={{ color: "#f59e0b" }}>
-                Verificação pendente
-              </p>
+            {emailPendente ? (
+              /* PENDENTE: campo editavel + icone dentro + acao ao lado. */
+              <div className="flex items-stretch gap-2">
+                <div className="card-tacerto flex-1 min-w-0 rounded-2xl px-4 py-4 flex items-center gap-3">
+                  <input
+                    type="email"
+                    inputMode="email"
+                    value={emailCampo}
+                    onChange={(e) => {
+                      setEmailCampo(e.target.value);
+                      setErroContato("");
+                    }}
+                    placeholder="seu@email.com"
+                    autoComplete="email"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    className="flex-1 min-w-0 bg-transparent text-[16px] font-semibold outline-none placeholder:font-normal placeholder:opacity-50"
+                    style={{ color: "var(--text)", border: "none", boxShadow: "none" }}
+                  />
+                  <AlertCircle size={20} style={{ color: "#f59e0b" }} className="shrink-0" />
+                </div>
+
+                <button
+                  onClick={verificarEmail}
+                  disabled={botaoEmailInativo}
+                  className="shrink-0 px-4 rounded-2xl text-[14px] font-medium active:opacity-70 transition"
+                  style={{
+                    backgroundColor: "var(--field)",
+                    color: botaoEmailInativo ? "var(--text-tertiary)" : "var(--text)",
+                    minWidth: 92,
+                  }}
+                >
+                  {textoBotaoEmail}
+                </button>
+              </div>
+            ) : (
+              /* VERIFICADO (ou visitante): texto simples e o check. */
+              <div className="card-tacerto rounded-2xl px-4 py-4 flex items-center gap-3">
+                <p
+                  className="flex-1 min-w-0 truncate text-[16px] font-semibold"
+                  style={{ color: visitante || !email ? "var(--text-tertiary)" : "var(--text)" }}
+                  title={visitante ? "" : email || ""}
+                >
+                  {visitante ? "Sem e-mail cadastrado" : email || "—"}
+                </p>
+                {!visitante && email && emailConfirmado === true && (
+                  <CheckCircle2 size={20} style={{ color: "var(--primary)" }} className="shrink-0" />
+                )}
+              </div>
             )}
           </div>
 
           <div>
             <Rotulo>WhatsApp</Rotulo>
-            <div className="card-tacerto rounded-2xl px-4 py-4">
-              <div className="flex items-center gap-2">
+
+            {whatsTravado ? (
+              /* TRAVADO: so o numero e o check. O card inteiro e o
+                 caminho para trocar — sem link ocupando espaco. */
+              <button
+                onClick={alterarWhatsapp}
+                className="card-tacerto w-full rounded-2xl px-4 py-4 flex items-center gap-3 text-left active:opacity-75 transition"
+              >
                 <span
                   className="text-[16px] font-semibold shrink-0"
                   style={{ color: "var(--text-secondary)" }}
                 >
                   +55
                 </span>
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  value={whats}
-                  onChange={(e) => setWhats(formatarTelefone(e.target.value))}
-                  placeholder="(00) 00000-0000"
-                  autoComplete="off"
-                  className="flex-1 min-w-0 bg-transparent text-[16px] font-semibold outline-none placeholder:font-normal placeholder:opacity-50"
-                  style={{ color: "var(--text)", border: "none", boxShadow: "none" }}
-                />
+                <span
+                  className="flex-1 min-w-0 truncate text-[16px] font-semibold"
+                  style={{ color: "var(--text)" }}
+                >
+                  {whatsSalvo}
+                </span>
+                <CheckCircle2 size={20} style={{ color: "var(--primary)" }} className="shrink-0" />
+              </button>
+            ) : (
+              /* SEM NUMERO: campo aberto, para cadastrar o primeiro. */
+              <div className="card-tacerto rounded-2xl px-4 py-4">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-[16px] font-semibold shrink-0"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    +55
+                  </span>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    value={whats}
+                    onChange={(e) => setWhats(formatarTelefone(e.target.value))}
+                    placeholder="(00) 00000-0000"
+                    autoComplete="off"
+                    className="flex-1 min-w-0 bg-transparent text-[16px] font-semibold outline-none placeholder:font-normal placeholder:opacity-50"
+                    style={{ color: "var(--text)", border: "none", boxShadow: "none" }}
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
+
+          {/* Unica linha de texto da secao, e so quando algo da errado. */}
+          {erroContato && (
+            <p className="text-[13px]" style={{ color: "var(--danger)" }}>
+              {erroContato}
+            </p>
+          )}
         </div>
 
         {(temMudanca || salvo) && (
