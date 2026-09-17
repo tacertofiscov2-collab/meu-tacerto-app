@@ -1,4 +1,4 @@
-/* LANCAR v10 — apos verificar o WhatsApp vai para "Agora seus dados de acesso" */
+/* CADASTRO v11 — chave do WhatsApp vinda do flags.js */
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useRef } from "react";
 import { ArrowLeft, Eye, EyeOff, Mail, Gauge, MailCheck } from "lucide-react";
@@ -7,22 +7,34 @@ import AuthError, { translateAuthError } from "@/components/AuthError";
 import { adicionarConta } from "@/lib/contas";
 import { setUserState } from "@/lib/userState";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
+import { WHATSAPP_ATIVO } from "@/lib/flags";
 
 /* ===================================================================
-   ⚙️ INTERRUPTOR DO MODO PREVIA — MUDE SO ESTA LINHA
+   ⚙️ O INTERRUPTOR SAIU DAQUI — AGORA FICA NO src/lib/flags.js
 
-   true  = MODO PREVIA (para mostrar o app para outras pessoas)
-           A tela do codigo continua aparecendo igual, mas:
-           - NAO envia nada pela Z-API
-           - Aceita QUALQUER codigo de 6 numeros
-           - Nao trava se a Z-API cair ou o trial expirar
+   Antes esta tela tinha o seu proprio MODO_PREVIA, e o EditarPerfil
+   tinha outra chave para a MESMA pergunta: a Z-API esta no ar? Dava
+   para trocar uma e esquecer a outra — e o app ficava pela metade sem
+   avisar nada.
 
-   false = MODO REAL (verificacao de verdade pela Z-API)
-           So funciona com a Z-API conectada e o plano ativo.
+   Agora e uma chave so, WHATSAPP_ATIVO, no flags.js. Repare que ela le
+   ao CONTRARIO do antigo MODO_PREVIA:
 
-   COMO VOLTAR PARA O REAL: troque true por false, salve, pronto.
+       WHATSAPP_ATIVO = false   ->  modo previa (era MODO_PREVIA = true)
+                                    A tela do codigo aparece igual, mas
+                                    nada e enviado pela Z-API e qualquer
+                                    codigo de 6 numeros e aceito.
+
+       WHATSAPP_ATIVO = true    ->  modo real (era MODO_PREVIA = false)
+                                    O codigo vai de verdade e so o
+                                    codigo certo passa.
+
+   Por isso, no codigo abaixo, onde antes se lia `if (MODO_PREVIA)`
+   agora se le `if (!WHATSAPP_ATIVO)`. O comportamento e o mesmo.
+
+   COMO LIGAR A Z-API: abra src/lib/flags.js e troque false por true na
+   linha do WHATSAPP_ATIVO. Vale para esta tela e para o EditarPerfil.
    =================================================================== */
-const MODO_PREVIA = true;
 
 /* ===================================================================
    CADASTRO v7 — setinha volta para a Welcome (ou para o Perfil)
@@ -162,9 +174,10 @@ export default function Cadastro() {
 
   /* Envia o codigo de verificacao pelo WhatsApp (Edge Function ->
      Z-API). Retorna true se conseguiu enviar, false se falhou.
-     NO MODO PREVIA: nao chama nada e devolve true, para o fluxo seguir. */
+     COM WHATSAPP_ATIVO = false: nao chama nada e devolve true, para o
+     fluxo seguir sem depender da Z-API. */
   async function enviarCodigoWhatsapp() {
-    if (MODO_PREVIA) return true;
+    if (!WHATSAPP_ATIVO) return true;
     try {
       const { data, error } = await supabase.functions.invoke("enviar-codigo", {
         body: { telefone },
@@ -216,9 +229,10 @@ export default function Cadastro() {
       return setErro("Digite os 6 números do código que enviamos.");
     }
 
-    /* MODO PREVIA: aceita qualquer codigo de 6 numeros e segue o fluxo
-       normal, sem chamar a Edge Function. A tela continua identica. */
-    if (MODO_PREVIA) {
+    /* MODO PREVIA (WHATSAPP_ATIVO = false): aceita qualquer codigo de 6
+       numeros e segue o fluxo normal, sem chamar a Edge Function. A tela
+       continua identica. */
+    if (!WHATSAPP_ATIVO) {
       setCodigo("");
       if (destinoPosVerificacao === "concluir") {
         // aqui a conta ja existe, entao grava o numero direto
@@ -268,7 +282,7 @@ export default function Cadastro() {
     if (reenviando) return;
     setErro("");
     setReenviando(true);
-    if (MODO_PREVIA) {
+    if (!WHATSAPP_ATIVO) {
       setErro("Modo demonstração: digite qualquer 6 números para continuar.");
       setTimeout(() => setReenviando(false), 5000);
       return;
