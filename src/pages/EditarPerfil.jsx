@@ -1,4 +1,4 @@
-/* EDITARPERFIL v8 — contato minimalista: icone no campo, acao em pilula ao lado */
+/* EDITARPERFIL v9 — chaves vindas do flags.js */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -10,17 +10,23 @@ import Calendario from "../components/Calendario.jsx";
 import { useUserState } from "@/lib/userState";
 import { supabase } from "@/lib/supabase";
 import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
+import { WHATSAPP_ATIVO, EMAIL_VERIFICACAO_ATIVA } from "@/lib/flags";
 
 /* ===================================================================
-   EDITARPERFIL v8 — CONTATO MINIMALISTA
+   EDITARPERFIL v9 — CONTATO MINIMALISTA
 
-   O QUE MUDOU DA v7 PARA A v8 (pedido do Fernando, 16/09/2026):
-     - Sairam as duas linhas de texto abaixo dos campos
-       ("Verificacao pendente" / "Numero verificado" e os links).
-     - O icone de estado agora vive DENTRO do card, na ponta direita.
-     - A acao do e-mail virou um botao em pilula AO LADO do card.
-     - O card do WhatsApp inteiro e clicavel para trocar o numero —
-       sem link visivel, mas com a saida preservada.
+   MUDANCA DA v8 PARA A v9:
+     As duas chaves que ficavam aqui no topo sairam. Agora vem do
+     src/lib/flags.js, que e o unico lugar do app onde se liga ou
+     desliga a verificacao. Antes a mesma pergunta ("a Z-API esta no
+     ar?") era respondida aqui E no Cadastro.jsx — dava para trocar uma
+     e esquecer a outra, e o app ficava pela metade sem avisar.
+
+   COMO A TELA SE COMPORTA (vindo da v8):
+     - Sem texto explicativo abaixo dos campos.
+     - O icone de estado vive DENTRO do card, na ponta direita.
+     - A acao do e-mail e um botao em pilula AO LADO do card.
+     - O card do WhatsApp inteiro e clicavel para trocar o numero.
 
    O BOTAO CARREGA O ESTADO, EM VEZ DE UMA LEGENDA:
        "Verificar"  -> parado, pronto para enviar
@@ -42,40 +48,15 @@ import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
      campo travasse sempre, essa pessoa nunca conseguiria cadastrar o
      primeiro numero. Sem numero -> campo aberto.
 
-   AS DUAS CHAVES ABAIXO
-     Com false, tudo aparece montado mas as acoes avisam que a funcao
-     ainda nao esta disponivel.
-
-       VERIFICACAO_EMAIL_ATIVA
-         Ligar quando "Confirm email" for ATIVADO no painel do
-         Supabase (Authentication -> Providers -> Email). Com ele
-         desligado nao existe link para enviar.
-
-       VERIFICACAO_WHATSAPP_ATIVA
-         Ligar quando a Z-API voltar a funcionar. A infraestrutura ja
-         existe: as Edge Functions "enviar-codigo" e "verificar-codigo"
-         estao no projeto, e a segunda grava o numero em `perfis`
-         sozinha quando recebe um userId.
-
-     ATENCAO: o Cadastro.jsx tem a sua propria chave (MODO_PREVIA).
-     Ao ligar a Z-API, as DUAS precisam ser trocadas. Unificar as duas
-     num src/lib/flags.js e a proxima tarefa combinada.
-
    SELO DE VERIFICADO NO E-MAIL — CRITERIO (herdado da v5)
      A tela NAO le `email_confirmed_at`: com a confirmacao desligada
      o Supabase preenche esse campo sozinho e todo mundo aparecia como
      verificado. O criterio e a ORIGEM da conta:
        - veio do GOOGLE -> o Google ja validou, selo verde e verdade
        - veio por senha -> pendente, icone laranja
-     Quando VERIFICACAO_EMAIL_ATIVA virar true, revisar: com a
+     Quando EMAIL_VERIFICACAO_ATIVA virar true, revisar: com a
      confirmacao ligada, `email_confirmed_at` volta a ser confiavel.
    =================================================================== */
-
-/* Ligar quando "Confirm email" estiver ATIVO no painel do Supabase. */
-const VERIFICACAO_EMAIL_ATIVA = false;
-
-/* Ligar quando a Z-API voltar (ver MODO_PREVIA no Cadastro.jsx). */
-const VERIFICACAO_WHATSAPP_ATIVA = false;
 
 /* Segundos de espera entre um envio e o proximo. */
 const ESPERA_REENVIO = 60;
@@ -313,7 +294,7 @@ export default function EditarPerfil() {
       return;
     }
 
-    if (!VERIFICACAO_EMAIL_ATIVA) {
+    if (!EMAIL_VERIFICACAO_ATIVA) {
       setErroContato("A verificação por e-mail ainda não está disponível.");
       return;
     }
@@ -339,7 +320,7 @@ export default function EditarPerfil() {
 
   /* Troca de WhatsApp: o card travado inteiro leva para ca. */
   function alterarWhatsapp() {
-    if (!VERIFICACAO_WHATSAPP_ATIVA) {
+    if (!WHATSAPP_ATIVO) {
       setErroContato("A alteração de WhatsApp estará disponível em breve.");
       return;
     }
