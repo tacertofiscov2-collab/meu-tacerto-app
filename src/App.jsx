@@ -1,4 +1,5 @@
-﻿import { BrowserRouter, Routes, Route } from "react-router-dom";
+﻿/* APP v2 — rota /alterar-whatsapp registrada */
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
 import TransicaoTela from "./components/TransicaoTela.jsx";
@@ -24,6 +25,7 @@ import Preferencias from "./pages/Preferencias.jsx";
 import Faq from "./pages/Faq.jsx";
 import Velocimetro from "./pages/Velocimetro.jsx";
 import AlterarSenha from "./pages/AlterarSenha.jsx";
+import AlterarWhatsapp from "./pages/AlterarWhatsapp.jsx";
 import EditarPerfil from "./pages/EditarPerfil.jsx";
 import ResumoPerfil from "./pages/ResumoPerfil.jsx";
 import InformacoesFiscais from "./pages/InformacoesFiscais.jsx";
@@ -75,6 +77,7 @@ export default function App() {
           <Route path="/editar-perfil" element={<EditarPerfil />} />
           <Route path="/preferencias" element={<Preferencias />} />
           <Route path="/alterar-senha" element={<AlterarSenha />} />
+          <Route path="/alterar-whatsapp" element={<AlterarWhatsapp />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/termos" element={<Termos />} />

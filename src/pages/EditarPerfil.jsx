@@ -1,4 +1,4 @@
-/* EDITARPERFIL v9 — chaves vindas do flags.js */
+/* EDITARPERFIL v10 — card do WhatsApp leva a tela de troca */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -10,23 +10,25 @@ import Calendario from "../components/Calendario.jsx";
 import { useUserState } from "@/lib/userState";
 import { supabase } from "@/lib/supabase";
 import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
-import { WHATSAPP_ATIVO, EMAIL_VERIFICACAO_ATIVA } from "@/lib/flags";
+import { EMAIL_VERIFICACAO_ATIVA } from "@/lib/flags";
 
 /* ===================================================================
-   EDITARPERFIL v9 — CONTATO MINIMALISTA
+   EDITARPERFIL v10 — CONTATO MINIMALISTA
 
-   MUDANCA DA v8 PARA A v9:
-     As duas chaves que ficavam aqui no topo sairam. Agora vem do
-     src/lib/flags.js, que e o unico lugar do app onde se liga ou
-     desliga a verificacao. Antes a mesma pergunta ("a Z-API esta no
-     ar?") era respondida aqui E no Cadastro.jsx — dava para trocar uma
-     e esquecer a outra, e o app ficava pela metade sem avisar.
+   MUDANCA DA v9 PARA A v10:
+     O card travado do WhatsApp agora SEMPRE leva para a tela
+     /alterar-whatsapp, mesmo com a Z-API fora do ar. Antes ele mostrava
+     "disponivel em breve" — mas a tela de troca funciona em modo previa
+     como o resto do app, entao a mensagem so atrapalhava o teste.
+
+     Por isso o WHATSAPP_ATIVO saiu dos imports desta tela: quem decide
+     se o codigo e real ou simulado e a propria AlterarWhatsapp.jsx.
 
    COMO A TELA SE COMPORTA (vindo da v8):
      - Sem texto explicativo abaixo dos campos.
      - O icone de estado vive DENTRO do card, na ponta direita.
      - A acao do e-mail e um botao em pilula AO LADO do card.
-     - O card do WhatsApp inteiro e clicavel para trocar o numero.
+     - O card do WhatsApp inteiro e clicavel.
 
    O BOTAO CARREGA O ESTADO, EM VEZ DE UMA LEGENDA:
        "Verificar"  -> parado, pronto para enviar
@@ -46,7 +48,8 @@ import { WHATSAPP_ATIVO, EMAIL_VERIFICACAO_ATIVA } from "@/lib/flags";
    POR QUE O WHATSAPP SO TRAVA SE JA TIVER NUMERO:
      Quem entrou pelo Google pode nao ter informado WhatsApp. Se o
      campo travasse sempre, essa pessoa nunca conseguiria cadastrar o
-     primeiro numero. Sem numero -> campo aberto.
+     primeiro numero. Sem numero -> campo aberto, e o numero e gravado
+     pelo botao "Salvar alteracoes" como qualquer outro dado.
 
    SELO DE VERIFICADO NO E-MAIL — CRITERIO (herdado da v5)
      A tela NAO le `email_confirmed_at`: com a confirmacao desligada
@@ -318,12 +321,9 @@ export default function EditarPerfil() {
     }
   }
 
-  /* Troca de WhatsApp: o card travado inteiro leva para ca. */
+  /* O card travado do WhatsApp leva para a tela de troca, que pede a
+     senha antes de qualquer coisa. */
   function alterarWhatsapp() {
-    if (!WHATSAPP_ATIVO) {
-      setErroContato("A alteração de WhatsApp estará disponível em breve.");
-      return;
-    }
     navigate("/alterar-whatsapp");
   }
 
@@ -504,8 +504,8 @@ export default function EditarPerfil() {
             <Rotulo>WhatsApp</Rotulo>
 
             {whatsTravado ? (
-              /* TRAVADO: so o numero e o check. O card inteiro e o
-                 caminho para trocar — sem link ocupando espaco. */
+              /* TRAVADO: so o numero e o check. O card inteiro leva para
+                 a tela de troca, que pede a senha antes. */
               <button
                 onClick={alterarWhatsapp}
                 className="card-tacerto w-full rounded-2xl px-4 py-4 flex items-center gap-3 text-left active:opacity-75 transition"
