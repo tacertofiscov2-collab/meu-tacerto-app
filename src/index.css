@@ -1,3 +1,4 @@
+/* INDEX-CSS v3 — foco discreto, sem brilho verde nas barras */
 @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@1,700&display=swap');
 
 @tailwind base;
@@ -174,6 +175,32 @@ textarea,
   -webkit-overflow-scrolling: touch;
 }
 
+/* ===================================================================
+   ESPACO PARA O TECLADO (17/09/2026)
+
+   O PROBLEMA: no iPhone, tocar num campo na metade de baixo da tela
+   faz o teclado cobrir o que esta sendo digitado.
+
+   A CAUSA: o `.tela-rolavel` acima usa `height: 100dvh`, e o 100dvh
+   NAO ENCOLHE quando o teclado sobe (bug 6 do handoff). A area rolavel
+   mantem a altura cheia e quase nao sobra rolagem — medido no
+   aparelho: faltavam 101px para o campo aparecer, existiam 18px de
+   rolagem disponivel.
+
+   ESTA REGRA: `:focus-within` significa "quando algum campo dentro
+   deste elemento estiver em foco". Nesse momento o conteudo ganha meia
+   tela de espaco no fim, para o navegador ter para onde rolar.
+
+   ⚠️ AINDA NAO RESOLVE SOZINHA. Em 17/09/2026 o problema persistia em
+   quatro telas: senha do Cadastro, "como posso te chamar" do
+   Onboarding, EditarPerfil e ExcluirConta. A regra fica porque ajuda
+   e nao atrapalha, mas o tratamento definitivo sera feito tela a tela.
+   Ver o historico das tentativas em src/components/TecladoVisivel.jsx.
+   =================================================================== */
+.tela-rolavel:focus-within > .conteudo-rolavel {
+  padding-bottom: 55vh;
+}
+
 .min-h-screen { min-height: 100dvh !important; }
 .h-screen     { height: 100dvh !important; }
 
@@ -223,11 +250,39 @@ textarea,
   -webkit-backdrop-filter: none;
 }
 
+/* Borda verde fina ao focar — so para quem usa a classe. E o padrao
+   das telas de acesso (Cadastro, Login) e dos campos do perfil. */
 .campo-tacerto:focus,
 .campo-tacerto:focus-visible {
   outline: none !important;
   border-color: var(--primary) !important;
   box-shadow: 0 0 0 1px var(--primary) !important;
+}
+
+/* ===================================================================
+   FOCO DISCRETO EM TODO CAMPO (17/09/2026 — corrigido)
+
+   O QUE ESTA REGRA FAZ: tira o contorno AZUL que o navegador e o
+   Tailwind (`focus:ring-2` sem cor) desenham ao focar um campo. Era o
+   caso do textarea e do campo "EXCLUIR" na tela de excluir conta.
+
+   O QUE ELA NAO FAZ (de proposito): nao pinta nada de verde. A versao
+   anterior (v2) acrescentava `box-shadow` verde aqui, e isso pegou
+   TODAS as caixas do app — inclusive a do Dashboard e a do chat do
+   Fisco, que ja tinham estilo proprio e ficaram com um brilho verde
+   grosso em volta. Nao era o pedido: o verde deve aparecer so onde
+   antes nao havia nada ou havia azul, e como moldura fina.
+
+   QUEM QUER A BORDA VERDE usa a classe `.campo-tacerto` acima, que
+   continua fazendo exatamente isso.
+   =================================================================== */
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible {
+  outline: none !important;
 }
 
 .campo-tacerto:-webkit-autofill,

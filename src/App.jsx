@@ -1,7 +1,8 @@
-﻿/* APP v2 — rota /alterar-whatsapp registrada */
+﻿/* APP v3 — TecladoVisivel ligado para o app inteiro */
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
+import TecladoVisivel from "./components/TecladoVisivel.jsx";
 import TransicaoTela from "./components/TransicaoTela.jsx";
 import SplashScreen from "./components/SplashScreen.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
@@ -56,11 +57,31 @@ import AuthCallback from "./pages/AuthCallback.jsx";
    componente, funcionam bem e nao dependem de nada disto.
    =================================================================== */
 
+/* ===================================================================
+   TECLADOVISIVEL — POR QUE ESTA AQUI (17/09/2026)
+
+   No iPhone, tocar num campo na metade de baixo da tela fazia o
+   teclado cobrir justamente o que estava sendo digitado. Acontecia na
+   ExcluirConta (campo "EXCLUIR"), AlterarSenha, EditarPerfil, Lancar,
+   Historico e nas telas de AdicionarFaturamento — oito telas com o
+   mesmo defeito.
+
+   Em vez de corrigir uma por uma, o TecladoVisivel fica aqui e vale
+   para o app INTEIRO, inclusive para telas que ainda nao existem. Ele
+   escuta qualquer campo receber foco e, se estiver coberto, rola o
+   suficiente para aparecer. Se ja estiver visivel, nao faz nada — por
+   isso nao briga com o Cadastro, a AlterarWhatsapp e o Onboarding, que
+   tem tratamento proprio.
+
+   Nao desenha nada na tela. Ver src/components/TecladoVisivel.jsx.
+   =================================================================== */
+
 export default function App() {
   return (
     <BrowserRouter>
       <SplashScreen />
       <SwipeBack />
+      <TecladoVisivel />
       <TransicaoTela>
         <Routes>
           <Route path="/" element={<Welcome />} />
