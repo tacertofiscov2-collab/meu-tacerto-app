@@ -1,15 +1,41 @@
+/* SOBRE v2 — padrao de rolagem do Termos (bug 5) */
 import { useNavigate } from "react-router-dom";
 import { Gauge, CheckCircle2, Info } from "lucide-react";
 import { ArrowLeft } from "lucide-react";
 import Brand from "@/components/Brand";
 
 import BottomNav from "../components/BottomNav.jsx";
+
+/* ===================================================================
+   SOBRE v2 — ROLAGEM CORRIGIDA PARA O SAFARI DO IPHONE
+
+   O QUE ESTAVA ERRADO:
+     A tela usava `min-h-screen`, ou seja, quem rolava era a PAGINA
+     INTEIRA. No Safari do iPhone isso trava: o script do index.html
+     chama window.scrollTo(0,0) escutando visualViewport.resize — e
+     esse evento dispara tambem quando a barra de endereco encolhe ao
+     rolar. Resultado: a pagina era puxada de volta para o topo sozinha.
+
+   A CORRECAO (mesma do Termos.jsx, que e o modelo):
+     - a raiz vira `.tela-rolavel`, que fixa a altura na area visivel
+     - o conteudo vira `.conteudo-rolavel`, FILHO DIRETO da raiz, e e
+       ele quem rola por dentro
+     Com a pagina parada, o visualViewport.resize nao tem o que puxar.
+
+   ATENCAO AO MEXER: o `.conteudo-rolavel` precisa ser filho DIRETO do
+   `.tela-rolavel`. Se alguem enfiar uma div no meio, a rolagem quebra
+   de novo e o sintoma volta sem aviso.
+
+   O BottomNav fica FORA da area que rola, como irmao dela — e por isso
+   continua colado embaixo enquanto o texto passa por tras.
+   =================================================================== */
+
 export default function Sobre() {
   const navigate = useNavigate();
 
   return (
     <div
-      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
+      className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       <div className="px-4 pt-5 shrink-0">
@@ -24,7 +50,7 @@ export default function Sobre() {
       </div>
 
       <div
-        className="flex-1 px-6"
+        className="conteudo-rolavel hide-scrollbar px-6"
         style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
       >
         <div className="max-w-md mx-auto">
@@ -85,9 +111,3 @@ export default function Sobre() {
     </div>
   );
 }
-
-
-
-
-
-

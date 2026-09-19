@@ -1,9 +1,44 @@
+/* EXCLUIRCONTA v2 — um so elemento rola (bug 5) */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ArrowLeft, Check, Info } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
 import { supabase } from "@/lib/supabase";
+
+/* ===================================================================
+   EXCLUIRCONTA v2 — ROLAGEM ARRUMADA
+
+   O QUE ESTAVA ERRADO:
+     A tela misturava os dois padroes ao mesmo tempo — a raiz era
+     `min-h-screen` (entao a PAGINA rolava) e o miolo tinha
+     `overflow-y-auto` (entao o CONTEUDO tambem rolava). Dois elementos
+     disputando o mesmo gesto e o que dava a sensacao de travada: as
+     vezes o dedo movia um, as vezes o outro.
+
+     Junto vinha o bug 5: com a pagina rolavel, o script do index.html
+     chama window.scrollTo(0,0) escutando visualViewport.resize — e no
+     Safari do iPhone esse evento dispara tambem quando a barra de
+     endereco encolhe ao rolar, puxando a tela de volta ao topo.
+
+   A CORRECAO (mesma do Termos.jsx, que e o modelo):
+     - a raiz vira `.tela-rolavel`, que fixa a altura na area visivel
+     - o miolo vira `.conteudo-rolavel`, FILHO DIRETO da raiz, e e o
+       unico que rola
+     Com a pagina parada, o visualViewport.resize nao tem o que puxar.
+
+   POR QUE ESTA TELA NAO PODE SER FIXA:
+     A etapa 2 tem um textarea de 4 linhas e um campo de confirmacao.
+     Quando o teclado do iPhone sobe, ele come metade da altura — e com
+     a tela fixa o botao "Excluir conta definitivamente" ficaria fora
+     do alcance. O `.conteudo-rolavel` resolve os dois casos: quando o
+     conteudo cabe (etapa 1), nao aparece barra nenhuma e a tela se
+     comporta como fixa; quando nao cabe, rola.
+
+   ATENCAO AO MEXER: o `.conteudo-rolavel` precisa ser filho DIRETO do
+   `.tela-rolavel`. Se alguem enfiar uma div no meio, a rolagem quebra
+   de novo e o sintoma volta sem aviso.
+   =================================================================== */
 
 function Checkbox({ checked, onChange, ariaLabel }) {
   return (
@@ -106,10 +141,10 @@ export default function ExcluirConta() {
 
   return (
     <div
-      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
+      className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <header className="px-5 pt-6 pb-4 flex items-center gap-3">
+      <header className="px-5 pt-6 pb-4 flex items-center gap-3 shrink-0">
         <button
           onClick={voltar}
           aria-label="Voltar"
@@ -126,7 +161,10 @@ export default function ExcluirConta() {
         </h1>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-5 pb-8">
+      <div
+        className="conteudo-rolavel hide-scrollbar px-5"
+        style={{ paddingBottom: "calc(32px + env(safe-area-inset-bottom))" }}
+      >
         {etapa === 1 ? (
           <div className="space-y-5">
             <div className="space-y-2 pt-2">
