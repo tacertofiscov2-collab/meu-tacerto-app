@@ -1,22 +1,46 @@
-﻿import { useState } from "react";
+﻿/* TRANSICAOTELA v2 — altura acompanha o teclado (iOS) */
+import { useState } from "react";
 import { useLocation, useNavigationType } from "react-router-dom";
 
 /**
- * TransicaoTela â€” desliza a tela ao navegar.
+ * TransicaoTela — desliza a tela ao navegar.
  *
- * Envolve as <Routes /> e aplica uma classe de animaÃ§Ã£o
- * a cada mudanÃ§a de rota. Sem biblioteca externa: CSS puro.
+ * Envolve as <Routes /> e aplica uma classe de animação
+ * a cada mudança de rota. Sem biblioteca externa: CSS puro.
  *
- * - AvanÃ§ar (PUSH)  â†’ tela entra deslizando da direita
- * - Voltar (POP)    â†’ tela entra deslizando da esquerda
+ * - Avançar (PUSH)  → tela entra deslizando da direita
+ * - Voltar (POP)    → tela entra deslizando da esquerda
  *
  * A chave e a classe mudam SEMPRE no mesmo render. Se a classe
  * entrasse um frame depois, a tela nova apareceria no lugar final
- * e sÃ³ entÃ£o pularia pra trÃ¡s pra animar â€” que era a "vibrada".
+ * e só então pularia pra trás pra animar — que era a "vibrada".
  */
-/* Estas rotas jÃ¡ tÃªm o prÃ³prio gesto de transiÃ§Ã£o (framer-motion) e
-   nÃ£o devem passar pela animaÃ§Ã£o CSS daqui â€” se passassem, as duas
-   animaÃ§Ãµes rodariam juntas (uma por cima da outra) e ainda forÃ§ariam
+
+/* ===================================================================
+   ⚠️ A ALTURA DESTE CONTAINER SEGURAVA O BUG DO TECLADO (17/09/2026)
+
+   Este componente envolve TODAS as rotas. Ele tinha `height: 100%`,
+   e esse 100% se resolve contra a altura do pai — que nao encolhe
+   quando o teclado do iPhone sobe. Resultado: por mais que a tela de
+   dentro fosse ajustada, ela ficava presa numa moldura do tamanho da
+   tela cheia, e o campo continuava atras do teclado.
+
+   Foi por isso que a EditarPerfil e a ExcluirConta resistiram a
+   varias correcoes enquanto o Onboarding cedeu na primeira: as duas
+   primeiras estao na lista ROTAS_COM_VOLTAR_REAL abaixo e passam por
+   aqui com a chave fixa; o Onboarding nao esta.
+
+   A CORRECAO: `100dvh` em vez de `100%`. O dvh (dynamic viewport
+   height) acompanha a area realmente visivel — encolhe com o teclado
+   aberto e volta ao fechar.
+
+   NAO TROQUE DE VOLTA PARA 100% sem testar o teclado no iPhone nas
+   telas de Editar perfil e Excluir conta.
+   =================================================================== */
+
+/* Estas rotas já têm o próprio gesto de transição (framer-motion) e
+   não devem passar pela animação CSS daqui — se passassem, as duas
+   animações rodariam juntas (uma por cima da outra) e ainda forçariam
    um remount extra pela troca de key, causando a travadinha geral. */
 const ROTAS_DO_TRILHO = new Set(["/dashboard", "/perfil"]);
 
@@ -36,20 +60,20 @@ export default function TransicaoTela({ children }) {
   const location = useLocation();
   const tipoNav = useNavigationType(); // "PUSH" | "POP" | "REPLACE"
 
-  /* Nessas rotas, a chave Ã© sempre a mesma: assim o React nÃ£o
-     remonta nada ao trocar de tela, e nenhuma animaÃ§Ã£o daqui Ã©
-     disparada â€” quem cuida da transiÃ§Ã£o Ã© o AbasDeslizantes ou o
+  /* Nessas rotas, a chave é sempre a mesma: assim o React não
+     remonta nada ao trocar de tela, e nenhuma animação daqui é
+     disparada — quem cuida da transição é o AbasDeslizantes ou o
      TelaComVoltarReal, conforme o caso. */
   const semAnimacaoPropria = ROTAS_SEM_ANIMACAO_PROPRIA.has(location.pathname);
   const chaveAtual = semAnimacaoPropria
     ? "__sem_animacao__"
     : location.pathname + location.search;
 
-  // Estado inicial jÃ¡ com a rota atual: o primeiro carregamento nÃ£o anima.
+  // Estado inicial já com a rota atual: o primeiro carregamento não anima.
   const [estado, setEstado] = useState({ chave: chaveAtual, classe: "" });
 
   // Ajuste de estado durante o render: React refaz o render antes de
-  // pintar, entÃ£o chave e classe chegam juntas na tela. Sem frame solto.
+  // pintar, então chave e classe chegam juntas na tela. Sem frame solto.
   if (estado.chave !== chaveAtual) {
     setEstado({
       chave: chaveAtual,
@@ -58,8 +82,8 @@ export default function TransicaoTela({ children }) {
   }
 
   // Terminou de animar: solta a classe (e o willChange junto).
-  // A animaÃ§Ã£o usa fill "both", entÃ£o o ponto final Ã© igual ao estado
-  // natural do elemento â€” remover nÃ£o muda nada visualmente.
+  // A animação usa fill "both", então o ponto final é igual ao estado
+  // natural do elemento — remover não muda nada visualmente.
   function aoTerminarAnimacao(e) {
     if (e.target !== e.currentTarget) return;
     setEstado((anterior) => ({ ...anterior, classe: "" }));
@@ -73,7 +97,8 @@ export default function TransicaoTela({ children }) {
       className={estado.classe}
       onAnimationEnd={aoTerminarAnimacao}
       style={{
-        height: "100%",
+        /* 100dvh, nao 100% — ver o bloco no topo do arquivo. */
+        height: "100dvh",
         willChange: animando ? "transform, opacity" : "auto",
       }}
     >
@@ -81,6 +106,3 @@ export default function TransicaoTela({ children }) {
     </div>
   );
 }
-
-
-

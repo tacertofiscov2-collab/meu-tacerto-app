@@ -1,4 +1,4 @@
-/* ONBOARDING-VERIFICAR-SCROLL v3 */
+/* ONBOARDING v4 — steps com campo rolam e ancoram no topo */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import {
@@ -11,6 +11,39 @@ import { LIMITES_ANUAIS, limiteProporcional, LIMITE_NOME_INPUT } from "@/lib/fis
 import SeletorMesAno from "@/components/SeletorMesAno";
 import Valor from "@/components/Valor";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
+
+/* ===================================================================
+   ONBOARDING v4 — O TECLADO NAO COBRE MAIS OS CAMPOS (17/09/2026)
+
+   O PROBLEMA: no step 1 ("Como posso te chamar?") e no step 0
+   (WhatsApp), o teclado do iPhone subia e cobria o campo. No step
+   "verificar" (codigo de 6 digitos) isso NAO acontecia — funcionava
+   perfeito, com o conteudo subindo suave.
+
+   POR QUE A TELA DO CODIGO FUNCIONAVA E AS OUTRAS NAO:
+     A v3 tratava o step "verificar" como caso especial, com DUAS
+     diferencas que ninguem tinha ligado ao bug:
+
+       1) `overflowY: isVerificar ? "auto" : "hidden"`
+          So o step do codigo podia rolar. Nos outros, a raiz
+          `.tela-fixa` (overflow: hidden) travava tudo — nao havia como
+          trazer o campo de volta.
+
+       2) `justifyContent: isVerificar ? "flex-start" : "center"`
+          So o step do codigo ancorava no topo. Nos outros, o
+          `center` centralizava o bloco na altura CHEIA da tela (que
+          nao encolhe com o teclado, bug 6 do handoff), jogando metade
+          do conteudo para tras do teclado.
+
+     Era a combinacao dos dois que fazia aquele step dar certo.
+
+   A CORRECAO: o mesmo tratamento passa a valer para QUALQUER step com
+   campo de digitacao — o 0 (WhatsApp), o 1 (nome) e o "verificar".
+   Os steps 2 e 3 (escolhas por botao, sem teclado) continuam
+   centralizados e travados, como sempre foram.
+
+   Ver `temCampoDeTexto` abaixo: e a unica coisa que decide.
+   =================================================================== */
 
 const MESES = [
   "Janeiro", "Fevereiro", "Marco", "Abril", "Maio", "Junho",
@@ -188,6 +221,17 @@ export default function Onboarding() {
 
   const isVerificar = step === "verificar";
 
+  /* ⚠️ A LINHA QUE RESOLVE O BUG DO TECLADO.
+
+     Steps com campo de digitacao precisam rolar E ancorar no topo,
+     senao o teclado cobre o campo (ver o bloco no inicio do arquivo).
+     Antes so o "verificar" tinha esse tratamento; agora o 0 (WhatsApp)
+     e o 1 (nome) tambem.
+
+     Os steps 2 e 3 sao escolhas por botao — nao abrem teclado, entao
+     continuam centralizados e travados, como sempre. */
+  const temCampoDeTexto = step === 0 || step === 1 || isVerificar;
+
   return (
     <div
       className="tela-fixa w-full flex flex-col"
@@ -229,13 +273,18 @@ export default function Onboarding() {
 
       <div
         className="flex-1 min-h-0 flex flex-col px-6"
-        style={{ overflowY: isVerificar ? "auto" : "hidden", WebkitOverflowScrolling: "touch" }}
+        style={{
+          overflowY: temCampoDeTexto ? "auto" : "hidden",
+          WebkitOverflowScrolling: "touch",
+          /* Folga no fim para o teclado ter para onde empurrar. */
+          paddingBottom: temCampoDeTexto ? 320 : 0,
+        }}
       >
         <div
           className="max-w-sm w-full mx-auto flex-1 min-h-0 flex flex-col"
-          style={{ justifyContent: isVerificar ? "flex-start" : "center" }}
+          style={{ justifyContent: temCampoDeTexto ? "flex-start" : "center" }}
         >
-          <div className="flex justify-center mb-5 shrink-0" style={{ marginTop: isVerificar ? 24 : 0 }}>
+          <div className="flex justify-center mb-5 shrink-0" style={{ marginTop: temCampoDeTexto ? 24 : 0 }}>
             <Gauge size={48} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
           </div>
 

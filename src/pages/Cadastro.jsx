@@ -1,4 +1,4 @@
-/* CADASTRO v11 — chave do WhatsApp vinda do flags.js */
+/* CADASTRO v12 — teclado nao cobre mais os campos */
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useRef } from "react";
 import { ArrowLeft, Eye, EyeOff, Mail, Gauge, MailCheck } from "lucide-react";
@@ -10,35 +10,59 @@ import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 import { WHATSAPP_ATIVO } from "@/lib/flags";
 
 /* ===================================================================
-   ⚙️ O INTERRUPTOR SAIU DAQUI — AGORA FICA NO src/lib/flags.js
+   CADASTRO v12 — O TECLADO NAO COBRE MAIS OS CAMPOS (17/09/2026)
+
+   O PROBLEMA: ao tocar no campo de senha, o teclado do iPhone subia e
+   cobria o campo. A pessoa nao via o que estava digitando.
+
+   A CAUSA, QUE ERA DIFERENTE DAS OUTRAS TELAS:
+     O miolo usava `flex-1 flex flex-col justify-center` dentro de um
+     `min-h-screen`. O `justify-center` centraliza na vertical — e como
+     o `min-h-screen` NAO ENCOLHE com o teclado (bug 6 do handoff), o
+     conteudo ficava ancorado no meio da tela CHEIA, com metade atras
+     do teclado. E como nada rolava, nao havia como trazer de volta.
+
+   A CORRECAO:
+     - a raiz vira `.tela-rolavel` (altura da area visivel, sem rolar)
+     - o miolo vira `.conteudo-rolavel`, FILHO DIRETO dela, e e ele que
+       rola por dentro
+     - a centralizacao deixa de ser `justify-center` e passa a ser
+       `margin: auto` no bloco interno: quando o conteudo cabe, ele
+       fica no meio como antes; quando nao cabe, ele encosta no topo e
+       a rolagem funciona
+
+     Somando a regra `:focus-within` do index.css (que da meia tela de
+     espaco no fim enquanto um campo esta em foco), o Safari tem para
+     onde rolar e leva o campo para cima sozinho.
+
+   ATENCAO AO MEXER: o `.conteudo-rolavel` precisa ser filho DIRETO do
+   `.tela-rolavel`. Se alguem enfiar uma div no meio, quebra tudo de
+   novo e o sintoma volta sem aviso.
+
+   A tela de "confirme seu e-mail" (aguardandoConfirmacao) recebeu o
+   mesmo tratamento, por consistencia — ela nao tem campo, mas pode vir
+   a ter.
+   =================================================================== */
+
+/* ===================================================================
+   ⚙️ O INTERRUPTOR FICA NO src/lib/flags.js
 
    Antes esta tela tinha o seu proprio MODO_PREVIA, e o EditarPerfil
    tinha outra chave para a MESMA pergunta: a Z-API esta no ar? Dava
    para trocar uma e esquecer a outra — e o app ficava pela metade sem
    avisar nada.
 
-   Agora e uma chave so, WHATSAPP_ATIVO, no flags.js. Repare que ela le
-   ao CONTRARIO do antigo MODO_PREVIA:
+   Agora e uma chave so, WHATSAPP_ATIVO. Repare que ela le ao
+   CONTRARIO do antigo MODO_PREVIA:
 
        WHATSAPP_ATIVO = false   ->  modo previa (era MODO_PREVIA = true)
-                                    A tela do codigo aparece igual, mas
-                                    nada e enviado pela Z-API e qualquer
-                                    codigo de 6 numeros e aceito.
-
        WHATSAPP_ATIVO = true    ->  modo real (era MODO_PREVIA = false)
-                                    O codigo vai de verdade e so o
-                                    codigo certo passa.
 
    Por isso, no codigo abaixo, onde antes se lia `if (MODO_PREVIA)`
-   agora se le `if (!WHATSAPP_ATIVO)`. O comportamento e o mesmo.
-
-   COMO LIGAR A Z-API: abra src/lib/flags.js e troque false por true na
-   linha do WHATSAPP_ATIVO. Vale para esta tela e para o EditarPerfil.
+   agora se le `if (!WHATSAPP_ATIVO)`.
    =================================================================== */
 
 /* ===================================================================
-   CADASTRO v7 — setinha volta para a Welcome (ou para o Perfil)
-
    CADASTRO EM DUAS ETAPAS
 
    1) WHATSAPP  — o caminho principal. O atendimento do TaCerto acontece
@@ -46,15 +70,9 @@ import { WHATSAPP_ATIVO } from "@/lib/flags";
    2) E-MAIL    — e-mail + senha, que é o que o Supabase usa de fato para
       autenticar. O WhatsApp coletado na etapa 1 é salvo no perfil.
 
-   VERIFICACAO DE WHATSAPP — DE VERDADE (30/08/2026)
+   VERIFICACAO DE WHATSAPP (30/08/2026)
    O codigo e enviado pela Edge Function "enviar-codigo" (que chama a
    Z-API) e validado pela Edge Function "verificar-codigo".
-
-   NOVO NA v7 — TECLADO NAO COBRE MAIS O BOTAO (so na tela do codigo):
-   Quando a pessoa toca nos 6 quadradinhos, o teclado do iPhone sobe e
-   cobria o botao "Validar codigo". Agora, ao focar o campo, a tela rola
-   sozinha (scrollIntoView) para deixar o botao logo acima do teclado.
-   Isso vale SO para a tela de codigo, como pedido.
 
    COMO O WHATSAPP E SALVO — SEM DUPLICAR:
    - Caminho A (comeca pelo WhatsApp): quando a pessoa verifica o codigo,
@@ -153,6 +171,11 @@ export default function Cadastro() {
     border: "1px solid rgba(255,255,255,0.22)",
   };
 
+  /* Centraliza na vertical quando o conteudo cabe, e deixa rolar quando
+     nao cabe. Substitui o `justify-center`, que ancorava o bloco no meio
+     da tela cheia e escondia os campos atras do teclado. */
+  const centralizadoOuRolavel = { margin: "auto 0" };
+
   /* Salva o WhatsApp no perfil. Silencioso de propósito: se a coluna
      ainda não existir no banco, o cadastro não pode quebrar por causa
      disso — o número simplesmente não é gravado.
@@ -212,7 +235,7 @@ export default function Cadastro() {
   }
 
   /* ===================================================================
-     VERIFICAÇÃO DO WHATSAPP — AGORA DE VERDADE
+     VERIFICAÇÃO DO WHATSAPP
 
      O codigo foi enviado pela Edge Function "enviar-codigo". Aqui a gente
      chama a Edge Function "verificar-codigo" para conferir. Ela devolve
@@ -402,7 +425,7 @@ export default function Cadastro() {
   if (aguardandoConfirmacao) {
     return (
       <div
-        className="min-h-screen min-h-[100dvh] w-full flex flex-col"
+        className="tela-rolavel w-full flex flex-col"
         style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
       >
         <div className="px-4 pt-5 shrink-0">
@@ -416,8 +439,11 @@ export default function Cadastro() {
           </button>
         </div>
 
-        <div className="flex-1 flex flex-col justify-center px-6 pb-6">
-          <div className="max-w-sm w-full mx-auto text-center">
+        <div className="conteudo-rolavel hide-scrollbar flex flex-col px-6 pb-6">
+          <div
+            className="max-w-sm w-full mx-auto text-center"
+            style={centralizadoOuRolavel}
+          >
             <div className="flex justify-center mb-5">
               <span
                 className="w-20 h-20 rounded-full flex items-center justify-center"
@@ -456,7 +482,7 @@ export default function Cadastro() {
 
   return (
     <div
-      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
+      className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       <div className="px-4 pt-5 shrink-0">
@@ -482,8 +508,10 @@ export default function Cadastro() {
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center px-6 pb-6">
-        <div className="max-w-sm w-full mx-auto">
+      {/* O miolo rola por dentro; o bloco abaixo fica centralizado por
+          `margin: auto 0` enquanto couber. */}
+      <div className="conteudo-rolavel hide-scrollbar flex flex-col px-6 pb-6">
+        <div className="max-w-sm w-full mx-auto" style={centralizadoOuRolavel}>
           <div className="flex justify-center mb-7">
             <Gauge size={44} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
           </div>

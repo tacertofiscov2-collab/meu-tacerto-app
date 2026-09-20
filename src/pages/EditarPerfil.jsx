@@ -1,4 +1,4 @@
-/* EDITARPERFIL v10 — card do WhatsApp leva a tela de troca */
+/* EDITARPERFIL v11 — folga no fim para o teclado */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -13,16 +13,23 @@ import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 import { EMAIL_VERIFICACAO_ATIVA } from "@/lib/flags";
 
 /* ===================================================================
-   EDITARPERFIL v10 — CONTATO MINIMALISTA
+   EDITARPERFIL v11 — CONTATO MINIMALISTA
 
-   MUDANCA DA v9 PARA A v10:
-     O card travado do WhatsApp agora SEMPRE leva para a tela
-     /alterar-whatsapp, mesmo com a Z-API fora do ar. Antes ele mostrava
-     "disponivel em breve" — mas a tela de troca funciona em modo previa
-     como o resto do app, entao a mensagem so atrapalhava o teste.
+   MUDANCA DA v10 PARA A v11 (17/09/2026):
+     FOLGA_TECLADO no fim do conteudo. A tela ja rolava direito, mas o
+     espaco no fim era de apenas 24px — entao, quando a pessoa tocava
+     no campo de e-mail (que fica na metade de baixo), o teclado subia
+     e nao havia para onde empurrar o conteudo. O campo ficava coberto.
 
-     Por isso o WHATSAPP_ATIVO saiu dos imports desta tela: quem decide
-     se o codigo e real ou simulado e a propria AlterarWhatsapp.jsx.
+     Agora sobram 340px no fim, mais que a altura de qualquer teclado
+     de iPhone. E a mesma solucao aplicada no Onboarding v4 e na
+     ExcluirConta v3.
+
+     POR QUE A FOLGA FICA SEMPRE, E NAO SO COM O TECLADO ABERTO:
+     a regra `:focus-within` do index.css da meia tela de espaco
+     enquanto um campo esta em foco, mas ela some quando o foco sai —
+     e no meio da transicao o conteudo pulava. Folga fixa e mais
+     estavel, e o unico custo e um pouco de vazio no fim da rolagem.
 
    COMO A TELA SE COMPORTA (vindo da v8):
      - Sem texto explicativo abaixo dos campos.
@@ -63,6 +70,10 @@ import { EMAIL_VERIFICACAO_ATIVA } from "@/lib/flags";
 
 /* Segundos de espera entre um envio e o proximo. */
 const ESPERA_REENVIO = 60;
+
+/* Folga no fim do conteudo, para o teclado ter para onde empurrar.
+   Maior que a altura de qualquer teclado de iPhone. */
+const FOLGA_TECLADO = 340;
 
 // ---------------------------------------------------------------------
 // Espaçamentos ajustáveis desta tela.
@@ -387,9 +398,13 @@ export default function EditarPerfil() {
         </h1>
       </header>
 
+      {/* A folga no fim e o que permite ao teclado empurrar o conteudo
+          sem cobrir o campo. Ver FOLGA_TECLADO no topo do arquivo. */}
       <div
         className="conteudo-rolavel hide-scrollbar px-5"
-        style={{ paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
+        style={{
+          paddingBottom: `calc(${FOLGA_TECLADO}px + env(safe-area-inset-bottom))`,
+        }}
       >
         {/* Avatar: só a inicial. A opção de foto foi retirada no piloto
             (será reativada quando o app for empacotado como nativo). */}

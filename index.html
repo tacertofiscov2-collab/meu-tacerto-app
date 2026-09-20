@@ -6,8 +6,11 @@
       interactive-widget=resizes-content: faz o navegador REDIMENSIONAR o
       conteudo quando o teclado virtual abre/fecha, em vez de so empurrar a
       tela. Sem isso, depois de digitar num campo a tela fica deslocada e
-      nao volta sozinha ao fechar o teclado. Funciona no Chrome/Android;
-      no Safari/iOS quem resolve e o script abaixo.
+      nao volta sozinha ao fechar o teclado. Funciona no Chrome/Android.
+
+      17/09/2026: foi removido por um teste e devolvido em seguida — a
+      remocao nao mudou nada no iPhone, entao nao era a causa do bug do
+      teclado. A causa era o script abaixo.
     -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
     <!--
@@ -26,44 +29,72 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-      // Reposiciona a janela no topo quando o teclado do Safari/iOS
-      // fecha. Sem isso a tela fica deslocada e nao volta sozinha
-      // (bug descrito na Parte 7 do handoff). Dispara 3 vezes com
-      // atrasos diferentes porque a animacao do teclado no iOS
-      // demora e um unico disparo pega o viewport no meio do
-      // movimento, antes dele assentar.
+      // =================================================================
+      // REPOSICIONA A JANELA QUANDO O TECLADO DO iOS FECHA
       //
-      // So age quando o teclado esta FECHANDO (viewport voltou perto
-      // do tamanho cheio) - se disparasse tambem ao ABRIR, brigava
-      // com o proprio navegador durante a animacao de abertura e
-      // deixava o teclado nascer por cima de caixas de texto que
-      // focam sozinhas ao aparecer (ex.: a caixa "Pergunte ao Fisco").
+      // ⚠️ A VERSAO ANTIGA DESTE SCRIPT ERA A CAUSA DO BUG DO TECLADO
+      //    (achado em 17/09/2026)
       //
-      // ATENCAO: este scrollTo tambem dispara quando a barra de
-      // endereco do Safari encolhe ao rolar. Por isso as telas longas
-      // devem rolar num container interno (.tela-rolavel +
-      // .conteudo-rolavel do index.css), e nao na pagina inteira -
-      // era o que travava a rolagem da tela de Termos.
+      // O SINTOMA, NAS PALAVRAS DO FERNANDO: "clico na barra, o teclado
+      // abre, fica tudo certo — porem poucos segundos depois ele se mexe
+      // sozinho". O campo, que estava visivel, escorregava para tras do
+      // teclado.
+      //
+      // POR QUE ACONTECIA: a versao antiga disparava scrollTo(0,0) tres
+      // vezes (50ms, 150ms e 350ms) toda vez que o viewport mudava de
+      // tamanho — inclusive ao ABRIR o teclado. A trava `tecladoFechou()`
+      // usava uma folga de apenas 60px, e nos primeiros milissegundos da
+      // animacao o teclado ainda nao tinha subido o bastante: a funcao
+      // respondia "fechado", o scrollTo disparava, e a tela voltava ao
+      // topo desfazendo a rolagem que o Safari tinha acabado de fazer.
+      //
+      // Foram seis tentativas de corrigir isso pelo CSS e pelo JavaScript
+      // do app (ver o historico em src/components/TecladoVisivel.jsx e a
+      // regra :focus-within no src/index.css) — todas inuteis, porque
+      // este script desfazia por cima.
+      //
+      // O QUE MUDOU:
+      //   1) a folga subiu de 60px para 140px. Abaixo disso nao e
+      //      teclado, e a barra de endereco do Safari encolhendo.
+      //   2) so age depois que o viewport ASSENTA: o timer e reagendado
+      //      a cada disparo, entao a acao so acontece 250ms depois da
+      //      ULTIMA mudanca — com a animacao do teclado ja terminada.
+      //   3) o focusout passa pela mesma espera, em vez de disparar tres
+      //      vezes as cegas.
+      //
+      // ATENCAO: este scrollTo tambem dispara quando a barra de endereco
+      // do Safari encolhe ao rolar. Por isso as telas longas devem rolar
+      // num container interno (.tela-rolavel + .conteudo-rolavel do
+      // index.css), e nao na pagina inteira — era o que travava a
+      // rolagem da tela de Termos (bug 5 do handoff).
+      // =================================================================
       (function () {
+        var ESPERA_ASSENTAR = 250;  // ms sem mudanca antes de agir
+        var FOLGA_TECLADO = 140;    // abaixo disso nao e teclado
+        var timer = null;
+
         function voltarParaOTopo() {
           window.scrollTo(0, 0);
         }
+
         function tecladoFechou() {
           if (!window.visualViewport) return true;
-          return window.visualViewport.height >= window.innerHeight - 60;
+          return window.visualViewport.height >= window.innerHeight - FOLGA_TECLADO;
         }
-        document.addEventListener("focusout", function () {
-          setTimeout(function () { if (tecladoFechou()) voltarParaOTopo(); }, 50);
-          setTimeout(function () { if (tecladoFechou()) voltarParaOTopo(); }, 150);
-          setTimeout(function () { if (tecladoFechou()) voltarParaOTopo(); }, 350);
-        });
+
+        // So volta ao topo se, depois de tudo assentado, o teclado
+        // estiver mesmo fechado.
+        function agendarVerificacao() {
+          clearTimeout(timer);
+          timer = setTimeout(function () {
+            if (tecladoFechou()) voltarParaOTopo();
+          }, ESPERA_ASSENTAR);
+        }
+
+        document.addEventListener("focusout", agendarVerificacao);
+
         if (window.visualViewport) {
-          window.visualViewport.addEventListener("resize", function () {
-            if (!tecladoFechou()) return;
-            setTimeout(voltarParaOTopo, 50);
-            setTimeout(voltarParaOTopo, 150);
-            setTimeout(voltarParaOTopo, 350);
-          });
+          window.visualViewport.addEventListener("resize", agendarVerificacao);
         }
       })();
     </script>
