@@ -1,16 +1,23 @@
+/* OPENFINANCE v2 — buscarTransacoes chama a Edge Function pluggy */
 import { supabase } from "@/lib/supabase";
 
 /* ===================================================================
    OPEN FINANCE — a camada que traz o que caiu na conta
 
-   COMO ESTE ARQUIVO FUNCIONA HOJE
-   Ainda NAO fala com o Pluggy de verdade. Enquanto a conta nao é
-   ativada (sao 14 dias de teste, entao so ligamos quando o app
-   estiver pronto), ele devolve dados FALSOS — de proposito
-   bagunçados, do jeito que extrato real vem.
+   COMO ESTE ARQUIVO FUNCIONA HOJE (24/09/2026)
+   Com PLUGGY_ATIVO = true, `buscarTransacoes` chama a Edge Function
+   `pluggy` (supabase/functions/pluggy), que busca na Pluggy as
+   ENTRADAS desde 1º de janeiro e devolve no mesmo formato de
+   TRANSACOES_FALSAS. A chave da Pluggy fica no servidor, nunca aqui.
+   Hoje a conta Pluggy esta no SANDBOX (gratis e sem prazo): os bancos
+   sao de teste.
 
-   Quando for ligar o Pluggy, so a funcao `buscarTransacoes` muda.
-   Todo o resto — classificacao, regras, gravacao — continua igual.
+   Com PLUGGY_ATIVO = false volta aos dados FALSOS — de proposito
+   bagunçados, do jeito que extrato real vem. Util para mexer em tela
+   sem depender da Pluggy.
+
+   Todo o resto — classificacao, regras, gravacao — nao depende de
+   onde a lista vem.
 
    O CAMINHO DE UMA ENTRADA
      1. cai na conta          -> tabela `entradas`, status 'pendente'
@@ -26,8 +33,9 @@ import { supabase } from "@/lib/supabase";
    publico do app — se somar tudo, o velocimetro mente.
    =================================================================== */
 
-/* Liga isto quando a conta do Pluggy estiver ativa. */
-export const PLUGGY_ATIVO = false;
+/* true  = fala com a Pluggy de verdade (via Edge Function `pluggy`).
+   false = devolve os dados falsos abaixo. */
+export const PLUGGY_ATIVO = true;
 
 /* -------------------------------------------------------------------
    DADOS FALSOS
@@ -124,23 +132,40 @@ export function nomeParaDescricao(nome) {
 /* -------------------------------------------------------------------
    BUSCAR TRANSACOES
 
-   É ESTA a unica funcao que muda quando o Pluggy entrar. Ela devolve
-   uma lista no formato de cima; de onde vem a lista, o resto do app
-   nao precisa saber.
+   É a unica funcao que sabe DE ONDE vem a lista. Ela devolve sempre o
+   formato de TRANSACOES_FALSAS; o resto do app nao precisa saber se
+   veio da Pluggy ou dos dados falsos.
+
+   `conexaoId` é o `id` da linha em `conexoes_bancarias` (NAO o
+   pluggy_item_id). A Edge Function confere se a conexao é do usuario
+   logado — no nosso banco e na propria Pluggy — antes de devolver.
+
+   ⚠️ Nem toda entrada real traz o documento do pagador (deposito,
+   algumas TEDs, creditos de sistema). Nesses casos pagadorNome e
+   pagadorDocumento vem vazios, e o aprendizado por documento nao se
+   aplica — o Fisco pergunta uma a uma.
    ------------------------------------------------------------------- */
-export async function buscarTransacoes(/* conexaoId */) {
+export async function buscarTransacoes(conexaoId) {
   if (!PLUGGY_ATIVO) {
     // pequeno atraso, para a tela mostrar o "carregando" de verdade
     await new Promise((r) => setTimeout(r, 400));
     return TRANSACOES_FALSAS;
   }
 
-  // TODO quando ativar o Pluggy:
-  //   - chamar a Edge Function do Supabase (a chave do Pluggy NUNCA
-  //     pode ficar no app: ele roda no navegador e qualquer um le)
-  //   - a Edge Function chama GET /transactions do Pluggy
-  //   - devolver no mesmo formato de TRANSACOES_FALSAS
-  return [];
+  // Sem conexao nao ha o que buscar — e nunca cai nos dados falsos
+  if (!conexaoId) return [];
+
+  const { data, error } = await supabase.functions.invoke("pluggy", {
+    body: { acao: "transacoes", conexaoId },
+  });
+
+  if (error || data?.error) {
+    throw new Error(
+      (data && data.error) || "Não foi possível buscar as entradas do banco.",
+    );
+  }
+
+  return data?.transacoes || [];
 }
 
 /* -------------------------------------------------------------------
@@ -446,7 +471,9 @@ export async function salvarConexao(userId, { itemId, instituicao, numeroConta }
   return data;
 }
 
-/* Conexão falsa, para desenvolver a tela sem o Pluggy ativo. */
+/* Conexão falsa, para desenvolver a tela sem o Pluggy ativo.
+   ⚠️ Só faz sentido com PLUGGY_ATIVO = false: com a Pluggy ligada, a
+   Edge Function recusa este item (ele nao existe na Pluggy). */
 export async function conectarBancoFalso(userId) {
   return salvarConexao(userId, {
     itemId: "item-falso-001",
