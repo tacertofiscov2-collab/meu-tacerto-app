@@ -1,5 +1,5 @@
 // Edge Function: pluggy
-// PLUGGY v2 — tarefa 1: Connect Token | tarefa 2: buscar as entradas do ano
+// PLUGGY v3 — tarefa 1: Connect Token | tarefa 2: buscar as entradas do ano (/v2/transactions)
 // As chaves ficam nos Secrets do Supabase: PLUGGY_CLIENT_ID e PLUGGY_CLIENT_SECRET
 // O usuário é descoberto pelo login — nunca aceitar userId vindo de fora.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -10,6 +10,9 @@ const CORS = {
 };
 
 const PLUGGY_API = "https://api.pluggy.ai";
+
+// Trava de segurança contra laço infinito na paginação (500 por página)
+const MAX_PAGINAS_POR_CONTA = 50;
 
 function responder(corpo: unknown, status = 200) {
   return new Response(JSON.stringify(corpo), {
@@ -52,14 +55,12 @@ async function pluggyGet(caminho: string, apiKey: string) {
   return await resp.json();
 }
 
-// 1º de janeiro do ano atual, no horário de Brasília -> "2026-01-01"
-// O limite do MEI é anual, então o velocímetro precisa do ano inteiro.
-function inicioDoAno(): string {
-  const ano = new Intl.DateTimeFormat("en", {
+// Ano atual no horário de Brasília
+function anoAtual(): string {
+  return new Intl.DateTimeFormat("en", {
     timeZone: "America/Sao_Paulo",
     year: "numeric",
   }).format(new Date());
-  return `${ano}-01-01`;
 }
 
 // Transação da Pluggy -> formato que o openfinance.js espera
@@ -139,6 +140,8 @@ Deno.serve(async (req) => {
     // ---------------------------------------------------------------
     // TAREFA 2: buscar as entradas do ano de uma conexão
     // Só ENTRADAS (CREDIT). Saídas ficam para o módulo de despesas.
+    // Usa GET /v2/transactions (paginação por cursor): o endereço
+    // antigo GET /transactions foi aposentado pela Pluggy (410).
     // ---------------------------------------------------------------
     if (acao === "transacoes") {
       const conexaoId = corpo?.conexaoId;
@@ -171,7 +174,11 @@ Deno.serve(async (req) => {
         return responder({ error: "Conexão não encontrada." }, 404);
       }
 
-      const desde = inicioDoAno();
+      // 1º de janeiro, meia-noite em Brasília (= 03:00 em UTC)
+      const ano = anoAtual();
+      const desde = `${ano}-01-01`;
+      const desdeISO = `${ano}-01-01T03:00:00.000Z`;
+
       const contas = await pluggyGet(`/accounts?itemId=${conexao.pluggy_item_id}`, apiKey);
       const entradas: unknown[] = [];
 
@@ -179,14 +186,13 @@ Deno.serve(async (req) => {
         // Cartão de crédito fica de fora — só conta corrente/poupança
         if (conta.type !== "BANK") continue;
 
-        let pagina = 1;
-        let totalPaginas = 1;
+        let caminho: string | null =
+          `/v2/transactions?accountId=${conta.id}&dateFrom=${encodeURIComponent(desdeISO)}`;
+        let paginas = 0;
 
-        do {
-          const lote = await pluggyGet(
-            `/transactions?accountId=${conta.id}&from=${desde}&pageSize=500&page=${pagina}`,
-            apiKey,
-          );
+        while (caminho && paginas < MAX_PAGINAS_POR_CONTA) {
+          const lote = await pluggyGet(caminho, apiKey);
+          paginas++;
 
           for (const t of lote.results ?? []) {
             // Só entradas, e só as já confirmadas pelo banco
@@ -195,9 +201,12 @@ Deno.serve(async (req) => {
             }
           }
 
-          totalPaginas = lote.totalPages ?? 1;
-          pagina++;
-        } while (pagina <= totalPaginas);
+          // `next` já vem pronto para anexar ao endereço (ex.: "?accountId=...&after=...")
+          const next = lote.next;
+          caminho = next
+            ? `/v2/transactions${String(next).startsWith("?") ? next : `?${next}`}`
+            : null;
+        }
       }
 
       return responder({ transacoes: entradas, desde });

@@ -1,4 +1,4 @@
-﻿/* APP v3 — TecladoVisivel ligado para o app inteiro */
+﻿/* APP v4 — rota /conectar-banco (Open Finance) */
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
@@ -27,6 +27,7 @@ import Faq from "./pages/Faq.jsx";
 import Velocimetro from "./pages/Velocimetro.jsx";
 import AlterarSenha from "./pages/AlterarSenha.jsx";
 import AlterarWhatsapp from "./pages/AlterarWhatsapp.jsx";
+import ConectarBanco from "./pages/ConectarBanco.jsx";
 import EditarPerfil from "./pages/EditarPerfil.jsx";
 import ResumoPerfil from "./pages/ResumoPerfil.jsx";
 import InformacoesFiscais from "./pages/InformacoesFiscais.jsx";
@@ -99,6 +100,7 @@ export default function App() {
           <Route path="/preferencias" element={<Preferencias />} />
           <Route path="/alterar-senha" element={<AlterarSenha />} />
           <Route path="/alterar-whatsapp" element={<AlterarWhatsapp />} />
+          <Route path="/conectar-banco" element={<ConectarBanco />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/termos" element={<Termos />} />
