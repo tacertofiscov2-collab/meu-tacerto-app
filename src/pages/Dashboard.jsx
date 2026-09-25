@@ -1,7 +1,8 @@
-﻿import { useNavigate } from "react-router-dom";
+﻿/* DASHBOARD v4 — sino trocado pelo botao do banco (Open Finance) + sync ao abrir */
+import { useNavigate } from "react-router-dom";
 import { useRef, useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Bell, Gauge, TrendingUp, ChevronRight, Receipt, Send, X, Mic, Image as ImageIcon, Camera, FileText, Sparkles, MessageCircleQuestion } from "lucide-react";
+import { Landmark, Gauge, TrendingUp, ChevronRight, Receipt, Send, X, Mic, Image as ImageIcon, Camera, FileText, Sparkles, MessageCircleQuestion } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
@@ -10,6 +11,8 @@ import {
   LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO, FAIXAS_ORDEM, FAIXA_RANGE_LABEL,
   truncarNome,
 } from "@/lib/fiscal";
+import { supabase } from "@/lib/supabase";
+import { listarConexoes, listarPendentes, sincronizar } from "@/lib/openfinance";
 /* DASHBOARD v3 — cabecalho no painel de perguntas + limpeza do chat morto.
 
    1) O painel de perguntas abria com um vazio grande no topo (o espaco
@@ -1197,6 +1200,127 @@ function CaixaFiscoFlutuante({ onFechar, onEnviarPrimeira }) {
   );
 }
 
+/* ===================================================================
+   BOTAO DO BANCO — no lugar do sino (decidido 24/09/2026)
+
+   A notificacao saiu: aviso importante vai pelo WhatsApp. O canto de
+   cima virou o painel do banco, que é uma das funcoes principais.
+
+   ESTADOS
+     - sem banco conectado  -> pontinho verde brilhando -> /conectar-banco
+     - entradas esperando   -> bolinha verde com o numero -> conferencia
+                               (hoje /lancar, onde mora a faixa
+                               PendenciasEntradas; quando a conferencia
+                               agrupada por pagador existir, vai pra la)
+     - tudo em dia          -> icone limpo -> /conectar-banco (lista)
+
+   SINCRONIZA AO ABRIR O APP
+   Busca as entradas novas de todos os bancos conectados. No maximo uma
+   vez a cada 30 minutos enquanto o app esta aberto (a variavel abaixo
+   zera quando o app recarrega), para nao chamar a Pluggy toda vez que
+   a pessoa volta ao inicio. Primeiro mostra o numero que ja sabe,
+   depois atualiza se chegou algo.
+   =================================================================== */
+const INTERVALO_SYNC_MS = 30 * 60 * 1000;
+let ultimaSincronizacao = 0;
+
+function BotaoBanco() {
+  const navigate = useNavigate();
+  const [estado, setEstado] = useState({
+    carregado: false,
+    temBanco: false,
+    pendentes: 0,
+  });
+
+  useEffect(() => {
+    let ativo = true;
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        const user = data?.user;
+        if (!user) return;
+
+        const conexoes = await listarConexoes(user.id);
+        const antes = await listarPendentes(user.id);
+        if (!ativo) return;
+        setEstado({
+          carregado: true,
+          temBanco: conexoes.length > 0,
+          pendentes: antes.length,
+        });
+
+        // Sincroniza ao abrir o app (no maximo 1x a cada 30 min)
+        if (conexoes.length && Date.now() - ultimaSincronizacao > INTERVALO_SYNC_MS) {
+          ultimaSincronizacao = Date.now();
+          await Promise.allSettled(conexoes.map((c) => sincronizar(user.id, c.id)));
+          const depois = await listarPendentes(user.id);
+          if (ativo) setEstado((e) => ({ ...e, pendentes: depois.length }));
+        }
+      } catch {
+        /* sem rede ou sem login — o botao fica no estado neutro */
+        if (ativo) setEstado((e) => ({ ...e, carregado: true }));
+      }
+    })();
+    return () => { ativo = false; };
+  }, []);
+
+  function aoTocar() {
+    if (estado.pendentes > 0) return navigate("/lancar", DE_DASHBOARD);
+    navigate("/conectar-banco", DE_DASHBOARD);
+  }
+
+  const mostrarNumero = estado.carregado && estado.pendentes > 0;
+  const mostrarConvite = estado.carregado && !estado.temBanco && !mostrarNumero;
+
+  return (
+    <button
+      onClick={aoTocar}
+      aria-label={
+        mostrarNumero
+          ? `${estado.pendentes} entradas esperando conferência`
+          : mostrarConvite
+          ? "Conectar banco"
+          : "Meus bancos"
+      }
+      className="toque relative w-11 h-11 rounded-full flex items-center justify-center shrink-0"
+      style={{ ...VIDRO }}
+    >
+      <Landmark size={20} style={{ color: "var(--text)" }} />
+
+      {mostrarNumero && (
+        <span
+          className="absolute rounded-full flex items-center justify-center font-bold"
+          style={{
+            top: -3,
+            right: -3,
+            minWidth: 20,
+            height: 20,
+            padding: "0 5px",
+            fontSize: 11,
+            lineHeight: 1,
+            backgroundColor: "var(--primary)",
+            color: "var(--primary-contrast)",
+            border: "2px solid var(--bg)",
+          }}
+        >
+          {estado.pendentes > 9 ? "9+" : estado.pendentes}
+        </span>
+      )}
+
+      {mostrarConvite && (
+        <span
+          className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full"
+          style={{
+            backgroundColor: "var(--primary)",
+            boxShadow: "0 0 6px rgba(34,197,94,0.8)",
+          }}
+          aria-hidden
+        />
+      )}
+    </button>
+  );
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const {
@@ -1271,19 +1395,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <button
-            onClick={() => navigate("/alertas", DE_DASHBOARD)}
-            aria-label="Notificações"
-            className="toque relative w-11 h-11 rounded-full flex items-center justify-center shrink-0"
-            style={{ ...VIDRO }}
-          >
-            <Bell size={20} style={{ color: "var(--text)" }} />
-            <span
-              className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full"
-              style={{ backgroundColor: "var(--danger)" }}
-              aria-hidden
-            />
-          </button>
+          <BotaoBanco />
         </header>
 
         <div className="px-5 pt-2 flex-1 flex flex-col min-h-0 relative">

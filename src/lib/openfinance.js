@@ -1,4 +1,4 @@
-/* OPENFINANCE v2 — buscarTransacoes chama a Edge Function pluggy */
+/* OPENFINANCE v3 — desconectarConexao + listarConexoes ignora desconectadas */
 import { supabase } from "@/lib/supabase";
 
 /* ===================================================================
@@ -440,12 +440,18 @@ export async function salvarPreferencias(userId, patch) {
 
 /* -------------------------------------------------------------------
    CONEXOES BANCARIAS
+
+   ⚠️ Conexao desconectada NAO aparece em listarConexoes: some da
+   tela, o Dashboard para de sincronizar e a protecao contra banco
+   repetido (ConectarBanco) nao confunde uma antiga desligada com uma
+   nova. As entradas dela continuam guardadas — o historico fica.
    ------------------------------------------------------------------- */
 export async function listarConexoes(userId) {
   const { data, error } = await supabase
     .from("conexoes_bancarias")
     .select("*")
     .eq("user_id", userId)
+    .neq("status", "desconectada")
     .order("criado_em", { ascending: false });
   if (error) throw error;
   return data || [];
@@ -469,6 +475,36 @@ export async function salvarConexao(userId, { itemId, instituicao, numeroConta }
     .single();
   if (error) throw error;
   return data;
+}
+
+/* DESCONECTAR — a pessoa tira o banco do app.
+
+   1. Pede a Edge Function para apagar a conexao NA PLUGGY. Libera a
+      vaga no pacote de 500 (cada conta conectada conta como uma).
+   2. Marca a linha como "desconectada" no nosso banco de dados.
+
+   NAO apaga as entradas ja guardadas: o historico fica (decisao do
+   handoff). Se a Pluggy falhar, avisa e NAO marca nada — para nao
+   ficar uma conexao "fantasma" viva na Pluggy ocupando vaga paga. */
+export async function desconectarConexao(conexao) {
+  if (!conexao?.id) throw new Error("Conexão não informada.");
+
+  if (PLUGGY_ATIVO && conexao.pluggy_item_id) {
+    const { data, error } = await supabase.functions.invoke("pluggy", {
+      body: { acao: "desconectar", itemId: conexao.pluggy_item_id },
+    });
+    if (error || data?.error) {
+      throw new Error((data && data.error) || "Não foi possível desconectar agora.");
+    }
+  }
+
+  const { error } = await supabase
+    .from("conexoes_bancarias")
+    .update({ status: "desconectada" })
+    .eq("id", conexao.id);
+
+  if (error) throw error;
+  return { ok: true };
 }
 
 /* Conexão falsa, para desenvolver a tela sem o Pluggy ativo.

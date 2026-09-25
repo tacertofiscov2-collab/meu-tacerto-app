@@ -1,5 +1,5 @@
 // Edge Function: pluggy
-// PLUGGY v5 — tarefa 1: Connect Token | tarefa 2: entradas do ano | tarefa 3: desconectar
+// PLUGGY v7 — caminho B: bancos | criar | status | diagnostico (TEMPORARIO)  +  token | transacoes | desconectar
 // As chaves ficam nos Secrets do Supabase: PLUGGY_CLIENT_ID e PLUGGY_CLIENT_SECRET
 // O usuário é descoberto pelo login — nunca aceitar userId vindo de fora.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -10,6 +10,20 @@ const CORS = {
 };
 
 const PLUGGY_API = "https://api.pluggy.ai";
+
+// SANDBOX: true mostra o banco de teste da Pluggy na lista. Produção: false.
+const INCLUIR_SANDBOX = true;
+
+// Para onde o banco devolve a pessoa depois de autorizar. A Pluggy exige
+// https e NÃO aceita localhost — por isso é o endereço da Vercel.
+// A Pluggy acrescenta ?itemId=... no fim.
+const OAUTH_RETORNO = "https://meu-tacerto-app-alpha.vercel.app/conectar-banco/retorno";
+
+// Pedimos só o que o app usa. ⚠️ No teste de 24/09 a Pluggy coletou
+// investimentos, identidade e empréstimos mesmo assim — no Open Finance
+// o consentimento parece ser o pacote completo. Nós só LEMOS e GUARDAMOS
+// as entradas; o resto fica na Pluggy e nunca passa pelo app.
+const PRODUTOS = ["ACCOUNTS", "TRANSACTIONS"];
 
 // Trava de segurança contra laço infinito na paginação (500 por página)
 const MAX_PAGINAS_POR_CONTA = 50;
@@ -25,11 +39,18 @@ function responder(corpo: unknown, status = 200) {
   });
 }
 
-// Troca Client ID + Client Secret por uma API Key temporária da Pluggy
-// ⚠️ A Pluggy limita pedidos ao /auth e a chave vale 2 horas. Hoje
-// pedimos uma por chamada — ok para a validação; guardar em cache
-// quando o número de usuários crescer.
+// Troca Client ID + Client Secret por uma API Key da Pluggy.
+// A chave vale 2 horas e a Pluggy limita pedidos ao /auth. Enquanto esta
+// função estiver "acordada", a mesma chave é reaproveitada por até 100
+// minutos — importante porque a tela pergunta o status a cada poucos
+// segundos enquanto a pessoa está no banco.
+let chaveEmCache: { valor: string; validaAte: number } | null = null;
+
 async function pegarApiKey(): Promise<string> {
+  if (chaveEmCache && Date.now() < chaveEmCache.validaAte) {
+    return chaveEmCache.valor;
+  }
+
   const resp = await fetch(`${PLUGGY_API}/auth`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -45,10 +66,11 @@ async function pegarApiKey(): Promise<string> {
   }
 
   const { apiKey } = await resp.json();
+  chaveEmCache = { valor: apiKey, validaAte: Date.now() + 100 * 60 * 1000 };
   return apiKey;
 }
 
-// Leitura na Pluggy (contas, transações, item)
+// Leitura na Pluggy (contas, transações, item, bancos)
 async function pluggyGet(caminho: string, apiKey: string) {
   const resp = await fetch(`${PLUGGY_API}${caminho}`, {
     headers: { "X-API-KEY": apiKey },
@@ -68,6 +90,12 @@ function anoAtual(): string {
     timeZone: "America/Sao_Paulo",
     year: "numeric",
   }).format(new Date());
+}
+
+// Cor do banco: a Pluggy às vezes manda com "#", às vezes sem
+function corComCerquilha(cor: unknown): string | null {
+  if (typeof cor !== "string" || !cor) return null;
+  return cor.startsWith("#") ? cor : `#${cor}`;
 }
 
 // Transação da Pluggy -> formato que o openfinance.js espera
@@ -126,10 +154,235 @@ Deno.serve(async (req) => {
     const acao = corpo?.acao;
 
     // ---------------------------------------------------------------
-    // TAREFA 1: gerar o Connect Token (abre a janela de conectar banco)
-    // avoidDuplicates ajuda, mas NÃO é garantia: no teste de 24/09 a
-    // Pluggy criou uma segunda conexão mesmo com ele. A proteção de
-    // verdade está na tela (banco repetido) e na chave da tarefa 2.
+    // BANCOS: lista os bancos do Open Finance para a NOSSA tela de escolha
+    // Só bancos (PF e PJ) do Open Finance regulado. Os logos são
+    // hospedados pela própria Pluggy.
+    // ---------------------------------------------------------------
+    if (acao === "bancos") {
+      const apiKey = await pegarApiKey();
+      const lista = await pluggyGet(
+        `/connectors?countries=BR${INCLUIR_SANDBOX ? "&sandbox=true" : ""}`,
+        apiKey,
+      );
+
+      const bancos = (lista.results ?? [])
+        // deno-lint-ignore no-explicit-any
+        .filter((c: any) => c.isOpenFinance === true)
+        // deno-lint-ignore no-explicit-any
+        .filter((c: any) => c.type === "PERSONAL_BANK" || c.type === "BUSINESS_BANK")
+        // deno-lint-ignore no-explicit-any
+        .filter((c: any) => INCLUIR_SANDBOX || c.isSandbox !== true)
+        // deno-lint-ignore no-explicit-any
+        .map((c: any) => {
+          // deno-lint-ignore no-explicit-any
+          const campos = (c.credentials ?? []).map((k: any) => k.name);
+          const pedeCnpj = campos.includes("cnpj") || c.type === "BUSINESS_BANK";
+          return {
+            id: c.id,
+            nome: c.name,
+            logo: c.imageUrl ?? null,
+            cor: corComCerquilha(c.primaryColor),
+            tipo: c.type === "BUSINESS_BANK" ? "PJ" : "PF",
+            documento: pedeCnpj ? "cnpj" : "cpf",
+            sandbox: c.isSandbox === true,
+            online: c.health?.status !== "OFFLINE",
+          };
+        })
+        // Banco de teste primeiro; o resto em ordem alfabética
+        // deno-lint-ignore no-explicit-any
+        .sort((a: any, b: any) =>
+          a.sandbox === b.sandbox ? a.nome.localeCompare(b.nome, "pt-BR") : a.sandbox ? -1 : 1
+        );
+
+      return responder({ bancos });
+    }
+
+    // ---------------------------------------------------------------
+    // CRIAR: abre a conexão no banco escolhido, com o CPF ou CNPJ
+    // ⚠️ O documento NÃO é guardado nem vai para o log: passa direto
+    //    para a Pluggy, que precisa dele para o Open Finance.
+    // Devolve só o itemId. O link do banco vem pela tarefa STATUS.
+    // ---------------------------------------------------------------
+    if (acao === "criar") {
+      const connectorId = Number(corpo?.connectorId);
+      const documento = String(corpo?.documento ?? "").replace(/\D/g, "");
+
+      if (!Number.isInteger(connectorId) || connectorId <= 0) {
+        return responder({ error: "Banco não informado." }, 400);
+      }
+      if (documento.length !== 11 && documento.length !== 14) {
+        return responder({ error: "Confira o CPF ou CNPJ." }, 400);
+      }
+
+      const apiKey = await pegarApiKey();
+      const conector = await pluggyGet(`/connectors/${connectorId}`, apiKey);
+
+      if (conector?.isOpenFinance !== true || (conector.isSandbox && !INCLUIR_SANDBOX)) {
+        return responder({ error: "Esse banco não está disponível." }, 400);
+      }
+
+      // O nome exato do campo vem do próprio banco (cpf ou cnpj)
+      // deno-lint-ignore no-explicit-any
+      const campos = (conector.credentials ?? []).map((k: any) => k.name);
+      const campo =
+        campos.find((n: string) => n === "cpf" || n === "cnpj") ??
+        (conector.type === "BUSINESS_BANK" ? "cnpj" : "cpf");
+
+      if (campo === "cpf" && documento.length !== 11) {
+        return responder({ error: "Essa é uma conta pessoal: use o CPF." }, 400);
+      }
+      if (campo === "cnpj" && documento.length !== 14) {
+        return responder({ error: "Essa é uma conta de empresa: use o CNPJ." }, 400);
+      }
+
+      const resp = await fetch(`${PLUGGY_API}/items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-KEY": apiKey,
+        },
+        body: JSON.stringify({
+          connectorId,
+          parameters: { [campo]: documento },
+          clientUserId: usuario.id,
+          oauthRedirectUri: OAUTH_RETORNO,
+          products: PRODUTOS,
+        }),
+      });
+
+      if (!resp.ok) {
+        // Só a mensagem da Pluggy vai para o log — nunca o corpo do
+        // pedido, que tem o documento.
+        let mensagem = "";
+        try {
+          mensagem = (await resp.json())?.message ?? "";
+        } catch {
+          /* sem corpo legível */
+        }
+        console.error(`pluggy criar item (${resp.status}):`, mensagem);
+        return responder({ error: "Não foi possível iniciar a conexão com esse banco." }, 502);
+      }
+
+      const item = await resp.json();
+      return responder({ itemId: item.id });
+    }
+
+    // ---------------------------------------------------------------
+    // STATUS: como está a conexão? Devolve o link do banco quando ele
+    // fica pronto e, depois, se deu certo.
+    // Trava: só responde sobre conexão criada por este usuário.
+    // ---------------------------------------------------------------
+    if (acao === "status") {
+      const itemId = String(corpo?.itemId ?? "");
+
+      if (!FORMATO_UUID.test(itemId)) {
+        return responder({ error: "Conexão não informada." }, 400);
+      }
+
+      const apiKey = await pegarApiKey();
+      const item = await pluggyGet(`/items/${itemId}`, apiKey);
+
+      if (item.clientUserId !== usuario.id) {
+        console.error("pluggy status: item de outro usuário", itemId);
+        return responder({ error: "Conexão não encontrada." }, 404);
+      }
+
+      // O link do banco vem no `parameter` quando o item espera a pessoa
+      const p = item.parameter;
+      const urlBanco =
+        p && typeof p.data === "string" && p.data.startsWith("https://")
+          ? p.data
+          : typeof item.userAction?.url === "string"
+          ? item.userAction.url
+          : null;
+
+      return responder({
+        status: item.status ?? null,
+        execucao: item.executionStatus ?? null,
+        banco: item.connector?.name ?? "",
+        urlBanco,
+        expiraEm: p?.expiresAt ?? null,
+        erro: item.error?.code ?? null,
+      });
+    }
+
+    // ---------------------------------------------------------------
+    // DIAGNOSTICO — ⚠️ TEMPORÁRIO, REMOVER depois do teste de 24/09
+    // Mostra o que a Pluggy tem para uma conexão: o resultado de cada
+    // parte da coleta, as contas e um resumo das transações SEM filtro
+    // de data. Mesma trava de dono das outras tarefas.
+    // ---------------------------------------------------------------
+    if (acao === "diagnostico") {
+      const itemId = String(corpo?.itemId ?? "");
+
+      if (!FORMATO_UUID.test(itemId)) {
+        return responder({ error: "Conexão não informada." }, 400);
+      }
+
+      const apiKey = await pegarApiKey();
+      const item = await pluggyGet(`/items/${itemId}`, apiKey);
+
+      if (item.clientUserId !== usuario.id) {
+        return responder({ error: "Conexão não encontrada." }, 404);
+      }
+
+      const contas = await pluggyGet(`/accounts?itemId=${itemId}`, apiKey);
+      const resumoContas: unknown[] = [];
+
+      for (const conta of contas.results ?? []) {
+        const numero = String(conta.number ?? "");
+        const base = {
+          tipo: conta.type,
+          subtipo: conta.subtype,
+          nome: conta.name ?? conta.marketingName ?? "",
+          final: numero ? numero.slice(-4) : "",
+        };
+
+        if (conta.type !== "BANK") {
+          resumoContas.push(base);
+          continue;
+        }
+
+        // Primeira página, SEM filtro de data
+        const lote = await pluggyGet(`/v2/transactions?accountId=${conta.id}`, apiKey);
+        // deno-lint-ignore no-explicit-any
+        const lista: any[] = lote.results ?? [];
+        const datas = lista.map((t) => String(t.date ?? "")).filter(Boolean).sort();
+
+        resumoContas.push({
+          ...base,
+          transacoesNaPrimeiraPagina: lista.length,
+          temMaisPaginas: Boolean(lote.next),
+          entradas: lista.filter((t) => t.type === "CREDIT").length,
+          saidas: lista.filter((t) => t.type === "DEBIT").length,
+          pendentes: lista.filter((t) => t.status === "PENDING").length,
+          maisAntiga: datas[0] ?? null,
+          maisRecente: datas[datas.length - 1] ?? null,
+          comProviderId: lista.filter((t) => t.providerId).length,
+          comPagador: lista.filter((t) => t.paymentData?.payer?.name).length,
+          exemplos: lista.slice(0, 3).map((t) => ({
+            data: t.date,
+            tipo: t.type,
+            valor: t.amount,
+            status: t.status,
+            descricao: String(t.description ?? "").slice(0, 40),
+          })),
+        });
+      }
+
+      return responder({
+        status: item.status,
+        execucao: item.executionStatus,
+        partes: item.statusDetail ?? null,
+        erro: item.error ?? null,
+        contas: resumoContas,
+      });
+    }
+
+    // ---------------------------------------------------------------
+    // TAREFA 1: gerar o Connect Token (widget da Pluggy)
+    // No caminho B a conexão não usa mais o widget; fica aqui até as
+    // telas novas substituírem a ConectarBanco atual.
     // ---------------------------------------------------------------
     if (acao === "token") {
       const apiKey = await pegarApiKey();
@@ -239,9 +492,9 @@ Deno.serve(async (req) => {
     // ---------------------------------------------------------------
     // TAREFA 3: desconectar — apaga a conexão NA PLUGGY
     // Usos: (a) conexão repetida do mesmo banco, que a tela não guarda;
-    //       (b) a pessoa desconectar o próprio banco (futuro).
+    //       (b) a pessoa desconectar o próprio banco.
     // Libera a vaga no pacote de 500 conexões.
-    // A linha em `conexoes_bancarias`, quando existir, quem apaga é o app.
+    // A linha em `conexoes_bancarias`, quando existir, quem trata é o app.
     // ---------------------------------------------------------------
     if (acao === "desconectar") {
       const itemId = String(corpo?.itemId ?? "");
