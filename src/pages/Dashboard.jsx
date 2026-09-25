@@ -1,18 +1,19 @@
-﻿/* DASHBOARD v4 — sino trocado pelo botao do banco (Open Finance) + sync ao abrir */
+﻿/* DASHBOARD v6 — botao do banco: "Conectar banco" com brilho + pulinho do simbolo (sem o pontinho verde) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Landmark, Gauge, TrendingUp, ChevronRight, Receipt, Send, X, Mic, Image as ImageIcon, Camera, FileText, Sparkles, MessageCircleQuestion } from "lucide-react";
+import { Gauge, TrendingUp, ChevronRight, Receipt, Send, X, Mic, Image as ImageIcon, Camera, FileText, Sparkles, MessageCircleQuestion } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
+import SimboloPluggy from "../components/SimboloPluggy.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
   LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO, FAIXAS_ORDEM, FAIXA_RANGE_LABEL,
   truncarNome,
 } from "@/lib/fiscal";
 import { supabase } from "@/lib/supabase";
-import { listarConexoes, listarPendentes, sincronizar } from "@/lib/openfinance";
+import { listarConexoes, sincronizar } from "@/lib/openfinance";
 /* DASHBOARD v3 — cabecalho no painel de perguntas + limpeza do chat morto.
 
    1) O painel de perguntas abria com um vazio grande no topo (o espaco
@@ -1201,36 +1202,44 @@ function CaixaFiscoFlutuante({ onFechar, onEnviarPrimeira }) {
 }
 
 /* ===================================================================
-   BOTAO DO BANCO — no lugar do sino (decidido 24/09/2026)
+   BOTAO DO BANCO — no canto de cima, no lugar do sino
 
-   A notificacao saiu: aviso importante vai pelo WhatsApp. O canto de
-   cima virou o painel do banco, que é uma das funcoes principais.
+   v4 (24/09/2026): o sino saiu. Aviso importante vai pelo WhatsApp e o
+   canto de cima virou a porta para a conexao bancaria, que e uma das
+   funcoes principais do app.
 
-   ESTADOS
-     - sem banco conectado  -> pontinho verde brilhando -> /conectar-banco
-     - entradas esperando   -> bolinha verde com o numero -> conferencia
-                               (hoje /lancar, onde mora a faixa
-                               PendenciasEntradas; quando a conferencia
-                               agrupada por pagador existir, vai pra la)
-     - tudo em dia          -> icone limpo -> /conectar-banco (lista)
+   v5: so o simbolo da Pluggy, sem circulo de fundo e SEM NUMERO.
+
+   v6: o pontinho verde saiu. Sem banco conectado, aparece o texto
+   "Conectar banco" ao lado do simbolo. Um brilho verde passa pelas
+   letras, da esquerda para a direita, e quando chega ao simbolo ele da
+   um pulinho com um brilho verde em volta. Pausa e repete. Depois da
+   conexao o texto some e fica so o simbolo, no mesmo lugar.
+
+   Tocar leva SEMPRE a tela "Conexao bancaria" (/conectar-banco).
+   As entradas novas continuam aparecendo na conferencia (faixa
+   PendenciasEntradas, em /lancar).
 
    SINCRONIZA AO ABRIR O APP
    Busca as entradas novas de todos os bancos conectados. No maximo uma
    vez a cada 30 minutos enquanto o app esta aberto (a variavel abaixo
    zera quando o app recarrega), para nao chamar a Pluggy toda vez que
-   a pessoa volta ao inicio. Primeiro mostra o numero que ja sabe,
-   depois atualiza se chegou algo.
+   a pessoa volta ao inicio.
    =================================================================== */
 const INTERVALO_SYNC_MS = 30 * 60 * 1000;
 let ultimaSincronizacao = 0;
 
+/* Tamanho do simbolo da Pluggy no canto de cima (altura em px).
+   Para aumentar ou diminuir o simbolo, mude so este numero. */
+const ALTURA_SIMBOLO_BANCO = 26;
+
+/* Duracao de um ciclo do convite (brilho no texto + pulinho do simbolo),
+   em segundos. Numero maior = mais calmo. */
+const CICLO_CONVITE_S = 3.6;
+
 function BotaoBanco() {
   const navigate = useNavigate();
-  const [estado, setEstado] = useState({
-    carregado: false,
-    temBanco: false,
-    pendentes: 0,
-  });
+  const [estado, setEstado] = useState({ carregado: false, temBanco: false });
 
   useEffect(() => {
     let ativo = true;
@@ -1241,82 +1250,122 @@ function BotaoBanco() {
         if (!user) return;
 
         const conexoes = await listarConexoes(user.id);
-        const antes = await listarPendentes(user.id);
         if (!ativo) return;
-        setEstado({
-          carregado: true,
-          temBanco: conexoes.length > 0,
-          pendentes: antes.length,
-        });
+        setEstado({ carregado: true, temBanco: conexoes.length > 0 });
 
         // Sincroniza ao abrir o app (no maximo 1x a cada 30 min)
         if (conexoes.length && Date.now() - ultimaSincronizacao > INTERVALO_SYNC_MS) {
           ultimaSincronizacao = Date.now();
           await Promise.allSettled(conexoes.map((c) => sincronizar(user.id, c.id)));
-          const depois = await listarPendentes(user.id);
-          if (ativo) setEstado((e) => ({ ...e, pendentes: depois.length }));
         }
       } catch {
-        /* sem rede ou sem login — o botao fica no estado neutro */
+        /* sem rede ou sem login — o botao fica so com o simbolo */
         if (ativo) setEstado((e) => ({ ...e, carregado: true }));
       }
     })();
     return () => { ativo = false; };
   }, []);
 
-  function aoTocar() {
-    if (estado.pendentes > 0) return navigate("/lancar", DE_DASHBOARD);
-    navigate("/conectar-banco", DE_DASHBOARD);
-  }
-
-  const mostrarNumero = estado.carregado && estado.pendentes > 0;
-  const mostrarConvite = estado.carregado && !estado.temBanco && !mostrarNumero;
+  // So mostra o convite depois de saber que NAO ha banco. Assim quem ja
+  // tem banco nao ve o texto aparecer por um instante ao abrir o app.
+  const mostrarConvite = estado.carregado && !estado.temBanco;
 
   return (
     <button
-      onClick={aoTocar}
-      aria-label={
-        mostrarNumero
-          ? `${estado.pendentes} entradas esperando conferência`
-          : mostrarConvite
-          ? "Conectar banco"
-          : "Meus bancos"
-      }
-      className="toque relative w-11 h-11 rounded-full flex items-center justify-center shrink-0"
-      style={{ ...VIDRO }}
+      onClick={() => navigate("/conectar-banco", DE_DASHBOARD)}
+      aria-label={mostrarConvite ? "Conectar banco" : "Conexão bancária"}
+      className="toque relative flex items-center shrink-0"
+      style={{
+        // Mesma altura da linha do logo (34) para o simbolo ficar
+        // alinhado com o velocimetro do "TaCerto!".
+        height: 34,
+        gap: 4,
+        background: "none",
+        border: "none",
+        padding: 0,
+      }}
     >
-      <Landmark size={20} style={{ color: "var(--text)" }} />
-
-      {mostrarNumero && (
-        <span
-          className="absolute rounded-full flex items-center justify-center font-bold"
-          style={{
-            top: -3,
-            right: -3,
-            minWidth: 20,
-            height: 20,
-            padding: "0 5px",
-            fontSize: 11,
-            lineHeight: 1,
-            backgroundColor: "var(--primary)",
-            color: "var(--primary-contrast)",
-            border: "2px solid var(--bg)",
-          }}
-        >
-          {estado.pendentes > 9 ? "9+" : estado.pendentes}
-        </span>
-      )}
-
       {mostrarConvite && (
-        <span
-          className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full"
-          style={{
-            backgroundColor: "var(--primary)",
-            boxShadow: "0 0 6px rgba(34,197,94,0.8)",
-          }}
-          aria-hidden
-        />
+        <>
+          <style>{`
+            @keyframes conviteBancoEntra {
+              from { opacity: 0; transform: translateX(6px); }
+              to   { opacity: 1; transform: translateX(0); }
+            }
+            /* O brilho atravessa o texto no primeiro terco do ciclo */
+            @keyframes conviteBancoBrilho {
+              0%       { background-position: 100% 0; }
+              34%, 100% { background-position: 0% 0; }
+            }
+            /* ...e o simbolo pula quando o brilho chega nele */
+            @keyframes conviteBancoPulo {
+              0%, 28% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 0 rgba(74,222,128,0));
+              }
+              36% {
+                transform: scale(1.14);
+                filter: drop-shadow(0 0 7px rgba(74,222,128,0.75));
+              }
+              44% { transform: scale(0.96); }
+              52%, 100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 0 rgba(74,222,128,0));
+              }
+            }
+            .convite-banco-texto {
+              background-image: linear-gradient(
+                90deg,
+                var(--text-secondary) 0%,
+                var(--text-secondary) 42%,
+                #4ade80 50%,
+                var(--text-secondary) 58%,
+                var(--text-secondary) 100%
+              );
+              background-size: 250% 100%;
+              background-position: 100% 0;
+              -webkit-background-clip: text;
+              background-clip: text;
+              -webkit-text-fill-color: transparent;
+              color: transparent;
+              animation:
+                conviteBancoEntra 450ms ease-out both,
+                conviteBancoBrilho ${CICLO_CONVITE_S}s ease-in-out infinite;
+            }
+            .convite-banco-simbolo {
+              animation: conviteBancoPulo ${CICLO_CONVITE_S}s ease-in-out infinite;
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .convite-banco-texto {
+                animation: none;
+                -webkit-text-fill-color: #4ade80;
+                color: #4ade80;
+              }
+              .convite-banco-simbolo { animation: none; }
+            }
+          `}</style>
+          <span
+            className="convite-banco-texto font-semibold whitespace-nowrap"
+            style={{ fontSize: 13, letterSpacing: "0.01em" }}
+          >
+            Conectar banco
+          </span>
+        </>
       )}
+
+      {/* Caixa fixa de 44 x 34 em volta do simbolo: com ou sem o texto,
+          o simbolo fica exatamente no mesmo lugar (nao "pula" de lado). */}
+      <span
+        className="flex items-center justify-center shrink-0"
+        style={{ width: 44, height: 34 }}
+      >
+        <span
+          className={mostrarConvite ? "convite-banco-simbolo" : undefined}
+          style={{ display: "inline-flex" }}
+        >
+          <SimboloPluggy altura={ALTURA_SIMBOLO_BANCO} />
+        </span>
+      </span>
     </button>
   );
 }

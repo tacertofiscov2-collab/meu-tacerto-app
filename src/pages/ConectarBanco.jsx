@@ -1,4 +1,4 @@
-/* CONECTARBANCO v5 — simbolo da Pluggy sem o circulo de fundo */
+/* CONECTARBANCO v8 — texto do botao Conectar banco maior */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Landmark, ShieldCheck, Lock, CheckCircle2 } from "lucide-react";
@@ -19,6 +19,15 @@ import { listarConexoes, desconectarConexao } from "@/lib/openfinance";
      - os bancos conectados, cada um com DESCONECTAR
      - o botao que leva a escolha do banco (/conectar-banco/escolher)
 
+   ENQUADRAMENTO (v7): o rodape "Conexao feita pela Pluggy" fica no PE
+   DA TELA, e o bloco (simbolo, texto, card e botao) fica logo acima dele.
+   Todo o espaco que sobra vai para CIMA do simbolo — por isso o conjunto
+   desce e o botao fica mais perto do polegar. O simbolo cresceu (ver
+   ALTURA_SIMBOLO_TOPO). Se o conteudo for maior que a tela (varios bancos
+   conectados), ele comeca no topo e rola normalmente — nada e cortado.
+   Tecnica: a area de rolagem e uma coluna flex; o bloco usa margem
+   automatica em cima, que empurra bloco + rodape para baixo.
+
    CAMINHO B: a conexao em si NAO acontece mais aqui nem pela janela da
    Pluggy (widget). Ela acontece nas telas nossas:
      /conectar-banco/escolher  -> lista de bancos + folha "Conectar conta"
@@ -29,6 +38,16 @@ import { listarConexoes, desconectarConexao } from "@/lib/openfinance";
      apaga a conexao NA PLUGGY (libera a vaga paga) e marca como
      "desconectada" no nosso banco. As entradas ja guardadas FICAM.
    =================================================================== */
+
+/* Tamanho do simbolo da Pluggy no topo da tela (altura em px).
+   Para aumentar ou diminuir, mude so este numero. */
+const ALTURA_SIMBOLO_TOPO = 46;
+
+/* Espaco entre o botao e o rodape "Conexao feita pela Pluggy" (px). */
+const ESPACO_ATE_RODAPE = 32;
+
+/* Tamanho do texto do botao verde "Conectar banco" (px). Era 14. */
+const TAMANHO_TEXTO_BOTAO = 16;
 
 export default function ConectarBanco() {
   const navigate = useNavigate();
@@ -113,13 +132,30 @@ export default function ConectarBanco() {
 
       <div
         className="conteudo-rolavel hide-scrollbar px-5"
-        style={{ paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
+        style={{
+          paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
+          // Coluna flex ocupando todo o espaco abaixo do cabecalho: e o
+          // que permite empurrar o bloco e o rodape para baixo.
+          display: "flex",
+          flexDirection: "column",
+          flex: "1 1 auto",
+          minHeight: 0,
+        }}
       >
-        <div className="max-w-sm w-full mx-auto pt-6">
+        <div
+          className="max-w-sm w-full mx-auto pt-6"
+          style={{
+            // Margem automatica SO em cima = o espaco que sobra fica
+            // acima do simbolo, e bloco + rodape descem para o pe da tela.
+            // Se nao couber, a margem zera e tudo rola a partir do topo.
+            marginTop: "auto",
+            flexShrink: 0,
+          }}
+        >
 
           {/* So os aneis da Pluggy, sem circulo de fundo */}
-          <div className="flex justify-center mb-5">
-            <SimboloPluggy altura={34} />
+          <div className="flex justify-center mb-6">
+            <SimboloPluggy altura={ALTURA_SIMBOLO_TOPO} />
           </div>
 
           <p
@@ -196,20 +232,27 @@ export default function ConectarBanco() {
           <button
             onClick={() => navigate("/conectar-banco/escolher")}
             disabled={carregando}
-            className="w-full py-3.5 rounded-2xl font-semibold text-sm transition active:scale-[0.99] disabled:opacity-40"
-            style={botaoPrincipal}
+            className="w-full py-3.5 rounded-2xl font-semibold transition active:scale-[0.99] disabled:opacity-40"
+            style={{
+              ...botaoPrincipal,
+              fontSize: TAMANHO_TEXTO_BOTAO,
+              lineHeight: "22px",
+            }}
           >
             {conexoes.length > 0 ? "Conectar outro banco" : "Conectar banco"}
           </button>
 
-          {/* Rodape: quem faz a conexao */}
-          <div className="flex items-center justify-center gap-2 mt-6">
-            <SimboloPluggy altura={11} />
-            <p className="text-[11.5px]" style={{ color: "var(--text-tertiary)" }}>
-              Conexão feita pela Pluggy, regulada pelo Banco Central.
-            </p>
-          </div>
+        </div>
 
+        {/* Rodape: quem faz a conexao — no pe da tela, fora do bloco */}
+        <div
+          className="max-w-sm w-full mx-auto flex items-center justify-center gap-2"
+          style={{ marginTop: ESPACO_ATE_RODAPE, flexShrink: 0 }}
+        >
+          <SimboloPluggy altura={11} />
+          <p className="text-[11.5px]" style={{ color: "var(--text-tertiary)" }}>
+            Conexão feita pela Pluggy, regulada pelo Banco Central.
+          </p>
         </div>
       </div>
 
