@@ -1,4 +1,4 @@
-/* OPENFINANCE v4 — listarBancos, criarConexao e statusConexao (caminho B, sem widget) */
+/* OPENFINANCE v5 — descartarConexaoNova e contarPendentesDaConexao (tela de retorno do banco) */
 import { supabase } from "@/lib/supabase";
 
 /* ===================================================================
@@ -571,6 +571,33 @@ export async function criarConexao(connectorId, documento) {
 export async function statusConexao(itemId) {
   if (!PLUGGY_ATIVO) throw new Error("A conexão com os bancos está desligada.");
   return chamarPluggy({ acao: "status", itemId }, "Não foi possível acompanhar a conexão.");
+}
+
+/* Apaga NA PLUGGY uma conexao que acabou de ser criada e que NAO vamos
+   guardar — por exemplo, quando o banco ja estava conectado (conexao
+   repetida ocupa vaga paga e duplicaria as entradas).
+   Diferente de desconectarConexao, que mexe numa conexao ja guardada
+   no nosso banco de dados. A funcao `pluggy` confere se a conexao e
+   do usuario logado antes de apagar. */
+export async function descartarConexaoNova(itemId) {
+  if (!PLUGGY_ATIVO || !itemId) return;
+  await chamarPluggy(
+    { acao: "desconectar", itemId },
+    "Não foi possível descartar a conexão repetida.",
+  );
+}
+
+/* Quantas entradas daquele banco estao esperando a pessoa conferir.
+   Usada na tela de retorno: "Achei X entradas desde janeiro". */
+export async function contarPendentesDaConexao(userId, conexaoId) {
+  const { count, error } = await supabase
+    .from("entradas")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("conexao_id", conexaoId)
+    .eq("status", "pendente");
+  if (error) throw error;
+  return count || 0;
 }
 
 /* Conexão falsa, para desenvolver a tela sem o Pluggy ativo.

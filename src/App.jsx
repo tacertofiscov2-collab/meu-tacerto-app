@@ -1,4 +1,4 @@
-﻿/* APP v5 — rota /conectar-banco/escolher (tela "Onde voce recebe?") */
+﻿/* APP v6 — rota /conectar-banco/retorno (volta do banco) */
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
@@ -29,6 +29,7 @@ import AlterarSenha from "./pages/AlterarSenha.jsx";
 import AlterarWhatsapp from "./pages/AlterarWhatsapp.jsx";
 import ConectarBanco from "./pages/ConectarBanco.jsx";
 import EscolherBanco from "./pages/EscolherBanco.jsx";
+import RetornoBanco from "./pages/RetornoBanco.jsx";
 import EditarPerfil from "./pages/EditarPerfil.jsx";
 import ResumoPerfil from "./pages/ResumoPerfil.jsx";
 import InformacoesFiscais from "./pages/InformacoesFiscais.jsx";
@@ -82,11 +83,10 @@ import AuthCallback from "./pages/AuthCallback.jsx";
    CONEXAO BANCARIA — CAMINHO B (24/09/2026)
 
      /conectar-banco           "Conexao bancaria" (a casa do banco)
-     /conectar-banco/escolher  "Onde voce recebe?" + folha "Conectar
+     /conectar-banco/escolher  "Escolha seu banco" + folha "Conectar
                                conta" (EscolherBanco.jsx)
-     /conectar-banco/retorno   (a criar) o banco devolve a pessoa
-                               para ca com ?itemId=... — enquanto nao
-                               existir, cai na tela "Em construcao"
+     /conectar-banco/retorno   o banco devolve a pessoa para ca com
+                               ?itemId=... (RetornoBanco.jsx)
    =================================================================== */
 
 export default function App() {
@@ -114,6 +114,7 @@ export default function App() {
           <Route path="/alterar-whatsapp" element={<AlterarWhatsapp />} />
           <Route path="/conectar-banco" element={<ConectarBanco />} />
           <Route path="/conectar-banco/escolher" element={<EscolherBanco />} />
+          <Route path="/conectar-banco/retorno" element={<RetornoBanco />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/termos" element={<Termos />} />
