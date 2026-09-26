@@ -1,4 +1,4 @@
-/* CONECTARBANCO v8 — texto do botao Conectar banco maior */
+/* CONECTARBANCO v9 — textos de entradas e gastos (app de gestao do MEI) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Landmark, ShieldCheck, Lock, CheckCircle2 } from "lucide-react";
@@ -18,6 +18,10 @@ import { listarConexoes, desconectarConexao } from "@/lib/openfinance";
      - os tres pontos de confianca
      - os bancos conectados, cada um com DESCONECTAR
      - o botao que leva a escolha do banco (/conectar-banco/escolher)
+
+   TEXTOS (v9): o TaCerto virou app de GESTAO do MEI — entradas e
+   gastos, sempre. Os textos desta tela acompanham (antes falavam so de
+   faturamento e entradas).
 
    ENQUADRAMENTO (v7): o rodape "Conexao feita pela Pluggy" fica no PE
    DA TELA, e o bloco (simbolo, texto, card e botao) fica logo acima dele.
@@ -162,8 +166,8 @@ export default function ConectarBanco() {
             className="text-[14px] text-center leading-relaxed mb-6"
             style={{ color: "var(--text-secondary)" }}
           >
-            Conecte a conta onde você recebe e o Fisco acompanha seu
-            faturamento sozinho.
+            Conecte o banco do seu MEI e o Fisco organiza suas entradas e
+            seus gastos sozinho.
           </p>
 
           <div className="card-tacerto rounded-2xl p-4 space-y-4 mb-6">
@@ -183,7 +187,8 @@ export default function ConectarBanco() {
             <div className="flex items-start gap-3">
               <CheckCircle2 size={20} className="shrink-0 mt-0.5" style={{ color: "var(--primary)" }} />
               <p className="text-[13px] leading-relaxed" style={{ color: "var(--text)" }}>
-                Nada entra no seu faturamento sem você confirmar.
+                Nada entra no seu faturamento nem nos seus gastos sem você
+                confirmar.
               </p>
             </div>
           </div>
@@ -284,9 +289,9 @@ export default function ConectarBanco() {
                 marginTop: 8,
               }}
             >
-              O Fisco para de ver as entradas novas desse banco. O que já foi
-              guardado continua no app, e você pode conectar de novo quando
-              quiser.
+              O Fisco para de ver as entradas e os gastos novos desse banco. O
+              que já foi guardado continua no app, e você pode conectar de novo
+              quando quiser.
             </p>
 
             {erroDesconectar && (
