@@ -1,15 +1,15 @@
-﻿/* DASHBOARD v6 — botao do banco: "Conectar banco" com brilho + pulinho do simbolo (sem o pontinho verde) */
+﻿/* DASHBOARD v14 — card da media limite cabe inteiro na tela + pergunta ao Fisco sem "desenhado" */
 import { useNavigate } from "react-router-dom";
-import { useRef, useState, useMemo, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Gauge, TrendingUp, ChevronRight, Receipt, Send, X, Mic, Image as ImageIcon, Camera, FileText, Sparkles, MessageCircleQuestion } from "lucide-react";
+import { Gauge, ChevronRight, Send, X, Mic, Image as ImageIcon, Camera, FileText, Sparkles, BookOpen } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
 import SimboloPluggy from "../components/SimboloPluggy.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
-  LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO, FAIXAS_ORDEM, FAIXA_RANGE_LABEL,
+  LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO,
   truncarNome,
 } from "@/lib/fiscal";
 import { supabase } from "@/lib/supabase";
@@ -36,11 +36,6 @@ const DE_DASHBOARD = { state: { de: "dashboard" } };
    texto ate esse limite e depois rola por dentro, com a barra de rolagem
    visivel. ~150px da umas 6 linhas. */
 const MAX_ALTURA_CAIXA_FISCO = 150;
-
-const MESES_CURTO = [
-  "jan", "fev", "mar", "abr", "mai", "jun",
-  "jul", "ago", "set", "out", "nov", "dez",
-];
 
 /* ===================================================================
    VIDRO — os valores vêm do index.css e mudam com o tema.
@@ -163,6 +158,17 @@ function perguntasDaSituacao(faixa) {
   return PERGUNTAS_POR_FAIXA[faixa] || PERGUNTAS_POR_FAIXA.tranquilo;
 }
 
+/* Valor em reais com centavos: R$ 6.750,00 / R$ 20.966,67 */
+function reais(v) {
+  return (
+    "R$ " +
+    Number(v || 0).toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  );
+}
+
 function saudacaoPorHora() {
   const h = new Date().getHours();
   if (h >= 5 && h < 12) return "Bom dia,";
@@ -203,262 +209,107 @@ function BolinhasIndicadoras({ pagina, irPara }) {
   );
 }
 
-function TelaDetalhes({
-  faixaAtiva, corFaixa, mediaMensal, projecao, ultimos, onSituacao, onLancamentos,
-}) {
-  const info = FAIXA_INFO[faixaAtiva];
-  const temLancamento = ultimos.length > 0;
+/* ===================================================================
+   UMA PAGINA DO CARROSSEL = UM VELOCIMETRO (v7 — decidido 26/09/2026)
 
+   Card A: velocimetro do ANO    -> Faturado x Limite
+   Card B: velocimetro da MEDIA  -> Media por mes x Media limite
+
+   A "Media limite" (limite do ano / 12) NAO e teto obrigatorio: nao
+   existe limite mensal para o MEI, da para faturar mais num mes e menos
+   em outro. E so uma ajuda de controle — se a media por mes ficar ate
+   ela, o ano fecha dentro do limite. Por isso o card B nao usa a palavra
+   "Limite" sozinha e o balao dele nao mostra o alerta dos 20% (a margem
+   da lei vale para o ANO, nao para o mes).
+
+   O balao ao lado do numero existe SEMPRE e abre o painel do card.
+
+   v12: SO O CARD A ALARMA (borda vermelha pulsando, balao "+N%" ou
+   alerta). O card B nunca muda de comportamento: o balao dele e sempre
+   "?", e so a COR do "?" acompanha a situacao da media.
+   =================================================================== */
+/* Tamanho do rotulo embaixo do velocimetro ("MEI · anual" e
+   "MEI · media mes"), em px. Era 11,5. Para ajustar, mude so este numero. */
+const TAMANHO_ROTULO_CARD = 14;
+
+function PaginaVelocimetro({
+  rotulo, percentual, alertaDos20 = true, apenasInterrogacao = false, descricao,
+  valorEsquerda, rotuloEsquerda, valorDireita, rotuloDireita,
+  onBalao, onValores,
+}) {
   return (
     <div
-      className="card-b-fixo h-full flex flex-col overflow-hidden"
-      style={{
-        padding: 12,
-        gap: 6,
-        flex: "0 0 50%",
-        width: "50%",
-        // Cada card mantem a altura natural e o espaco que sobra e
-        // distribuido entre eles - assim nao fica buraco no fim, com ou
-        // sem lancamentos.
-        justifyContent: "space-between",
-      }}
+      className="h-full flex flex-col px-5 pb-1 min-h-0"
+      style={{ flex: "0 0 50%", width: "50%" }}
     >
-      <button
-        onClick={onSituacao}
-        className="toque toque-escala relative rounded-2xl text-left shrink-0 overflow-hidden"
-        style={{
-          paddingLeft: 14,
-          paddingRight: 10,
-          paddingTop: 10,
-          paddingBottom: 10,
-          backgroundColor: "var(--vidro-bg-leve)",
-          boxShadow: `inset 3px 0 0 0 ${corFaixa}`,
-        }}
-      >
-        <div
-          aria-hidden
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `linear-gradient(100deg, ${hexToRgba(corFaixa, 0.22)} 0%, ${hexToRgba(corFaixa, 0.06)} 60%, transparent 100%)`,
-          }}
+      <div className="flex-1 min-h-0 flex items-center justify-center">
+        <VelocimetroAnimado
+          percentual={percentual}
+          maxWidth={205}
+          numeroClasse="text-4xl font-bold"
+          sempreMostrarBalao
+          onClickBalao={onBalao}
+          alertaDos20={alertaDos20}
+          apenasInterrogacao={apenasInterrogacao}
+          descricao={descricao}
         />
-        <div className="relative flex items-center" style={{ gap: 10 }}>
-          <div className="flex-1 min-w-0">
-            <p
-              className="cb-rotulo font-bold uppercase"
-              style={{ color: corFaixa, letterSpacing: "0.09em", marginBottom: 3 }}
-            >
-              Como estou
-            </p>
-            <p
-              className="cb-titulo leading-snug font-semibold"
-              style={{ color: "var(--text)" }}
-            >
-              {info.resumo}
-            </p>
+      </div>
 
-            {/* Deixa explícito que o card abre as dúvidas */}
-            <span
-              className="inline-flex items-center rounded-full"
-              style={{
-                gap: 5,
-                marginTop: 7,
-                padding: "4px 9px",
-                backgroundColor: hexToRgba(corFaixa, 0.16),
-                border: `1px solid ${hexToRgba(corFaixa, 0.3)}`,
-              }}
-            >
-              <MessageCircleQuestion size={11} strokeWidth={2.4} style={{ color: corFaixa }} />
-              <span
-                className="cb-rotulo font-bold uppercase"
-                style={{ color: corFaixa, letterSpacing: "0.06em" }}
-              >
-                Tirar dúvidas
-              </span>
-            </span>
-          </div>
-          <span
-            className="rounded-full flex items-center justify-center shrink-0"
-            style={{
-              width: 26,
-              height: 26,
-              backgroundColor: hexToRgba(corFaixa, 0.2),
-              border: `1px solid ${hexToRgba(corFaixa, 0.35)}`,
-            }}
-          >
-            <ChevronRight size={15} strokeWidth={2.8} style={{ color: corFaixa }} />
-          </span>
-        </div>
-      </button>
-
-      {temLancamento ? (
-        <button
-          onClick={onLancamentos}
-          className="toque toque-escala rounded-2xl text-left shrink-0"
-          style={{
-            paddingLeft: 14,
-            paddingRight: 14,
-            paddingTop: 8,
-            paddingBottom: 8,
-            backgroundColor: "var(--vidro-superficie)",
-          }}
+      {rotulo && (
+        <p
+          className="text-center shrink-0"
+          style={{ color: "var(--text-tertiary)", fontSize: TAMANHO_ROTULO_CARD, marginBottom: 2 }}
         >
-          <div className="flex items-center" style={{ gap: 8, marginBottom: 4 }}>
-            <Receipt size={12} style={{ color: "var(--text-tertiary)" }} />
-            <p
-              className="cb-rotulo font-bold uppercase flex-1"
-              style={{ color: "var(--text-secondary)", letterSpacing: "0.09em" }}
-            >
-              Últimos lançamentos
-            </p>
-            <ChevronRight size={13} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {ultimos.map((l) => {
-              const d = new Date(l.data);
-              return (
-                <div key={l.id} className="flex items-baseline justify-between" style={{ gap: 8 }}>
-                  <span
-                    className="cb-linha truncate"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    {`${String(d.getDate()).padStart(2, "0")} ${MESES_CURTO[d.getMonth()]}`}
-                  </span>
-                  <Valor px={12.5} peso={700} sinal="+">{l.valor}</Valor>
-                </div>
-              );
-            })}
-          </div>
-        </button>
-      ) : (
-        /* Estado vazio: em vez de uma linha solta num card grande, um
-           bloco centrado com icone em destaque e a dica do proximo passo.
-           A borda tracejada e a convencao visual de "ainda nao tem nada
-           aqui" - deixa claro que nao e um card quebrado. */
-        <div
-          className="rounded-2xl shrink-0 flex flex-col items-center justify-center text-center overflow-hidden"
-          style={{
-            minHeight: 92,
-            padding: 10,
-            gap: 5,
-            backgroundColor: "var(--vidro-superficie-fraca)",
-            border: "1px dashed var(--vidro-borda)",
-          }}
-        >
-          <span
-            className="rounded-full flex items-center justify-center shrink-0"
-            style={{
-              width: 28,
-              height: 28,
-              backgroundColor: hexToRgba(corFaixa, 0.14),
-              border: `1px solid ${hexToRgba(corFaixa, 0.28)}`,
-            }}
-          >
-            <Receipt size={14} strokeWidth={2.1} style={{ color: corFaixa }} />
-          </span>
-
-          <p
-            className="cb-titulo font-semibold leading-tight shrink-0"
-            style={{ color: "var(--text)" }}
-          >
-            Nenhum lançamento ainda
-          </p>
-
-          <p
-            className="cb-linha leading-tight shrink-0"
-            style={{ color: "var(--text-tertiary)" }}
-          >
-            Toque no <span style={{ color: corFaixa, fontWeight: 700 }}>+</span> para começar
-          </p>
-        </div>
+          {rotulo}
+        </p>
       )}
 
       <div
-        className="rounded-2xl shrink-0"
-        style={{
-          paddingLeft: 14,
-          paddingRight: 14,
-          paddingTop: 8,
-          paddingBottom: 8,
-          backgroundColor: "var(--vidro-superficie)",
-        }}
+        className="flex items-stretch pt-3 shrink-0"
+        style={{ borderTop: "1px solid var(--border)", marginTop: 2 }}
       >
-        <div className="flex items-center" style={{ gap: 8, marginBottom: 4 }}>
-          <TrendingUp size={12} style={{ color: "var(--text-tertiary)" }} />
-          <p
-            className="cb-rotulo font-bold uppercase"
-            style={{ color: "var(--text-secondary)", letterSpacing: "0.09em" }}
+        <button
+          onClick={onValores}
+          className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0"
+          style={{ paddingLeft: 12, paddingRight: 12 }}
+        >
+          <Valor tamanho="md" autoAjustar>{valorEsquerda}</Valor>
+          <span
+            className="text-xs mt-1"
+            style={{ color: "var(--text-secondary)" }}
           >
-            Meu ritmo
-          </p>
-        </div>
-        <div className="flex items-baseline justify-between" style={{ gap: 8, marginBottom: 4 }}>
-          <span className="cb-linha" style={{ color: "var(--text-secondary)" }}>
-            Média por mês
+            {rotuloEsquerda}
           </span>
-          <Valor px={12.5} peso={700} autoAjustar>{mediaMensal}</Valor>
-        </div>
-        <div className="flex items-baseline justify-between" style={{ gap: 8 }}>
-          <span className="cb-linha" style={{ color: "var(--text-secondary)" }}>
-            Fecha o ano em
-          </span>
-          <Valor px={12.5} peso={700} autoAjustar cor={corFaixa}>{projecao}</Valor>
-        </div>
-      </div>
+        </button>
 
-      <div
-        className="rounded-2xl shrink-0"
-        style={{
-          paddingLeft: 14,
-          paddingRight: 14,
-          paddingTop: 8,
-          paddingBottom: 8,
-          backgroundColor: "var(--vidro-superficie)",
-        }}
-      >
-        <p
-          className="cb-rotulo font-bold uppercase"
-          style={{ color: "var(--text-secondary)", letterSpacing: "0.09em", marginBottom: 4 }}
-        >
-          Faixas de risco
-        </p>
         <div
-          className="flex rounded-full overflow-hidden"
-          style={{ height: 5, marginBottom: 4 }}
+          aria-hidden
+          className="shrink-0"
+          style={{ width: 1, backgroundColor: "var(--border)" }}
+        />
+
+        <button
+          onClick={onValores}
+          className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0"
+          style={{ paddingLeft: 12, paddingRight: 12 }}
         >
-          {FAIXAS_ORDEM.map((f) => (
-            <div
-              key={f}
-              style={{
-                flex: 1,
-                backgroundColor: FAIXA_INFO[f].cor,
-                opacity: f === faixaAtiva ? 1 : 0.3,
-              }}
-            />
-          ))}
-        </div>
-        <div className="flex justify-between">
-          {FAIXAS_ORDEM.map((f) => (
-            <span
-              key={f}
-              className="cb-mini leading-none"
-              style={{
-                color: f === faixaAtiva ? FAIXA_INFO[f].cor : "var(--text-tertiary)",
-                fontWeight: f === faixaAtiva ? 800 : 500,
-              }}
-            >
-              {FAIXA_RANGE_LABEL[f]}
-            </span>
-          ))}
-        </div>
+          <Valor tamanho="md" autoAjustar>{valorDireita}</Valor>
+          <span
+            className="text-xs mt-1"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            {rotuloDireita}
+          </span>
+        </button>
       </div>
     </div>
   );
 }
 
 function CardVelocimetroCarrossel({
-  rotuloPerfil, percentual, faturado, limite, mediaMensal, projecao,
-  ultimos, onSituacao, onLancamentos, onResumo, onExcedente,
+  rotuloPerfil, percentual, faturado, limite,
+  percentualMedia, mediaMensal, mediaLimite,
+  onDuvidas, onResumo,
 }) {
   const [pagina, setPagina] = useState(0);
   const [dragPx, setDragPx] = useState(0);
@@ -472,9 +323,6 @@ function CardVelocimetroCarrossel({
   const ativo = useRef(false);
   const eixo = useRef(null);
   const moveu = useRef(false);
-
-  const chaveFaixa = faixaDoVelocimetro(percentual);
-  const corFaixa = FAIXA_INFO[chaveFaixa].cor;
 
   useEffect(() => {
     const el = containerRef.current;
@@ -584,9 +432,21 @@ function CardVelocimetroCarrossel({
       onMouseUp={(e) => fim(e.clientX)}
       onMouseLeave={(e) => ativo.current && fim(e.clientX)}
     >
-      {/* Alerta visual: passou dos 100% do limite */}
+      {/* Alerta visual: passou dos 100% do limite. So no card A — ao
+          deslizar para o card B a borda some suavemente (v12). */}
       {percentual > 100 && (
-        <BordaLuminosa raio={24} cor="239,68,68" corClara="248,113,113" />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute"
+          style={{
+            inset: 0,
+            zIndex: 3,
+            opacity: pagina === 0 ? 1 : 0,
+            transition: "opacity 300ms ease-in-out",
+          }}
+        >
+          <BordaLuminosa raio={24} cor="239,68,68" corClara="248,113,113" />
+        </div>
       )}
 
       <div className="flex-1 min-h-0 overflow-hidden">
@@ -598,76 +458,30 @@ function CardVelocimetroCarrossel({
             transition: arrastando ? "none" : "transform 300ms ease-in-out",
           }}
         >
-          <div
-            className="h-full flex flex-col px-5 pb-1 min-h-0"
-            style={{ flex: "0 0 50%", width: "50%" }}
-          >
-            <div className="flex-1 min-h-0 flex items-center justify-center">
-              <VelocimetroAnimado
-                percentual={percentual}
-                maxWidth={205}
-                numeroClasse="text-4xl font-bold"
-                onClickExcedente={seNaoArrastou(onExcedente)}
-              />
-            </div>
+          <PaginaVelocimetro
+            rotulo={rotuloPerfil ? `${rotuloPerfil} · anual` : "Anual"}
+            percentual={percentual}
+            descricao="Faturamento do ano comparado com o limite"
+            valorEsquerda={faturado}
+            rotuloEsquerda="Faturado"
+            valorDireita={limite}
+            rotuloDireita="Limite"
+            onBalao={seNaoArrastou(() => onDuvidas("anual"))}
+            onValores={seNaoArrastou(onResumo)}
+          />
 
-            {rotuloPerfil && (
-              <p
-                className="text-center shrink-0"
-                style={{ color: "var(--text-tertiary)", fontSize: 11.5, marginBottom: 2 }}
-              >
-                {rotuloPerfil}
-              </p>
-            )}
-
-            <div
-              className="flex items-stretch pt-3 shrink-0"
-              style={{ borderTop: "1px solid var(--border)", marginTop: 2 }}
-            >
-              <button
-                onClick={seNaoArrastou(onResumo)}
-                className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0"
-                style={{ paddingLeft: 12, paddingRight: 12 }}
-              >
-                <Valor tamanho="md" autoAjustar>{faturado}</Valor>
-                <span
-                  className="text-xs mt-1"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Faturado
-                </span>
-              </button>
-
-              <div
-                aria-hidden
-                className="shrink-0"
-                style={{ width: 1, backgroundColor: "var(--border)" }}
-              />
-
-              <button
-                onClick={seNaoArrastou(onResumo)}
-                className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0"
-                style={{ paddingLeft: 12, paddingRight: 12 }}
-              >
-                <Valor tamanho="md" autoAjustar>{limite}</Valor>
-                <span
-                  className="text-xs mt-1"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Limite
-                </span>
-              </button>
-            </div>
-          </div>
-
-          <TelaDetalhes
-            faixaAtiva={chaveFaixa}
-            corFaixa={corFaixa}
-            mediaMensal={mediaMensal}
-            projecao={projecao}
-            ultimos={ultimos}
-            onSituacao={seNaoArrastou(onSituacao)}
-            onLancamentos={seNaoArrastou(onLancamentos)}
+          <PaginaVelocimetro
+            rotulo={rotuloPerfil ? `${rotuloPerfil} · média mês` : "Média mês"}
+            percentual={percentualMedia}
+            alertaDos20={false}
+            apenasInterrogacao
+            descricao="Média por mês comparada com a média limite"
+            valorEsquerda={mediaMensal}
+            rotuloEsquerda="Faturado"
+            valorDireita={mediaLimite}
+            rotuloDireita="Limite"
+            onBalao={seNaoArrastou(() => onDuvidas("media"))}
+            onValores={seNaoArrastou(onResumo)}
           />
         </div>
       </div>
@@ -681,11 +495,18 @@ function CardVelocimetroCarrossel({
 /** Painel só com as perguntas sugeridas conforme a situação.
     Fecha no "×" ou clicando fora.
 
-    O topo tem um cabeçalho ligado à SITUAÇÃO ATUAL: o rótulo na cor da
-    faixa, o mesmo resumo que aparece no card "Como estou" (que é o botão
-    que abre este painel) e uma linha dizendo o que fazer. Antes esse
-    espaço era só um vazio reservado para o "×". */
-function PainelPerguntas({ aberto, onFechar, faixa, corFaixa, onPerguntar }) {
+    v7: abre pelo BALÃO ao lado do número do velocímetro (card A ou B).
+    Quando a pessoa passou do limite, o primeiro item é "Entender a regra
+    dos 20%", que abre a tela da regra — antes ela abria direto pelo
+    balão vermelho.
+
+    v9: sem subtítulo — só o "Tirar dúvidas" e as perguntas.
+    v10: só o card A (ano) abre este painel. O balão do card B (média)
+    abre a explicação da média limite (PainelMediaLimite). */
+function PainelPerguntas({
+  aberto, onFechar, perguntas, corFaixa, mostrarRegra20,
+  onPerguntar, onRegra20,
+}) {
   const listaRef = useRef(null);
 
   /* TRAVA A ROLAGEM DO DASHBOARD enquanto o painel esta aberto. Sem
@@ -718,7 +539,6 @@ function PainelPerguntas({ aberto, onFechar, faixa, corFaixa, onPerguntar }) {
   }, [aberto]);
 
   if (!aberto) return null;
-  const perguntas = perguntasDaSituacao(faixa);
 
   return (
     <div
@@ -794,6 +614,34 @@ function PainelPerguntas({ aberto, onFechar, faixa, corFaixa, onPerguntar }) {
           className="flex-1 min-h-0 overflow-y-auto hide-scrollbar"
           style={{ padding: "0 12px 12px", display: "flex", flexDirection: "column", gap: 8 }}
         >
+          {mostrarRegra20 && (
+            <button
+              type="button"
+              onClick={onRegra20}
+              className="toque toque-escala w-full rounded-2xl flex items-center text-left shrink-0"
+              style={{
+                gap: 11,
+                padding: "13px 14px",
+                backgroundColor: hexToRgba(corFaixa, 0.14),
+                border: `1px solid ${hexToRgba(corFaixa, 0.4)}`,
+              }}
+            >
+              <span
+                className="rounded-xl flex items-center justify-center shrink-0"
+                style={{ width: 30, height: 30, backgroundColor: hexToRgba(corFaixa, 0.22) }}
+              >
+                <BookOpen size={15} style={{ color: corFaixa }} />
+              </span>
+              <span
+                className="flex-1 leading-snug font-semibold"
+                style={{ color: "var(--text)", fontSize: 14 }}
+              >
+                Entender a regra dos 20%
+              </span>
+              <ChevronRight size={15} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+            </button>
+          )}
+
           {perguntas.map((p) => (
             <button
               key={p}
@@ -822,6 +670,227 @@ function PainelPerguntas({ aberto, onFechar, faixa, corFaixa, onPerguntar }) {
               <ChevronRight size={15} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
             </button>
           ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ===================================================================
+   PAINEL DA MEDIA LIMITE (v10 — pedido do Fernando, 26/09/2026)
+
+   O balao do card B (velocimetro da media) NAO abre lista de duvidas:
+   abre so esta explicacao, a MESMA em qualquer situacao. A ideia e a
+   pessoa entender que a media limite e uma ajuda de controle, nao um
+   teto obrigatorio do mes.
+
+   v13: dois botoes bem "tocaveis" no fim:
+     - Entendi                       -> verde transparente, fecha
+     - Nao entendi, falar com o Fisco -> abre o chat do Fisco com a
+       pergunta pronta (PERGUNTA_NAO_ENTENDI_MEDIA), pedindo uma
+       explicacao mais facil, com exemplo do dia a dia
+
+   v14: tudo cabe no card sem rolar no iPhone — letras e espacos um
+   pouco menores, textos mais curtos e altura maxima pela tela visivel.
+   =================================================================== */
+const PERGUNTA_NAO_ENTENDI_MEDIA =
+  "Me explica melhor a média limite, de um jeito mais fácil de entender? Pode usar um exemplo do dia a dia.";
+
+function PainelMediaLimite({ aberto, onFechar, onFalarComFisco, limiteAnual, mediaLimite }) {
+  const conteudoRef = useRef(null);
+
+  /* Trava a rolagem do Dashboard enquanto aberto (mesma tecnica do
+     painel de duvidas). */
+  useEffect(() => {
+    if (!aberto) return;
+    const htmlEl = document.documentElement;
+    const bodyEl = document.body;
+    const overflowHtmlAntes = htmlEl.style.overflow;
+    const overflowBodyAntes = bodyEl.style.overflow;
+    htmlEl.style.overflow = "hidden";
+    bodyEl.style.overflow = "hidden";
+
+    const bloquearArrasto = (e) => {
+      const c = conteudoRef.current;
+      if (c && c.contains(e.target)) return; // o texto pode rolar
+      e.preventDefault();
+    };
+    document.addEventListener("touchmove", bloquearArrasto, { passive: false });
+
+    return () => {
+      document.removeEventListener("touchmove", bloquearArrasto);
+      htmlEl.style.overflow = overflowHtmlAntes;
+      bodyEl.style.overflow = overflowBodyAntes;
+    };
+  }, [aberto]);
+
+  if (!aberto) return null;
+
+  const paragrafo = { color: "var(--text-secondary)", fontSize: 13.5, lineHeight: 1.45 };
+
+  return (
+    <div
+      className="fixed inset-0 z-[75] flex items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.5)", animation: "menuMsgFade 260ms ease-out" }}
+      onClick={onFechar}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative flex flex-col rounded-3xl overflow-hidden"
+        style={{
+          ...VIDRO_CHAT,
+          width: "calc(100% - 32px)",
+          maxWidth: 420,
+          maxHeight: "calc(100dvh - 40px)",
+          animation: "menuMsgPop 340ms cubic-bezier(0.25,0.9,0.3,1)",
+        }}
+      >
+        <style>{`
+          @keyframes menuMsgFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes menuMsgPop {
+            from { opacity: 0; transform: scale(0.94) translateY(6px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+          }
+        `}</style>
+
+        <button
+          type="button"
+          onClick={onFechar}
+          aria-label="Fechar"
+          className="rounded-full flex items-center justify-center active:scale-95 transition"
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            zIndex: 20,
+            width: 30,
+            height: 30,
+            backgroundColor: "var(--vidro-bg-leve)",
+            border: "1px solid var(--vidro-borda)",
+          }}
+        >
+          <X size={15} style={{ color: "var(--text-secondary)" }} />
+        </button>
+
+        {/* Titulo no mesmo estilo do "Tirar duvidas" */}
+        <div className="shrink-0 text-center" style={{ padding: "15px 52px 8px" }}>
+          <p
+            className="font-bold uppercase"
+            style={{ color: "var(--text)", fontSize: 13, letterSpacing: "0.09em" }}
+          >
+            Média limite
+          </p>
+        </div>
+
+        <div
+          ref={conteudoRef}
+          className="flex-1 min-h-0 overflow-y-auto hide-scrollbar"
+          style={{ padding: "0 18px 16px" }}
+        >
+          <p
+            className="font-semibold"
+            style={{ color: "var(--text)", fontSize: 15, lineHeight: 1.4 }}
+          >
+            É quanto você pode faturar por mês, em média, para fechar o ano
+            dentro do limite do MEI.
+          </p>
+
+          {/* A conta */}
+          <div
+            className="rounded-2xl text-center"
+            style={{
+              marginTop: 12,
+              padding: "9px 12px",
+              backgroundColor: "var(--vidro-superficie)",
+              border: "1px solid var(--vidro-borda)",
+            }}
+          >
+            <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
+              {reais(limiteAnual)} no ano ÷ 12 meses
+            </p>
+            <p
+              className="font-bold"
+              style={{ color: "var(--primary)", fontSize: 18, marginTop: 1 }}
+            >
+              {reais(mediaLimite)} por mês
+            </p>
+          </div>
+
+          <p style={{ ...paragrafo, marginTop: 12 }}>
+            <strong style={{ color: "var(--text)" }}>Não é um teto do mês.</strong>{" "}
+            Dá para faturar mais num mês e menos no outro. Para a lei, conta o
+            total do ano.
+          </p>
+
+          <p style={{ ...paragrafo, marginTop: 8 }}>
+            <strong style={{ color: "var(--text)" }}>Exemplo:</strong> um mês com o
+            dobro da média limite e outro sem nada dão a mesma média. Tudo certo.
+          </p>
+
+          <p style={{ ...paragrafo, marginTop: 8 }}>
+            <strong style={{ color: "var(--text)" }}>No velocímetro:</strong> até
+            100%, seu ritmo cabe no limite do ano. Acima disso, segure a mão nos
+            próximos meses.
+          </p>
+
+          {/* Entendi: verde transparente (antes era verde cheio) */}
+          <button
+            type="button"
+            onClick={onFechar}
+            className="toque w-full rounded-2xl font-semibold transition active:scale-[0.98]"
+            style={{
+              marginTop: 14,
+              paddingTop: 11,
+              paddingBottom: 11,
+              fontSize: 15.5,
+              backgroundColor: "rgba(34,197,94,0.16)",
+              border: "1px solid rgba(34,197,94,0.45)",
+              color: "var(--primary)",
+            }}
+          >
+            Entendi
+          </button>
+
+          {/* Nao entendi: abre o chat do Fisco com a pergunta pronta */}
+          <button
+            type="button"
+            onClick={() => onFalarComFisco?.(PERGUNTA_NAO_ENTENDI_MEDIA)}
+            className="toque w-full rounded-2xl font-semibold transition active:scale-[0.98] flex items-center justify-center"
+            style={{
+              marginTop: 8,
+              gap: 10,
+              paddingTop: 8,
+              paddingBottom: 8,
+              fontSize: 15,
+              backgroundColor: "var(--vidro-superficie)",
+              border: "1px solid var(--vidro-borda)",
+              color: "var(--text)",
+            }}
+          >
+            <span
+              className="rounded-full overflow-hidden shrink-0 flex items-center justify-center"
+              style={{
+                width: 28,
+                height: 28,
+                border: "1.5px solid rgba(34,197,94,0.45)",
+              }}
+            >
+              <img
+                src="/fisco-perfil.png"
+                alt=""
+                style={{
+                  width: "112%",
+                  height: "112%",
+                  objectFit: "cover",
+                  objectPosition: "50% 18%",
+                }}
+              />
+            </span>
+            Não entendi, falar com o Fisco
+          </button>
         </div>
       </div>
     </div>
@@ -1373,17 +1442,24 @@ function BotaoBanco() {
 export default function Dashboard() {
   const navigate = useNavigate();
   const {
-    nome, tipoMEI, lancamentos, faturamentoAtual, limiteAtual, percentualAtual,
-    mediaMensal, projecaoFimDoAno,
+    nome, tipoMEI, faturamentoAtual, limiteAtual, limiteCheio, percentualAtual,
+    mediaMensal, mediaLimite,
   } = useAppState();
+
+  // Card B: quanto a media por mes representa da media limite
+  const percentualMedia = mediaLimite > 0 ? (mediaMensal / mediaLimite) * 100 : 0;
+
+  // Situacao do ano (cor e perguntas do painel de duvidas)
+  const faixaAnual = faixaDoVelocimetro(percentualAtual);
 
   const rotuloPerfil = LABEL_TIPO[tipoMEI];
   const saudacao = saudacaoPorHora();
 
   const [caixaExpandida, setCaixaExpandida] = useState(false);
 
-  // Painel de perguntas sugeridas (abre pelo card "Como estou")
-  const [perguntasAberto, setPerguntasAberto] = useState(false);
+  // Paineis dos baloes: null (fechado), "anual" (card A -> Tirar duvidas)
+  // ou "media" (card B -> explicacao da media limite)
+  const [painelDuvidas, setPainelDuvidas] = useState(null);
 
   /* O historico de conversas nao vive mais aqui: quem cuida dele e a
      pagina /fisco (ver ChatFiscoPagina + lib/chatHistorico). */
@@ -1396,17 +1472,9 @@ export default function Dashboard() {
   }
 
   function perguntarAoFisco(texto) {
-    setPerguntasAberto(false);
+    setPainelDuvidas(null);
     navigate("/fisco", { state: { primeiraMensagem: texto } });
   }
-
-  const ultimos = useMemo(
-    () =>
-      [...lancamentos]
-        .sort((a, b) => new Date(b.data) - new Date(a.data))
-        .slice(0, 2),
-    [lancamentos],
-  );
 
   return (
     <div
@@ -1453,13 +1521,11 @@ export default function Dashboard() {
             percentual={percentualAtual}
             faturado={faturamentoAtual}
             limite={limiteAtual}
+            percentualMedia={percentualMedia}
             mediaMensal={mediaMensal}
-            projecao={projecaoFimDoAno}
-            ultimos={ultimos}
-            onSituacao={() => setPerguntasAberto(true)}
-            onLancamentos={() => navigate("/historico", DE_DASHBOARD)}
+            mediaLimite={mediaLimite}
+            onDuvidas={(qual) => setPainelDuvidas(qual)}
             onResumo={() => navigate("/perfil/resumo", DE_DASHBOARD)}
-            onExcedente={() => navigate("/regra-vinte", DE_DASHBOARD)}
           />
 
           {caixaExpandida && (
@@ -1553,11 +1619,24 @@ export default function Dashboard() {
       </div>
 
       <PainelPerguntas
-        aberto={perguntasAberto}
-        onFechar={() => setPerguntasAberto(false)}
-        faixa={faixaDoVelocimetro(percentualAtual)}
-        corFaixa={FAIXA_INFO[faixaDoVelocimetro(percentualAtual)].cor}
+        aberto={painelDuvidas === "anual"}
+        onFechar={() => setPainelDuvidas(null)}
+        perguntas={perguntasDaSituacao(faixaAnual)}
+        corFaixa={FAIXA_INFO[faixaAnual].cor}
+        mostrarRegra20={faixaAnual === "estourou" || faixaAnual === "critico"}
         onPerguntar={perguntarAoFisco}
+        onRegra20={() => {
+          setPainelDuvidas(null);
+          navigate("/regra-vinte", DE_DASHBOARD);
+        }}
+      />
+
+      <PainelMediaLimite
+        aberto={painelDuvidas === "media"}
+        onFechar={() => setPainelDuvidas(null)}
+        onFalarComFisco={perguntarAoFisco}
+        limiteAnual={limiteCheio}
+        mediaLimite={mediaLimite}
       />
 
       {/* O rodape some enquanto a caixinha do Fisco esta aberta: ele

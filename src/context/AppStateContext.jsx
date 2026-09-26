@@ -1,3 +1,4 @@
+/* APPSTATE v2 — mediaMensal vira o RITMO do ano (faturado / meses que passaram) + mediaLimite */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   LIMITES_ANUAIS,
@@ -435,16 +436,36 @@ export function AppStateProvider({ children }) {
     [state.lancamentos],
   );
 
-  // Média mensal: soma dos meses com lançamento até o mês corrente / nº desses meses.
+  // ------------------------------------------------------------------
+  // MÉDIA MENSAL (v2 — 26/09/2026): o RITMO do ano.
+  //
+  //   faturado no ano ÷ meses que já passaram (contando o mês atual),
+  //   a partir de janeiro — ou do mês de abertura, se o MEI abriu este ano.
+  //
+  // É o que o velocímetro da média (card B do Dashboard) compara com a
+  // MÉDIA LIMITE (limite cheio do ano ÷ 12): se a média ficar até ela, o
+  // ano fecha dentro do limite. Vale também para o 1º ano, porque o
+  // limite proporcional é justamente "média limite × meses ativos".
+  //
+  // ANTES dividia só pelos meses QUE TINHAM lançamento. Um único mês bom
+  // e o resto vazio fazia a média parecer enorme (ex.: R$ 20 mil em um
+  // mês = "média de R$ 20 mil", mesmo com 8 meses sem nada).
+  // ------------------------------------------------------------------
   const mediaMensal = useMemo(() => {
     const mesAtual = new Date().getMonth() + 1;
-    let mesesComLancamento = 0;
-    for (let m = 1; m <= mesAtual; m++) {
-      if (faturamentoDoMes(m, anoCorrente) > 0) mesesComLancamento += 1;
-    }
-    if (mesesComLancamento === 0) return 0;
-    return faturamentoAtual / mesesComLancamento;
-  }, [faturamentoDoMes, anoCorrente, faturamentoAtual]);
+    const ab = state.mesAnoAbertura;
+    const abriuEsteAno = ab && Number(ab.ano) === anoCorrente;
+    const mesInicio = abriuEsteAno
+      ? Math.min(Math.max(1, Number(ab.mes) || 1), mesAtual)
+      : 1;
+    const meses = mesAtual - mesInicio + 1;
+    return meses > 0 ? faturamentoAtual / meses : 0;
+  }, [state.mesAnoAbertura, anoCorrente, faturamentoAtual]);
+
+  // Média limite: quanto dá para faturar por mês, em média, e fechar o
+  // ano dentro do limite. R$ 6.750 (MEI) ou R$ 20.966,67 (Caminhoneiro).
+  // NÃO é teto mensal — é só referência de controle.
+  const mediaLimite = (LIMITES_ANUAIS[state.tipoMEI] ?? LIMITES_ANUAIS.MEI) / 12;
 
   // Projeção simples: faturamento atual + média mensal * meses restantes no ano.
   const projecaoFimDoAno = useMemo(() => {
@@ -476,6 +497,7 @@ export function AppStateProvider({ children }) {
     faixaAtual,
     faturamentoDoMes,
     mediaMensal,
+    mediaLimite,
     projecaoFimDoAno,
   };
 

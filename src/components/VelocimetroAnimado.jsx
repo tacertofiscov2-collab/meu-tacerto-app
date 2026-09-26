@@ -1,6 +1,7 @@
+/* VELOCIMETROANIMADO v3 — modo "so interrogacao" (card B) + letra do "+N%" que cabe no balao */
 import { useEffect, useState, useId } from "react";
 import { AlertTriangle } from "lucide-react";
-import { FAIXA_INFO } from "@/lib/fiscal";
+import { FAIXA_INFO, faixaDoVelocimetro } from "@/lib/fiscal";
 
 // Flag de MÓDULO: lembra que a animação de entrada já aconteceu nesta
 // sessão. Sobrevive a remontagens do componente (o carrossel do dashboard
@@ -12,9 +13,26 @@ let jaAnimouNaSessao = false;
  * Velocímetro animado.
  * - Arco e ponteiro TRAVAM em 100%.
  * - Número exibido também trava em 100%.
- * - Acima de 100%: badge redondo ao lado mostrando "+N%" (até 20%).
- * - Acima de 120%: badge vira alerta (ícone), pois passou da margem legal.
- * - Badge é clicável (onClickExcedente).
+ * - Acima de 100%: balão redondo ao lado mostrando "+N%" (até 20%).
+ * - Acima de 120%: balão vira alerta (ícone), pois passou da margem legal.
+ *
+ * BALÃO SEMPRE VISÍVEL (v2 — decidido 26/09/2026)
+ * Com `sempreMostrarBalao`, o balão existe em QUALQUER situação:
+ *   - dentro do limite: mostra "?" na cor da faixa (verde, amarelo...)
+ *   - passou do limite: "+N%" em vermelho (ou o alerta, acima de 120%)
+ * Tocar chama `onClickBalao` — no Dashboard abre o "Tirar dúvidas" com
+ * as perguntas da situação da pessoa.
+ * Sem `sempreMostrarBalao`, funciona como antes (balão só acima de 100%,
+ * chamando `onClickExcedente`), para as outras telas que usam o
+ * velocímetro não mudarem.
+ *
+ * `alertaDos20 = false` desliga o alerta dos 120%.
+ *
+ * SÓ INTERROGAÇÃO (v3 — card B, velocímetro da MÉDIA): com
+ * `apenasInterrogacao`, o balão é SEMPRE "?", em qualquer situação —
+ * nunca "+N%" nem alerta. A única coisa que muda é a COR do "?", que
+ * segue a situação (verde, amarelo, laranja, vermelho). O card B não
+ * alarma: quem alarma é só o card A (o limite do ano, que é o da lei).
  *
  * ANIMAÇÃO: sobe do zero APENAS na primeira montagem. Depois disso, se
  * o percentual mudar, o ponteiro apenas desliza suave até o novo valor.
@@ -26,13 +44,18 @@ export default function VelocimetroAnimado({
   maxWidth = 260,
   numeroClasse = "text-5xl font-bold",
   onClickExcedente,
+  sempreMostrarBalao = false,
+  onClickBalao,
+  alertaDos20 = true,
+  apenasInterrogacao = false,
+  descricao,
 }) {
   const uid = useId().replace(/:/g, "");
   const gradId = `velGrad-${uid}`;
 
   const pVisual = Math.max(0, Math.min(100, percentual));
   const excesso = percentual > 100 ? percentual - 100 : 0;
-  const passouDos20 = excesso > 20;
+  const passouDos20 = alertaDos20 && excesso > 20;
 
   // Se a animação de entrada já rolou nesta sessão, começa já no valor
   // final (sem subir do zero). Só anima do zero na primeiríssima vez.
@@ -94,6 +117,23 @@ export default function VelocimetroAnimado({
   const rotDeg = (progresso / 100) * 180;
   const corAlerta = passouDos20 ? FAIXA_INFO.critico.cor : FAIXA_INFO.estourou.cor;
 
+  // Balão: aparece acima de 100% (sempre) ou em qualquer situação quando
+  // `sempreMostrarBalao`. Dentro do limite, usa a cor da faixa atual.
+  const faixa = faixaDoVelocimetro(percentual);
+  const corFaixa = (FAIXA_INFO[faixa] || FAIXA_INFO.tranquilo).cor;
+  const mostrarBalao = excesso > 0 || sempreMostrarBalao;
+  // No modo "so interrogacao" o balao nunca vira "+N%" nem alerta:
+  // mostra "?" na cor da situacao (acima de 100% a faixa ja e vermelha).
+  const mostrarInterrogacao = apenasInterrogacao || excesso <= 0;
+  const corBalao = mostrarInterrogacao ? corFaixa : corAlerta;
+  const aoTocarBalao = sempreMostrarBalao ? onClickBalao : onClickExcedente;
+  const excessoTexto = Math.min(999, Math.round(excesso));
+
+  let rotuloBalao;
+  if (mostrarInterrogacao) rotuloBalao = "Tirar dúvidas sobre a sua situação";
+  else if (passouDos20) rotuloBalao = "Você passou da margem de 20%. Toque para entender";
+  else rotuloBalao = `Você passou ${excessoTexto}% do limite. Toque para entender`;
+
   return (
     <div className="w-full flex flex-col items-center">
       <svg
@@ -101,7 +141,11 @@ export default function VelocimetroAnimado({
         className="block mx-auto w-full"
         style={{ maxWidth }}
         role="img"
-        aria-label={`Velocímetro fiscal: ${Math.round(percentual)} por cento do limite`}
+        aria-label={
+          descricao
+            ? `${descricao}: ${Math.round(percentual)} por cento`
+            : `Velocímetro fiscal: ${Math.round(percentual)} por cento do limite`
+        }
       >
         <defs>
           <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -158,32 +202,40 @@ export default function VelocimetroAnimado({
           {Math.round(pVisual)}%
         </span>
 
-        {excesso > 0 && (
+        {mostrarBalao && (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onClickExcedente?.();
+              aoTocarBalao?.();
             }}
-            aria-label={
-              passouDos20
-                ? "Você passou da margem de 20%. Toque para entender"
-                : `Você passou ${Math.round(excesso)}% do limite. Toque para entender`
-            }
+            aria-label={rotuloBalao}
             className="rounded-full flex items-center justify-center shrink-0 active:scale-95 transition"
             style={{
               width: 52,
               height: 52,
-              backgroundColor: `${corAlerta}33`,
-              border: `1.5px solid ${corAlerta}80`,
+              backgroundColor: `${corBalao}33`,
+              border: `1.5px solid ${corBalao}80`,
             }}
           >
-            {passouDos20 ? (
-              <AlertTriangle size={24} strokeWidth={2.4} style={{ color: corAlerta }} />
+            {mostrarInterrogacao ? (
+              <span
+                style={{ color: corBalao, fontSize: 24, fontWeight: 800, lineHeight: 1 }}
+              >
+                ?
+              </span>
+            ) : passouDos20 ? (
+              <AlertTriangle size={24} strokeWidth={2.4} style={{ color: corBalao }} />
             ) : (
               <span
-                style={{ color: corAlerta, fontSize: 15, fontWeight: 800, lineHeight: 1 }}
+                style={{
+                  color: corBalao,
+                  // 1 digito: 15 | 2 digitos: 14 | 3 digitos: 12,5
+                  fontSize: excessoTexto >= 100 ? 12.5 : excessoTexto >= 10 ? 14 : 15,
+                  fontWeight: 800,
+                  lineHeight: 1,
+                }}
               >
-                +{Math.round(excesso)}%
+                +{excessoTexto}%
               </span>
             )}
           </button>
@@ -192,7 +244,3 @@ export default function VelocimetroAnimado({
     </div>
   );
 }
-
-
-
-
