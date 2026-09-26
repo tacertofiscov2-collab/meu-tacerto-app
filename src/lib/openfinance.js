@@ -1,4 +1,4 @@
-/* OPENFINANCE v3 — desconectarConexao + listarConexoes ignora desconectadas */
+/* OPENFINANCE v4 — listarBancos, criarConexao e statusConexao (caminho B, sem widget) */
 import { supabase } from "@/lib/supabase";
 
 /* ===================================================================
@@ -505,6 +505,72 @@ export async function desconectarConexao(conexao) {
 
   if (error) throw error;
   return { ok: true };
+}
+
+/* -------------------------------------------------------------------
+   CONECTAR UM BANCO — CAMINHO B (fluxo nosso, sem a janela da Pluggy)
+
+   As telas /conectar-banco/escolher e /conectar-banco/retorno usam
+   estas tres funcoes. Todas passam pela Edge Function `pluggy`, que
+   descobre o usuario pelo login (nunca confia em id vindo da tela).
+
+     listarBancos()                -> bancos do Open Finance
+     criarConexao(id, documento)   -> cria a conexao e devolve o itemId
+     statusConexao(itemId)         -> em que pe esta a conexao. Quando o
+                                      link do banco fica pronto, ele vem
+                                      em `urlBanco`
+
+   ⚠️ O CPF/CNPJ digitado vai direto para a Pluggy (o Open Finance
+   exige). NAO guardamos e NAO vai para log — nem aqui, nem na funcao.
+   ------------------------------------------------------------------- */
+
+/* Chama a Edge Function e devolve so a resposta. Se der erro, tenta
+   ler a mensagem que a funcao mandou; senao usa a mensagem padrao. */
+async function chamarPluggy(corpo, mensagemPadrao) {
+  const { data, error } = await supabase.functions.invoke("pluggy", { body: corpo });
+  if (error || data?.error) {
+    let mensagem = data?.error;
+    if (!mensagem && error?.context && typeof error.context.json === "function") {
+      try {
+        const corpoErro = await error.context.json();
+        mensagem = corpoErro?.error;
+      } catch {
+        /* resposta sem JSON — fica a mensagem padrao */
+      }
+    }
+    throw new Error(mensagem || mensagemPadrao);
+  }
+  return data || {};
+}
+
+/* Bancos do Open Finance, no formato:
+   [{ id, nome, logo, cor, tipo: "PF"|"PJ", documento: "cpf"|"cnpj",
+      sandbox, online }]
+   No sandbox, o banco de teste vem primeiro. */
+export async function listarBancos() {
+  if (!PLUGGY_ATIVO) throw new Error("A conexão com os bancos está desligada.");
+  const data = await chamarPluggy({ acao: "bancos" }, "Não foi possível carregar os bancos.");
+  return data.bancos || [];
+}
+
+/* Comeca a conexao com o banco escolhido. `documento` é o CPF (conta
+   pessoal) ou CNPJ (conta da empresa) — com ou sem pontuacao. */
+export async function criarConexao(connectorId, documento) {
+  if (!PLUGGY_ATIVO) throw new Error("A conexão com os bancos está desligada.");
+  const doc = String(documento || "").replace(/\D/g, "");
+  const data = await chamarPluggy(
+    { acao: "criar", connectorId, documento: doc },
+    "Não foi possível começar a conexão com o banco.",
+  );
+  if (!data.itemId) throw new Error("Não foi possível começar a conexão com o banco.");
+  return data.itemId;
+}
+
+/* Em que pe esta a conexao:
+   { status, execucao, banco, urlBanco, expiraEm, erro } */
+export async function statusConexao(itemId) {
+  if (!PLUGGY_ATIVO) throw new Error("A conexão com os bancos está desligada.");
+  return chamarPluggy({ acao: "status", itemId }, "Não foi possível acompanhar a conexão.");
 }
 
 /* Conexão falsa, para desenvolver a tela sem o Pluggy ativo.
