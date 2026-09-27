@@ -1,71 +1,55 @@
-/* EDITARPERFIL v11 — folga no fim para o teclado */
+/* EDITARPERFIL v12 — tipo de MEI travado ("O que mudou?") + data de abertura so para quem abriu este ano */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Check, Trash2, ChevronRight, CheckCircle2, AlertCircle,
+  ArrowLeft, Trash2, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Lock, X,
 } from "lucide-react";
 
 import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
 import { useUserState } from "@/lib/userState";
+import { useAppState } from "@/context/AppStateContext";
 import { supabase } from "@/lib/supabase";
 import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 import { EMAIL_VERIFICACAO_ATIVA } from "@/lib/flags";
 
 /* ===================================================================
-   EDITARPERFIL v11 — CONTATO MINIMALISTA
+   EDITARPERFIL v12 — PERFIL FISCAL COM REGRA (26/09/2026)
 
-   MUDANCA DA v10 PARA A v11 (17/09/2026):
-     FOLGA_TECLADO no fim do conteudo. A tela ja rolava direito, mas o
-     espaco no fim era de apenas 24px — entao, quando a pessoa tocava
-     no campo de e-mail (que fica na metade de baixo), o teclado subia
-     e nao havia para onde empurrar o conteudo. O campo ficava coberto.
+   TIPO DE MEI TRAVADO
+     O tipo segue o que esta registrado no CNPJ e define o limite do
+     velocimetro. Trocar livremente fazia o velocimetro mentir. Agora o
+     card mostra um CADEADO e abre a folha "Seu tipo de MEI", com a
+     pergunta "O que mudou?":
+       - Mudei de atividade no mesmo CNPJ -> explica a regra
+         (comum -> caminhoneiro so em janeiro; caminhoneiro -> comum
+         vale na hora e o limite cai para R$ 81 mil no ano todo)
+       - Fechei meu MEI e abri outro CNPJ -> explica (empresa nova do
+         zero; o CNPJ antigo deve a declaracao de extincao)
+       - Escolhi errado no cadastro -> a pessoa CORRIGE SOZINHA nos
+         primeiros 7 dias depois do cadastro (user.created_at). Depois
+         disso, avisa a equipe.
+     Nas duas primeiras, quem atualiza o tipo no app e a equipe TaCerto
+     (na validacao, o Fernando no Supabase). Base: pesquisa de 26/09
+     (HANDOFF, Parte 3-MEI). O botao do contador parceiro entra so no
+     FIM de tudo (pedido do Fernando).
 
-     Agora sobram 340px no fim, mais que a altura de qualquer teclado
-     de iPhone. E a mesma solucao aplicada no Onboarding v4 e na
-     ExcluirConta v3.
+   DATA DE ABERTURA SO PARA QUEM ABRIU ESTE ANO
+     So importa no 1o ano (limite proporcional). O campo aparece so se
+     a abertura e do ano corrente. Escolher um ano anterior no
+     calendario APAGA a informacao (mes/ano = null) e o campo some. Em
+     janeiro, a abertura deixa de ser "deste ano" e o campo some sozinho.
+     Le e grava pelo AppStateContext (useAppState), que e a fonte unica
+     e espelha as chaves antigas do localStorage.
 
-     POR QUE A FOLGA FICA SEMPRE, E NAO SO COM O TECLADO ABERTO:
-     a regra `:focus-within` do index.css da meia tela de espaco
-     enquanto um campo esta em foco, mas ela some quando o foco sai —
-     e no meio da transicao o conteudo pulava. Folga fixa e mais
-     estavel, e o unico custo e um pouco de vazio no fim da rolagem.
-
-   COMO A TELA SE COMPORTA (vindo da v8):
-     - Sem texto explicativo abaixo dos campos.
-     - O icone de estado vive DENTRO do card, na ponta direita.
-     - A acao do e-mail e um botao em pilula AO LADO do card.
-     - O card do WhatsApp inteiro e clicavel.
-
-   O BOTAO CARREGA O ESTADO, EM VEZ DE UMA LEGENDA:
-       "Verificar"  -> parado, pronto para enviar
-       "Enviado"    -> confirmacao rapida (2s)
-       "45s"        -> contagem ate poder reenviar
-       "Salvar"     -> o e-mail no campo e diferente do da conta
-   Texto escrito so aparece quando da ERRO, e some ao digitar.
-
-   POR QUE O CAMPO DE E-MAIL PENDENTE E EDITAVEL:
-     Se a pessoa errou uma letra no cadastro, ela precisa conseguir
-     corrigir. Travar um campo nao verificado tranca a pessoa fora da
-     conta. Quando o endereco digitado e diferente do salvo, o botao
-     chama updateUser(): o Supabase manda o link para o endereco NOVO
-     e so troca quando o link e aberto — um erro de digitacao nunca
-     perde a conta.
-
-   POR QUE O WHATSAPP SO TRAVA SE JA TIVER NUMERO:
-     Quem entrou pelo Google pode nao ter informado WhatsApp. Se o
-     campo travasse sempre, essa pessoa nunca conseguiria cadastrar o
-     primeiro numero. Sem numero -> campo aberto, e o numero e gravado
-     pelo botao "Salvar alteracoes" como qualquer outro dado.
-
-   SELO DE VERIFICADO NO E-MAIL — CRITERIO (herdado da v5)
-     A tela NAO le `email_confirmed_at`: com a confirmacao desligada
-     o Supabase preenche esse campo sozinho e todo mundo aparecia como
-     verificado. O criterio e a ORIGEM da conta:
-       - veio do GOOGLE -> o Google ja validou, selo verde e verdade
-       - veio por senha -> pendente, icone laranja
-     Quando EMAIL_VERIFICACAO_ATIVA virar true, revisar: com a
-     confirmacao ligada, `email_confirmed_at` volta a ser confiavel.
+   O RESTO VEM DA v11
+     FOLGA_TECLADO no fim do conteudo (340px), para o teclado ter para
+     onde empurrar o campo de e-mail. Contato minimalista: o botao ao
+     lado do e-mail carrega o estado ("Verificar", "Enviado", "45s",
+     "Salvar"); texto so aparece quando da erro. E-mail pendente e
+     editavel (updateUser manda o link para o endereco novo). WhatsApp
+     so trava se ja tiver numero. Selo verde no e-mail so para conta
+     que veio do Google.
    =================================================================== */
 
 /* Segundos de espera entre um envio e o proximo. */
@@ -74,6 +58,10 @@ const ESPERA_REENVIO = 60;
 /* Folga no fim do conteudo, para o teclado ter para onde empurrar.
    Maior que a altura de qualquer teclado de iPhone. */
 const FOLGA_TECLADO = 340;
+
+/* Dias depois do cadastro em que a pessoa ainda pode corrigir o tipo
+   de MEI sozinha ("Escolhi errado no cadastro"). */
+const DIAS_PARA_CORRIGIR_TIPO = 7;
 
 // ---------------------------------------------------------------------
 // Espaçamentos ajustáveis desta tela.
@@ -130,7 +118,8 @@ function contaVeioDoGoogle(user) {
  * tem o valor antigo. Passando explícito, gravamos o que o usuário
  * acabou de escolher.
  *
- * Só grava os campos presentes no patch (undefined é ignorado).
+ * Só grava os campos presentes no patch (undefined é ignorado; null
+ * grava vazio — é assim que a data de abertura é apagada).
  * Silencioso para visitante (sem sessão) — igual ao resto do app.
  */
 async function sincronizarPerfilNoBanco(patch) {
@@ -176,8 +165,9 @@ function Rotulo({ children }) {
 }
 
 /* Linha de escolha (Tipo de MEI, Data de abertura): o card mostra o
-   valor atual e a seta indica que abre um seletor. */
-function CampoEscolha({ rotulo, valor, onClick }) {
+   valor atual; a seta indica que abre um seletor e o cadeado indica
+   que o valor e travado (abre so a explicacao). */
+function CampoEscolha({ rotulo, valor, onClick, travado = false }) {
   return (
     <div>
       <Rotulo>{rotulo}</Rotulo>
@@ -191,8 +181,225 @@ function CampoEscolha({ rotulo, valor, onClick }) {
         >
           {valor}
         </span>
-        <ChevronRight size={18} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+        {travado ? (
+          <Lock size={17} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+        ) : (
+          <ChevronRight size={18} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+        )}
       </button>
+    </div>
+  );
+}
+
+/* ===================================================================
+   FOLHA "SEU TIPO DE MEI" (v12)
+
+   Passos: "inicio" (O que mudou?) -> "atividade" | "novoCnpj" |
+   "errado" -> "confirmar" (so quando pode corrigir sozinho).
+   =================================================================== */
+function FolhaTipoMei({ tipo, podeCorrigir, onFechar, onCorrigir, cardStyle }) {
+  const [passo, setPasso] = useState("inicio");
+
+  const outroTipo = tipo === "MEI_CAMINHONEIRO" ? "MEI" : "MEI_CAMINHONEIRO";
+  const nomeOutro = outroTipo === "MEI" ? "MEI comum" : "MEI Caminhoneiro";
+
+  const texto = { color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.55 };
+  const avisoEquipe = (
+    <p style={{ ...texto, marginTop: 12, color: "var(--text-tertiary)", fontSize: 13 }}>
+      Quando a troca valer no seu CNPJ, a equipe TaCerto atualiza seu tipo aqui
+      no app.
+    </p>
+  );
+
+  const botaoPrincipal = (rotulo, aoTocar) => (
+    <button
+      onClick={aoTocar}
+      className="w-full py-3 rounded-xl font-semibold transition active:scale-[0.99]"
+      style={{
+        marginTop: 16,
+        backgroundColor: "var(--primary)",
+        color: "var(--primary-contrast)",
+        fontSize: 15,
+      }}
+    >
+      {rotulo}
+    </button>
+  );
+
+  const voltar = (
+    <button
+      onClick={() => setPasso("inicio")}
+      className="flex items-center gap-1 active:opacity-70 transition"
+      style={{ color: "var(--text-secondary)", fontSize: 13.5, marginBottom: 10 }}
+    >
+      <ChevronLeft size={16} />
+      Voltar
+    </button>
+  );
+
+  const opcao = (rotulo, destino) => (
+    <button
+      key={destino}
+      onClick={() => setPasso(destino)}
+      className="w-full rounded-xl px-4 py-3.5 flex items-center gap-3 text-left active:opacity-75 transition"
+      style={{ backgroundColor: "var(--field)" }}
+    >
+      <span className="flex-1 text-[14.5px] font-semibold" style={{ color: "var(--text)" }}>
+        {rotulo}
+      </span>
+      <ChevronRight size={17} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+    </button>
+  );
+
+  let conteudo;
+
+  if (passo === "inicio") {
+    conteudo = (
+      <>
+        <div className="rounded-xl px-4 py-3" style={{ backgroundColor: "var(--field)" }}>
+          <p className="text-[15.5px] font-bold" style={{ color: "var(--text)" }}>
+            {LABEL_PERFIL[tipo] || "MEI"}
+          </p>
+          <p
+            className="text-[13px] mt-0.5 flex items-center gap-1"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            Limite de <Valor tamanho="sm">{LIMITES_ANUAIS[tipo] || LIMITES_ANUAIS.MEI}</Valor> no ano
+          </p>
+        </div>
+
+        <p style={{ ...texto, marginTop: 12 }}>
+          O tipo segue o que está registrado no seu CNPJ e define o seu limite. Por
+          isso ele não muda por aqui.
+        </p>
+
+        <p
+          className="text-[14px] font-semibold"
+          style={{ color: "var(--text)", marginTop: 16, marginBottom: 8 }}
+        >
+          O que mudou?
+        </p>
+        <div className="space-y-2">
+          {opcao("Mudei de atividade no mesmo CNPJ", "atividade")}
+          {opcao("Fechei meu MEI e abri outro CNPJ", "novoCnpj")}
+          {opcao("Escolhi errado no cadastro", "errado")}
+        </div>
+      </>
+    );
+  } else if (passo === "atividade") {
+    conteudo = (
+      <>
+        {voltar}
+        <p className="text-[15.5px] font-bold" style={{ color: "var(--text)" }}>
+          Mudei de atividade no mesmo CNPJ
+        </p>
+        <p style={{ ...texto, marginTop: 8 }}>
+          {tipo === "MEI_CAMINHONEIRO"
+            ? "Se você passou a fazer outra atividade além do transporte de cargas, seu CNPJ vira MEI comum e o limite cai para R$ 81.000, já neste ano."
+            : "A troca para MEI Caminhoneiro é feita no Portal do Empreendedor, e só em janeiro. Feita em janeiro, vale para o ano todo. Fora de janeiro, só passa a valer no ano seguinte."}
+        </p>
+        {avisoEquipe}
+        {botaoPrincipal("Entendi", onFechar)}
+      </>
+    );
+  } else if (passo === "novoCnpj") {
+    conteudo = (
+      <>
+        {voltar}
+        <p className="text-[15.5px] font-bold" style={{ color: "var(--text)" }}>
+          Fechei meu MEI e abri outro CNPJ
+        </p>
+        <p style={{ ...texto, marginTop: 8 }}>
+          O MEI fechado não volta, e o novo começa do zero, com limite proporcional
+          aos meses que faltam no ano. O CNPJ antigo ainda precisa entregar a
+          declaração de extinção.
+        </p>
+        {avisoEquipe}
+        {botaoPrincipal("Entendi", onFechar)}
+      </>
+    );
+  } else if (passo === "errado") {
+    conteudo = (
+      <>
+        {voltar}
+        <p className="text-[15.5px] font-bold" style={{ color: "var(--text)" }}>
+          Escolhi errado no cadastro
+        </p>
+        {podeCorrigir ? (
+          <>
+            <p style={{ ...texto, marginTop: 8 }}>
+              Nos primeiros {DIAS_PARA_CORRIGIR_TIPO} dias depois do cadastro, você
+              mesmo pode corrigir.
+            </p>
+            {botaoPrincipal(`Trocar para ${nomeOutro}`, () => setPasso("confirmar"))}
+          </>
+        ) : (
+          <>
+            <p style={{ ...texto, marginTop: 8 }}>
+              O prazo para corrigir sozinho passou ({DIAS_PARA_CORRIGIR_TIPO} dias
+              depois do cadastro). Avise a equipe TaCerto e a gente corrige para você.
+            </p>
+            {botaoPrincipal("Entendi", onFechar)}
+          </>
+        )}
+      </>
+    );
+  } else {
+    // "confirmar"
+    conteudo = (
+      <>
+        <p className="text-[15.5px] font-bold" style={{ color: "var(--text)" }}>
+          Trocar para {nomeOutro}?
+        </p>
+        <p className="text-sm flex items-center gap-1 flex-wrap" style={{ ...texto, marginTop: 8 }}>
+          O limite passa a ser <Valor tamanho="sm">{LIMITES_ANUAIS[outroTipo]}</Valor>.
+        </p>
+        <div className="flex gap-2" style={{ marginTop: 16 }}>
+          <button
+            onClick={() => setPasso("errado")}
+            className="flex-1 py-3 rounded-xl font-semibold"
+            style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={() => onCorrigir(outroTipo)}
+            className="flex-1 py-3 rounded-xl font-semibold"
+            style={{ backgroundColor: "var(--primary)", color: "var(--primary-contrast)" }}
+          >
+            Confirmar
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center p-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+      onClick={onFechar}
+    >
+      <div
+        className="w-full max-w-sm rounded-2xl p-5 relative"
+        style={{ ...cardStyle, maxHeight: "calc(100dvh - 32px)", overflowY: "auto" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
+          <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
+            Seu tipo de MEI
+          </h3>
+          <button
+            onClick={onFechar}
+            aria-label="Fechar"
+            className="rounded-full flex items-center justify-center shrink-0 active:scale-95 transition"
+            style={{ width: 30, height: 30, backgroundColor: "var(--field)" }}
+          >
+            <X size={15} style={{ color: "var(--text-secondary)" }} />
+          </button>
+        </div>
+        {conteudo}
+      </div>
     </div>
   );
 }
@@ -201,9 +408,16 @@ export default function EditarPerfil() {
   const navigate = useNavigate();
 
   const {
-    nome: nomeSalvo, email, visitante, tipo, mesAbertura, anoAbertura,
-    setNome: salvarNome, setTipo, setAbertura,
+    nome: nomeSalvo, email, visitante, tipo,
+    setNome: salvarNome, setTipo,
   } = useUserState();
+
+  /* Data de abertura: fonte unica no AppStateContext (ver topo). */
+  const { mesAnoAbertura, setMesAnoAbertura } = useAppState();
+  const mesAbertura = mesAnoAbertura?.mes || null;
+  const anoAbertura = mesAnoAbertura?.ano || null;
+  const anoAtual = new Date().getFullYear();
+  const abriuEsteAno = !!mesAbertura && Number(anoAbertura) === anoAtual;
 
   const [nome, setNome] = useState(nomeSalvo || "");
   /* WhatsApp: canal de atendimento do TaCerto. Vive na coluna `whatsapp`
@@ -211,14 +425,15 @@ export default function EditarPerfil() {
      +55 no banco e mostramos só os dígitos locais na tela. */
   const [whats, setWhats] = useState("");
   const [whatsSalvo, setWhatsSalvo] = useState("");
-  const [selecionarTipo, setSelecionarTipo] = useState(false);
-  const [perfilPendente, setPerfilPendente] = useState(null);
-  const [confirmarTroca, setConfirmarTroca] = useState(false);
+  const [folhaTipoAberta, setFolhaTipoAberta] = useState(false);
   const [calendarioAberto, setCalendarioAberto] = useState(false);
   const [salvo, setSalvo] = useState(false);
   /* true so quando a conta veio do Google (ver bloco no topo).
      null = ainda carregando, para nao piscar o icone errado. */
   const [emailConfirmado, setEmailConfirmado] = useState(null);
+  /* Data do cadastro (user.created_at) — define se ainda da para
+     corrigir o tipo de MEI sozinho. */
+  const [criadoEm, setCriadoEm] = useState(null);
 
   /* E-mail editavel enquanto pendente. Comeca com o valor salvo. */
   const [emailCampo, setEmailCampo] = useState(email || "");
@@ -246,6 +461,13 @@ export default function EditarPerfil() {
   /* Pendente = mostra campo editavel + botao de acao ao lado. */
   const emailPendente = !visitante && !!email && emailConfirmado === false;
 
+  /* Ainda da para corrigir o tipo sozinho? Visitante (sem conta) sempre
+     pode; conta logada, so nos primeiros DIAS_PARA_CORRIGIR_TIPO dias. */
+  const podeCorrigirTipo =
+    visitante ||
+    (!!criadoEm &&
+      Date.now() - new Date(criadoEm).getTime() <= DIAS_PARA_CORRIGIR_TIPO * 86400000);
+
   useEffect(() => { setNome(nomeSalvo || ""); }, [nomeSalvo]);
   useEffect(() => { setEmailCampo(email || ""); }, [email]);
 
@@ -263,7 +485,8 @@ export default function EditarPerfil() {
     return () => clearTimeout(t);
   }, [enviado]);
 
-  // Busca o WhatsApp salvo e a origem da conta (Google ou e-mail).
+  // Busca o WhatsApp salvo, a origem da conta (Google ou e-mail) e a
+  // data do cadastro.
   useEffect(() => {
     let ativo = true;
     (async () => {
@@ -272,7 +495,10 @@ export default function EditarPerfil() {
         const user = userData?.user;
         if (!user) return; // visitante
         // Verde so para quem entrou pelo Google; o resto fica pendente.
-        if (ativo) setEmailConfirmado(contaVeioDoGoogle(user));
+        if (ativo) {
+          setEmailConfirmado(contaVeioDoGoogle(user));
+          setCriadoEm(user.created_at || null);
+        }
 
         const { data } = await supabase
           .from("perfis")
@@ -363,11 +589,24 @@ export default function EditarPerfil() {
     setTimeout(() => setSalvo(false), 1800);
   }
 
-  function escolherTipo(novo) {
-    setSelecionarTipo(false);
-    if (novo === tipo) return;
-    setPerfilPendente(novo);
-    setConfirmarTroca(true);
+  /* "Escolhi errado no cadastro" dentro do prazo: troca e grava. */
+  function corrigirTipo(novo) {
+    setTipo(novo);
+    sincronizarPerfilNoBanco({ tipo: novo });
+    setFolhaTipoAberta(false);
+  }
+
+  /* Calendario da abertura: ano corrente grava; ano anterior APAGA
+     (a informacao so importa no 1o ano) e o campo some. */
+  function escolherAbertura(m, a) {
+    if (Number(a) === anoAtual) {
+      setMesAnoAbertura(m, a);
+      sincronizarPerfilNoBanco({ mesAbertura: m, anoAbertura: a });
+    } else {
+      setMesAnoAbertura(null, null);
+      sincronizarPerfilNoBanco({ mesAbertura: null, anoAbertura: null });
+    }
+    setCalendarioAberto(false);
   }
 
   /* O botao carrega o estado — por isso nao ha legenda na tela. */
@@ -595,13 +834,17 @@ export default function EditarPerfil() {
           <CampoEscolha
             rotulo="Tipo de MEI"
             valor={LABEL_PERFIL[tipo] || "Não informado"}
-            onClick={() => setSelecionarTipo(true)}
+            onClick={() => setFolhaTipoAberta(true)}
+            travado
           />
-          <CampoEscolha
-            rotulo="Data de abertura"
-            valor={subAbertura}
-            onClick={() => setCalendarioAberto(true)}
-          />
+          {/* So para quem abriu este ano (ver topo do arquivo). */}
+          {abriuEsteAno && (
+            <CampoEscolha
+              rotulo="Data de abertura"
+              valor={subAbertura}
+              onClick={() => setCalendarioAberto(true)}
+            />
+          )}
         </div>
 
         {/* Excluir conta: sem card, so o icone e o texto. */}
@@ -624,109 +867,17 @@ export default function EditarPerfil() {
         mes={mesAbertura}
         ano={anoAbertura}
         onFechar={() => setCalendarioAberto(false)}
-        onSelecionarMesAno={(m, a) => {
-          setAbertura(m, a);
-          sincronizarPerfilNoBanco({ mesAbertura: m, anoAbertura: a });
-          setCalendarioAberto(false);
-        }}
+        onSelecionarMesAno={escolherAbertura}
       />
 
-      {selecionarTipo && (
-        <div
-          className="fixed inset-0 z-40 flex items-center justify-center p-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
-          onClick={() => setSelecionarTipo(false)}
-        >
-          <div
-            className="w-full max-w-sm rounded-2xl p-5 space-y-4"
-            style={cardStyle}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
-              Escolha o tipo de MEI
-            </h3>
-            <div className="space-y-2">
-              {["MEI", "MEI_CAMINHONEIRO"].map((opt) => {
-                const ativo = tipo === opt;
-                return (
-                  <button
-                    key={opt}
-                    onClick={() => escolherTipo(opt)}
-                    className="w-full rounded-xl p-4 flex items-center gap-3 text-left transition"
-                    style={{
-                      backgroundColor: ativo ? "rgba(34,197,94,0.07)" : "var(--field)",
-                      border: ativo ? "1px solid var(--primary)" : "1px solid transparent",
-                      opacity: ativo ? 1 : 0.55,
-                    }}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className="text-sm"
-                        style={{ color: "var(--text)", fontWeight: ativo ? 700 : 500 }}
-                      >
-                        {opt === "MEI" ? "MEI" : "MEI Caminhoneiro"}
-                      </p>
-                      <p
-                        className="text-xs mt-0.5 flex items-center gap-1"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        Limite anual <Valor tamanho="sm">{LIMITES_ANUAIS[opt]}</Valor>
-                      </p>
-                    </div>
-                    {ativo && <Check size={18} style={{ color: "var(--primary)" }} />}
-                  </button>
-                );
-              })}
-            </div>
-            <button
-              onClick={() => setSelecionarTipo(false)}
-              className="w-full py-3 rounded-xl font-semibold"
-              style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
-
-      {confirmarTroca && perfilPendente && (
-        <div
-          className="fixed inset-0 z-40 flex items-center justify-center p-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
-        >
-          <div className="w-full max-w-sm rounded-2xl p-5 space-y-4" style={cardStyle}>
-            <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
-              Alterar tipo de MEI?
-            </h3>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              O limite anual será recalculado para{" "}
-              <Valor tamanho="sm">{LIMITES_ANUAIS[perfilPendente]}</Valor>.
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => { setConfirmarTroca(false); setPerfilPendente(null); }}
-                className="flex-1 py-3 rounded-xl font-semibold"
-                style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => {
-                  if (perfilPendente) {
-                    setTipo(perfilPendente);
-                    sincronizarPerfilNoBanco({ tipo: perfilPendente });
-                  }
-                  setConfirmarTroca(false);
-                  setPerfilPendente(null);
-                }}
-                className="flex-1 py-3 rounded-xl font-semibold"
-                style={{ backgroundColor: "var(--primary)", color: "var(--primary-contrast)" }}
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
+      {folhaTipoAberta && (
+        <FolhaTipoMei
+          tipo={tipo}
+          podeCorrigir={podeCorrigirTipo}
+          onFechar={() => setFolhaTipoAberta(false)}
+          onCorrigir={corrigirTipo}
+          cardStyle={cardStyle}
+        />
       )}
     </div>
   );

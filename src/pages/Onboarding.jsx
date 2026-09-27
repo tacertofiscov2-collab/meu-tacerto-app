@@ -1,4 +1,4 @@
-/* ONBOARDING v4 — steps com campo rolam e ancoram no topo */
+/* ONBOARDING v6 — sem o aviso "Confira" no tipo de MEI (volta ao que era) + acentos nos textos */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import {
@@ -13,6 +13,23 @@ import Valor from "@/components/Valor";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 
 /* ===================================================================
+   ONBOARDING v6 (26/09/2026)
+
+   1) O aviso "Confira: isso define seu limite..." que a v5 colocou na
+      escolha do tipo de MEI SAIU (pedido do Fernando: nao precisa). O
+      step 2 voltou a ser como era. A mensagem curta da escolha da data
+      (step 3: "Limite cheio: R$ 81.000 / ano" ou o limite proporcional
+      ao lado do mes) continua igual.
+
+   2) ACENTOS (desde a v5): os textos da tela estavam sem acento ("Qual
+      e o seu MEI?", "Voce abriu", "Comecar a usar"...). Agora estao
+      certos.
+
+   A pergunta "Voce abriu seu MEI em <ano>?" (step 3) JA fazia o que foi
+   decidido para a data de abertura: Sim -> pede o mes e grava mes/ano;
+   Nao -> grava null (o app nao guarda nada). Nao mudou.
+
+   ===================================================================
    ONBOARDING v4 — O TECLADO NAO COBRE MAIS OS CAMPOS (17/09/2026)
 
    O PROBLEMA: no step 1 ("Como posso te chamar?") e no step 0
@@ -46,7 +63,7 @@ import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
    =================================================================== */
 
 const MESES = [
-  "Janeiro", "Fevereiro", "Marco", "Abril", "Maio", "Junho",
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
 
@@ -177,7 +194,7 @@ export default function Onboarding() {
   function conferirCodigo() {
     setErro("");
     if (codigo.replace(/\D/g, "").length < 4) {
-      return setErro("Digite o codigo que enviamos.");
+      return setErro("Digite o código que enviamos.");
     }
     setCodigo("");
     setStep(1);
@@ -246,7 +263,7 @@ export default function Onboarding() {
           maxLength={6}
           onChange={(e) => { setCodigo(e.target.value.replace(/\D/g, "").slice(0, 6)); if (erro) setErro(""); }}
           onKeyDown={(e) => { if (e.key === "Enter") conferirCodigo(); }}
-          aria-label="Codigo de verificacao"
+          aria-label="Código de verificação"
           style={{
             position: "fixed",
             top: 0,
@@ -301,7 +318,7 @@ export default function Onboarding() {
                 className="text-2xl font-bold text-center mb-5"
                 style={{ color: "var(--text)" }}
               >
-                Qual e o seu WhatsApp?
+                Qual é o seu WhatsApp?
               </h1>
 
               <div className="flex items-stretch gap-2">
@@ -341,7 +358,7 @@ export default function Onboarding() {
               <button
                 onClick={() => {
                   if (!telefoneValido(telefone)) {
-                    return setErro("Digite um numero de WhatsApp valido com DDD.");
+                    return setErro("Digite um número de WhatsApp válido com DDD.");
                   }
                   setErro("");
                   setStep("verificar");
@@ -373,7 +390,7 @@ export default function Onboarding() {
                 className="text-sm text-center mb-6 leading-relaxed"
                 style={{ color: "var(--text-secondary)" }}
               >
-                Enviamos um codigo para{" "}
+                Enviamos um código para{" "}
                 <span style={{ color: "var(--text)", fontWeight: 600 }}>+55 {telefone}</span>
               </p>
 
@@ -421,16 +438,16 @@ export default function Onboarding() {
                   className={btnPrincipalClasse}
                   style={btnPrincipal}
                 >
-                  Validar codigo
+                  Validar código
                   <ArrowRight size={18} strokeWidth={2.4} />
                 </button>
 
                 <button
-                  onClick={() => setErro("Reenvio disponivel quando o envio de codigo for ativado.")}
+                  onClick={() => setErro("Reenvio disponível quando o envio de código for ativado.")}
                   className="w-full text-center text-sm pt-1"
                   style={{ color: "var(--text-secondary)" }}
                 >
-                  Reenviar codigo
+                  Reenviar código
                 </button>
               </div>
             </div>
@@ -497,7 +514,7 @@ export default function Onboarding() {
                 className="text-2xl font-bold text-center mb-5"
                 style={{ color: "var(--text)" }}
               >
-                Qual e o seu MEI?
+                Qual é o seu MEI?
               </h1>
 
               <div className="space-y-2.5">
@@ -563,13 +580,13 @@ export default function Onboarding() {
                 className="text-2xl font-bold text-center mb-5"
                 style={{ color: "var(--text)" }}
               >
-                Voce abriu seu MEI em {anoAtual}?
+                Você abriu seu MEI em {anoAtual}?
               </h1>
 
               <div className="grid grid-cols-2 gap-2.5">
                 {[
                   { v: true, Icon: CheckCircle2, l: "Sim, esse ano" },
-                  { v: false, Icon: Clock, l: "Nao, ja faz tempo" },
+                  { v: false, Icon: Clock, l: "Não, já faz tempo" },
                 ].map((o) => {
                   const sel = meiEsseAno === o.v;
                   const Ico = o.Icon;
@@ -601,7 +618,7 @@ export default function Onboarding() {
                       className="text-xs font-medium mb-1.5"
                       style={{ color: "var(--text-secondary)" }}
                     >
-                      Qual mes voce abriu?
+                      Qual mês você abriu?
                     </p>
                     <button
                       onClick={() => setSeletorMes(true)}
@@ -616,7 +633,7 @@ export default function Onboarding() {
                             color: mesMei ? "var(--text)" : "var(--text-secondary)",
                           }}
                         >
-                          {mesMei ? MESES[parseInt(mesMei) - 1] : "Selecione o mes"}
+                          {mesMei ? MESES[parseInt(mesMei) - 1] : "Selecione o mês"}
                         </span>
                         {mesMei && (
                           <>
@@ -669,7 +686,7 @@ export default function Onboarding() {
                 className={btnPrincipalClasse}
                 style={btnPrincipal}
               >
-                Comecar a usar
+                Começar a usar
                 <ArrowRight size={18} strokeWidth={2.4} />
               </button>
             </div>
@@ -679,7 +696,7 @@ export default function Onboarding() {
 
       <SeletorMesAno
         aberto={seletorMes}
-        titulo="Mes de abertura"
+        titulo="Mês de abertura"
         mes={mesMei ? parseInt(mesMei) : null}
         ano={anoAtual}
         comAno={false}
