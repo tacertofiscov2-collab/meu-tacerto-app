@@ -1,7 +1,17 @@
 // Edge Function: pluggy
-// PLUGGY v7 — caminho B: bancos | criar | status | diagnostico (TEMPORARIO)  +  token | transacoes | desconectar
+// PLUGGY v8 — faxina: saem as tarefas "diagnostico" (temporaria) e "token" (widget antigo)
+//            ficam: bancos | criar | status | transacoes | desconectar
 // As chaves ficam nos Secrets do Supabase: PLUGGY_CLIENT_ID e PLUGGY_CLIENT_SECRET
 // O usuário é descoberto pelo login — nunca aceitar userId vindo de fora.
+//
+// POR QUE A FAXINA (26/09/2026)
+//   - "diagnostico" foi criada só para investigar as respostas da Pluggy
+//     no teste de 24/09. Mostrava mais detalhe do que o app precisa.
+//   - "token" gerava a chave da janela antiga da Pluggy (widget). Desde o
+//     caminho B a conexão é feita pelas NOSSAS telas. Deixar a porta
+//     aberta permitiria conectar banco "por fora" — sem o nosso texto de
+//     consentimento e sem a proteção contra banco repetido (cada conexão
+//     é vaga paga na Pluggy).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const CORS = {
@@ -307,112 +317,7 @@ Deno.serve(async (req) => {
     }
 
     // ---------------------------------------------------------------
-    // DIAGNOSTICO — ⚠️ TEMPORÁRIO, REMOVER depois do teste de 24/09
-    // Mostra o que a Pluggy tem para uma conexão: o resultado de cada
-    // parte da coleta, as contas e um resumo das transações SEM filtro
-    // de data. Mesma trava de dono das outras tarefas.
-    // ---------------------------------------------------------------
-    if (acao === "diagnostico") {
-      const itemId = String(corpo?.itemId ?? "");
-
-      if (!FORMATO_UUID.test(itemId)) {
-        return responder({ error: "Conexão não informada." }, 400);
-      }
-
-      const apiKey = await pegarApiKey();
-      const item = await pluggyGet(`/items/${itemId}`, apiKey);
-
-      if (item.clientUserId !== usuario.id) {
-        return responder({ error: "Conexão não encontrada." }, 404);
-      }
-
-      const contas = await pluggyGet(`/accounts?itemId=${itemId}`, apiKey);
-      const resumoContas: unknown[] = [];
-
-      for (const conta of contas.results ?? []) {
-        const numero = String(conta.number ?? "");
-        const base = {
-          tipo: conta.type,
-          subtipo: conta.subtype,
-          nome: conta.name ?? conta.marketingName ?? "",
-          final: numero ? numero.slice(-4) : "",
-        };
-
-        if (conta.type !== "BANK") {
-          resumoContas.push(base);
-          continue;
-        }
-
-        // Primeira página, SEM filtro de data
-        const lote = await pluggyGet(`/v2/transactions?accountId=${conta.id}`, apiKey);
-        // deno-lint-ignore no-explicit-any
-        const lista: any[] = lote.results ?? [];
-        const datas = lista.map((t) => String(t.date ?? "")).filter(Boolean).sort();
-
-        resumoContas.push({
-          ...base,
-          transacoesNaPrimeiraPagina: lista.length,
-          temMaisPaginas: Boolean(lote.next),
-          entradas: lista.filter((t) => t.type === "CREDIT").length,
-          saidas: lista.filter((t) => t.type === "DEBIT").length,
-          pendentes: lista.filter((t) => t.status === "PENDING").length,
-          maisAntiga: datas[0] ?? null,
-          maisRecente: datas[datas.length - 1] ?? null,
-          comProviderId: lista.filter((t) => t.providerId).length,
-          comPagador: lista.filter((t) => t.paymentData?.payer?.name).length,
-          exemplos: lista.slice(0, 3).map((t) => ({
-            data: t.date,
-            tipo: t.type,
-            valor: t.amount,
-            status: t.status,
-            descricao: String(t.description ?? "").slice(0, 40),
-          })),
-        });
-      }
-
-      return responder({
-        status: item.status,
-        execucao: item.executionStatus,
-        partes: item.statusDetail ?? null,
-        erro: item.error ?? null,
-        contas: resumoContas,
-      });
-    }
-
-    // ---------------------------------------------------------------
-    // TAREFA 1: gerar o Connect Token (widget da Pluggy)
-    // No caminho B a conexão não usa mais o widget; fica aqui até as
-    // telas novas substituírem a ConectarBanco atual.
-    // ---------------------------------------------------------------
-    if (acao === "token") {
-      const apiKey = await pegarApiKey();
-
-      const resp = await fetch(`${PLUGGY_API}/connect_token`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-API-KEY": apiKey,
-        },
-        body: JSON.stringify({
-          options: {
-            clientUserId: usuario.id,
-            avoidDuplicates: true,
-          },
-        }),
-      });
-
-      if (!resp.ok) {
-        const detalhe = await resp.text();
-        console.error(`pluggy connect_token (${resp.status}):`, detalhe);
-        return responder({ error: "Não foi possível iniciar a conexão com o banco." }, 502);
-      }
-
-      const { accessToken } = await resp.json();
-      return responder({ accessToken });
-    }
-
-    // ---------------------------------------------------------------
-    // TAREFA 2: buscar as entradas do ano de uma conexão
+    // TRANSACOES: buscar as entradas do ano de uma conexão
     // Só ENTRADAS (CREDIT). Saídas ficam para o módulo de despesas.
     // Usa GET /v2/transactions (paginação por cursor): o endereço
     // antigo GET /transactions foi aposentado pela Pluggy (410).
@@ -490,9 +395,10 @@ Deno.serve(async (req) => {
     }
 
     // ---------------------------------------------------------------
-    // TAREFA 3: desconectar — apaga a conexão NA PLUGGY
-    // Usos: (a) conexão repetida do mesmo banco, que a tela não guarda;
-    //       (b) a pessoa desconectar o próprio banco.
+    // DESCONECTAR: apaga a conexão NA PLUGGY
+    // Usos: (a) conexão repetida do mesmo banco, que a tela de retorno
+    //           não guarda (descartarConexaoNova);
+    //       (b) a pessoa desconectar o próprio banco (desconectarConexao).
     // Libera a vaga no pacote de 500 conexões.
     // A linha em `conexoes_bancarias`, quando existir, quem trata é o app.
     // ---------------------------------------------------------------
