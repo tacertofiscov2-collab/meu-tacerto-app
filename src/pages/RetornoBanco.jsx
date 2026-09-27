@@ -1,4 +1,4 @@
-/* RETORNOBANCO v1 — volta do banco: espera, guarda a conexao, busca as entradas e mostra o resultado */
+/* RETORNOBANCO v3 — sem o botao "Depois": com entrada esperando, so "Conferir agora" */
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Gauge, Check, AlertCircle } from "lucide-react";
@@ -36,7 +36,9 @@ import {
         de janeiro (sincronizar). Se a pessoa recarregar a pagina, a
         conexao com o mesmo itemId ja guardada e reaproveitada.
      4. RESULTADO: "Achei X entradas desde janeiro" -> Conferir agora
-        (/lancar, onde mora a conferencia) ou Depois (/dashboard).
+        (/conferir-entradas). v3: o "Depois" saiu — com o portao das
+        entradas (DASHBOARD v15), a pessoa confere antes de usar o app
+        de qualquer jeito.
 
    ERROS, em linguagem simples: autorizacao negada no banco, link
    expirado, banco recusou, demora fora do normal, falha nossa ao
@@ -51,8 +53,8 @@ import {
      - Se apagar a conexao repetida falhar, ela fica viva na Pluggy
        ocupando vaga (so avisa no console). Resolver com uma faxina no
        servidor quando o webhook existir.
-     - Conferencia agrupada por pagador (passo 7) ainda nao existe:
-       "Conferir agora" leva a /lancar.
+     - (resolvido na v2) "Conferir agora" abre a conferencia agrupada
+       por pagador, em /conferir-entradas.
    =================================================================== */
 
 const INTERVALO_STATUS_MS = 3000;
@@ -443,8 +445,7 @@ function Sucesso({ resultado, irPara }) {
       <div className="w-full" style={{ marginTop: 28 }}>
         {temParaConferir ? (
           <>
-            <BotaoPrincipal rotulo="Conferir agora" aoTocar={() => irPara("/lancar")} />
-            <BotaoSecundario rotulo="Depois" aoTocar={() => irPara("/dashboard")} />
+            <BotaoPrincipal rotulo="Conferir agora" aoTocar={() => irPara("/conferir-entradas")} />
           </>
         ) : (
           <BotaoPrincipal rotulo="Voltar ao início" aoTocar={() => irPara("/dashboard")} />

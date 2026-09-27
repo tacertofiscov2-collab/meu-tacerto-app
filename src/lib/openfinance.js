@@ -1,4 +1,4 @@
-/* OPENFINANCE v5 — descartarConexaoNova e contarPendentesDaConexao (tela de retorno do banco) */
+/* OPENFINANCE v7 — organizarPelasRegras (o portao das entradas no Dashboard) */
 import { supabase } from "@/lib/supabase";
 
 /* ===================================================================
@@ -393,6 +393,125 @@ export async function classificar(
   }
 
   return { ok: true };
+}
+
+/* -------------------------------------------------------------------
+   CLASSIFICAR UM GRUPO — a conferência agrupada por pagador (v6)
+
+   Mesma ideia do `classificar`, mas para VÁRIAS entradas de uma vez
+   (todas as de um pagador). Usada pela tela Conferir entradas.
+
+   ORDEM DE PROPÓSITO: primeiro marca as entradas no banco (uma única
+   gravação para o grupo inteiro), DEPOIS cria os lançamentos. Se a
+   gravação falhar, nenhum lançamento é criado — assim, tentar de novo
+   nunca duplica faturamento.
+
+   SEM DUPLICAR NUNCA: a gravação só pega entradas que AINDA estão
+   "pendente" e devolve quais mudou de verdade. Lançamento só é criado
+   para essas. Se a mesma conferência for gravada duas vezes (toque
+   duplo, tela aberta duas vezes), a segunda não acha nada pendente e
+   não cria lançamento repetido.
+
+   `por`: "usuario" (a pessoa respondeu agora) ou "regra" (o Fisco já
+   sabia a resposta, de uma conferência anterior).
+
+   Descrição do lançamento = nome do pagador; sem nome (depósito,
+   algumas TEDs), usa a descrição do extrato.
+   ------------------------------------------------------------------- */
+export async function classificarGrupo(
+  userId,
+  entradas,
+  decisao, // 'faturamento' | 'ignorada'
+  { criarLancamento, por = "usuario" } = {},
+) {
+  if (!userId || !Array.isArray(entradas) || entradas.length === 0) {
+    return { ok: true, total: 0 };
+  }
+
+  const { data: mudadas, error } = await supabase
+    .from("entradas")
+    .update({
+      status: decisao,
+      lancamento_id: null,
+      classificada_por: por,
+      classificada_em: new Date().toISOString(),
+    })
+    .in("id", entradas.map((e) => e.id))
+    .eq("user_id", userId)
+    .eq("status", "pendente")
+    .select("id");
+
+  if (error) throw error;
+
+  const idsMudados = new Set((mudadas || []).map((m) => m.id));
+  const efetivas = entradas.filter((e) => idsMudados.has(e.id));
+
+  if (decisao === "faturamento" && typeof criarLancamento === "function") {
+    for (const e of efetivas) {
+      criarLancamento({
+        descricao: nomeParaDescricao(e.pagador_nome || e.descricao),
+        valor: Number(e.valor) || 0,
+        data: e.data,
+      });
+    }
+  }
+
+  const total = efetivas.reduce((s, e) => s + (Number(e.valor) || 0), 0);
+  return { ok: true, total, quantidade: efetivas.length };
+}
+
+/* -------------------------------------------------------------------
+   O FISCO JÁ SABE — organizar pelas regras (v7)
+
+   Aplica as regras de pagador às entradas pendentes: quem a pessoa já
+   confirmou como cliente vira faturamento sozinho; quem tem regra de
+   "ignorar" fica de fora sozinho. Devolve as que AINDA precisam da
+   pessoa (sem regra).
+
+   Usada em dois lugares:
+     - Dashboard (o "portão"): se sobrar alguma, manda a pessoa para a
+       conferência antes de ela usar o app;
+     - Conferir entradas: ao abrir, organiza e pergunta só o resto.
+   Rodar duas vezes ao mesmo tempo não duplica nada (classificarGrupo
+   só mexe no que ainda está pendente).
+   ------------------------------------------------------------------- */
+export async function organizarPelasRegras(userId, { criarLancamento } = {}) {
+  if (!userId) return { organizadas: 0, pendentes: [] };
+
+  const [pendentes, regras] = await Promise.all([
+    listarPendentes(userId),
+    lerRegras(userId),
+  ]);
+
+  const porRegra = { faturamento: [], ignorada: [] };
+  const restantes = [];
+  for (const e of pendentes) {
+    const doc = String(e.pagador_documento || "").replace(/\D/g, "");
+    const regra = doc ? regras[doc] : null;
+    if (regra?.acao === "faturamento") porRegra.faturamento.push(e);
+    else if (regra?.acao === "ignorar") porRegra.ignorada.push(e);
+    else restantes.push(e);
+  }
+
+  let organizadas = 0;
+  for (const decisao of ["faturamento", "ignorada"]) {
+    const lista = porRegra[decisao];
+    if (!lista.length) continue;
+    try {
+      let r;
+      try {
+        r = await classificarGrupo(userId, lista, decisao, { criarLancamento, por: "regra" });
+      } catch {
+        // se o banco nao aceitar "regra" como origem, grava como "usuario"
+        r = await classificarGrupo(userId, lista, decisao, { criarLancamento });
+      }
+      organizadas += r?.quantidade || 0;
+    } catch {
+      restantes.push(...lista); // nao deu: a pessoa confere
+    }
+  }
+
+  return { organizadas, pendentes: restantes };
 }
 
 /* -------------------------------------------------------------------

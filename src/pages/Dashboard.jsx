@@ -1,6 +1,6 @@
-﻿/* DASHBOARD v14 — card da media limite cabe inteiro na tela + pergunta ao Fisco sem "desenhado" */
+﻿/* DASHBOARD v15 — portao das entradas: com entrada nova esperando, vai direto para a conferencia */
 import { useNavigate } from "react-router-dom";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Gauge, ChevronRight, Send, X, Mic, Image as ImageIcon, Camera, FileText, Sparkles, BookOpen } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
@@ -13,7 +13,7 @@ import {
   truncarNome,
 } from "@/lib/fiscal";
 import { supabase } from "@/lib/supabase";
-import { listarConexoes, sincronizar } from "@/lib/openfinance";
+import { listarConexoes, sincronizar, organizarPelasRegras } from "@/lib/openfinance";
 /* DASHBOARD v3 — cabecalho no painel de perguntas + limpeza do chat morto.
 
    1) O painel de perguntas abria com um vazio grande no topo (o espaco
@@ -1306,7 +1306,7 @@ const ALTURA_SIMBOLO_BANCO = 26;
    em segundos. Numero maior = mais calmo. */
 const CICLO_CONVITE_S = 3.6;
 
-function BotaoBanco() {
+function BotaoBanco({ onSincronizou }) {
   const navigate = useNavigate();
   const [estado, setEstado] = useState({ carregado: false, temBanco: false });
 
@@ -1326,6 +1326,8 @@ function BotaoBanco() {
         if (conexoes.length && Date.now() - ultimaSincronizacao > INTERVALO_SYNC_MS) {
           ultimaSincronizacao = Date.now();
           await Promise.allSettled(conexoes.map((c) => sincronizar(user.id, c.id)));
+          // Chegou entrada nova? O portao do Dashboard confere (v15)
+          onSincronizou?.();
         }
       } catch {
         /* sem rede ou sem login — o botao fica so com o simbolo */
@@ -1443,8 +1445,42 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const {
     nome, tipoMEI, faturamentoAtual, limiteAtual, limiteCheio, percentualAtual,
-    mediaMensal, mediaLimite,
+    mediaMensal, mediaLimite, adicionarLancamento,
   } = useAppState();
+
+  /* =================================================================
+     PORTAO DAS ENTRADAS (v15 — pedido do Fernando, 27/09/2026)
+
+     Se tem entrada nova esperando, a pessoa vai DIRETO para a
+     conferencia ("É faturamento?" Sim/Não) e so volta a usar o app
+     depois de confirmar tudo. Roda ao abrir o Dashboard e de novo
+     quando a sincronizacao com o banco termina (BotaoBanco).
+
+     Antes, organiza sozinho o que o Fisco ja sabe (pagadores que a
+     pessoa ja confirmou como cliente): so manda para a conferencia se
+     sobrar alguma entrada SEM regra.
+
+     Sem rede ou sem login: nao faz nada — o app segue normal.
+     (WhatsApp: quando as confirmacoes tambem acontecerem por la, o
+     portao ja respeita — ele so olha o que esta pendente no banco.)
+     ================================================================= */
+  const verificarEntradas = useCallback(async () => {
+    try {
+      const { data } = await supabase.auth.getUser();
+      const user = data?.user;
+      if (!user) return;
+      const { pendentes } = await organizarPelasRegras(user.id, {
+        criarLancamento: adicionarLancamento,
+      });
+      if (pendentes.length > 0) navigate("/conferir-entradas", { replace: true });
+    } catch {
+      /* sem rede: segue normal */
+    }
+  }, [adicionarLancamento, navigate]);
+
+  useEffect(() => {
+    verificarEntradas();
+  }, [verificarEntradas]);
 
   // Card B: quanto a media por mes representa da media limite
   const percentualMedia = mediaLimite > 0 ? (mediaMensal / mediaLimite) * 100 : 0;
@@ -1512,7 +1548,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <BotaoBanco />
+          <BotaoBanco onSincronizou={verificarEntradas} />
         </header>
 
         <div className="px-5 pt-2 flex-1 flex flex-col min-h-0 relative">

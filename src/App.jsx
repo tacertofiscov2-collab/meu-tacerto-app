@@ -1,4 +1,4 @@
-﻿/* APP v6 — rota /conectar-banco/retorno (volta do banco) */
+﻿/* APP v7 — rota /conferir-entradas (conferencia agrupada por pagador) */
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
@@ -30,6 +30,7 @@ import AlterarWhatsapp from "./pages/AlterarWhatsapp.jsx";
 import ConectarBanco from "./pages/ConectarBanco.jsx";
 import EscolherBanco from "./pages/EscolherBanco.jsx";
 import RetornoBanco from "./pages/RetornoBanco.jsx";
+import ConferirEntradas from "./pages/ConferirEntradas.jsx";
 import EditarPerfil from "./pages/EditarPerfil.jsx";
 import ResumoPerfil from "./pages/ResumoPerfil.jsx";
 import InformacoesFiscais from "./pages/InformacoesFiscais.jsx";
@@ -87,6 +88,9 @@ import AuthCallback from "./pages/AuthCallback.jsx";
                                conta" (EscolherBanco.jsx)
      /conectar-banco/retorno   o banco devolve a pessoa para ca com
                                ?itemId=... (RetornoBanco.jsx)
+     /conferir-entradas        conferencia agrupada por pagador
+                               (ConferirEntradas.jsx) — aberta pela faixa
+                               de Lancar e pelo "Conferir agora"
    =================================================================== */
 
 export default function App() {
@@ -115,6 +119,7 @@ export default function App() {
           <Route path="/conectar-banco" element={<ConectarBanco />} />
           <Route path="/conectar-banco/escolher" element={<EscolherBanco />} />
           <Route path="/conectar-banco/retorno" element={<RetornoBanco />} />
+          <Route path="/conferir-entradas" element={<ConferirEntradas />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/termos" element={<Termos />} />
