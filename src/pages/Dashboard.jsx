@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v15 — portao das entradas: com entrada nova esperando, vai direto para a conferencia */
+﻿/* DASHBOARD v17 — "Tirar dúvidas": o titulo rola junto com os cards (o X continua fixo) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -232,20 +232,56 @@ function BolinhasIndicadoras({ pagina, irPara }) {
    "MEI · media mes"), em px. Era 11,5. Para ajustar, mude so este numero. */
 const TAMANHO_ROTULO_CARD = 14;
 
+/* ===================================================================
+   TAMANHO DO VELOCIMETRO (v16)
+
+   Em tela baixa (celular pequeno, navegador com barras grandes), o
+   velocimetro de tamanho fixo nao cabia: o numero e o balao "?"
+   invadiam o "MEI · anual". Agora cada pagina MEDE a altura que tem
+   e o velocimetro encolhe o necessario (ate um minimo). Em tela alta,
+   como o iPhone, continua no tamanho de sempre (205).
+
+   Conta: o arco tem altura = 60% da largura (desenho 200 x 120); embaixo
+   dele vem o numero + balao (ALTURA_NUMERO_E_BALAO, com folga).
+   =================================================================== */
+const LARGURA_MAX_VELOCIMETRO = 205;
+const LARGURA_MIN_VELOCIMETRO = 120;
+const ALTURA_NUMERO_E_BALAO = 64;
+
 function PaginaVelocimetro({
   rotulo, percentual, alertaDos20 = true, apenasInterrogacao = false, descricao,
   valorEsquerda, rotuloEsquerda, valorDireita, rotuloDireita,
   onBalao, onValores,
 }) {
+  const areaRef = useRef(null);
+  const [larguraVel, setLarguraVel] = useState(LARGURA_MAX_VELOCIMETRO);
+
+  useEffect(() => {
+    const el = areaRef.current;
+    if (!el) return undefined;
+    const medir = () => {
+      const altura = el.clientHeight;
+      if (!altura) return;
+      const cabe = Math.floor((altura - ALTURA_NUMERO_E_BALAO) / 0.6);
+      setLarguraVel(
+        Math.max(LARGURA_MIN_VELOCIMETRO, Math.min(LARGURA_MAX_VELOCIMETRO, cabe)),
+      );
+    };
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <div
       className="h-full flex flex-col px-5 pb-1 min-h-0"
       style={{ flex: "0 0 50%", width: "50%" }}
     >
-      <div className="flex-1 min-h-0 flex items-center justify-center">
+      <div ref={areaRef} className="flex-1 min-h-0 flex items-center justify-center">
         <VelocimetroAnimado
           percentual={percentual}
-          maxWidth={205}
+          maxWidth={larguraVel}
           numeroClasse="text-4xl font-bold"
           sempreMostrarBalao
           onClickBalao={onBalao}
@@ -589,31 +625,33 @@ function PainelPerguntas({
           <X size={15} style={{ color: "var(--text-secondary)" }} />
         </button>
 
-        {/* Cabeçalho: só o título, centralizado. O padding igual nos dois
-            lados (52) é o que mantém o texto no centro real do painel,
-            já que o "×" flutua por cima do canto direito. */}
-        <div
-          className="shrink-0 text-center"
-          style={{ padding: "16px 52px 12px" }}
-        >
-          <p
-            className="font-bold uppercase"
-            style={{
-              /* Branco sempre: nao acompanha a cor da faixa. */
-              color: "var(--text)",
-              fontSize: 13,
-              letterSpacing: "0.09em",
-            }}
-          >
-            Tirar dúvidas
-          </p>
-        </div>
-
         <div
           ref={listaRef}
           className="flex-1 min-h-0 overflow-y-auto hide-scrollbar"
           style={{ padding: "0 12px 12px", display: "flex", flexDirection: "column", gap: 8 }}
         >
+          {/* Titulo DENTRO da lista (v17): rola junto com os cards e sobe
+              no arrasto. So o "×" fica fixo no canto. O padding de 40 dos
+              lados (+12 da lista = 52) mantem o texto no centro real do
+              painel e longe do "×". O espaco embaixo (4 + 8 do gap = 12) e
+              o mesmo de antes, entao os cards ficam no mesmo lugar. */}
+          <div
+            className="shrink-0 text-center"
+            style={{ padding: "16px 40px 4px" }}
+          >
+            <p
+              className="font-bold uppercase"
+              style={{
+                /* Branco sempre: nao acompanha a cor da faixa. */
+                color: "var(--text)",
+                fontSize: 13,
+                letterSpacing: "0.09em",
+              }}
+            >
+              Tirar dúvidas
+            </p>
+          </div>
+
           {mostrarRegra20 && (
             <button
               type="button"
