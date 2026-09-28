@@ -1,8 +1,8 @@
-/* CONFERIRENTRADAS v4 — titulo grande e centralizado + explicacao SO na primeira conferencia */
+/* CONFERIRENTRADAS v10 — explicacao enquadrada: icone no topo, passos centralizados, botao no pe da tela */
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  ChevronDown, ChevronUp, ChevronLeft, Check, Loader2, AlertCircle, ArrowDownLeft, X,
+  ChevronDown, ChevronUp, ChevronLeft, Check, Loader2, AlertCircle, ListChecks,
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
@@ -13,6 +13,40 @@ import {
 
 /* ===================================================================
    CONFERIRENTRADAS — /conferir-entradas
+
+   v10 (27/09/2026): explicacao enquadrada na tela inteira:
+     - icone de "conferir" (lista com checks) logo abaixo do titulo
+     - os 3 passos centralizados (o bloco inteiro no meio da tela)
+     - "Por exemplo:" FORA do quadro, logo acima dele
+     - o "Sim" do quadro em branco (antes verde)
+     - o meio fica centralizado na altura e o botao "Entendi, vamos
+       lá" desce para perto da barra de baixo
+
+   v9 (27/09/2026): o quadro do Sim/Não ganhou o titulo "Por exemplo:".
+
+   v8 (27/09/2026): explicacao em PASSO A PASSO (variacao "B", escolhida
+     pelo Fernando entre tres mostradas no chat):
+       1 Veja quem te pagou        — Nome, valor e datas
+       2 Responda: é faturamento?  — Sim ou Não
+       3 O Fisco aprende           — Da próxima vez, entra sozinho
+     e, embaixo, um quadro pequeno com o que e Sim e o que e Não.
+
+   v7 (27/09/2026): a explicacao estava "baguncada" (texto centralizado
+     quebrando em lugares ruins, paragrafos corridos). Redesenho:
+       - no topo, centralizado: uma linha de contexto e a PERGUNTA em
+         destaque ("É faturamento?"), do jeito que ela vai aparecer
+       - dois cards alinhados a esquerda, cada um com a "pilula" do
+         botao (Sim verde / Não contorno), a regra em uma linha e os
+         exemplos em ETIQUETAS ("Por exemplo: serviço · frete · vendas")
+       - as duas dicas em linhas com icone, em vez de um paragrafo
+     Tudo continua cabendo na tela do iPhone com o botao.
+
+   v6 (27/09/2026): textos do Sim/Não da explicacao no formato
+     "..., por exemplo: ...", como o Fernando pediu.
+
+   v5 (27/09/2026): a explicacao da primeira vez nao cabia no iPhone
+     (o botao "Entendi, vamos lá" ficava atras da barra do Safari).
+     Icone menor, textos e espacos mais enxutos, dica mais curta.
 
    v4 (27/09/2026)
      - "Novas entradas" grande e centralizado (e o "1 de 7" tambem).
@@ -316,6 +350,8 @@ export default function ConferirEntradas() {
   }
 
   const centralizado = fase !== "pergunta";
+  // A explicacao ocupa a altura toda: icone em cima, botao no pe da tela
+  const telaCheia = fase === "explicacao";
   const g = grupos[indice];
 
   return (
@@ -353,13 +389,17 @@ export default function ConferirEntradas() {
       >
         <div
           className="max-w-sm w-full mx-auto"
-          style={{
-            // Telas de aviso ficam no meio da altura; a pergunta, no topo
-            marginTop: centralizado ? "auto" : 0,
-            marginBottom: centralizado ? "auto" : 0,
-            paddingTop: centralizado ? 12 : 6,
-            flexShrink: 0,
-          }}
+          style={
+            telaCheia
+              ? { flex: "1 0 auto", display: "flex", flexDirection: "column", paddingTop: 4 }
+              : {
+                  // Telas de aviso ficam no meio da altura; a pergunta, no topo
+                  marginTop: centralizado ? "auto" : 0,
+                  marginBottom: centralizado ? "auto" : 0,
+                  paddingTop: centralizado ? 12 : 6,
+                  flexShrink: 0,
+                }
+          }
         >
           {/* ------------------------- CARREGANDO ------------------------- */}
           {fase === "carregando" && (
@@ -371,36 +411,50 @@ export default function ConferirEntradas() {
           {/* -------------------------- EXPLICACAO --------------------------
               So na primeira conferencia (ver topo do arquivo). */}
           {fase === "explicacao" && (
-            <div className="conferir-entra flex flex-col items-center text-center">
-              <Circulo>
-                <ArrowDownLeft size={34} strokeWidth={2.4} style={{ color: "var(--primary)" }} />
-              </Circulo>
-
-              <p className="text-[15px] leading-relaxed" style={{ color: "var(--text-secondary)", marginTop: 18 }}>
-                O Fisco encontrou dinheiro que entrou na sua conta. Para cada pagador,
-                ele faz uma pergunta só:{" "}
-                <strong style={{ color: "var(--text)" }}>é faturamento?</strong>
-              </p>
-
-              <div className="w-full text-left space-y-2.5" style={{ marginTop: 18 }}>
-                <ExemploResposta
-                  sim
-                  titulo="Responda Sim"
-                  texto="Quando é pagamento de cliente pelo seu trabalho: serviço, frete ou venda."
-                />
-                <ExemploResposta
-                  titulo="Responda Não"
-                  texto="Quando não vem do seu trabalho: transferência entre contas suas, presente, empréstimo ou reembolso."
-                />
+            <div className="conferir-entra" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              {/* icone logo abaixo do titulo */}
+              <div className="flex justify-center">
+                <Circulo tamanho={64}>
+                  <ListChecks size={30} strokeWidth={2.2} style={{ color: "var(--primary)" }} />
+                </Circulo>
               </div>
 
-              <p className="text-[13px] leading-relaxed" style={{ color: "var(--text-tertiary)", marginTop: 16 }}>
-                Na dúvida, toque em <strong style={{ color: "var(--text-secondary)" }}>Ver as entradas</strong>{" "}
-                para conferir cada valor e data. Cada Sim ensina o Fisco: da próxima vez, as
-                entradas daquele pagador já entram sozinhas.
-              </p>
+              {/* o meio, centralizado na altura que sobra */}
+              <div style={{ marginTop: "auto", marginBottom: "auto", paddingTop: 28, paddingBottom: 28 }}>
+                {/* os tres passos, o bloco inteiro no meio da tela */}
+                <div className="flex justify-center">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                    <Passo numero={1} titulo="Veja quem te pagou" detalhe="Nome, valor e datas" />
+                    <Passo numero={2} titulo="Responda: é faturamento?" detalhe="Sim ou Não" />
+                    <Passo numero={3} titulo="O Fisco aprende" detalhe="Da próxima vez, entra sozinho" />
+                  </div>
+                </div>
 
-              <BotaoLargo rotulo="Entendi, vamos lá" aoTocar={() => setFase("pergunta")} />
+                {/* "Por exemplo:" fora do quadro, logo acima */}
+                <p className="font-semibold" style={{ fontSize: 14.5, color: "var(--text)", marginTop: 30, marginBottom: 8 }}>
+                  Por exemplo:
+                </p>
+                <div
+                  className="rounded-2xl"
+                  style={{
+                    padding: "14px 16px",
+                    backgroundColor: "var(--surface)",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  <p style={{ fontSize: 14, lineHeight: 1.5, color: "var(--text-secondary)" }}>
+                    <strong style={{ color: "var(--text)" }}>Sim</strong> = cliente pagando seu trabalho
+                    (serviço, frete, vendas)
+                  </p>
+                  <p style={{ fontSize: 14, lineHeight: 1.5, color: "var(--text-secondary)", marginTop: 8 }}>
+                    <strong style={{ color: "var(--text)" }}>Não</strong> = transferência sua, presente,
+                    empréstimo, reembolso
+                  </p>
+                </div>
+              </div>
+
+              {/* o botao no pe da tela, perto da barra */}
+              <BotaoLargo rotulo="Entendi, vamos lá" aoTocar={() => setFase("pergunta")} margemTopo={0} />
             </div>
           )}
 
@@ -679,41 +733,29 @@ function Picote() {
   );
 }
 
-/* Exemplo de resposta na explicacao da primeira vez */
-function ExemploResposta({ sim = false, titulo, texto }) {
+/* Um passo da explicacao da primeira vez: numero no circulo verde,
+   titulo e detalhe. */
+function Passo({ numero, titulo, detalhe }) {
   return (
-    <div
-      className="rounded-2xl flex items-start"
-      style={{
-        gap: 12,
-        padding: "12px 14px",
-        backgroundColor: sim ? "rgba(34,197,94,0.1)" : "var(--surface)",
-        border: `1px solid ${sim ? "rgba(34,197,94,0.45)" : "var(--border)"}`,
-      }}
-    >
+    <div className="flex items-start" style={{ gap: 14 }}>
       <span
-        className="rounded-full flex items-center justify-center shrink-0"
+        className="rounded-full flex items-center justify-center shrink-0 font-bold"
         style={{
-          width: 30,
-          height: 30,
-          marginTop: 1,
-          backgroundColor: sim ? "var(--primary)" : "var(--field)",
+          width: 32,
+          height: 32,
+          fontSize: 15,
+          border: "2px solid var(--primary)",
+          color: "var(--primary)",
         }}
       >
-        {sim ? (
-          <Check size={16} strokeWidth={3} style={{ color: "var(--primary-contrast)" }} />
-        ) : (
-          <X size={15} strokeWidth={3} style={{ color: "var(--text-secondary)" }} />
-        )}
+        {numero}
       </span>
-      <span className="flex-1 min-w-0">
-        <span className="block font-semibold" style={{ fontSize: 15, color: "var(--text)" }}>
+      <div style={{ paddingTop: 2 }}>
+        <p className="font-semibold" style={{ fontSize: 16.5, color: "var(--text)" }}>
           {titulo}
-        </span>
-        <span className="block text-[13px] leading-relaxed" style={{ color: "var(--text-secondary)", marginTop: 2 }}>
-          {texto}
-        </span>
-      </span>
+        </p>
+        <p style={{ fontSize: 13.5, color: "var(--text-tertiary)", marginTop: 2 }}>{detalhe}</p>
+      </div>
     </div>
   );
 }
@@ -732,13 +774,13 @@ function LinhaDetalhe({ rotulo, valor }) {
   );
 }
 
-function Circulo({ children, erro = false }) {
+function Circulo({ children, erro = false, tamanho = 76 }) {
   return (
     <span
-      className="flex items-center justify-center rounded-full"
+      className="flex items-center justify-center rounded-full shrink-0"
       style={{
-        width: 76,
-        height: 76,
+        width: tamanho,
+        height: tamanho,
         backgroundColor: erro ? "rgba(239,68,68,0.12)" : "rgba(34,197,94,0.14)",
       }}
     >
@@ -747,13 +789,13 @@ function Circulo({ children, erro = false }) {
   );
 }
 
-function BotaoLargo({ rotulo, aoTocar }) {
+function BotaoLargo({ rotulo, aoTocar, margemTopo = 26 }) {
   return (
     <button
       onClick={aoTocar}
       className="w-full py-3.5 rounded-2xl font-semibold transition active:scale-[0.99]"
       style={{
-        marginTop: 26,
+        marginTop: margemTopo,
         backgroundColor: "var(--primary)",
         color: "var(--primary-contrast)",
         fontSize: 16,
