@@ -1,8 +1,14 @@
 // Edge Function: pluggy
-// PLUGGY v8 — faxina: saem as tarefas "diagnostico" (temporaria) e "token" (widget antigo)
-//            ficam: bancos | criar | status | transacoes | desconectar
+// PLUGGY v9 — "transacoes" passa a devolver tambem as SAIDAS (tela Saidas)
+//            tarefas: bancos | criar | status | transacoes | desconectar
 // As chaves ficam nos Secrets do Supabase: PLUGGY_CLIENT_ID e PLUGGY_CLIENT_SECRET
 // O usuário é descoberto pelo login — nunca aceitar userId vindo de fora.
+//
+// v9 (28/09/2026): a tarefa "transacoes" devolve, alem das entradas
+//   (`transacoes`, como sempre), as SAIDAS (`saidas`): DEBIT ja
+//   confirmadas, com quem recebeu (nome/documento, quando o banco manda).
+//   O app guarda na tabela `saidas`, sem perguntar nada. Quem ainda nao
+//   foi atualizado ignora o campo novo — nada quebra.
 //
 // POR QUE A FAXINA (26/09/2026)
 //   - "diagnostico" foi criada só para investigar as respostas da Pluggy
@@ -127,6 +133,26 @@ function traduzir(t: any, chaveConta: string) {
     data: t.date,
     pagadorNome: pagador.name ?? "",
     pagadorDocumento: pagador.documentNumber?.value ?? "",
+    meio: t.paymentData?.paymentMethod ?? t.operationType ?? "",
+  };
+}
+
+// Saida (DEBIT) da Pluggy -> formato da tabela `saidas`
+// Mesma regra de chave do `traduzir` (providerId quando existe).
+// Quem recebeu: `paymentData.receiver` (Pix/TED/boleto) ou, em compra,
+// o estabelecimento (`merchant`), quando o banco manda.
+// deno-lint-ignore no-explicit-any
+function traduzirSaida(t: any, chaveConta: string) {
+  const recebedor = t.paymentData?.receiver ?? {};
+  const loja = t.merchant ?? {};
+  const id = t.providerId ? `of:${chaveConta}:${t.providerId}` : t.id;
+  return {
+    id,
+    descricao: t.description ?? "",
+    valor: Math.abs(Number(t.amount) || 0),
+    data: t.date,
+    recebedorNome: recebedor.name ?? loja.businessName ?? loja.name ?? "",
+    recebedorDocumento: recebedor.documentNumber?.value ?? loja.cnpj ?? "",
     meio: t.paymentData?.paymentMethod ?? t.operationType ?? "",
   };
 }
@@ -317,8 +343,9 @@ Deno.serve(async (req) => {
     }
 
     // ---------------------------------------------------------------
-    // TRANSACOES: buscar as entradas do ano de uma conexão
-    // Só ENTRADAS (CREDIT). Saídas ficam para o módulo de despesas.
+    // TRANSACOES: buscar as entradas E as saídas do ano de uma conexão
+    // ENTRADAS (CREDIT) em `transacoes`, SAÍDAS (DEBIT) em `saidas` (v9).
+    // Só as já confirmadas pelo banco (nada "PENDING").
     // Usa GET /v2/transactions (paginação por cursor): o endereço
     // antigo GET /transactions foi aposentado pela Pluggy (410).
     // ---------------------------------------------------------------
@@ -360,6 +387,7 @@ Deno.serve(async (req) => {
 
       const contas = await pluggyGet(`/accounts?itemId=${conexao.pluggy_item_id}`, apiKey);
       const entradas: unknown[] = [];
+      const saidas: unknown[] = [];
 
       for (const conta of contas.results ?? []) {
         // Cartão de crédito fica de fora — só conta corrente/poupança
@@ -377,10 +405,10 @@ Deno.serve(async (req) => {
           paginas++;
 
           for (const t of lote.results ?? []) {
-            // Só entradas, e só as já confirmadas pelo banco
-            if (t.type === "CREDIT" && t.status !== "PENDING") {
-              entradas.push(traduzir(t, chaveConta));
-            }
+            // Só as já confirmadas pelo banco
+            if (t.status === "PENDING") continue;
+            if (t.type === "CREDIT") entradas.push(traduzir(t, chaveConta));
+            else if (t.type === "DEBIT") saidas.push(traduzirSaida(t, chaveConta));
           }
 
           // `next` já vem pronto para anexar ao endereço (ex.: "?accountId=...&after=...")
@@ -391,7 +419,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      return responder({ transacoes: entradas, desde });
+      return responder({ transacoes: entradas, saidas, desde });
     }
 
     // ---------------------------------------------------------------

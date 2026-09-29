@@ -1,4 +1,4 @@
-﻿/* APP v7 — rota /conferir-entradas (conferencia agrupada por pagador) */
+﻿/* APP v9 — rota /das (Historico de DAS, aberta pelo Perfil) */
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
@@ -31,6 +31,8 @@ import ConectarBanco from "./pages/ConectarBanco.jsx";
 import EscolherBanco from "./pages/EscolherBanco.jsx";
 import RetornoBanco from "./pages/RetornoBanco.jsx";
 import ConferirEntradas from "./pages/ConferirEntradas.jsx";
+import Saidas from "./pages/Saidas.jsx";
+import HistoricoDas from "./pages/HistoricoDas.jsx";
 import EditarPerfil from "./pages/EditarPerfil.jsx";
 import ResumoPerfil from "./pages/ResumoPerfil.jsx";
 import InformacoesFiscais from "./pages/InformacoesFiscais.jsx";
@@ -91,6 +93,10 @@ import AuthCallback from "./pages/AuthCallback.jsx";
      /conferir-entradas        conferencia agrupada por pagador
                                (ConferirEntradas.jsx) — aberta pela faixa
                                de Lancar e pelo "Conferir agora"
+     /saidas                   tela Saidas (Saidas.jsx) — aberta pelo
+                               Perfil, junto com os itens do MEI
+     /das                      Historico de DAS (HistoricoDas.jsx) —
+                               tambem pelo Perfil
    =================================================================== */
 
 export default function App() {
@@ -120,6 +126,8 @@ export default function App() {
           <Route path="/conectar-banco/escolher" element={<EscolherBanco />} />
           <Route path="/conectar-banco/retorno" element={<RetornoBanco />} />
           <Route path="/conferir-entradas" element={<ConferirEntradas />} />
+          <Route path="/saidas" element={<Saidas />} />
+          <Route path="/das" element={<HistoricoDas />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/termos" element={<Termos />} />

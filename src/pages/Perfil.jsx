@@ -1,11 +1,13 @@
-﻿import { useEffect, useState } from "react";
+﻿/* PERFIL v6 — setas de entrada/saida, "Adicionar movimentações" e topo que rola */
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
 import {
-  ArrowLeft, User, Settings, Info, Shield, Users, Lock, LogOut,
-  ChevronDown, ChevronRight, UserPlus, X, Check, Receipt, TrendingUp, BarChart3,
-  Trash2, FileText,
+  User, Settings, Info, Shield, Users, Lock, LogOut,
+  ChevronDown, ChevronRight, UserPlus, X, Check, TrendingUp, BarChart3,
+  Trash2, FileText, ArrowUpRight, ArrowDownLeft, CalendarCheck,
 } from "lucide-react";
+import TopoRolavel from "../components/TopoRolavel.jsx";
 
 import { useUserState, setUserState } from "@/lib/userState";
 import {
@@ -162,22 +164,8 @@ export default function Perfil() {
         className="conteudo-rolavel hide-scrollbar"
         style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
       >
-        <header className="px-5 pt-6 pb-2 flex items-center gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            aria-label="Voltar"
-            className="toque w-10 h-10 rounded-full flex items-center justify-center"
-            style={{
-              border: "1px solid var(--border)",
-              backgroundColor: "transparent",
-            }}
-          >
-            <ArrowLeft size={20} style={{ color: "var(--text)" }} />
-          </button>
-          <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-            Perfil
-          </h1>
-        </header>
+        {/* v6: titulo sobe com a rolagem, setinha fica (transparente) */}
+        <TopoRolavel titulo="Perfil" onVoltar={() => navigate(-1)} recuo={20} />
 
         <div className="px-5 pt-3 pb-5 flex flex-col items-center">
           <div
@@ -237,9 +225,15 @@ export default function Perfil() {
           </Secao>
 
           <Secao titulo="Meu MEI">
-            <Item Icon={Receipt} label="Histórico de lançamentos" onClick={() => navigate("/historico", DE_PERFIL)} />
+            {/* v5/v6: entrada = seta para BAIXO (dinheiro chegando), saida = seta para CIMA */}
+            <Item Icon={ArrowDownLeft} label="Histórico de entradas" onClick={() => navigate("/historico", DE_PERFIL)} />
+            {/* v2/v3 (28/09/2026): o que saiu da conta + "Lançar saída" + parte isenta do IR */}
+            <Item Icon={ArrowUpRight} label="Histórico de saídas" onClick={() => navigate("/saidas", DE_PERFIL)} />
+            {/* v4 (28/09/2026): mes a mes, com o comprovante de cada DAS paga */}
+            <Item Icon={CalendarCheck} label="Histórico de DAS" onClick={() => navigate("/das", DE_PERFIL)} />
             <Item Icon={FileText} label="Histórico de notas fiscais" onClick={() => navigate("/notas-fiscais", DE_PERFIL)} />
-            <Item Icon={TrendingUp} label={`Adicionar faturamento de ${anoAtual}`} onClick={() => navigate("/adicionar-faturamento", DE_PERFIL)} />
+            {/* v6: antes "Adicionar faturamento" — agora cobre entradas E saidas (e o banco) */}
+            <Item Icon={TrendingUp} label="Adicionar movimentações" onClick={() => navigate("/adicionar-faturamento", DE_PERFIL)} />
             <Item Icon={BarChart3} label={`Resumo de ${anoAtual}`} onClick={() => navigate("/perfil/resumo", DE_PERFIL)} />
           </Secao>
 

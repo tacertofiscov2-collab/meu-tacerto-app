@@ -1,14 +1,35 @@
+/* ADICIONARFATURAMENTO v2 — agora "Adicionar movimentações": conectar banco + lancar entrada/saida + as formas de antes */
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
   Pencil,
   FileUp,
-  Plus,
   ClipboardPaste,
   ChevronRight,
+  Landmark,
+  ArrowDownLeft,
+  ArrowUpRight,
 } from "lucide-react";
+import TopoRolavel from "../components/TopoRolavel.jsx";
 
-function OpcaoCard({ Icon, titulo, descricao, onClick }) {
+/* ===================================================================
+   ADICIONAR MOVIMENTAÇÕES (antes "Adicionar faturamento") — 28/09/2026
+
+   O nome mudou porque a tela passou a cobrir ENTRADAS e SAIDAS (e o
+   banco traz as duas). O caminho continua /adicionar-faturamento, para
+   nada quebrar.
+
+   OPCOES, na ordem:
+     1. Conectar banco (Open Finance) — em destaque: entradas e saidas
+        chegam sozinhas
+     2. Lançar entrada  -> Historico de entradas
+     3. Lançar saída    -> Historico de saidas
+     4. Digitar o total, 5. Enviar extrato, 6. Colar texto (como antes)
+
+   Topo que rola (TopoRolavel): com 6 opcoes, em celular pequeno a tela
+   pode rolar; o titulo sobe e a setinha fica.
+   =================================================================== */
+
+function OpcaoCard({ Icon, titulo, descricao, onClick, destaque = false }) {
   return (
     <button
       type="button"
@@ -17,8 +38,11 @@ function OpcaoCard({ Icon, titulo, descricao, onClick }) {
       style={{
         paddingLeft: 14,
         paddingRight: 12,
-        paddingTop: 11,
-        paddingBottom: 11,
+        paddingTop: 12,
+        paddingBottom: 12,
+        ...(destaque
+          ? { backgroundColor: "rgba(34,197,94,0.10)", borderColor: "rgba(34,197,94,0.5)" }
+          : {}),
       }}
     >
       <Icon
@@ -55,6 +79,25 @@ export default function AdicionarFaturamento() {
 
   const opcoes = [
     {
+      Icon: Landmark,
+      titulo: "Conectar banco",
+      descricao: "Pelo Open Finance. As entradas e as saídas chegam sozinhas.",
+      onClick: () => navigate("/conectar-banco"),
+      destaque: true,
+    },
+    {
+      Icon: ArrowDownLeft,
+      titulo: "Lançar entrada",
+      descricao: "Uma por uma, direto no Histórico de entradas.",
+      onClick: () => navigate("/historico"),
+    },
+    {
+      Icon: ArrowUpRight,
+      titulo: "Lançar saída",
+      descricao: "O que foi pago em dinheiro ou fora do banco.",
+      onClick: () => navigate("/saidas"),
+    },
+    {
       Icon: Pencil,
       titulo: "Digitar o total",
       descricao: "Já sabe quanto faturou este ano? Digite o valor e pronto.",
@@ -67,12 +110,6 @@ export default function AdicionarFaturamento() {
       onClick: () => navigate("/adicionar-faturamento/enviar"),
     },
     {
-      Icon: Plus,
-      titulo: "Somar valores",
-      descricao: "Entrada por entrada, direto pelo Histórico.",
-      onClick: () => navigate("/historico"),
-    },
-    {
       Icon: ClipboardPaste,
       titulo: "Colar texto do extrato",
       descricao: "Copie o texto do extrato e cole aqui. A IA identifica.",
@@ -82,77 +119,39 @@ export default function AdicionarFaturamento() {
 
   return (
     <div
-      className="tela-fixa w-full flex flex-col"
+      className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <header className="px-5 pt-5 pb-2 flex items-center gap-3 shrink-0">
-        <button
-          onClick={() => navigate(-1)}
-          aria-label="Voltar"
-          className="toque toque-escala w-10 h-10 rounded-full flex items-center justify-center"
-          style={{
-            border: "1px solid var(--border)",
-            backgroundColor: "transparent",
-          }}
-        >
-          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
-        </button>
-        <h1
-          className="text-lg font-bold"
-          style={{ color: "var(--text)" }}
-        >
-          Adicionar faturamento
-        </h1>
-      </header>
-
-      {/* Bloco de tamanho fixo: não escala com a preferência de fonte,
-          então cabe tudo sem rolagem nos 3 tamanhos. */}
       <div
-        className="flex-1 min-h-0 flex flex-col px-5 overflow-hidden"
+        className="conteudo-rolavel hide-scrollbar px-5"
         style={{
           fontSize: 16,
-          paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
+          paddingBottom: "calc(24px + env(safe-area-inset-bottom))",
         }}
       >
-        <div className="shrink-0" style={{ marginTop: 10, marginBottom: 18 }}>
-          <p
-            className="font-semibold leading-snug"
-            style={{ color: "var(--text)", fontSize: 14.5 }}
-          >
-            Começou a usar o app no meio do ano?
-          </p>
-          <p
-            className="leading-relaxed"
-            style={{
-              color: "var(--text-secondary)",
-              fontSize: 12.5,
-              marginTop: 4,
-            }}
-          >
-            Registre aqui o que já faturou antes — vale dinheiro, Pix, cartão
-            ou transferência, não importa se emitiu nota fiscal. Escolha uma
-            das 4 formas abaixo:
-          </p>
-        </div>
+        <TopoRolavel titulo="Adicionar movimentações" onVoltar={() => navigate(-1)} />
 
-        <div
-          className="shrink-0"
-          style={{ display: "flex", flexDirection: "column", gap: 8 }}
+        <p
+          className="leading-relaxed"
+          style={{ color: "var(--text-secondary)", fontSize: 13.5, marginTop: 6, marginBottom: 16 }}
         >
+          Traga o que já entrou e saiu este ano.
+        </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {opcoes.map((op) => (
             <OpcaoCard key={op.titulo} {...op} />
           ))}
         </div>
 
-        <div className="flex-1 min-h-0" aria-hidden />
-
         <p
-          className="leading-relaxed text-center shrink-0"
+          className="leading-relaxed text-center"
           style={{
             color: "var(--text-tertiary)",
             fontSize: 10.5,
             paddingLeft: 8,
             paddingRight: 8,
+            marginTop: 24,
           }}
         >
           O TaCerto! é seu assistente fiscal. As informações servem pra alimentar

@@ -1,4 +1,4 @@
-/* OPENFINANCE v7 — organizarPelasRegras (o portao das entradas no Dashboard) */
+/* OPENFINANCE v8 — SAIDAS: guardadas sozinhas ao sincronizar + lancar saida a mao + segmento do IR */
 import { supabase } from "@/lib/supabase";
 
 /* ===================================================================
@@ -140,20 +140,24 @@ export function nomeParaDescricao(nome) {
    pluggy_item_id). A Edge Function confere se a conexao é do usuario
    logado — no nosso banco e na propria Pluggy — antes de devolver.
 
+   v8: `buscarMovimentacoes` devolve { entradas, saidas } numa chamada
+   so (a funcao pluggy v9 manda as duas). `buscarTransacoes` continua
+   devolvendo so as entradas.
+
    ⚠️ Nem toda entrada real traz o documento do pagador (deposito,
    algumas TEDs, creditos de sistema). Nesses casos pagadorNome e
    pagadorDocumento vem vazios, e o aprendizado por documento nao se
    aplica — o Fisco pergunta uma a uma.
    ------------------------------------------------------------------- */
-export async function buscarTransacoes(conexaoId) {
+export async function buscarMovimentacoes(conexaoId) {
   if (!PLUGGY_ATIVO) {
     // pequeno atraso, para a tela mostrar o "carregando" de verdade
     await new Promise((r) => setTimeout(r, 400));
-    return TRANSACOES_FALSAS;
+    return { entradas: TRANSACOES_FALSAS, saidas: [] };
   }
 
   // Sem conexao nao ha o que buscar — e nunca cai nos dados falsos
-  if (!conexaoId) return [];
+  if (!conexaoId) return { entradas: [], saidas: [] };
 
   const { data, error } = await supabase.functions.invoke("pluggy", {
     body: { acao: "transacoes", conexaoId },
@@ -165,7 +169,13 @@ export async function buscarTransacoes(conexaoId) {
     );
   }
 
-  return data?.transacoes || [];
+  // `saidas` so vem da funcao pluggy v9 em diante; antes disso, lista vazia
+  return { entradas: data?.transacoes || [], saidas: data?.saidas || [] };
+}
+
+/* So as entradas (o formato de sempre). Mantida para quem ja usava. */
+export async function buscarTransacoes(conexaoId) {
+  return (await buscarMovimentacoes(conexaoId)).entradas;
 }
 
 /* -------------------------------------------------------------------
@@ -179,33 +189,162 @@ export async function buscarTransacoes(conexaoId) {
    pluggy_transaction_id ja existe para aquele usuario, ignora.
    ------------------------------------------------------------------- */
 export async function sincronizar(userId, conexaoId = null) {
-  const transacoes = await buscarTransacoes(conexaoId);
-  if (!transacoes.length) return { novas: 0 };
+  const { entradas: transacoes, saidas } = await buscarMovimentacoes(conexaoId);
 
-  const linhas = transacoes.map((t) => ({
+  let novas = 0;
+  if (transacoes.length) {
+    const linhas = transacoes.map((t) => ({
+      user_id: userId,
+      conexao_id: conexaoId,
+      pluggy_transaction_id: t.id,
+      descricao: t.descricao,
+      valor: Number(t.valor) || 0,
+      data: t.data,
+      pagador_nome: t.pagadorNome,
+      pagador_documento: String(t.pagadorDocumento || "").replace(/\D/g, ""),
+      pagador_tipo: tipoDocumento(t.pagadorDocumento),
+      meio: t.meio,
+      status: "pendente",
+    }));
+
+    const { data, error } = await supabase
+      .from("entradas")
+      .upsert(linhas, {
+        onConflict: "user_id,pluggy_transaction_id",
+        ignoreDuplicates: true,
+      })
+      .select("id");
+
+    if (error) throw error;
+    novas = data?.length || 0;
+  }
+
+  // SAIDAS (v8): guardadas sozinhas, sem perguntar nada. Se a gaveta de
+  // saidas falhar, as ENTRADAS seguem normais — por isso nao lanca erro.
+  if (saidas.length) {
+    try {
+      await guardarSaidas(userId, conexaoId, saidas);
+    } catch (e) {
+      console.warn("Não foi possível guardar as saídas:", e?.message);
+    }
+  }
+
+  return { novas };
+}
+
+/* -------------------------------------------------------------------
+   SAIDAS (v8) — tela "Saídas"
+
+   A tabela `saidas` guarda:
+     - o que saiu da conta, vindo do banco (origem "banco"), sozinho;
+     - o que a pessoa lança à mão, ex.: pago em dinheiro (origem
+       "manual"), pelo "Lançar saída".
+   A mesma saída nunca entra duas vezes (user_id + pluggy_transaction_id).
+   Saída lançada à mão usa uma chave própria: "manual-<código>".
+   ------------------------------------------------------------------- */
+async function guardarSaidas(userId, conexaoId, saidas) {
+  const linhas = saidas.map((t) => ({
     user_id: userId,
     conexao_id: conexaoId,
     pluggy_transaction_id: t.id,
-    descricao: t.descricao,
+    origem: "banco",
+    descricao: t.descricao || null,
     valor: Number(t.valor) || 0,
     data: t.data,
-    pagador_nome: t.pagadorNome,
-    pagador_documento: String(t.pagadorDocumento || "").replace(/\D/g, ""),
-    pagador_tipo: tipoDocumento(t.pagadorDocumento),
-    meio: t.meio,
-    status: "pendente",
+    recebedor_nome: t.recebedorNome || null,
+    recebedor_documento: String(t.recebedorDocumento || "").replace(/\D/g, "") || null,
+    recebedor_tipo: tipoDocumento(t.recebedorDocumento),
+    meio: t.meio || null,
   }));
 
-  const { data, error } = await supabase
-    .from("entradas")
-    .upsert(linhas, {
-      onConflict: "user_id,pluggy_transaction_id",
-      ignoreDuplicates: true,
+  // Em lotes, para nao mandar milhares de linhas de uma vez
+  for (let i = 0; i < linhas.length; i += 500) {
+    const { error } = await supabase
+      .from("saidas")
+      .upsert(linhas.slice(i, i + 500), {
+        onConflict: "user_id,pluggy_transaction_id",
+        ignoreDuplicates: true,
+      });
+    if (error) throw error;
+  }
+}
+
+/* Saidas do ano, da mais recente para a mais antiga. Busca em paginas
+   de 1000 (o limite do Supabase por pedido). */
+export async function listarSaidas(userId, ano = new Date().getFullYear()) {
+  const todas = [];
+  const PAGINA = 1000;
+  for (let inicio = 0; ; inicio += PAGINA) {
+    const { data, error } = await supabase
+      .from("saidas")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("data", `${ano}-01-01T00:00:00-03:00`)
+      .order("data", { ascending: false })
+      .range(inicio, inicio + PAGINA - 1);
+    if (error) throw error;
+    todas.push(...(data || []));
+    if (!data || data.length < PAGINA) break;
+  }
+  return todas;
+}
+
+/* "Lançar saída": o que foi pago fora do banco (ex.: em dinheiro). */
+export async function lancarSaida(userId, { valor, data, descricao, recebedorNome, meio }) {
+  const codigo =
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  const { data: linha, error } = await supabase
+    .from("saidas")
+    .insert({
+      user_id: userId,
+      conexao_id: null,
+      pluggy_transaction_id: `manual-${codigo}`,
+      origem: "manual",
+      descricao: descricao || null,
+      valor: Number(valor) || 0,
+      data,
+      recebedor_nome: recebedorNome || null,
+      meio: meio || "Dinheiro",
     })
-    .select("id");
+    .select()
+    .single();
 
   if (error) throw error;
-  return { novas: data?.length || 0 };
+  return linha;
+}
+
+/* Apaga uma saida — SO as lancadas a mao. As que vieram do banco
+   ficam (sao o registro do que de fato saiu da conta). */
+export async function apagarSaidaManual(userId, id) {
+  const { error } = await supabase
+    .from("saidas")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId)
+    .eq("origem", "manual");
+  if (error) throw error;
+}
+
+/* Segmento para a parte isenta do IR (coluna `segmento_ir` em perfis):
+   "comercio_carga" (8%) | "passageiros" (16%) | "servicos" (32%) */
+export async function lerSegmento(userId) {
+  const { data } = await supabase
+    .from("perfis")
+    .select("segmento_ir")
+    .eq("id", userId)
+    .maybeSingle();
+  return data?.segmento_ir || null;
+}
+
+export async function salvarSegmento(userId, segmento) {
+  const { error } = await supabase
+    .from("perfis")
+    .update({ segmento_ir: segmento, atualizado_em: new Date().toISOString() })
+    .eq("id", userId);
+  if (error) throw error;
 }
 
 /* -------------------------------------------------------------------

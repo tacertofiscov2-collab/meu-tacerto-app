@@ -1,3 +1,4 @@
+/* SELETORMESANO v2 — prop anoMinimo: a faixa de anos comeca no ano em que a pessoa comecou a usar o app */
 import { useState, useEffect } from "react";
 import { Gauge, X } from "lucide-react";
 
@@ -14,6 +15,10 @@ const MESES_CURTO = [
  * - mes, ano
  * - comAno: mostra faixa de anos (padrão true)
  * - maxHoje: bloqueia meses futuros do ano corrente (padrão true)
+ * - anoMinimo (v2): primeiro ano da faixa. Nos históricos, é o ano em
+ *   que a pessoa começou a usar o app (hook useAnoInicio) — antes disso
+ *   não interessa. Sem ele, a faixa volta 25 anos (como sempre foi,
+ *   para quem ainda usa assim, ex.: faturamento de anos anteriores).
  * - titulo
  * - onSelecionar(mes, ano)
  */
@@ -24,6 +29,7 @@ export default function SeletorMesAno({
   ano,
   comAno = true,
   maxHoje = true,
+  anoMinimo,
   titulo = "Escolha o período",
   onSelecionar,
 }) {
@@ -43,8 +49,9 @@ export default function SeletorMesAno({
 
   if (!aberto) return null;
 
+  const primeiroAno = anoMinimo ? Math.min(Number(anoMinimo), anoAtual) : anoAtual - 25;
   const anos = [];
-  for (let a = anoAtual; a >= anoAtual - 25; a--) anos.push(a);
+  for (let a = anoAtual; a >= primeiroAno; a--) anos.push(a);
 
   return (
     <div
@@ -163,7 +170,3 @@ export default function SeletorMesAno({
     </div>
   );
 }
-
-
-
-
