@@ -1,14 +1,20 @@
+/* TERMOS v3 — topo que rola (titulo sobe, setinha fica transparente) */
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Gauge, Database, EyeOff, Lock, ShieldCheck,
+  Gauge, Database, EyeOff, Lock, ShieldCheck,
   UserCheck, Bot, Pencil, ChevronRight,
 } from "lucide-react";
 import Brand from "@/components/Brand";
 
 import BottomNav from "../components/BottomNav.jsx";
+import TopoRolavel from "../components/TopoRolavel.jsx";
 import { SectionTitle } from "../components/FlatList.jsx";
 
 /* ===================================================================
+   TERMOS v3 (28/09/2026): o cabecalho passou para DENTRO da area que
+   rola (TopoRolavel): o titulo sobe com a rolagem e a setinha fica
+   parada e transparente. Nada mais mudou.
+
    TERMOS v2 — ROLAGEM DESTRAVADA
 
    O que estava errado: esta tela era min-h-screen e rolava a PAGINA
@@ -21,7 +27,7 @@ import { SectionTitle } from "../components/FlatList.jsx";
    Correcao: o padrao do resto do app — .tela-rolavel na raiz e
    .conteudo-rolavel (filho DIRETO) no miolo. A rolagem passa a
    acontecer dentro do container, onde o window.scrollTo nao alcanca.
-   O header e o BottomNav ficam fixos fora da area que rola.
+   O BottomNav fica fixo fora da area que rola.
    =================================================================== */
 
 const SECOES = [
@@ -66,26 +72,14 @@ export default function Termos() {
       className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <header className="px-5 pt-5 pb-1 flex items-center gap-3 shrink-0">
-        <button
-          onClick={() => navigate(-1)}
-          aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
-          style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
-        >
-          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
-        </button>
-        <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-          Termos e Privacidade
-        </h1>
-      </header>
-
       {/* Filho DIRETO de .tela-rolavel — e disso que depende o
           overflow-y: auto definido no index.css. */}
       <div
         className="conteudo-rolavel hide-scrollbar w-full max-w-md mx-auto px-5"
         style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
       >
+        <TopoRolavel titulo="Termos e Privacidade" onVoltar={() => navigate(-1)} />
+
         <div className="flex items-center gap-1.5 mt-2">
           <Gauge size={15} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
           <span className="text-sm font-medium"><Brand /></span>

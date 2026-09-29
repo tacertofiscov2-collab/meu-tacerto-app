@@ -1,4 +1,4 @@
-/* TOPOROLAVEL v1 — o titulo sobe com a rolagem; a setinha de voltar fica e fica transparente */
+/* TOPOROLAVEL v2 — prop "simples": setinha sem circulo (telas de entrada: Cadastro) */
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
@@ -19,6 +19,10 @@ import { ArrowLeft } from "lucide-react";
        ...resto da tela...
      </div>
 
+   v2: nas telas de ENTRADA (Cadastro), a setinha e "simples" — sem o
+   circulo em volta, um pouco maior — igual ao Login e ao Onboarding.
+   Passe simples. Sem titulo ao lado (titulo=""), so a setinha.
+
    Se a area que rola NAO tem padding dos lados (ex.: Perfil), passe
    recuo={20}: a setinha e o titulo ganham o mesmo recuo da tela.
 
@@ -27,7 +31,7 @@ import { ArrowLeft } from "lucide-react";
    lado do titulo. O componente acha sozinho quem esta rolando.
    =================================================================== */
 
-export default function TopoRolavel({ titulo, onVoltar, direita = null, recuo = 0 }) {
+export default function TopoRolavel({ titulo, onVoltar, direita = null, recuo = 0, simples = false }) {
   const ancoraRef = useRef(null);
   const [rolou, setRolou] = useState(false);
 
@@ -59,20 +63,20 @@ export default function TopoRolavel({ titulo, onVoltar, direita = null, recuo = 
         <button
           onClick={onVoltar}
           aria-label="Voltar"
-          className="rounded-full flex items-center justify-center active:scale-95"
+          className={`${simples ? "rounded-lg" : "rounded-full"} flex items-center justify-center active:scale-95`}
           style={{
             position: "absolute",
             top: 20,
             left: recuo,
             width: 40,
             height: 40,
-            border: "1px solid var(--border)",
+            border: simples ? "none" : "1px solid var(--border)",
             backgroundColor: rolou ? "var(--bg)" : "transparent",
             opacity: rolou ? 0.55 : 1,
             transition: "opacity 200ms ease, background-color 200ms ease",
           }}
         >
-          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
+          <ArrowLeft size={simples ? 22 : 20} strokeWidth={2} style={{ color: "var(--text)" }} />
         </button>
       </div>
 

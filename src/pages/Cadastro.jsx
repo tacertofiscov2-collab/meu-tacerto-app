@@ -1,15 +1,23 @@
-/* CADASTRO v12 — teclado nao cobre mais os campos */
+/* CADASTRO v13 — topo que rola (setinha fica parada e transparente) */
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useRef } from "react";
-import { ArrowLeft, Eye, EyeOff, Mail, Gauge, MailCheck } from "lucide-react";
+import { Eye, EyeOff, Mail, Gauge, MailCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import AuthError, { translateAuthError } from "@/components/AuthError";
 import { adicionarConta } from "@/lib/contas";
 import { setUserState } from "@/lib/userState";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 import { WHATSAPP_ATIVO } from "@/lib/flags";
+import TopoRolavel from "../components/TopoRolavel.jsx";
 
 /* ===================================================================
+   CADASTRO v13 (28/09/2026): a setinha passou para DENTRO da area que
+   rola (TopoRolavel, versao "simples" — sem circulo, igual ao Login e
+   ao Onboarding — e sem titulo ao lado, porque o titulo desta tela e o
+   grande, centralizado). Ao rolar, a setinha fica parada e
+   transparente; no topo, volta ao normal. Para onde ela volta nao
+   mudou. Nada mais mudou.
+
    CADASTRO v12 — O TECLADO NAO COBRE MAIS OS CAMPOS (17/09/2026)
 
    O PROBLEMA: ao tocar no campo de senha, o teclado do iPhone subia e
@@ -175,6 +183,20 @@ export default function Cadastro() {
      nao cabe. Substitui o `justify-center`, que ancorava o bloco no meio
      da tela cheia e escondia os campos atras do teclado. */
   const centralizadoOuRolavel = { margin: "auto 0" };
+
+  /* Para onde a seta volta, em ordem:
+       1. etapa interna (email/verificar/whatsapp_depois) -> etapa 1
+       2. quem entrou por Perfil > Cadastrar conta        -> /perfil
+       3. todo o resto                                    -> / (slides)
+     NAO usar navigate(-1): como Cadastro e Login apontam um para o
+     outro, "voltar uma pagina" devolvia para a outra tela de acesso. */
+  function voltar() {
+    if (etapa === "email" || etapa === "verificar" || etapa === "whatsapp_depois") {
+      setErro("");
+      return setEtapa("whatsapp");
+    }
+    navigate(veioDeDentro ? "/perfil" : "/", { replace: true });
+  }
 
   /* Salva o WhatsApp no perfil. Silencioso de propósito: se a coluna
      ainda não existir no banco, o cadastro não pode quebrar por causa
@@ -428,18 +450,9 @@ export default function Cadastro() {
         className="tela-rolavel w-full flex flex-col"
         style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
       >
-        <div className="px-4 pt-5 shrink-0">
-          <button
-            onClick={() => setAguardandoConfirmacao(false)}
-            aria-label="Voltar"
-            className="w-10 h-10 flex items-center justify-center rounded-lg hover:opacity-80"
-            style={{ color: "var(--text)" }}
-          >
-            <ArrowLeft size={22} strokeWidth={2} />
-          </button>
-        </div>
-
         <div className="conteudo-rolavel hide-scrollbar flex flex-col px-6 pb-6">
+          <TopoRolavel titulo="" simples onVoltar={() => setAguardandoConfirmacao(false)} />
+
           <div
             className="max-w-sm w-full mx-auto text-center"
             style={centralizadoOuRolavel}
@@ -485,32 +498,12 @@ export default function Cadastro() {
       className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="px-4 pt-5 shrink-0">
-        {/* Para onde a seta volta, em ordem:
-              1. etapa interna (email/verificar/whatsapp_depois) -> etapa 1
-              2. quem entrou por Perfil > Cadastrar conta        -> /perfil
-              3. todo o resto                                    -> / (slides)
-            NAO usar navigate(-1): como Cadastro e Login apontam um para o
-            outro, "voltar uma pagina" devolvia para a outra tela de acesso. */}
-        <button
-          onClick={() => {
-            if (etapa === "email" || etapa === "verificar" || etapa === "whatsapp_depois") {
-              setErro("");
-              return setEtapa("whatsapp");
-            }
-            navigate(veioDeDentro ? "/perfil" : "/", { replace: true });
-          }}
-          aria-label="Voltar"
-          className="w-10 h-10 flex items-center justify-center rounded-lg hover:opacity-80"
-          style={{ color: "var(--text)" }}
-        >
-          <ArrowLeft size={22} strokeWidth={2} />
-        </button>
-      </div>
-
       {/* O miolo rola por dentro; o bloco abaixo fica centralizado por
-          `margin: auto 0` enquanto couber. */}
+          `margin: auto 0` enquanto couber. A setinha (TopoRolavel) fica
+          parada no topo e transparente ao rolar. */}
       <div className="conteudo-rolavel hide-scrollbar flex flex-col px-6 pb-6">
+        <TopoRolavel titulo="" simples onVoltar={voltar} />
+
         <div className="max-w-sm w-full mx-auto" style={centralizadoOuRolavel}>
           <div className="flex justify-center mb-7">
             <Gauge size={44} strokeWidth={2.5} style={{ color: "var(--primary)" }} />

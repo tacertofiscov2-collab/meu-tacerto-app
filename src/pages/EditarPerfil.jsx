@@ -1,9 +1,10 @@
-/* EDITARPERFIL v12 — tipo de MEI travado ("O que mudou?") + data de abertura so para quem abriu este ano */
+/* EDITARPERFIL v13 — topo que rola (titulo sobe, setinha fica transparente) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Trash2, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Lock, X,
+  Trash2, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Lock, X,
 } from "lucide-react";
+import TopoRolavel from "../components/TopoRolavel.jsx";
 
 import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
@@ -14,6 +15,10 @@ import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 import { EMAIL_VERIFICACAO_ATIVA } from "@/lib/flags";
 
 /* ===================================================================
+   EDITARPERFIL v13 (28/09/2026): o cabecalho passou para DENTRO da area
+   que rola (TopoRolavel): o titulo sobe com a rolagem e a setinha fica
+   parada e transparente. Nada mais mudou.
+
    EDITARPERFIL v12 — PERFIL FISCAL COM REGRA (26/09/2026)
 
    TIPO DE MEI TRAVADO
@@ -623,20 +628,6 @@ export default function EditarPerfil() {
       className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <header className="px-5 pt-5 pb-2 flex items-center gap-3 shrink-0">
-        <button
-          onClick={() => navigate(-1)}
-          aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
-          style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
-        >
-          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
-        </button>
-        <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-          Editar perfil
-        </h1>
-      </header>
-
       {/* A folga no fim e o que permite ao teclado empurrar o conteudo
           sem cobrir o campo. Ver FOLGA_TECLADO no topo do arquivo. */}
       <div
@@ -645,6 +636,8 @@ export default function EditarPerfil() {
           paddingBottom: `calc(${FOLGA_TECLADO}px + env(safe-area-inset-bottom))`,
         }}
       >
+        <TopoRolavel titulo="Editar perfil" onVoltar={() => navigate(-1)} />
+
         {/* Avatar: só a inicial. A opção de foto foi retirada no piloto
             (será reativada quando o app for empacotado como nativo). */}
         <div

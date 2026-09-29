@@ -1,12 +1,19 @@
-﻿/* EXCLUIRCONTA v3 — titulo ao lado da seta, folga para o teclado */
+﻿/* EXCLUIRCONTA v4 — topo que rola (titulo sobe, setinha fica transparente) */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft, Check, Info } from "lucide-react";
+import { Check, Info } from "lucide-react";
+import TopoRolavel from "../components/TopoRolavel.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import { supabase } from "@/lib/supabase";
 
 /* ===================================================================
+   EXCLUIRCONTA v4 (28/09/2026): o cabecalho passou para DENTRO da area
+   que rola (TopoRolavel): o titulo sobe com a rolagem e a setinha fica
+   parada e transparente. A setinha continua fazendo o mesmo: na etapa 2
+   volta para a etapa 1; na etapa 1 volta para a tela anterior. Nada
+   mais mudou.
+
    EXCLUIRCONTA v3
 
    MUDANCAS DA v2 PARA A v3 (pedido do Fernando, 17/09/2026):
@@ -141,27 +148,15 @@ export default function ExcluirConta() {
       className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      {/* Seta a esquerda, titulo ao lado — padrao do app. */}
-      <header className="px-5 pt-5 pb-2 flex items-center gap-3 shrink-0">
-        <button
-          onClick={voltar}
-          aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
-          style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
-        >
-          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
-        </button>
-        <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-          Excluir conta
-        </h1>
-      </header>
-
       <div
         className="conteudo-rolavel hide-scrollbar px-5"
         style={{
           paddingBottom: `calc(${FOLGA_TECLADO}px + env(safe-area-inset-bottom))`,
         }}
       >
+        {/* Seta a esquerda, titulo ao lado — padrao do app (agora rola junto) */}
+        <TopoRolavel titulo="Excluir conta" onVoltar={voltar} />
+
         {etapa === 1 ? (
           <div className="space-y-5">
             <div className="space-y-2 pt-2">

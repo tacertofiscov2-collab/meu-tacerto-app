@@ -1,7 +1,8 @@
-/* CONECTARBANCO v9 — textos de entradas e gastos (app de gestao do MEI) */
+/* CONECTARBANCO v10 — topo que rola (titulo sobe, setinha fica transparente) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Landmark, ShieldCheck, Lock, CheckCircle2 } from "lucide-react";
+import { Landmark, ShieldCheck, Lock, CheckCircle2 } from "lucide-react";
+import TopoRolavel from "../components/TopoRolavel.jsx";
 import { toast } from "sonner";
 
 import { supabase } from "@/lib/supabase";
@@ -120,20 +121,6 @@ export default function ConectarBanco() {
       className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <header className="px-5 pt-5 pb-2 flex items-center gap-3 shrink-0">
-        <button
-          onClick={() => navigate("/dashboard", { replace: true })}
-          aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
-          style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
-        >
-          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
-        </button>
-        <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-          Conexão bancária
-        </h1>
-      </header>
-
       <div
         className="conteudo-rolavel hide-scrollbar px-5"
         style={{
@@ -146,6 +133,12 @@ export default function ConectarBanco() {
           minHeight: 0,
         }}
       >
+        {/* v10: titulo sobe com a rolagem, setinha fica (transparente) */}
+        <TopoRolavel
+          titulo="Conexão bancária"
+          onVoltar={() => navigate("/dashboard", { replace: true })}
+        />
+
         <div
           className="max-w-sm w-full mx-auto pt-6"
           style={{

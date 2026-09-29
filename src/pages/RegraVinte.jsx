@@ -1,10 +1,16 @@
+/* REGRAVINTE v2 — topo que rola (titulo sobe, setinha fica transparente) */
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import Valor from "../components/Valor.jsx";
+import TopoRolavel from "../components/TopoRolavel.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
   LIMITES_ANUAIS, limiteAte20Percent, excedenteAcimaDoLimite, vocab,
 } from "@/lib/fiscal";
+
+/* REGRAVINTE v2 (28/09/2026): o cabecalho "Passou do limite" passou para
+   DENTRO da area que rola (TopoRolavel): o titulo sobe com a rolagem e a
+   setinha fica parada e transparente. Nada mais mudou. */
 
 export default function RegraVinte() {
   const navigate = useNavigate();
@@ -61,27 +67,15 @@ export default function RegraVinte() {
       className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <header className="px-5 pt-6 pb-3 flex items-center gap-3 shrink-0">
-        <button
-          onClick={() => navigate(-1)}
-          aria-label="Voltar"
-          className="toque toque-escala w-10 h-10 rounded-full flex items-center justify-center"
-          style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
-        >
-          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
-        </button>
-        <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-          Passou do limite
-        </h1>
-      </header>
-
       <div
         className="conteudo-rolavel hide-scrollbar px-5"
         style={{ paddingBottom: "calc(40px + env(safe-area-inset-bottom))" }}
       >
+        <TopoRolavel titulo="Passou do limite" onVoltar={() => navigate(-1)} />
+
         {/* Faixa de destaque */}
         <div
-          className="rounded-3xl px-5 py-5 relative overflow-hidden"
+          className="rounded-3xl px-5 py-5 relative overflow-hidden mt-1"
           style={{
             background: `linear-gradient(150deg, ${cor}26 0%, ${cor}0d 55%, transparent 100%), var(--surface)`,
             border: `1px solid ${cor}3d`,
@@ -249,8 +243,3 @@ export default function RegraVinte() {
     </div>
   );
 }
-
-
-
-
-

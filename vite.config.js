@@ -11,5 +11,6 @@ export default defineConfig({
     host: "::",
     port: 8080,
     strictPort: true,
+    allowedHosts: [".trycloudflare.com"],
   },
 });

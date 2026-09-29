@@ -1,7 +1,8 @@
-/* ALTERARWHATSAPP v2 — senha antes, depois numero novo e codigo */
+/* ALTERARWHATSAPP v3 — topo que rola (titulo sobe, setinha fica transparente) */
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck } from "lucide-react";
+import TopoRolavel from "../components/TopoRolavel.jsx";
 
 import { supabase } from "@/lib/supabase";
 import AuthError from "@/components/AuthError";
@@ -9,6 +10,11 @@ import { WHATSAPP_ATIVO } from "@/lib/flags";
 
 /* ===================================================================
    ALTERARWHATSAPP — trocar o numero cadastrado
+
+   v3 (28/09/2026): o cabecalho passou para DENTRO da area que rola
+   (TopoRolavel): o titulo sobe com a rolagem e a setinha fica parada e
+   transparente. A setinha continua voltando uma etapa por vez. Nada
+   mais mudou.
 
    POR QUE PEDIR A SENHA ANTES (decisao de 17/09/2026)
 
@@ -292,24 +298,12 @@ export default function AlterarWhatsapp() {
       className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <header className="px-5 pt-5 pb-2 flex items-center gap-3 shrink-0">
-        <button
-          onClick={voltar}
-          aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
-          style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
-        >
-          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
-        </button>
-        <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-          Alterar WhatsApp
-        </h1>
-      </header>
-
       <div
         className="conteudo-rolavel hide-scrollbar px-5"
         style={{ paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
       >
+        <TopoRolavel titulo="Alterar WhatsApp" onVoltar={voltar} />
+
         <div className="max-w-sm w-full mx-auto pt-6">
 
           {/* ============ ETAPA 1: CONFIRMAR QUE E VOCE ============ */}

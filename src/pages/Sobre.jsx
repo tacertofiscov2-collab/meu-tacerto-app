@@ -1,12 +1,17 @@
-/* SOBRE v2 — padrao de rolagem do Termos (bug 5) */
+/* SOBRE v3 — topo que rola (setinha fica parada e transparente ao rolar) */
 import { useNavigate } from "react-router-dom";
 import { Gauge, CheckCircle2, Info } from "lucide-react";
-import { ArrowLeft } from "lucide-react";
 import Brand from "@/components/Brand";
 
 import BottomNav from "../components/BottomNav.jsx";
+import TopoRolavel from "../components/TopoRolavel.jsx";
 
 /* ===================================================================
+   SOBRE v3 (28/09/2026): a setinha passou para DENTRO da area que rola
+   (TopoRolavel, sem titulo — o titulo desta tela e o grande,
+   centralizado, logo abaixo). Ao rolar, a setinha fica parada e
+   transparente; no topo, volta ao normal. Nada mais mudou.
+
    SOBRE v2 — ROLAGEM CORRIGIDA PARA O SAFARI DO IPHONE
 
    O QUE ESTAVA ERRADO:
@@ -38,21 +43,12 @@ export default function Sobre() {
       className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
-      <div className="px-4 pt-5 shrink-0">
-        <button
-          onClick={() => navigate(-1)}
-          aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
-          style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
-        >
-          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
-        </button>
-      </div>
-
       <div
         className="conteudo-rolavel hide-scrollbar px-6"
         style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
       >
+        <TopoRolavel titulo="" onVoltar={() => navigate(-1)} />
+
         <div className="max-w-md mx-auto">
           <div className="flex justify-center mb-4">
             <Gauge size={52} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
