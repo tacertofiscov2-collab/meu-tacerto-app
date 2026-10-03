@@ -3,8 +3,9 @@
 > Cole este arquivo no início de um chat novo. Ele contém tudo que é
 > preciso para continuar o trabalho sem repetir descobertas.
 >
-> Atualizado em 03/10/2026. Substitui as versões de 23/08, 20/09, 22/09,
-> 23/09, 24/09, 26/09 e 27/09.
+> Atualizado em 03/10/2026 (v5: o projeto agora é só do Fernando).
+> Substitui as versões de 23/08, 20/09, 22/09, 23/09, 24/09, 26/09, 27/09
+> e a v4 de 03/10.
 >
 > ⚠️ A PARTIR DE AGORA O TRABALHO SEGUE NO **CLAUDE CODE** (ver Parte 14 e
 > o arquivo `CLAUDE.md` na raiz do projeto).
@@ -15,11 +16,11 @@
 
 ### Estado em uma frase
 
-**Tudo commitado na `main` (`f0d04cb`).** De 28 a 29/09 entraram:
+**Tudo commitado na `main` (`0d812ec`).** De 28 a 29/09 entraram:
 Histórico de entradas, saídas, DAS e notas (com "Lançar nota"),
 "Adicionar movimentações", Resumo com saídas e IR, o **topo que rola** em
-todas as telas com rolagem, e o ajuste do Vite para túnel. **16 commits
-sem `git push` na `main`** (a branch `preview-ajustes-telas` já foi para o
+todas as telas com rolagem, o ajuste do Vite para túnel, e este HANDOFF +
+o `CLAUDE.md` (03/10). **17 commits sem `git push` na `main`** (a branch `preview-ajustes-telas` já foi para o
 GitHub e está publicada como prévia na Vercel). A produção ainda está no
 commit antigo `f1832bb`.
 
@@ -30,8 +31,8 @@ commit antigo `f1832bb`.
    **juntos**, e corrigir em lote.
 2. **Religar a proteção da prévia na Vercel** (Settings → Deployment
    Protection → Require Log In) assim que o amigo terminar de testar.
-3. **Push da `main` para a produção**, alinhado com o Ruan. Depois do
-   push, conferir o deploy da Vercel. Só depois disso dá para testar a
+3. **Push da `main` para a produção**, quando o Fernando decidir. Depois
+   do push, conferir o deploy da Vercel. Só depois disso dá para testar a
    conexão com o banco de ponta a ponta (a volta do banco cai na
    PRODUÇÃO — Parte 8).
 4. Depois: termos com Open Finance, velocímetro 2027 junto com a emissão
@@ -1077,7 +1078,8 @@ do iPhone não tem Console):**
 ## PARTE 8 — GIT E DEPLOY
 
 **Repo:** `github.com/tacertofiscov2-collab/meu-tacerto-app`
-**Sócio:** Ruan. Alinhar antes de `git push`.
+**Dono:** o projeto é **só do Fernando** (desde 03/10). `git push` só
+quando ele pedir.
 
 - Vercel: time **`tacerto1`** (plano Hobby), login
   `fernandofaria1346@gmail.com`, projeto `meu-tacerto-app`. Deploys em
@@ -1093,8 +1095,9 @@ do iPhone não tem Console):**
   Google provavelmente não funciona na prévia (o retorno só conhece a
   produção).
 - ⚠️ Não clicar em "Rotate" na `VITE_SUPABASE_KEY`
-- Push com `rejected` / `fetch first` = o Ruan subiu algo antes. Não
-  rodar mais nada, mandar print.
+- Push com `rejected` / `fetch first` = o GitHub tem algo que este PC não
+  tem (ex.: alteração feita direto no site do GitHub). Não rodar mais
+  nada, mandar print.
 - Depois do próximo push, conferir se o deploy da Vercel passou.
 
 **Commits de 25-26/09 (todos sem push):**
@@ -1111,18 +1114,14 @@ do iPhone não tem Console):**
 - `ed94504` ui: velocimetro encolhe em tela baixa + titulo do Tirar duvidas rola junto com os cards
 - `200474a` feat: historicos de entradas, saidas, DAS e notas (lancar nota), Adicionar movimentacoes, Resumo com saidas e IR, topo que rola
 - `f0d04cb` Ajustes de telas e vite.config para tunel (topo que rola nas 9 telas restantes + allowedHosts) — feito na branch `preview-ajustes-telas` e trazido para a `main` por fast-forward em 30/09
+- `0d812ec` docs: handoff de 03/10 e CLAUDE.md
 
-**Situação:** `main` local = `f0d04cb`, **16 commits à frente** da
-`origin/main`. A branch `preview-ajustes-telas` já está no GitHub.
-Antes do push da `main`: alinhar com o Ruan.
+**Situação:** `main` local = `0d812ec`, **17 commits à frente** da
+`origin/main`. A branch `preview-ajustes-telas` já está no GitHub. O push
+da `main` é decisão do Fernando.
 
-⚠️ `telas.txt` (arquivo solto de 29/09, não versionado) pode ser apagado:
-`Remove-Item telas.txt`.
-
-⚠️ O `HANDOFF.md` não apareceu no `git status` de 25/09 nem no de 27/09 —
-ou não está salvo na raiz do projeto, ou está no `.gitignore`. Conferir
-ao salvar este (se o `git add HANDOFF.md` avisar "ignored", é o
-`.gitignore`).
+O `HANDOFF.md` e o `CLAUDE.md` estão na raiz do projeto e versionados
+(desde `0d812ec`). O `telas.txt` foi apagado em 03/10.
 
 ---
 
@@ -1272,10 +1271,9 @@ autenticação, chat do Fisco em `ChatFiscoUI.jsx`. Schema em
       20%, Excluir conta, Alterar WhatsApp, Cadastro, Conexão bancária
 
 **Git / Vercel / prévia:**
-- [ ] Push da `main` (16 commits), alinhado com o Ruan; conferir deploy
+- [ ] Push da `main` (17 commits), quando o Fernando decidir; conferir deploy
 - [ ] **Religar "Require Log In"** em Deployment Protection
 - [ ] Conferir/apagar a conta criada pelo amigo na prévia
-- [ ] Apagar `telas.txt`
 - [ ] Guardar os SQLs de 28/09 em `src/supabase/migrations.sql`
 
 **Open Finance:**
@@ -1398,9 +1396,8 @@ supabase/                      ⚠️ pasta da RAIZ (Edge Functions)
     (excluir-conta/ publicada, mas FALTA aqui)
 ```
 
-**Último commit:** `f0d04cb` "Ajustes de telas e vite.config para tunel"
-(na `main` e na `preview-ajustes-telas`). Nada pendente de commit além
-deste HANDOFF (e do `CLAUDE.md`, quando for criado).
+**Último commit:** `0d812ec` "docs: handoff de 03/10 e CLAUDE.md" (na
+`main`). A `preview-ajustes-telas` está em `f0d04cb`.
 
 ---
 
@@ -1420,8 +1417,8 @@ computador (aba **Code**), aberto na pasta
   o arquivo do print para a janela do Claude Code — colar print no
   Windows às vezes falha); Supabase e Vercel são feitos no navegador por
   ele, com o passo a passo.
-- **Regras de ouro:** commit a cada etapa (dá para voltar); nunca `git
-  push` sem ele confirmar que alinhou com o Ruan; mostrar o que vai mudar
-  antes de mudar; português simples.
+- **Regras de ouro:** commit a cada etapa (dá para voltar); `git push`
+  só quando o Fernando pedir; mostrar o que vai mudar antes de mudar;
+  português simples.
 - O chat do claude.ai continua útil para decisões de produto, pesquisas e
   prévias visuais lado a lado.
