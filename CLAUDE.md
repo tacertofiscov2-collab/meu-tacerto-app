@@ -149,6 +149,8 @@ O projeto **não tem backup automático**. Por isso:
 - `piloto2@gmail.com` / `teste12345` — banco de teste conectado + 17
   entradas de teste.
 - `piloto3@gmail.com` / `teste12345` — para ver a "primeira vez".
+- `piloto4@gmail.com` / `teste12345` — criada em 03/10 (teste do
+  cadastro depois do conserto de segurança); onboarding feito, MEI.
 - Comandos de criar/resetar as entradas de teste: HANDOFF, Parte 7.
 
 ---
