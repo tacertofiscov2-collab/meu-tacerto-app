@@ -32,3 +32,6 @@ dist-ssr
 *.sw?
 
 .env
+
+# Copias de dados do Supabase antes de mudancas (nunca vao para o Git)
+backups/

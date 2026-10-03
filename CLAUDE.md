@@ -87,6 +87,25 @@ Caminhoneiro**): "entradas e saídas, sempre". O coração é um
 - Registrar **todo SQL rodado** em `src/supabase/migrations.sql`.
 - Quando a validação com usuários reais começar, trocar o conector do
   Supabase para **somente leitura** (`read_only`).
+- **Permissões do conector** (`.claude/settings.json`): as ferramentas
+  que só LEEM rodam sem perguntar (listar tabelas, migrations, extensões
+  e funções; ver função; logs; advisors; documentação). As que podem
+  mudar algo (`execute_sql`, `apply_migration`, `deploy_edge_function`
+  e afins) sempre pedem aprovação. Ferramenta nova do Supabase: na
+  dúvida, colocar em "ask".
+
+### Rotina de toda mudança no Supabase
+
+O projeto **não tem backup automático**. Por isso:
+
+1. **ANTES de mudar:** dizer o que vai mudar e **guardar uma cópia dos
+   dados afetados** na pasta `backups/` (fica fora do Git, no
+   `.gitignore`), com a data no nome do arquivo (ex.:
+   `backups/2026-10-03_saidas.json`; para função, o código publicado).
+2. **DEPOIS de mudar:** **ler de novo** para confirmar que ficou como
+   planejado, **olhar os logs** e **rodar os advisors de segurança**.
+3. **Se algo der errado:** **parar**, avisar o Fernando em português
+   simples e **propor como voltar atrás** (usando a cópia do passo 1).
 
 ---
 
