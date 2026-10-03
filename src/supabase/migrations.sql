@@ -1,3 +1,6 @@
+-- MIGRATIONS v3 — GRANT das 4 tabelas de 28/09 RODADO no banco real em
+--   03/10/2026 (pelo conector, com o "pode" do Fernando). Conferido: as 4
+--   leem e gravam para quem está logado; deslogado continua sem acesso.
 -- MIGRATIONS v2 — + PARTE 4B: tabelas de 28/09 (saidas, das_pagamentos,
 --   notas_fiscais, comprovantes), perfis.segmento_ir, balde "comprovantes"
 --   e as regras de acesso, copiados do banco real em 03/10/2026 (antes só
@@ -273,10 +276,12 @@ create policy "preferencias_proprias" on preferencias_fisco
 -- Rodado direto no SQL Editor em 28/09. Copiado do banco real em
 -- 03/10 (colunas, chaves, índices, policies e balde conferidos um a um).
 --
--- ⚠️ Em 03/10 o banco real NÃO tinha os GRANTs destas 4 tabelas (o
+-- ⚠️ Até 03/10 o banco real NÃO tinha os GRANTs destas 4 tabelas (o
 -- mesmo erro de 30/08, ver topo do arquivo): o role `authenticated`
--- não podia ler nem gravar nelas. O bloco de GRANT abaixo é o
--- conserto — conferir na Parte 5 se ele já foi rodado.
+-- não podia ler nem gravar nelas, e as telas Saídas, DAS e Notas
+-- falhavam. O bloco de GRANT abaixo foi RODADO em 03/10 (antes, foi
+-- conferido que as 4 tabelas tinham RLS ligado e as policies "só as
+-- próprias linhas").
 -- ===================================================================
 
 -- Segmento para o cálculo do IR (presunção de lucro):
@@ -371,7 +376,7 @@ create table if not exists public.comprovantes (
 create index if not exists comprovantes_user_data on public.comprovantes (user_id, data desc);
 
 -- -------------------------------------------------------------------
--- GRANTS (ver ⚠️ no começo desta parte)
+-- GRANTS (ver ⚠️ no começo desta parte) — rodado em 03/10/2026
 -- -------------------------------------------------------------------
 grant select, insert, update, delete
   on public.saidas, public.das_pagamentos, public.notas_fiscais, public.comprovantes
@@ -469,7 +474,8 @@ where table_name in ('entradas','regras_pagador','preferencias_fisco','conexoes_
 order by table_name, privilege_type;
 
 -- 3) Tabelas de 28/09: as 4 colunas precisam vir "true".
---    ⚠️ Em 03/10 vieram todas "false" (faltava o GRANT da Parte 4B).
+--    ⚠️ Em 03/10 vieram todas "false" (faltava o GRANT da Parte 4B);
+--    depois do GRANT, todas "true".
 select t as tabela,
   has_table_privilege('authenticated', 'public.'||t, 'SELECT') as pode_ler,
   has_table_privilege('authenticated', 'public.'||t, 'INSERT') as pode_inserir,
