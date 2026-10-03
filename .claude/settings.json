@@ -12,7 +12,8 @@
     ],
     "ask": [
       "Bash(git push *)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "mcp__supabase"
     ],
     "deny": [
       "Bash(git push --force *)",
