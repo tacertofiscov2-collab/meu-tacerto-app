@@ -1,3 +1,7 @@
+-- MIGRATIONS v2 — + PARTE 4B: tabelas de 28/09 (saidas, das_pagamentos,
+--   notas_fiscais, comprovantes), perfis.segmento_ir, balde "comprovantes"
+--   e as regras de acesso, copiados do banco real em 03/10/2026 (antes só
+--   existiam no banco, não no Git).
 -- ===================================================================
 -- TaCerto! — MIGRAÇÃO DO BANCO
 --
@@ -264,6 +268,186 @@ create policy "preferencias_proprias" on preferencias_fisco
 
 
 -- ===================================================================
+-- PARTE 4B — SAÍDAS, DAS, NOTAS E COMPROVANTES (28/09/2026)
+--
+-- Rodado direto no SQL Editor em 28/09. Copiado do banco real em
+-- 03/10 (colunas, chaves, índices, policies e balde conferidos um a um).
+--
+-- ⚠️ Em 03/10 o banco real NÃO tinha os GRANTs destas 4 tabelas (o
+-- mesmo erro de 30/08, ver topo do arquivo): o role `authenticated`
+-- não podia ler nem gravar nelas. O bloco de GRANT abaixo é o
+-- conserto — conferir na Parte 5 se ele já foi rodado.
+-- ===================================================================
+
+-- Segmento para o cálculo do IR (presunção de lucro):
+--   comercio_carga 8% | passageiros 16% | servicos 32%
+alter table public.perfis add column if not exists segmento_ir text;
+
+-- -------------------------------------------------------------------
+-- SAIDAS
+-- Saídas do banco (origem 'banco') e lançadas à mão (origem 'manual',
+-- pluggy_transaction_id = 'manual-<código>'). Guardadas sem perguntar.
+-- -------------------------------------------------------------------
+create table if not exists public.saidas (
+  id                    uuid primary key default gen_random_uuid(),
+  user_id               uuid not null references auth.users(id) on delete cascade,
+  conexao_id            uuid,
+  pluggy_transaction_id text not null,
+  origem                text not null default 'banco',
+  descricao             text,
+  valor                 numeric not null default 0,
+  data                  timestamptz not null,
+  recebedor_nome        text,
+  recebedor_documento   text,
+  recebedor_tipo        text,
+  meio                  text,
+  criado_em             timestamptz not null default now(),
+  unique (user_id, pluggy_transaction_id)
+);
+create index if not exists saidas_user_data on public.saidas (user_id, data desc);
+
+-- -------------------------------------------------------------------
+-- DAS_PAGAMENTOS
+-- Um registro por mês ("AAAA-MM"). O app NUNCA diz que uma DAS está
+-- "em aberto": só registra o que a pessoa informou ou achou nas saídas.
+-- -------------------------------------------------------------------
+create table if not exists public.das_pagamentos (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid not null references auth.users(id) on delete cascade,
+  competencia   text not null,
+  valor         numeric,
+  pago_em       timestamptz,
+  origem        text not null default 'manual',
+  arquivo_path  text,
+  arquivo_tipo  text,
+  nome_arquivo  text,
+  criado_em     timestamptz not null default now(),
+  atualizado_em timestamptz not null default now(),
+  unique (user_id, competencia)
+);
+
+-- -------------------------------------------------------------------
+-- NOTAS_FISCAIS
+-- origem 'manual' (lançada à mão) | 'app'. Arquivo no balde
+-- "comprovantes", pasta <user_id>/notas/.
+-- -------------------------------------------------------------------
+create table if not exists public.notas_fiscais (
+  id                uuid primary key default gen_random_uuid(),
+  user_id           uuid not null references auth.users(id) on delete cascade,
+  origem            text not null default 'manual',
+  numero            text,
+  data              timestamptz not null,
+  valor             numeric not null default 0,
+  tomador_nome      text,
+  tomador_documento text,
+  descricao         text,
+  arquivo_path      text,
+  arquivo_tipo      text,
+  nome_arquivo      text,
+  criado_em         timestamptz not null default now()
+);
+create index if not exists notas_fiscais_user_data on public.notas_fiscais (user_id, data desc);
+
+-- -------------------------------------------------------------------
+-- COMPROVANTES
+-- Comprovante de despesa (foto/PDF), opcionalmente ligado a uma saída.
+-- ⚠️ Em 03/10 o app ainda NÃO usa esta tabela (nenhum código lê ou
+-- grava nela). Existe no banco, vazia. `saida_id` não tem chave
+-- estrangeira de propósito? Não se sabe — ficou como estava.
+-- -------------------------------------------------------------------
+create table if not exists public.comprovantes (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid not null references auth.users(id) on delete cascade,
+  saida_id     uuid,
+  origem       text not null default 'manual',
+  arquivo_path text not null,
+  arquivo_tipo text,
+  nome_arquivo text,
+  descricao    text,
+  valor        numeric,
+  data         timestamptz not null default now(),
+  criado_em    timestamptz not null default now()
+);
+create index if not exists comprovantes_user_data on public.comprovantes (user_id, data desc);
+
+-- -------------------------------------------------------------------
+-- GRANTS (ver ⚠️ no começo desta parte)
+-- -------------------------------------------------------------------
+grant select, insert, update, delete
+  on public.saidas, public.das_pagamentos, public.notas_fiscais, public.comprovantes
+  to authenticated;
+
+-- -------------------------------------------------------------------
+-- RLS — cada pessoa só vê e mexe nas próprias linhas
+-- (no banco real as policies estão "to public"; quem não está logado
+-- tem auth.uid() vazio e não passa em nenhuma)
+-- -------------------------------------------------------------------
+alter table public.saidas         enable row level security;
+alter table public.das_pagamentos enable row level security;
+alter table public.notas_fiscais  enable row level security;
+alter table public.comprovantes   enable row level security;
+
+drop policy if exists "saidas: ver as proprias"       on public.saidas;
+drop policy if exists "saidas: inserir as proprias"   on public.saidas;
+drop policy if exists "saidas: atualizar as proprias" on public.saidas;
+drop policy if exists "saidas: apagar as proprias"    on public.saidas;
+create policy "saidas: ver as proprias"       on public.saidas for select using (auth.uid() = user_id);
+create policy "saidas: inserir as proprias"   on public.saidas for insert with check (auth.uid() = user_id);
+create policy "saidas: atualizar as proprias" on public.saidas for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "saidas: apagar as proprias"    on public.saidas for delete using (auth.uid() = user_id);
+
+drop policy if exists "das: ver as proprias"       on public.das_pagamentos;
+drop policy if exists "das: inserir as proprias"   on public.das_pagamentos;
+drop policy if exists "das: atualizar as proprias" on public.das_pagamentos;
+drop policy if exists "das: apagar as proprias"    on public.das_pagamentos;
+create policy "das: ver as proprias"       on public.das_pagamentos for select using (auth.uid() = user_id);
+create policy "das: inserir as proprias"   on public.das_pagamentos for insert with check (auth.uid() = user_id);
+create policy "das: atualizar as proprias" on public.das_pagamentos for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "das: apagar as proprias"    on public.das_pagamentos for delete using (auth.uid() = user_id);
+
+drop policy if exists "notas: ver as proprias"       on public.notas_fiscais;
+drop policy if exists "notas: inserir as proprias"   on public.notas_fiscais;
+drop policy if exists "notas: atualizar as proprias" on public.notas_fiscais;
+drop policy if exists "notas: apagar as proprias"    on public.notas_fiscais;
+create policy "notas: ver as proprias"       on public.notas_fiscais for select using (auth.uid() = user_id);
+create policy "notas: inserir as proprias"   on public.notas_fiscais for insert with check (auth.uid() = user_id);
+create policy "notas: atualizar as proprias" on public.notas_fiscais for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "notas: apagar as proprias"    on public.notas_fiscais for delete using (auth.uid() = user_id);
+
+drop policy if exists "comprovantes: ver os proprios"       on public.comprovantes;
+drop policy if exists "comprovantes: inserir os proprios"   on public.comprovantes;
+drop policy if exists "comprovantes: atualizar os proprios" on public.comprovantes;
+drop policy if exists "comprovantes: apagar os proprios"    on public.comprovantes;
+create policy "comprovantes: ver os proprios"       on public.comprovantes for select using (auth.uid() = user_id);
+create policy "comprovantes: inserir os proprios"   on public.comprovantes for insert with check (auth.uid() = user_id);
+create policy "comprovantes: atualizar os proprios" on public.comprovantes for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "comprovantes: apagar os proprios"    on public.comprovantes for delete using (auth.uid() = user_id);
+
+-- -------------------------------------------------------------------
+-- BALDE "comprovantes" (Storage) — privado, só foto/PDF, até 10 MB.
+-- Cada pessoa só mexe na própria pasta: comprovantes/<user_id>/...
+-- (DAS em <user_id>/..., notas em <user_id>/notas/...)
+-- -------------------------------------------------------------------
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('comprovantes', 'comprovantes', false, 10485760,
+        array['image/jpeg','image/png','image/webp','image/heic','image/heif','application/pdf'])
+on conflict (id) do nothing;
+
+drop policy if exists "comprovantes: ver arquivos proprios"    on storage.objects;
+drop policy if exists "comprovantes: enviar arquivos proprios" on storage.objects;
+drop policy if exists "comprovantes: apagar arquivos proprios" on storage.objects;
+create policy "comprovantes: ver arquivos proprios" on storage.objects
+  for select to authenticated
+  using (bucket_id = 'comprovantes' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "comprovantes: enviar arquivos proprios" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'comprovantes' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "comprovantes: apagar arquivos proprios" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'comprovantes' and (storage.foldername(name))[1] = auth.uid()::text);
+
+
+-- ===================================================================
 -- PARTE 5 — CONFERÊNCIA
 -- Rode depois de tudo. As duas consultas precisam vir certas.
 -- ===================================================================
@@ -283,6 +467,15 @@ where table_name in ('entradas','regras_pagador','preferencias_fisco','conexoes_
   and grantee = 'authenticated'
   and privilege_type in ('SELECT','INSERT','UPDATE','DELETE')
 order by table_name, privilege_type;
+
+-- 3) Tabelas de 28/09: as 4 colunas precisam vir "true".
+--    ⚠️ Em 03/10 vieram todas "false" (faltava o GRANT da Parte 4B).
+select t as tabela,
+  has_table_privilege('authenticated', 'public.'||t, 'SELECT') as pode_ler,
+  has_table_privilege('authenticated', 'public.'||t, 'INSERT') as pode_inserir,
+  has_table_privilege('authenticated', 'public.'||t, 'UPDATE') as pode_atualizar,
+  has_table_privilege('authenticated', 'public.'||t, 'DELETE') as pode_apagar
+from unnest(array['saidas','das_pagamentos','notas_fiscais','comprovantes']) as t;
 
 
 -- ===================================================================
