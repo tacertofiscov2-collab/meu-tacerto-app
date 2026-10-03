@@ -16,13 +16,21 @@
 
 ### Estado em uma frase
 
-**Tudo commitado na `main` (`0d812ec`).** De 28 a 29/09 entraram:
+**Tudo commitado na `main`.** De 28 a 29/09 entraram:
 Histórico de entradas, saídas, DAS e notas (com "Lançar nota"),
 "Adicionar movimentações", Resumo com saídas e IR, o **topo que rola** em
 todas as telas com rolagem, o ajuste do Vite para túnel, e este HANDOFF +
-o `CLAUDE.md` (03/10). **17 commits sem `git push` na `main`** (a branch `preview-ajustes-telas` já foi para o
+o `CLAUDE.md` (03/10). **28 commits sem `git push` na `main`** (a branch `preview-ajustes-telas` já foi para o
 GitHub e está publicada como prévia na Vercel). A produção ainda está no
 commit antigo `f1832bb`.
+
+**03/10 (Claude Code + conector do Supabase):** a função `pluggy`
+publicada era a **v8** (o HANDOFF dizia v9) — a **v9 foi publicada em
+03/10** e conferida igual ao arquivo (Verify JWT ligado). As tabelas
+`saidas`, `das_pagamentos`, `notas_fiscais` e `comprovantes` estavam
+**sem GRANT** (as telas Saídas, DAS e Notas não liam nem gravavam) —
+**GRANT rodado e conferido em 03/10**. O SQL de 28/09 está agora no
+`migrations.sql` e o código da `excluir-conta` no repositório.
 
 ### ➡️ PRÓXIMO PASSO
 
@@ -859,14 +867,19 @@ usam.
 ### EDGE FUNCTIONS E SECRETS
 
 - **Publicadas (4):** `enviar-codigo`, `verificar-codigo`,
-  `excluir-conta`, `pluggy` (**v9** no ar — 28/09: a tarefa
-  `transacoes` devolve as ENTRADAS em `transacoes` e as SAÍDAS em
-  `saidas`; tarefas: bancos, criar, status, transacoes, desconectar).
+  `excluir-conta` (v4, código agora em `supabase/functions/excluir-conta`),
+  `pluggy` (**v9 no ar desde 03/10** — até 03/10 estava a v8, apesar de
+  anotado aqui como v9; a v9 faz a tarefa `transacoes` devolver as
+  ENTRADAS em `transacoes` e as SAÍDAS em `saidas`; tarefas: bancos,
+  criar, status, transacoes, desconectar).
   `react-pluggy-connect` desinstalado.
 - **Secrets:** `ZAPI_INSTANCE_ID`, `ZAPI_TOKEN`, `ZAPI_CLIENT_TOKEN`,
   `PLUGGY_CLIENT_ID`, `PLUGGY_CLIENT_SECRET`.
-- Atualizar: função → aba Code → colar → **Deploy updates**. Logs: aba
-  Logs. **Verify JWT:** LIGADO na `pluggy`. Os "7 problemas" do Cursor
+- Atualizar: desde 03/10 o Claude Code publica pelo **conector do
+  Supabase** (sempre com o "pode" do Fernando; ver `CLAUDE.md` →
+  Supabase). Pelo painel continua valendo: função → aba Code → colar →
+  **Deploy updates**. Logs: aba Logs. **Verify JWT:** LIGADO na `pluggy`
+  e na `excluir-conta`. Os "7 problemas" do Cursor
   nos `index.ts` são falsos (Deno).
 
 ### Tabelas e balde criados em 28/09 (SQL rodado no SQL Editor)
@@ -939,8 +952,16 @@ create table if not exists public.notas_fiscais (
 -- RLS + policies "notas: ..." iguais
 ```
 
-⚠️ Pendência: guardar esses SQLs completos no repositório
-(`src/supabase/migrations.sql`), junto com o resto do schema.
+✅ 03/10: o SQL completo (copiado do banco real, incluindo a tabela
+`comprovantes`, que não estava listada aqui) está em
+`src/supabase/migrations.sql`, **Parte 4B**. A tabela `comprovantes` é
+para comprovantes de despesas (foto/PDF, opcionalmente ligados a uma
+saída) — existe vazia e o app ainda não usa.
+
+⚠️ O SQL de 28/09 **não tinha GRANT**: as 4 tabelas ficaram sem acesso
+para quem está logado (mesmo erro de 30/08). **Consertado em 03/10**
+(GRANT rodado pelo conector e conferido: as 4 leem e gravam; deslogado
+continua sem acesso).
 
 ### Snippets de teste no Console do Chrome
 
@@ -1115,8 +1136,14 @@ quando ele pedir.
 - `200474a` feat: historicos de entradas, saidas, DAS e notas (lancar nota), Adicionar movimentacoes, Resumo com saidas e IR, topo que rola
 - `f0d04cb` Ajustes de telas e vite.config para tunel (topo que rola nas 9 telas restantes + allowedHosts) — feito na branch `preview-ajustes-telas` e trazido para a `main` por fast-forward em 30/09
 - `0d812ec` docs: handoff de 03/10 e CLAUDE.md
+- (03/10, Claude Code) `631f296` `7bd99a0` projeto só do Fernando;
+  `7010465` `c3d13a9` `3474559` `55ff056` permissões do Claude Code e
+  conector do Supabase (sempre pede aprovação); `9840790` regras do
+  Supabase no CLAUDE.md; `1b16a2e` SQL de 28/09 no migrations.sql;
+  `3b4b9a3` GRANT das 4 tabelas; `a46a77a` código da `excluir-conta`;
+  e o commit de fechamento "docs: fechamento de 03/10".
 
-**Situação:** `main` local = `0d812ec`, **17 commits à frente** da
+**Situação:** `main` local **28 commits à frente** da
 `origin/main`. A branch `preview-ajustes-telas` já está no GitHub. O push
 da `main` é decisão do Fernando.
 
@@ -1256,6 +1283,8 @@ autenticação, chat do Fisco em `ChatFiscoUI.jsx`. Schema em
 ## PARTE 12 — PENDÊNCIAS
 
 **Conferir no iPhone (o que foi feito em 28-29/09, ainda não testado):**
+⚠️ Se Saídas, DAS ou Notas deram erro em algum teste ANTES de 03/10, era
+a falta de GRANT (consertada em 03/10) — testar de novo.
 - [ ] Perfil: setas ↙ ↗, "Adicionar movimentações", topo que rola
 - [ ] Histórico de entradas: ano inteiro com meses separando; "Ir para o
       mês" (calendário só com 2026); editar/excluir
@@ -1271,10 +1300,13 @@ autenticação, chat do Fisco em `ChatFiscoUI.jsx`. Schema em
       20%, Excluir conta, Alterar WhatsApp, Cadastro, Conexão bancária
 
 **Git / Vercel / prévia:**
-- [ ] Push da `main` (17 commits), quando o Fernando decidir; conferir deploy
+- [ ] Push da `main` (28 commits), quando o Fernando decidir; conferir deploy
 - [ ] **Religar "Require Log In"** em Deployment Protection
 - [ ] Conferir/apagar a conta criada pelo amigo na prévia
-- [ ] Guardar os SQLs de 28/09 em `src/supabase/migrations.sql`
+- [x] Guardar os SQLs de 28/09 em `src/supabase/migrations.sql` (03/10)
+- [x] GRANT das tabelas `saidas`, `das_pagamentos`, `notas_fiscais`,
+      `comprovantes` — rodado e conferido (03/10)
+- [x] Publicar a `pluggy` v9 (estava a v8) — publicada e conferida (03/10)
 
 **Open Finance:**
 - [ ] Teste real de ponta a ponta (depois do push: a volta do banco cai
@@ -1305,9 +1337,13 @@ autenticação, chat do Fisco em `ChatFiscoUI.jsx`. Schema em
 
 **⚠️ Segurança:**
 - [ ] `verificar-codigo` aceita `userId` do corpo → pegar do login
-- [ ] `excluir-conta` publicada mas FALTA no repo
-- [ ] `ExcluirConta` precisa desconectar os bancos na Pluggy E apagar os
-      arquivos do balde `comprovantes` antes
+- [x] `excluir-conta` publicada mas FALTA no repo — baixada para
+      `supabase/functions/excluir-conta/index.ts` (03/10)
+- [ ] `excluir-conta` (função ou tela `ExcluirConta`) precisa, ANTES de
+      apagar o usuário: desconectar os bancos na Pluggy (hoje a conexão
+      fica viva e ocupa vaga paga) E apagar os arquivos dos baldes
+      `comprovantes` (DAS e notas) e `avatares` (foto de perfil). Hoje só
+      as linhas das tabelas somem (cascade); os arquivos ficam sem dono.
 - [ ] Nunca apagar usuários direto no Supabase depois da produção
 
 **Validar com o contador parceiro:** troca de tipo de MEI, despesas do
@@ -1392,12 +1428,11 @@ src/
 supabase/                      ⚠️ pasta da RAIZ (Edge Functions)
   functions/
     enviar-codigo/  verificar-codigo/
-    pluggy/index.ts            ⚠️ PLUGGY v9 (no ar)
-    (excluir-conta/ publicada, mas FALTA aqui)
+    pluggy/index.ts            ⚠️ PLUGGY v9 (no ar desde 03/10)
+    excluir-conta/index.ts     EXCLUIR-CONTA v4 (cópia da publicada)
 ```
 
-**Último commit:** `0d812ec` "docs: handoff de 03/10 e CLAUDE.md" (na
-`main`). A `preview-ajustes-telas` está em `f0d04cb`.
+**Último commit:** "docs: fechamento de 03/10" (na `main`). A `preview-ajustes-telas` está em `f0d04cb`.
 
 ---
 
@@ -1415,8 +1450,13 @@ computador (aba **Code**), aberto na pasta
   Bloco de Notas / copiar e colar / `findstr` de conferência.
 - **Continua:** o Fernando testa no iPhone e manda os prints (arrastando
   o arquivo do print para a janela do Claude Code — colar print no
-  Windows às vezes falha); Supabase e Vercel são feitos no navegador por
-  ele, com o passo a passo.
+  Windows às vezes falha); Vercel é feita no navegador por ele, com o
+  passo a passo.
+- **Supabase (desde 03/10):** o Claude Code tem o **conector do
+  Supabase** (limitado a este projeto). Cada uso pede aprovação do
+  Fernando (regra "ask" no `.claude/settings.json`), e SQL ou publicação
+  de função só depois do "pode" (regras no `CLAUDE.md` → Supabase). Na
+  validação com usuários reais, trocar o conector para somente leitura.
 - **Regras de ouro:** commit a cada etapa (dá para voltar); `git push`
   só quando o Fernando pedir; mostrar o que vai mudar antes de mudar;
   português simples.

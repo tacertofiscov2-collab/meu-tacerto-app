@@ -64,11 +64,12 @@ Caminhoneiro**): "entradas e saídas, sempre". O coração é um
 - Dev: PC em `localhost:8080`; iPhone (mesmo Wi-Fi) em
   `192.168.1.224:8080`.
 - Open Finance pela **Pluggy** (caminho B, sem widget, no sandbox).
-  Edge Function `supabase/functions/pluggy/index.ts` (v9). **Funções do
-  Supabase são publicadas pelo Fernando no painel** (função → Code →
-  colar → Deploy updates): depois de alterar uma, passe o passo a passo.
-- **SQL** também é rodado pelo Fernando no SQL Editor do Supabase:
-  entregue o comando pronto e peça o print antes do Run.
+  Edge Function `supabase/functions/pluggy/index.ts` (v9, no ar).
+- **Funções e SQL do Supabase:** o Claude Code usa o **conector do
+  Supabase** (cada uso pede aprovação), seguindo a seção "Supabase"
+  abaixo. Sem o conector, o caminho antigo continua: Fernando publica no
+  painel (função → Code → colar → Deploy updates) e roda SQL no SQL
+  Editor, com o comando pronto e print antes do Run.
 - O app segue as regras da **reforma tributária de 2027** (ver HANDOFF
   Parte 3).
 
@@ -135,9 +136,15 @@ Caminhoneiro**): "entradas e saídas, sempre". O coração é um
 
 ## Onde estamos (atualizar ao fim de cada sessão)
 
-- `main` em `0d812ec`, **17 commits sem push** (o Fernando decide quando
-  publicar).
+- `main` com **28 commits sem push** (o Fernando decide quando
+  publicar). Produção ainda em `f1832bb`.
+- 03/10: `pluggy` **v9 publicada** (estava a v8) e conferida; **GRANT**
+  das tabelas `saidas`, `das_pagamentos`, `notas_fiscais` e
+  `comprovantes` rodado e conferido (as telas Saídas, DAS e Notas não
+  tinham acesso); SQL de 28/09 guardado no `migrations.sql` (Parte 4B);
+  código da `excluir-conta` no repositório.
 - Próximo passo: o Fernando testar no iPhone o que foi feito em 28-29/09
   (lista no HANDOFF, Parte 12 → "Conferir no iPhone") e corrigir em lote.
-- Pendências rápidas: religar "Require Log In" na Vercel; guardar os
-  SQLs de 28/09 em `src/supabase/migrations.sql`.
+- Pendências rápidas: religar "Require Log In" na Vercel; conferir/apagar
+  a conta do amigo na prévia. Segurança: `excluir-conta` deve desconectar
+  a Pluggy e apagar os arquivos dos baldes `comprovantes` e `avatares`.
