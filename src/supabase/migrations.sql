@@ -1,3 +1,5 @@
+-- MIGRATIONS v4 — + PARTE 4C: tira o EXECUTE de handle_new_user e
+--   rls_auto_enable para o app (advisors de segurança). Rodado em 03/10.
 -- MIGRATIONS v3 — GRANT das 4 tabelas de 28/09 RODADO no banco real em
 --   03/10/2026 (pelo conector, com o "pode" do Fernando). Conferido: as 4
 --   leem e gravam para quem está logado; deslogado continua sem acesso.
@@ -450,6 +452,30 @@ create policy "comprovantes: enviar arquivos proprios" on storage.objects
 create policy "comprovantes: apagar arquivos proprios" on storage.objects
   for delete to authenticated
   using (bucket_id = 'comprovantes' and (storage.foldername(name))[1] = auth.uid()::text);
+
+
+-- ===================================================================
+-- PARTE 4C — FUNÇÕES-GATILHO FORA DO ALCANCE DO APP (03/10/2026)
+--
+-- Os advisors de segurança apontavam que qualquer um (logado ou não)
+-- podia "chamar" estas funções pelo endereço /rest/v1/rpc/...
+--   • handle_new_user  → gatilho que cria o perfil no cadastro
+--                        (on_auth_user_created em auth.users)
+--   • rls_auto_enable  → gatilho que liga o RLS em toda tabela nova
+--                        (event trigger ensure_rls)
+-- Por serem gatilhos, o banco já recusava a chamada direta — o risco
+-- era nulo, mas o certo é não deixar a porta aberta. Os gatilhos
+-- continuam funcionando: o Postgres não confere EXECUTE quando o
+-- gatilho dispara. O grant para supabase_auth_admin (quem faz o
+-- cadastro) é precaução.
+-- Conferido em 03/10: anon/authenticated sem EXECUTE, gatilhos
+-- ligados, os 2 avisos sumiram, logs sem erro.
+-- Para voltar atrás: grant execute on function ... to public;
+-- ===================================================================
+
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
+revoke execute on function public.rls_auto_enable() from public, anon, authenticated;
+grant  execute on function public.handle_new_user() to supabase_auth_admin;
 
 
 -- ===================================================================
