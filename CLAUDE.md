@@ -74,6 +74,21 @@ Caminhoneiro**): "entradas e saídas, sempre". O coração é um
 
 ---
 
+## Supabase
+
+- Antes de rodar **qualquer SQL** ou publicar **qualquer função**, mostrar
+  o que vai fazer, explicar em português simples e **esperar o "pode"**
+  do Fernando.
+- **Nunca** usar `DROP`, `TRUNCATE` ou `DELETE` sem o Fernando escrever
+  **"pode apagar"**.
+- Preferir comandos que podem rodar de novo sem estragar nada
+  (`if not exists`, `create or replace`, `on conflict do nothing`).
+- Registrar **todo SQL rodado** em `src/supabase/migrations.sql`.
+- Quando a validação com usuários reais começar, trocar o conector do
+  Supabase para **somente leitura** (`read_only`).
+
+---
+
 ## Regras de produto que não podem ser quebradas
 
 - **Regra dos anos:** históricos, calendários e datas ficam limitados ao
