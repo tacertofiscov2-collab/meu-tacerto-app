@@ -1,4 +1,5 @@
-/* VELOCIMETROANIMADO v3 — modo "so interrogacao" (card B) + letra do "+N%" que cabe no balao */
+/* VELOCIMETROANIMADO v4 — opcao semAnimacao (slides da tela de boas-vindas) */
+/* v3 — modo "so interrogacao" (card B) + letra do "+N%" que cabe no balao */
 import { useEffect, useState, useId } from "react";
 import { AlertTriangle } from "lucide-react";
 import { FAIXA_INFO, faixaDoVelocimetro } from "@/lib/fiscal";
@@ -38,6 +39,11 @@ let jaAnimouNaSessao = false;
  * o percentual mudar, o ponteiro apenas desliza suave até o novo valor.
  * NUNCA reinicia do zero por causa de re-render/remontagem (era o que
  * causava o "encolhe e cresce" ao deslizar o carrossel do dashboard).
+ *
+ * SEM ANIMAÇÃO (v4): com `semAnimacao`, já nasce no valor final e NÃO
+ * mexe na flag da sessão. Usado nos slides da tela de boas-vindas: sem
+ * isso, o velocímetro do slide "gastava" a animação e o do Dashboard
+ * aparecia parado depois do login.
  */
 export default function VelocimetroAnimado({
   percentual,
@@ -49,6 +55,7 @@ export default function VelocimetroAnimado({
   alertaDos20 = true,
   apenasInterrogacao = false,
   descricao,
+  semAnimacao = false,
 }) {
   const uid = useId().replace(/:/g, "");
   const gradId = `velGrad-${uid}`;
@@ -59,12 +66,13 @@ export default function VelocimetroAnimado({
 
   // Se a animação de entrada já rolou nesta sessão, começa já no valor
   // final (sem subir do zero). Só anima do zero na primeiríssima vez.
-  const [progresso, setProgresso] = useState(jaAnimouNaSessao ? pVisual : 0);
+  const [progresso, setProgresso] = useState(jaAnimouNaSessao || semAnimacao ? pVisual : 0);
   const [pulse, setPulse] = useState(false);
 
   // Animação de ENTRADA: só uma vez por sessão, mesmo que o componente
   // remonte depois (deslize do carrossel não re-anima).
   useEffect(() => {
+    if (semAnimacao) return;
     if (jaAnimouNaSessao) {
       setProgresso(pVisual);
       return;
@@ -84,6 +92,7 @@ export default function VelocimetroAnimado({
 
   // Mudança REAL de percentual depois da entrada: desliza suave, sem zerar.
   useEffect(() => {
+    if (semAnimacao) { setProgresso(pVisual); return; }
     if (!jaAnimouNaSessao) return;
     setProgresso(pVisual);
   }, [pVisual]);
