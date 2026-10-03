@@ -40,6 +40,14 @@ leia as Partes 0, 1, 6 e 12 antes de começar qualquer tarefa.
    arquivo tem que estar certo.
 4. Depois de mudar, **confira**: rode o build ou ao menos verifique a
    sintaxe; procure imports sem uso.
+   - **Mudança visual:** abra a tela no **navegador embutido** do app
+     Claude (`localhost:8080`, o `npm run dev` do Cursor — não iniciar
+     outro) na **largura do iPhone: 390 × 844**. Confira o visual
+     (alinhamento, espaçamento, texto cortado) e o **Console** (sem
+     erros). Corrija o que estiver errado e **só então** diga ao
+     Fernando que terminou. Telas que pedem login: conta **piloto2**
+     (ver "Contas de teste"). Ao terminar, volte o navegador ao tamanho
+     normal.
 5. **Commit a cada etapa concluída**, com mensagem curta em português
    sem acento (padrão: `feat: ...`, `ui: ...`, `fix: ...`). Mostre ao
    Fernando o resultado do commit.
