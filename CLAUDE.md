@@ -43,9 +43,9 @@ leia as Partes 0, 1, 6 e 12 antes de começar qualquer tarefa.
 5. **Commit a cada etapa concluída**, com mensagem curta em português
    sem acento (padrão: `feat: ...`, `ui: ...`, `fix: ...`). Mostre ao
    Fernando o resultado do commit.
-6. **NUNCA `git push`** sem o Fernando confirmar que alinhou com o
-   **Ruan** (sócio). Nunca `push --force`, nunca `git reset --hard` sem
-   ele pedir.
+6. **`git push` só quando o Fernando pedir** (o projeto é só dele; o
+   push manda tudo para a produção na Vercel). Nunca `push --force`,
+   nunca `git reset --hard` sem ele pedir.
 7. **Windows / PowerShell:** `&&` não funciona; um comando por vez.
 8. Não rode `npm audit fix --force`.
 9. O `npm run dev` normalmente fica rodando no terminal do Cursor. Se
@@ -120,8 +120,9 @@ Caminhoneiro**): "entradas e saídas, sempre". O coração é um
 
 ## Onde estamos (atualizar ao fim de cada sessão)
 
-- `main` em `f0d04cb`, **16 commits sem push** (alinhar com o Ruan).
+- `main` em `0d812ec`, **17 commits sem push** (o Fernando decide quando
+  publicar).
 - Próximo passo: o Fernando testar no iPhone o que foi feito em 28-29/09
   (lista no HANDOFF, Parte 12 → "Conferir no iPhone") e corrigir em lote.
-- Pendências rápidas: religar "Require Log In" na Vercel; apagar
-  `telas.txt`; guardar os SQLs de 28/09 em `src/supabase/migrations.sql`.
+- Pendências rápidas: religar "Require Log In" na Vercel; guardar os
+  SQLs de 28/09 em `src/supabase/migrations.sql`.
