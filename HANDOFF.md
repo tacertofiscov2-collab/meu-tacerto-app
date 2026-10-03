@@ -20,7 +20,7 @@
 Histórico de entradas, saídas, DAS e notas (com "Lançar nota"),
 "Adicionar movimentações", Resumo com saídas e IR, o **topo que rola** em
 todas as telas com rolagem, o ajuste do Vite para túnel, e este HANDOFF +
-o `CLAUDE.md` (03/10). **28 commits sem `git push` na `main`** (a branch `preview-ajustes-telas` já foi para o
+o `CLAUDE.md` (03/10). **33 commits sem `git push` na `main`** (a branch `preview-ajustes-telas` já foi para o
 GitHub e está publicada como prévia na Vercel). A produção ainda está no
 commit antigo `f1832bb`.
 
@@ -31,6 +31,11 @@ publicada era a **v8** (o HANDOFF dizia v9) — a **v9 foi publicada em
 **sem GRANT** (as telas Saídas, DAS e Notas não liam nem gravavam) —
 **GRANT rodado e conferido em 03/10**. O SQL de 28/09 está agora no
 `migrations.sql` e o código da `excluir-conta` no repositório.
+Depois, os **advisors de segurança**: as funções-gatilho
+`handle_new_user` e `rls_auto_enable` podiam ser "chamadas" pelo app —
+EXECUTE retirado (Parte 4C do `migrations.sql`), cadastro testado com a
+conta nova **piloto4** e funcionando. O Claude Code passou a conferir
+telas no **navegador embutido** do app Claude (`localhost:8080`, 390px).
 
 ### ➡️ PRÓXIMO PASSO
 
@@ -1141,9 +1146,13 @@ quando ele pedir.
   conector do Supabase (sempre pede aprovação); `9840790` regras do
   Supabase no CLAUDE.md; `1b16a2e` SQL de 28/09 no migrations.sql;
   `3b4b9a3` GRANT das 4 tabelas; `a46a77a` código da `excluir-conta`;
-  e o commit de fechamento "docs: fechamento de 03/10".
+  e o commit de fechamento "docs: fechamento de 03/10"; `cc9bd7e`
+  conector: só leitura sem perguntar + rotina de backup; `31ccabc`
+  funções-gatilho fora do alcance do app (advisors); `0d44b87` conta
+  piloto4; `d550bb4` conferência visual no navegador embutido; e
+  "docs: o que faltava de 03/10".
 
-**Situação:** `main` local **28 commits à frente** da
+**Situação:** `main` local **33 commits à frente** da
 `origin/main`. A branch `preview-ajustes-telas` já está no GitHub. O push
 da `main` é decisão do Fernando.
 
@@ -1300,7 +1309,7 @@ a falta de GRANT (consertada em 03/10) — testar de novo.
       20%, Excluir conta, Alterar WhatsApp, Cadastro, Conexão bancária
 
 **Git / Vercel / prévia:**
-- [ ] Push da `main` (28 commits), quando o Fernando decidir; conferir deploy
+- [ ] Push da `main` (33 commits), quando o Fernando decidir; conferir deploy
 - [ ] **Religar "Require Log In"** em Deployment Protection
 - [ ] Conferir/apagar a conta criada pelo amigo na prévia
 - [x] Guardar os SQLs de 28/09 em `src/supabase/migrations.sql` (03/10)
@@ -1345,6 +1354,17 @@ a falta de GRANT (consertada em 03/10) — testar de novo.
       `comprovantes` (DAS e notas) e `avatares` (foto de perfil). Hoje só
       as linhas das tabelas somem (cascade); os arquivos ficam sem dono.
 - [ ] Nunca apagar usuários direto no Supabase depois da produção
+- [x] Advisors de segurança (03/10): `handle_new_user` e
+      `rls_auto_enable` sem EXECUTE para o app (Parte 4C); cadastro
+      testado depois (piloto4) e OK. Backup das permissões antigas em
+      `backups/2026-10-03_permissoes_funcoes.json` (fora do Git).
+- [ ] Aviso aceito: **proteção contra senha vazada** desligada (Auth →
+      senhas; costuma ser só no plano Pro) — ligar quando o projeto for
+      para plano pago.
+- [ ] Aviso aceito (está certo assim): `codigos_wpp` com RLS e sem
+      policies — só as Edge Functions mexem nela.
+- [ ] Título da aba do navegador ainda diz "Educação fiscal para MEI"
+      (`index.html`) — trocar junto com os textos de Termos e Sobre.
 
 **Validar com o contador parceiro:** troca de tipo de MEI, despesas do
 IR, empréstimo e antecipação de recebíveis, comprovantes da DAS.
@@ -1453,10 +1473,18 @@ computador (aba **Code**), aberto na pasta
   Windows às vezes falha); Vercel é feita no navegador por ele, com o
   passo a passo.
 - **Supabase (desde 03/10):** o Claude Code tem o **conector do
-  Supabase** (limitado a este projeto). Cada uso pede aprovação do
-  Fernando (regra "ask" no `.claude/settings.json`), e SQL ou publicação
-  de função só depois do "pode" (regras no `CLAUDE.md` → Supabase). Na
+  Supabase** (limitado a este projeto). As ferramentas que só LEEM
+  rodam sem perguntar; as que podem mudar algo (SQL, migration, publicar
+  função e afins) pedem aprovação (listas "allow"/"ask" no
+  `.claude/settings.json`). SQL ou publicação de função só depois do
+  "pode", com a rotina backup → mudar → conferir/logs/advisors (regras no
+  `CLAUDE.md` → Supabase; cópias em `backups/`, fora do Git). Na
   validação com usuários reais, trocar o conector para somente leitura.
+- **Navegador embutido (desde 03/10):** o Claude Code abre o
+  `localhost:8080` (o `npm run dev` do Cursor) no navegador do app
+  Claude, em 390px, e lê o Console. O Fernando vê o mesmo com
+  **Ctrl+Shift+B**. A simulação não reproduz a altura útil do iPhone —
+  o print do iPhone continua sendo a palavra final.
 - **Regras de ouro:** commit a cada etapa (dá para voltar); `git push`
   só quando o Fernando pedir; mostrar o que vai mudar antes de mudar;
   português simples.

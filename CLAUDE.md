@@ -48,6 +48,11 @@ leia as Partes 0, 1, 6 e 12 antes de começar qualquer tarefa.
      Fernando que terminou. Telas que pedem login: conta **piloto2**
      (ver "Contas de teste"). Ao terminar, volte o navegador ao tamanho
      normal.
+   - ⚠️ A simulação no PC **não reproduz a altura útil do iPhone**
+     (03/10: o Dashboard parecia ter espaço sobrando no PC e no iPhone
+     estava ótimo). Sobra ou falta de espaço na **altura** não é motivo
+     para mudar sozinho: aponte como dúvida e deixe o print do iPhone
+     decidir. Alinhamento, texto cortado e Console continuam valendo.
 5. **Commit a cada etapa concluída**, com mensagem curta em português
    sem acento (padrão: `feat: ...`, `ui: ...`, `fix: ...`). Mostre ao
    Fernando o resultado do commit.
@@ -165,8 +170,12 @@ O projeto **não tem backup automático**. Por isso:
 
 ## Onde estamos (atualizar ao fim de cada sessão)
 
-- `main` com **28 commits sem push** (o Fernando decide quando
+- `main` com **33 commits sem push** (o Fernando decide quando
   publicar). Produção ainda em `f1832bb`.
+- 03/10 (fim): advisors de segurança rodados; as funções-gatilho
+  `handle_new_user` e `rls_auto_enable` saíram do alcance do app
+  (`migrations.sql` Parte 4C; cadastro testado com piloto4 e OK).
+  Restam 2 avisos aceitos (ver HANDOFF Parte 12 → Segurança).
 - 03/10: `pluggy` **v9 publicada** (estava a v8) e conferida; **GRANT**
   das tabelas `saidas`, `das_pagamentos`, `notas_fiscais` e
   `comprovantes` rodado e conferido (as telas Saídas, DAS e Notas não
