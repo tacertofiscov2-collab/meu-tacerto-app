@@ -1,472 +1,438 @@
-/* WELCOME v2 — slides novos (gestao do MEI: entradas e gastos) com telas iguais as do app */
+/* WELCOME v3 — slides ficticios (sem nomes nem valores), no desenho simplificado de antes, com o visual atual do app */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
-   v2 (03/10/2026): slides refeitos para o posicionamento novo — app
-   de GESTAO do MEI, entradas e gastos, sem complexidade (antes era
-   "educacao fiscal"). Texto vale igual para MEI e MEI Caminhoneiro.
-   5 slides:
-     1 Seu limite, sempre à vista      -> Início (velocímetro "MEI · anual")
-     2 Entradas e gastos chegam sozinhos -> Histórico de entradas
-     3 O Fisco organiza e aprende      -> Novas entradas ("É faturamento?")
-     4 Tudo guardado num lugar só      -> Perfil → Meu MEI (os históricos)
-     5 O Fisco no seu WhatsApp         -> conversa no WhatsApp (dúvida + nota)
-   Pedido do Fernando: tudo aparece como pronto, inclusive o que ainda
-   vai entrar (WhatsApp, emissão de nota).
+   v3 (03/10/2026): pedido do Fernando — os slides voltam a ser
+   FICTICIOS como na v1 (sem nomes de pessoas nem valores: "R$ •••",
+   "Cliente", "Recebimento"), no mesmo desenho simplificado de antes,
+   mas com o visual atual do app (cards com borda fina, vidro, balao
+   "?", Fisco). Nao e mais "print" da tela real.
+   ⚠️ TITULOS CURTOS (cabem em UMA linha no iPhone): na v2 o titulo
+   "Entradas e gastos chegam sozinhos" quebrava em duas linhas, o card
+   de baixo crescia e empurrava "Criar conta"/"Entrar" para baixo. O
+   card de baixo tem que ficar IGUAL em todos os slides.
 
-   COMO AS "TELAS" DENTRO DO CELULAR SAO FEITAS: cada uma e desenhada
-   no tamanho REAL do app (390 px de largura, mesmas fontes, cards e
-   cores) e o <TelaReal> encolhe tudo junto para caber no celular de
-   exemplo. Assim fica igual ao app de verdade, e da para usar os
-   componentes reais (VelocimetroAnimado, Valor, SimboloPluggy).
+   v2 (03/10/2026): slides do posicionamento novo (gestao do MEI:
+   entradas e gastos) desenhados no tamanho real do app e encolhidos.
 
-   NAO MUDOU: tamanho do celular de exemplo (250 px x 48dvh), a linha
+   5 slides: limite (velocimetro) / banco (entradas e gastos chegam
+   sozinhos) / Fisco aprende ("É faturamento?") / historicos (entradas,
+   saidas, DAS, notas) / Fisco no WhatsApp (duvida + nota). Tudo como
+   pronto, a pedido do Fernando. Texto vale igual para MEI e MEI
+   Caminhoneiro.
+
+   NAO MUDA: tamanho do celular de exemplo (250 px x 48dvh), a linha
    verde em volta, e o card de baixo (texto, bolinhas, "Criar conta",
    "Já tem conta? Entrar").
    =================================================================== */
 import { useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
-  Gauge, TrendingUp, ArrowLeft, Search, Calendar, ChevronDown, ChevronRight,
-  ArrowDownLeft, ArrowUpRight, CalendarCheck, FileText, BarChart3, Send,
-  CheckCheck, User, Settings, Plus, Mic, Smile,
+  Gauge, ArrowLeft, ChevronRight, ChevronDown, Send, Mic, Plus, Smile,
+  ArrowDownLeft, ArrowUpRight, CalendarCheck, FileText, Check, CheckCheck,
 } from "lucide-react";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
-import VelocimetroAnimado from "@/components/VelocimetroAnimado";
-import Valor from "@/components/Valor";
 import SimboloPluggy from "@/components/SimboloPluggy";
 
 const VERDE = "var(--primary)";
 
-/* Largura de um iPhone: as telas sao desenhadas nesse tamanho e encolhidas. */
-const LARGURA_TELA = 390;
+/* Borda fina dos cards (igual ao .card-tacerto do app). */
+const CARD = { border: "1px solid var(--card-borda)", backgroundColor: "transparent" };
 
-/* Vidro dos cards do Início (igual ao Dashboard). */
+/* Vidro dos cards do Início. */
 const VIDRO = {
   background:
     "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
   border: "1px solid var(--vidro-borda)",
-  boxShadow:
-    "inset 0 1px 0 0 var(--vidro-topo-medio), inset 0 6px 14px -8px var(--vidro-topo-fraco), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
+  boxShadow: "inset 0 1px 0 0 var(--vidro-topo-medio), 0 6px 18px var(--vidro-sombra)",
 };
 
-/* Encolhe uma tela de 390 px para o tamanho do celular de exemplo.
-   A altura acompanha: a tela real "tem" a altura do celular / escala. */
-function TelaReal({ children, fundo = "var(--bg)" }) {
-  const ref = useRef(null);
-  const [caixa, setCaixa] = useState({ escala: 0.63, altura: 640 });
-
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return undefined;
-    const medir = () => {
-      const w = el.clientWidth;
-      const h = el.clientHeight;
-      if (!w || !h) return;
-      const escala = w / LARGURA_TELA;
-      setCaixa({ escala, altura: h / escala });
-    };
-    medir();
-    const ro = new ResizeObserver(medir);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
+/* Cada mini-tela ocupa a altura toda do celular (nada de espaco vazio:
+   o que fica no pe usa marginTop auto). */
+function MiniTela({ children, padding = "16px 14px 12px", fundo }) {
   return (
-    <div ref={ref} aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none" style={{ backgroundColor: fundo }}>
-      <div
-        className="flex flex-col"
-        style={{
-          width: LARGURA_TELA,
-          height: caixa.altura,
-          transform: `scale(${caixa.escala})`,
-          transformOrigin: "0 0",
-          color: "var(--text)",
-        }}
-      >
-        {children}
-      </div>
+    <div className="flex flex-col h-full" style={{ padding, backgroundColor: fundo }}>
+      {children}
     </div>
   );
 }
 
-/* Topo das telas com rolagem (igual ao TopoRolavel): setinha redonda + título. */
-function Topo({ titulo }) {
+/* Cabeçalho da mini-tela: setinha redonda + título ao lado (como no app). */
+function MiniHeader({ titulo }) {
   return (
-    <header className="flex items-center shrink-0" style={{ gap: 12, padding: "20px 20px 8px" }}>
+    <div className="flex items-center gap-2.5 shrink-0" style={{ marginBottom: 16 }}>
       <span
         className="rounded-full flex items-center justify-center shrink-0"
-        style={{ width: 40, height: 40, border: "1px solid var(--border)" }}
+        style={{ width: 26, height: 26, border: "1px solid var(--border)" }}
       >
-        <ArrowLeft size={20} strokeWidth={2} style={{ color: "var(--text)" }} />
+        <ArrowLeft size={14} strokeWidth={2.2} style={{ color: "var(--text)" }} />
       </span>
-      <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>{titulo}</h1>
-    </header>
-  );
-}
-
-/* ---------------------------- 1. INÍCIO ---------------------------- */
-function TelaInicio() {
-  return (
-    <>
-      <header className="px-5 pt-4 pb-1 flex items-start justify-between shrink-0">
-        <div className="flex flex-col min-w-0">
-          <div className="flex items-center gap-2.5">
-            <Gauge size={34} style={{ color: VERDE }} strokeWidth={2.2} className="shrink-0" />
-            <span className="font-bold text-2xl leading-none" style={{ color: "var(--text)" }}>
-              Ta<span style={{ color: VERDE }}>Certo!</span>
-            </span>
-          </div>
-          <div className="flex items-baseline gap-1.5" style={{ marginTop: 6 }}>
-            <span className="font-semibold" style={{ color: "var(--text-secondary)", fontSize: 14 }}>Bom dia</span>
-            <span className="font-extrabold leading-none" style={{ color: "var(--text)", fontSize: 19 }}>Alex</span>
-          </div>
-        </div>
-        <span className="flex items-center justify-center shrink-0" style={{ width: 44, height: 34 }}>
-          <SimboloPluggy altura={26} />
-        </span>
-      </header>
-
-      <div className="px-5 pt-2 flex-1 flex flex-col min-h-0">
-        <div className="relative w-full flex-1 min-h-0 rounded-3xl overflow-hidden flex flex-col px-5 pb-4" style={VIDRO}>
-          <div className="flex-1 min-h-0 flex items-center justify-center">
-            <VelocimetroAnimado
-              percentual={45}
-              maxWidth={190}
-              numeroClasse="text-4xl font-bold"
-              sempreMostrarBalao
-              semAnimacao
-            />
-          </div>
-          <p className="text-center shrink-0" style={{ color: "var(--text-tertiary)", fontSize: 14, marginBottom: 2 }}>
-            MEI · anual
-          </p>
-          <div className="flex items-stretch pt-3 shrink-0" style={{ borderTop: "1px solid var(--border)", marginTop: 2 }}>
-            <div className="flex-1 flex flex-col items-center">
-              <Valor tamanho="md">{36450}</Valor>
-              <span className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>Faturado</span>
-            </div>
-            <div className="shrink-0" style={{ width: 1, backgroundColor: "var(--border)" }} />
-            <div className="flex-1 flex flex-col items-center">
-              <Valor tamanho="md">{81000}</Valor>
-              <span className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>Limite</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-center gap-1.5 shrink-0" style={{ paddingTop: 10, paddingBottom: 4 }}>
-          <span className="rounded-full" style={{ width: 7, height: 7, backgroundColor: VERDE }} />
-          <span className="rounded-full" style={{ width: 7, height: 7, backgroundColor: "var(--border)" }} />
-        </div>
-
-        {/* Fisco + "Pergunte ao Fisco..." */}
-        <div className="shrink-0 flex items-start gap-2" style={{ marginTop: 4, marginBottom: 12 }}>
-          <span
-            className="relative shrink-0 rounded-full flex items-center justify-center"
-            style={{ width: 96, height: 96, ...VIDRO, border: "1.5px solid rgba(34,197,94,0.45)" }}
-          >
-            <span className="rounded-full overflow-hidden flex items-center justify-center" style={{ width: "100%", height: "100%" }}>
-              <img src="/fisco-perfil.png" alt="" style={{ width: "108%", height: "108%", objectFit: "cover", objectPosition: "50% 18%" }} />
-            </span>
-            <span
-              className="absolute rounded-full"
-              style={{ width: 26, height: 26, backgroundColor: VERDE, border: "4px solid var(--bg)", bottom: 2, right: 2 }}
-            />
-          </span>
-          <span
-            className="flex-1 flex items-center gap-2 min-w-0 rounded-full"
-            style={{ ...VIDRO, height: 48, paddingLeft: 18, paddingRight: 12, marginTop: 24, border: "1px solid rgba(34,197,94,0.35)" }}
-          >
-            <span
-              className="flex-1 truncate"
-              style={{
-                color: "var(--text-tertiary)",
-                fontSize: 15,
-                fontStyle: "italic",
-                fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive',
-              }}
-            >
-              Pergunte ao Fisco...
-            </span>
-            <Send size={20} strokeWidth={2} style={{ color: VERDE }} className="shrink-0" />
-          </span>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* ---------------------- 2. HISTÓRICO DE ENTRADAS ---------------------- */
-function TelaEntradas() {
-  const entradas = [
-    { nome: "Rota Sul Transportes", detalhe: "02 de Outubro · Pix", valor: 2400 },
-    { nome: "Mariana Costa", detalhe: "01 de Outubro · Pix", valor: 350 },
-    { nome: "Horizonte Comércio Ltda", detalhe: "01 de Outubro · TED", valor: 1180 },
-    { nome: "Pedro Almeida", detalhe: "30 de Setembro · Pix", valor: 600 },
-  ];
-  return (
-    <>
-      <Topo titulo="Histórico de entradas" />
-      <div className="px-5 flex flex-col" style={{ paddingTop: 8 }}>
-        <div className="card-tacerto rounded-2xl px-4 flex items-center gap-3" style={{ height: 50 }}>
-          <Search size={18} style={{ color: "var(--text-tertiary)" }} />
-          <span className="text-[15px]" style={{ color: "var(--text-tertiary)" }}>Buscar entrada</span>
-        </div>
-        <div className="card-tacerto rounded-2xl px-4 flex items-center gap-3 mt-2.5" style={{ minHeight: 58 }}>
-          <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: "var(--surface)" }}>
-            <Calendar size={18} style={{ color: VERDE }} />
-          </span>
-          <span className="flex-1 min-w-0">
-            <span className="block text-[15px] font-semibold" style={{ color: "var(--text)" }}>Outubro de 2026</span>
-            <span className="block text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Ir para o mês</span>
-          </span>
-          <ChevronDown size={18} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
-        </div>
-        <div className="card-tacerto rounded-2xl px-4 py-3.5 mt-2.5">
-          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Total de Outubro</p>
-          <div className="mt-1"><Valor tamanho="xl">{3930}</Valor></div>
-          <div className="flex items-center gap-1.5 mt-1.5" style={{ color: "var(--text-tertiary)" }}>
-            <span className="text-xs">No ano de 2026:</span>
-            <Valor tamanho="sm">{36450}</Valor>
-          </div>
-        </div>
-        <p className="text-[13px] font-semibold mt-4 mb-2" style={{ color: "var(--text-secondary)" }}>Outubro</p>
-        <div className="space-y-2">
-          {entradas.map((e) => (
-            <div key={e.nome} className="card-tacerto rounded-2xl px-4 py-3 flex items-center gap-3">
-              <TrendingUp size={19} strokeWidth={2} style={{ color: VERDE }} className="shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-[15px] font-semibold leading-tight truncate" style={{ color: "var(--text)" }}>{e.nome}</p>
-                <p className="text-xs mt-0.5 truncate" style={{ color: "var(--text-secondary)" }}>{e.detalhe}</p>
-              </div>
-              <span className="shrink-0"><Valor tamanho="md" sinal="+">{e.valor}</Valor></span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* ------------------------- 3. NOVAS ENTRADAS ------------------------- */
-function Picote() {
-  const recorte = {
-    position: "absolute", top: 0, width: 18, height: 18, borderRadius: "50%",
-    backgroundColor: "var(--bg)", border: "1px solid var(--card-borda)",
-  };
-  return (
-    <div className="relative" style={{ height: 18 }}>
-      <span style={{ ...recorte, left: -10 }} />
-      <div style={{ position: "absolute", left: 16, right: 16, top: 8, borderTop: "1.5px dashed var(--border)" }} />
-      <span style={{ ...recorte, right: -10 }} />
+      <span className="font-bold" style={{ color: "var(--text)", fontSize: 14 }}>{titulo}</span>
     </div>
   );
 }
 
-function LinhaDetalhe({ rotulo, valor }) {
+/* Velocímetro pequeno — arco colorido com glow, risquinhos, ponteiro
+   em losango e cubo central. Só a %, sem valores em reais. */
+function MiniVelocimetro({ pct = 58 }) {
+  const cx = 100, cy = 100, r = 80;
+  const arcLength = Math.PI * r;
+  const filled = (pct / 100) * arcLength;
+  const arcPath = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
+  const gid = "mv-grad", gl = "mv-glow";
+
+  const N = 9;
+  const ticks = [];
+  for (let i = 0; i <= N; i++) {
+    const t = Math.PI - (i / N) * Math.PI;
+    const rIn = 60;
+    const rOut = i % 2 === 0 ? 71 : 66;
+    ticks.push({
+      x1: cx + rIn * Math.cos(t),
+      y1: cy - rIn * Math.sin(t),
+      x2: cx + rOut * Math.cos(t),
+      y2: cy - rOut * Math.sin(t),
+      on: (i / N) * 100 <= pct + 1,
+    });
+  }
+
+  const needleR = 58, baseHalf = 6, midHalf = 2.6, midR = needleR * 0.45;
+  const tipX = cx - needleR, tipY = cy;
+  const mx = cx - midR;
+  const needlePoints = `${cx},${cy - baseHalf} ${mx},${cy - midHalf} ${tipX},${tipY} ${mx},${cy + midHalf} ${cx},${cy + baseHalf}`;
+  const rot = (pct / 100) * 180;
+
   return (
-    <div className="flex items-baseline justify-between" style={{ gap: 12, paddingTop: 4, paddingBottom: 4 }}>
-      <span className="text-[13px]" style={{ color: "var(--text-tertiary)" }}>{rotulo}</span>
-      <span className="text-[13.5px] font-semibold" style={{ color: "var(--text)" }}>{valor}</span>
-    </div>
-  );
-}
-
-function TelaConferir() {
-  return (
-    <>
-      <header className="px-5 pt-7 pb-3 shrink-0">
-        <h1 className="font-bold text-center" style={{ color: "var(--text)", fontSize: 27 }}>Novas entradas</h1>
-      </header>
-      <div className="px-5">
-        <p className="text-[13px] font-semibold text-center" style={{ color: "var(--text-secondary)", marginBottom: 8 }}>1 de 3</p>
-        <div className="rounded-full overflow-hidden" style={{ height: 5, backgroundColor: "var(--border)" }}>
-          <div style={{ height: "100%", width: "33%", backgroundColor: VERDE }} />
-        </div>
-
-        <div className="card-tacerto rounded-2xl overflow-hidden" style={{ marginTop: 16 }}>
-          <div style={{ padding: "14px 16px 12px" }}>
-            <p className="font-semibold uppercase" style={{ color: "var(--text-tertiary)", fontSize: 11, letterSpacing: "0.08em" }}>Pagador</p>
-            <div className="flex items-center" style={{ gap: 12, marginTop: 8 }}>
-              <span
-                className="rounded-full flex items-center justify-center shrink-0 font-bold"
-                style={{ width: 42, height: 42, fontSize: 17, backgroundColor: "rgba(34,197,94,0.14)", color: VERDE }}
-              >
-                H
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="font-bold truncate" style={{ fontSize: 16.5, color: "var(--text)" }}>Horizonte Comércio Ltda</p>
-                <p className="text-[12.5px]" style={{ color: "var(--text-tertiary)", marginTop: 1, letterSpacing: "0.02em" }}>12.345.•••/••01-90</p>
-              </div>
-            </div>
-          </div>
-          <Picote />
-          <div style={{ padding: "10px 16px 14px" }}>
-            <LinhaDetalhe rotulo="Entradas" valor="3" />
-            <LinhaDetalhe rotulo="Período" valor="02 a 28 de set." />
-            <LinhaDetalhe rotulo="Meio" valor="Pix" />
-            <div className="flex items-baseline justify-between" style={{ marginTop: 10, paddingTop: 10, borderTop: "1px dashed var(--border)", gap: 10 }}>
-              <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>Total recebido</span>
-              <span className="font-bold" style={{ fontSize: 22, color: VERDE }}>R$ 4.200,00</span>
-            </div>
-            <span className="flex items-center gap-1" style={{ marginTop: 10, color: "var(--text-secondary)", fontSize: 13 }}>
-              <ChevronDown size={15} />
-              Ver as entradas
-            </span>
-          </div>
-        </div>
-
-        <p className="font-bold text-center" style={{ fontSize: 20, marginTop: 26 }}>É faturamento?</p>
-        <div className="flex" style={{ gap: 10, marginTop: 14 }}>
-          <span
-            className="flex-1 rounded-2xl font-bold text-center"
-            style={{ paddingTop: 15, paddingBottom: 15, fontSize: 17, backgroundColor: VERDE, border: `1.5px solid ${VERDE}`, color: "var(--primary-contrast)" }}
-          >
-            Sim
-          </span>
-          <span
-            className="flex-1 rounded-2xl font-bold text-center"
-            style={{ paddingTop: 15, paddingBottom: 15, fontSize: 17, border: "1.5px solid var(--border)", color: "var(--text)" }}
-          >
-            Não
-          </span>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* --------------------------- 4. MEU MEI --------------------------- */
-function SecaoPerfil({ titulo, itens }) {
-  return (
-    <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16, paddingBottom: 8 }}>
-      <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--text-tertiary)" }}>{titulo}</p>
-      {itens.map(({ Icon, label }) => (
-        <div key={label} className="w-full flex items-center gap-3 py-3">
-          <Icon size={21} strokeWidth={2} style={{ color: VERDE }} className="shrink-0" />
-          <span className="flex-1 text-[15px] font-semibold" style={{ color: "var(--text)" }}>{label}</span>
-          <ChevronRight size={17} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
-        </div>
+    <svg viewBox="0 0 200 120" width="140" height="84" aria-hidden className="block mx-auto">
+      <defs>
+        <linearGradient id={gid} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#16d65a" />
+          <stop offset="45%" stopColor="#a3e635" />
+          <stop offset="70%" stopColor="#facc15" />
+          <stop offset="88%" stopColor="#f97316" />
+          <stop offset="100%" stopColor="#ef4444" />
+        </linearGradient>
+        <filter id={gl} x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="2.2" result="b" />
+          <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+      <path d={arcPath} fill="none" stroke={`url(#${gid})`} strokeWidth={14} strokeLinecap="round" opacity={0.18} />
+      <path
+        d={arcPath} fill="none" stroke={`url(#${gid})`} strokeWidth={14} strokeLinecap="round"
+        strokeDasharray={`${filled} ${arcLength}`} filter={`url(#${gl})`}
+      />
+      {ticks.map((tk, i) => (
+        <line
+          key={i} x1={tk.x1} y1={tk.y1} x2={tk.x2} y2={tk.y2}
+          stroke={tk.on ? "var(--text)" : "var(--text-tertiary)"}
+          strokeWidth={i % 2 === 0 ? 2 : 1.3} strokeLinecap="round" opacity={tk.on ? 0.9 : 0.4}
+        />
       ))}
+      <g style={{ transformOrigin: "100px 100px", transform: `rotate(${rot}deg)` }}>
+        <polygon points={needlePoints} fill="var(--text)" />
+      </g>
+      <circle cx={cx} cy={cy} r={7} fill="var(--text)" />
+      <circle cx={cx} cy={cy} r={3} fill="var(--surface)" />
+    </svg>
+  );
+}
+
+/* Foto redonda do Fisco com a bolinha verde. */
+function FotoFisco({ tamanho = 46, borda = "var(--bg)" }) {
+  return (
+    <span className="relative shrink-0" style={{ width: tamanho, height: tamanho }}>
+      <span
+        className="rounded-full overflow-hidden block"
+        style={{ width: tamanho, height: tamanho, ...VIDRO, border: "1.5px solid rgba(34,197,94,0.45)" }}
+      >
+        <img src="/fisco-perfil.png" alt="" style={{ width: "108%", height: "108%", objectFit: "cover", objectPosition: "50% 18%" }} />
+      </span>
+      <span
+        className="absolute rounded-full"
+        style={{ width: tamanho * 0.27, height: tamanho * 0.27, backgroundColor: VERDE, border: `2.5px solid ${borda}`, bottom: 0, right: 0 }}
+      />
+    </span>
+  );
+}
+
+/* Linha de movimentação: entrada (↙ verde, "+") ou saída (↗, "-"). */
+function LinhaMov({ entrada, quando }) {
+  const Icone = entrada ? ArrowDownLeft : ArrowUpRight;
+  return (
+    <div className="rounded-xl flex items-center gap-2" style={{ ...CARD, padding: "7px 10px" }}>
+      <Icone size={14} strokeWidth={2.2} style={{ color: entrada ? VERDE : "var(--text-secondary)" }} className="shrink-0" />
+      <span className="flex-1 min-w-0">
+        <span className="block font-semibold" style={{ color: "var(--text)", fontSize: 11.5 }}>{entrada ? "Recebimento" : "Pagamento"}</span>
+        <span className="block" style={{ color: "var(--text-secondary)", fontSize: 9.5 }}>{quando} · Pix</span>
+      </span>
+      <span className="font-bold shrink-0" style={{ color: entrada ? VERDE : "var(--text)", fontSize: 11.5 }}>
+        {entrada ? "+" : "-"} R$ •••
+      </span>
     </div>
   );
 }
 
-function TelaMeuMei() {
-  const itens = [
-    { Icon: ArrowDownLeft, label: "Histórico de entradas" },
-    { Icon: ArrowUpRight, label: "Histórico de saídas" },
-    { Icon: CalendarCheck, label: "Histórico de DAS" },
-    { Icon: FileText, label: "Histórico de notas fiscais" },
-    { Icon: TrendingUp, label: "Adicionar movimentações" },
-    { Icon: BarChart3, label: "Resumo de 2026" },
-  ];
-  const geral = [
-    { Icon: User, label: "Editar perfil" },
-    { Icon: Settings, label: "Preferências" },
-  ];
+/* ------------------------------ 1. LIMITE ------------------------------ */
+function MiniInicio() {
   return (
-    <>
-      <Topo titulo="Perfil" />
-      <div className="px-5">
-        <div className="flex flex-col items-center" style={{ paddingTop: 10, paddingBottom: 20 }}>
+    <MiniTela>
+      <div className="flex items-center justify-between shrink-0" style={{ marginBottom: 12 }}>
+        <span className="flex items-center gap-1.5">
+          <Gauge size={18} strokeWidth={2.3} style={{ color: VERDE }} />
+          <span className="font-bold" style={{ color: "var(--text)", fontSize: 14 }}>
+            Ta<span style={{ color: VERDE }}>Certo!</span>
+          </span>
+        </span>
+        <SimboloPluggy altura={14} />
+      </div>
+
+      <div className="rounded-2xl shrink-0" style={{ ...VIDRO, padding: "12px 12px 10px" }}>
+        <MiniVelocimetro pct={58} />
+        <div className="flex items-center justify-center gap-2" style={{ marginTop: -2 }}>
+          <span className="font-bold" style={{ color: "var(--text)", fontSize: 24, lineHeight: 1 }}>58%</span>
           <span
             className="rounded-full flex items-center justify-center font-bold"
-            style={{ width: 80, height: 80, fontSize: 32, color: VERDE, ...VIDRO }}
+            style={{ width: 20, height: 20, fontSize: 11, color: VERDE, backgroundColor: "rgba(34,197,94,0.14)", border: "1px solid rgba(34,197,94,0.5)" }}
           >
-            A
+            ?
           </span>
-          <span className="font-bold" style={{ fontSize: 20, marginTop: 12 }}>Alex</span>
         </div>
-        {/* "Meu MEI" vem primeiro aqui (no app vem depois do "Geral"):
-            sao os historicos que o slide quer mostrar. */}
-        <SecaoPerfil titulo="Meu MEI" itens={itens} />
-        <SecaoPerfil titulo="Geral" itens={geral} />
+        <p className="text-center" style={{ color: "var(--text-tertiary)", fontSize: 9.5, marginTop: 8 }}>MEI · anual</p>
+        <div className="flex items-center" style={{ borderTop: "1px solid var(--border)", marginTop: 6, paddingTop: 7 }}>
+          <div className="flex-1 flex flex-col items-center">
+            <span className="font-bold" style={{ color: "var(--text)", fontSize: 11.5 }}>R$ •••</span>
+            <span style={{ color: "var(--text-secondary)", fontSize: 9 }}>Faturado</span>
+          </div>
+          <div style={{ width: 1, alignSelf: "stretch", backgroundColor: "var(--border)" }} />
+          <div className="flex-1 flex flex-col items-center">
+            <span className="font-bold" style={{ color: "var(--text)", fontSize: 11.5 }}>R$ •••</span>
+            <span style={{ color: "var(--text-secondary)", fontSize: 9 }}>Limite</span>
+          </div>
+        </div>
       </div>
-    </>
+
+      {/* Fisco + barra do chat, no pé */}
+      <div className="flex items-center gap-2 shrink-0" style={{ marginTop: "auto", paddingTop: 12 }}>
+        <FotoFisco tamanho={44} />
+        <span
+          className="flex-1 min-w-0 rounded-full flex items-center gap-2"
+          style={{ ...VIDRO, border: "1px solid rgba(34,197,94,0.35)", height: 30, padding: "0 10px" }}
+        >
+          <span
+            className="flex-1 truncate"
+            style={{ color: "var(--text-tertiary)", fontSize: 10.5, fontStyle: "italic", fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive' }}
+          >
+            Pergunte ao Fisco...
+          </span>
+          <Send size={12} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
+        </span>
+      </div>
+    </MiniTela>
   );
 }
 
-/* --------------------------- 5. WHATSAPP --------------------------- */
+/* ------------------------------ 2. BANCO ------------------------------ */
+function MiniBanco() {
+  const linhas = [
+    { entrada: true, quando: "Hoje" },
+    { entrada: false, quando: "Hoje" },
+    { entrada: true, quando: "Ontem" },
+    { entrada: false, quando: "Ontem" },
+    { entrada: true, quando: "Ontem" },
+    { entrada: false, quando: "Seg" },
+  ];
+  return (
+    <MiniTela>
+      <MiniHeader titulo="Conexão bancária" />
+      <div className="rounded-2xl flex items-center gap-2.5 shrink-0" style={{ ...VIDRO, padding: "9px 11px", marginBottom: 10 }}>
+        <SimboloPluggy altura={16} />
+        <span className="flex-1 min-w-0">
+          <span className="block font-semibold" style={{ color: "var(--text)", fontSize: 11.5 }}>Banco conectado</span>
+          <span className="block" style={{ color: "var(--text-secondary)", fontSize: 9.5 }}>Atualizado agora</span>
+        </span>
+        <span className="rounded-full flex items-center justify-center shrink-0" style={{ width: 18, height: 18, backgroundColor: "rgba(34,197,94,0.16)" }}>
+          <Check size={11} strokeWidth={3} style={{ color: VERDE }} />
+        </span>
+      </div>
+      <div className="flex flex-col overflow-hidden" style={{ gap: 6 }}>
+        {linhas.map((l, i) => <LinhaMov key={i} {...l} />)}
+      </div>
+    </MiniTela>
+  );
+}
+
+/* ---------------------------- 3. CONFERIR ---------------------------- */
+function MiniConferir() {
+  return (
+    <MiniTela>
+      <p className="font-bold text-center shrink-0" style={{ color: "var(--text)", fontSize: 16, marginTop: 4 }}>Novas entradas</p>
+      <p className="text-center shrink-0" style={{ color: "var(--text-secondary)", fontSize: 9.5, marginTop: 8, marginBottom: 5 }}>1 de 3</p>
+      <div className="rounded-full overflow-hidden shrink-0" style={{ height: 3, backgroundColor: "var(--border)" }}>
+        <div style={{ height: "100%", width: "33%", backgroundColor: VERDE }} />
+      </div>
+
+      <div className="rounded-2xl shrink-0" style={{ ...CARD, marginTop: 12, padding: "10px 11px" }}>
+        <p className="font-semibold uppercase" style={{ color: "var(--text-tertiary)", fontSize: 8, letterSpacing: "0.08em" }}>Pagador</p>
+        <div className="flex items-center gap-2" style={{ marginTop: 6 }}>
+          <span
+            className="rounded-full flex items-center justify-center shrink-0 font-bold"
+            style={{ width: 26, height: 26, fontSize: 11, backgroundColor: "rgba(34,197,94,0.14)", color: VERDE }}
+          >
+            C
+          </span>
+          <span className="flex-1 min-w-0">
+            <span className="block font-bold" style={{ color: "var(--text)", fontSize: 12 }}>Cliente</span>
+            <span className="block" style={{ color: "var(--text-tertiary)", fontSize: 9 }}>••.•••.•••/••••-••</span>
+          </span>
+        </div>
+        <div style={{ borderTop: "1px dashed var(--border)", margin: "9px 0 7px" }} />
+        {[["Entradas", "3"], ["Meio", "Pix"]].map(([r, v]) => (
+          <div key={r} className="flex justify-between" style={{ fontSize: 9.5, padding: "2px 0" }}>
+            <span style={{ color: "var(--text-tertiary)" }}>{r}</span>
+            <span className="font-semibold" style={{ color: "var(--text)" }}>{v}</span>
+          </div>
+        ))}
+        <div className="flex items-baseline justify-between" style={{ borderTop: "1px dashed var(--border)", marginTop: 6, paddingTop: 6 }}>
+          <span style={{ color: "var(--text-secondary)", fontSize: 9.5 }}>Total recebido</span>
+          <span className="font-bold" style={{ color: VERDE, fontSize: 14 }}>R$ •••</span>
+        </div>
+      </div>
+
+      <div className="shrink-0" style={{ marginTop: "auto", paddingTop: 12 }}>
+        <p className="font-bold text-center" style={{ color: "var(--text)", fontSize: 13.5 }}>É faturamento?</p>
+        <div className="flex" style={{ gap: 7, marginTop: 9 }}>
+          <span className="flex-1 rounded-xl font-bold text-center" style={{ padding: "8px 0", fontSize: 12, backgroundColor: VERDE, color: "var(--primary-contrast)" }}>Sim</span>
+          <span className="flex-1 rounded-xl font-bold text-center" style={{ padding: "8px 0", fontSize: 12, border: "1.5px solid var(--border)", color: "var(--text)" }}>Não</span>
+        </div>
+      </div>
+    </MiniTela>
+  );
+}
+
+/* --------------------------- 4. HISTÓRICOS --------------------------- */
+function MiniHistoricos() {
+  const itens = [
+    { Icon: ArrowDownLeft, t: "Entradas" },
+    { Icon: ArrowUpRight, t: "Saídas" },
+    { Icon: CalendarCheck, t: "DAS" },
+    { Icon: FileText, t: "Notas fiscais" },
+  ];
+  const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+  const pagos = 9;
+  return (
+    <MiniTela>
+      <MiniHeader titulo="Meu MEI" />
+      <div className="grid grid-cols-2 shrink-0" style={{ gap: 6 }}>
+        {itens.map(({ Icon, t }) => (
+          <div key={t} className="rounded-xl flex items-center gap-1.5" style={{ ...CARD, padding: "8px 9px" }}>
+            <Icon size={13} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
+            <span className="flex-1 min-w-0 font-semibold truncate" style={{ color: "var(--text)", fontSize: 10.5 }}>{t}</span>
+            <ChevronRight size={11} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center justify-between shrink-0" style={{ marginTop: 14, marginBottom: 7 }}>
+        <span className="font-semibold" style={{ color: "var(--text-secondary)", fontSize: 10 }}>DAS</span>
+        <span className="flex items-center gap-0.5" style={{ color: "var(--text-tertiary)", fontSize: 9.5 }}>
+          Este ano <ChevronDown size={10} />
+        </span>
+      </div>
+      <div className="grid grid-cols-4 flex-1 min-h-0" style={{ gap: 5, gridAutoRows: "1fr" }}>
+        {MESES.map((m, i) => {
+          const paga = i < pagos;
+          return (
+            <div
+              key={m}
+              className="rounded-lg flex flex-col items-center justify-center"
+              style={{
+                border: `1px solid ${paga ? "rgba(34,197,94,0.55)" : "var(--card-borda)"}`,
+                backgroundColor: paga ? "rgba(34,197,94,0.12)" : "transparent",
+                opacity: paga ? 1 : 0.45,
+                gap: 2,
+              }}
+            >
+              {paga && <Check size={11} strokeWidth={2.6} style={{ color: VERDE }} />}
+              <span className="font-semibold" style={{ color: "var(--text)", fontSize: 9.5 }}>{m}</span>
+            </div>
+          );
+        })}
+      </div>
+    </MiniTela>
+  );
+}
+
+/* ---------------------------- 5. WHATSAPP ---------------------------- */
 const WA = { fundo: "#0b141a", topo: "#202c33", recebida: "#202c33", enviada: "#005c4b", hora: "rgba(233,237,239,0.6)", texto: "#e9edef", acao: "#00a884" };
 
-function Balao({ enviada = false, hora, children }) {
+function Balao({ enviada = false, children }) {
   return (
     <div className={`flex ${enviada ? "justify-end" : "justify-start"}`}>
       <div
-        className="rounded-xl"
-        style={{
-          maxWidth: "82%",
-          backgroundColor: enviada ? WA.enviada : WA.recebida,
-          color: WA.texto,
-          fontSize: 15.5,
-          lineHeight: 1.35,
-          padding: "7px 10px 6px",
-        }}
+        className="rounded-lg"
+        style={{ maxWidth: "84%", backgroundColor: enviada ? WA.enviada : WA.recebida, color: WA.texto, fontSize: 10.5, lineHeight: 1.35, padding: "5px 7px 4px" }}
       >
         {children}
-        <span className="flex items-center justify-end gap-1" style={{ color: WA.hora, fontSize: 11, marginTop: 2 }}>
-          {hora}
-          {enviada && <CheckCheck size={15} style={{ color: "#53bdeb" }} />}
+        <span className="flex items-center justify-end gap-0.5" style={{ color: WA.hora, fontSize: 7.5, marginTop: 1 }}>
+          09:12 {enviada && <CheckCheck size={10} style={{ color: "#53bdeb" }} />}
         </span>
       </div>
     </div>
   );
 }
 
-function TelaWhatsApp() {
+function MiniWhatsApp() {
   return (
-    <>
-      <header className="flex items-center gap-3 shrink-0" style={{ backgroundColor: WA.topo, padding: "16px 16px 12px" }}>
-        <ArrowLeft size={22} style={{ color: WA.texto }} />
-        <span className="rounded-full overflow-hidden shrink-0" style={{ width: 42, height: 42, backgroundColor: "#111" }}>
-          <img src="/fisco-perfil.png" alt="" style={{ width: "108%", height: "108%", objectFit: "cover", objectPosition: "50% 18%" }} />
-        </span>
+    <MiniTela padding="0" fundo={WA.fundo}>
+      <div className="flex items-center gap-2 shrink-0" style={{ backgroundColor: WA.topo, padding: "12px 12px 9px" }}>
+        <ArrowLeft size={14} style={{ color: WA.texto }} />
+        <FotoFisco tamanho={28} borda={WA.topo} />
         <span className="flex flex-col">
-          <span className="font-semibold" style={{ color: WA.texto, fontSize: 17 }}>Fisco · TaCerto!</span>
-          <span style={{ color: WA.hora, fontSize: 13 }}>online</span>
+          <span className="font-semibold" style={{ color: WA.texto, fontSize: 12 }}>Fisco · TaCerto!</span>
+          <span style={{ color: WA.hora, fontSize: 9 }}>online</span>
         </span>
-      </header>
-      <div className="flex flex-col" style={{ gap: 8, padding: "16px 14px" }}>
-        <Balao enviada hora="09:12">Quanto já usei do meu limite?</Balao>
-        <Balao hora="09:12">Você já usou <b>45%</b> do limite do ano. Tá tranquilo 👍</Balao>
-        <Balao enviada hora="09:14">Emite uma nota de R$ 1.200 para a Horizonte Comércio</Balao>
-        <div className="flex flex-col" style={{ maxWidth: "82%", gap: 2 }}>
-          <div className="rounded-xl" style={{ backgroundColor: WA.recebida, color: WA.texto, fontSize: 15.5, lineHeight: 1.35, padding: "8px 10px 6px" }}>
+      </div>
+
+      <div className="flex flex-col" style={{ gap: 6, padding: "10px 9px" }}>
+        <Balao enviada>Quanto já usei do meu limite?</Balao>
+        <Balao>Você já usou <b>58%</b> do limite do ano. Tá tranquilo 👍</Balao>
+        <Balao enviada>Emite uma nota pro meu cliente</Balao>
+        <div className="flex flex-col" style={{ maxWidth: "84%", gap: 2 }}>
+          <div className="rounded-lg" style={{ backgroundColor: WA.recebida, color: WA.texto, fontSize: 10.5, lineHeight: 1.35, padding: "5px 7px 4px" }}>
             Confere antes de eu emitir:
-            <div style={{ marginTop: 6, paddingLeft: 9, borderLeft: `3px solid ${WA.acao}` }}>
-              <div style={{ color: WA.hora, fontSize: 13 }}>Nota fiscal de serviço</div>
-              <div className="font-semibold">Horizonte Comércio Ltda</div>
-              <div className="font-semibold">R$ 1.200,00</div>
+            <div style={{ marginTop: 4, paddingLeft: 6, borderLeft: `2px solid ${WA.acao}` }}>
+              <div style={{ color: WA.hora, fontSize: 9 }}>Nota fiscal de serviço</div>
+              <div className="font-semibold">Cliente · R$ •••</div>
             </div>
-            <span className="flex justify-end" style={{ color: WA.hora, fontSize: 11, marginTop: 2 }}>09:14</span>
           </div>
-          <div className="rounded-xl text-center font-semibold" style={{ backgroundColor: WA.recebida, color: WA.acao, fontSize: 15, padding: "9px 0" }}>Emitir nota</div>
-          <div className="rounded-xl text-center font-semibold" style={{ backgroundColor: WA.recebida, color: WA.acao, fontSize: 15, padding: "9px 0" }}>Corrigir</div>
+          <div className="rounded-lg text-center font-semibold" style={{ backgroundColor: WA.recebida, color: WA.acao, fontSize: 10.5, padding: "6px 0" }}>Emitir nota</div>
+          <div className="rounded-lg text-center font-semibold" style={{ backgroundColor: WA.recebida, color: WA.acao, fontSize: 10.5, padding: "6px 0" }}>Corrigir</div>
         </div>
       </div>
 
-      {/* barra de digitar, presa no pe da tela (nada de espaco vazio) */}
-      <div className="mt-auto shrink-0 flex items-center gap-2" style={{ padding: "8px 10px 14px" }}>
-        <span className="flex-1 rounded-full flex items-center gap-3" style={{ backgroundColor: WA.topo, height: 48, padding: "0 14px" }}>
-          <Smile size={22} style={{ color: WA.hora }} />
-          <span className="flex-1" style={{ color: WA.hora, fontSize: 16 }}>Mensagem</span>
-          <Plus size={22} style={{ color: WA.hora }} />
+      {/* barra de digitar, no pé */}
+      <div className="flex items-center gap-1.5 shrink-0" style={{ marginTop: "auto", padding: "6px 8px 10px" }}>
+        <span className="flex-1 rounded-full flex items-center gap-2" style={{ backgroundColor: WA.topo, height: 30, padding: "0 10px" }}>
+          <Smile size={14} style={{ color: WA.hora }} />
+          <span className="flex-1" style={{ color: WA.hora, fontSize: 10.5 }}>Mensagem</span>
+          <Plus size={14} style={{ color: WA.hora }} />
         </span>
-        <span className="rounded-full flex items-center justify-center shrink-0" style={{ width: 48, height: 48, backgroundColor: WA.acao }}>
-          <Mic size={22} style={{ color: "#0b141a" }} />
+        <span className="rounded-full flex items-center justify-center shrink-0" style={{ width: 30, height: 30, backgroundColor: WA.acao }}>
+          <Mic size={14} style={{ color: WA.fundo }} />
         </span>
       </div>
-    </>
+    </MiniTela>
   );
 }
 
+/* Títulos CURTOS: cabem em uma linha no iPhone (ver cabeçalho, v3). */
 const SLIDES = [
-  { Tela: TelaInicio, titulo: "Seu limite, sempre à vista", subtitulo: "Veja na hora quanto do limite do seu MEI você já usou no ano." },
-  { Tela: TelaEntradas, titulo: "Entradas e gastos chegam sozinhos", subtitulo: "Conecte o banco do seu MEI e tudo o que entra e sai aparece no app." },
-  { Tela: TelaConferir, titulo: "O Fisco organiza e aprende", subtitulo: "Você diz uma vez se é faturamento. Da próxima, ele já sabe." },
-  { Tela: TelaMeuMei, titulo: "Tudo guardado num lugar só", subtitulo: "Entradas, saídas, DAS e notas fiscais, mês a mês." },
-  { Tela: TelaWhatsApp, titulo: "O Fisco no seu WhatsApp", subtitulo: "Tire dúvidas e emita nota fiscal numa conversa.", fundo: WA.fundo },
+  { Mini: MiniInicio, titulo: "Seu limite em tempo real", subtitulo: "Veja na hora quanto do limite do seu MEI você já usou no ano." },
+  { Mini: MiniBanco, titulo: "Tudo chega sozinho", subtitulo: "Conecte o banco do seu MEI e as entradas e os gastos aparecem no app." },
+  { Mini: MiniConferir, titulo: "O Fisco organiza pra você", subtitulo: "Você diz uma vez se é faturamento. Da próxima, ele já sabe." },
+  { Mini: MiniHistoricos, titulo: "Tudo guardado", subtitulo: "Entradas, saídas, DAS e notas fiscais, organizados mês a mês." },
+  { Mini: MiniWhatsApp, titulo: "O Fisco no WhatsApp", subtitulo: "Tire dúvidas e emita nota fiscal numa conversa, sem abrir o app." },
 ];
 
 export default function Welcome() {
@@ -499,7 +465,7 @@ export default function Welcome() {
       </div>
 
       <div ref={scrollerRef} className="min-h-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar" style={{ touchAction: "pan-x" }}>
-        {SLIDES.map(({ Tela, fundo }, i) => (
+        {SLIDES.map(({ Mini }, i) => (
           <div key={i} className="min-w-full snap-center flex flex-col min-h-0">
             <div className="flex justify-center px-6 pt-2">
               <div className="w-full flex flex-col min-h-0" style={{ maxWidth: 250 }}>
@@ -517,9 +483,7 @@ export default function Welcome() {
                     overflow: "hidden",
                   }}
                 >
-                  <TelaReal fundo={fundo}>
-                    <Tela />
-                  </TelaReal>
+                  <Mini />
                 </div>
               </div>
             </div>
