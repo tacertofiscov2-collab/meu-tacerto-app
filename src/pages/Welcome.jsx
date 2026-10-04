@@ -1,11 +1,17 @@
-/* WELCOME v4 — piloto: slides do banco e dos historicos escondidos por chave (src/config/piloto.js) */
+/* WELCOME v4 — piloto: textos para o caminhoneiro + slides do banco e dos historicos escondidos por chave (src/config/piloto.js) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
-   v4 (04/10/2026, PILOTO): o desenho da v3 NAO mudou. O slide do banco
-   (Open Finance) e o dos historicos (saidas, DAS, notas) ficam
-   escondidos enquanto essas funcoes estao desligadas no piloto; o
-   simbolo do banco some do mini Inicio pelo mesmo motivo.
+   v4 (04/10/2026, PILOTO): o desenho da v3 NAO mudou, so TEXTOS.
+   - O slide do banco (Open Finance) e o dos historicos (saidas, DAS,
+     notas) ficam escondidos enquanto essas funcoes estao desligadas no
+     piloto; o simbolo do banco some do mini Inicio pelo mesmo motivo.
+     Ficam 3 slides: limite / so conta o que e frete / Fisco no WhatsApp.
+   - Textos para o caminhoneiro: "com seus fretes", "Só conta o que é
+     frete", e o WhatsApp como e no piloto (todo dia as 21h o Fisco
+     pergunta quanto a pessoa recebeu; a conversa de exemplo anota um
+     frete em vez de emitir nota). A barrinha do mini Inicio diz
+     "Fisco no WhatsApp".
 
    v3 (03/10/2026): pedido do Fernando — os slides voltam a ser
    FICTICIOS como na v1 (sem nomes de pessoas nem valores: "R$ •••",
@@ -40,6 +46,7 @@ import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 import SimboloPluggy from "@/components/SimboloPluggy";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_NOTAS_FISCAIS,
+  MOSTRAR_CHAT_FISCO,
 } from "@/config/piloto";
 
 const VERDE = "var(--primary)";
@@ -232,7 +239,8 @@ function MiniInicio() {
             className="flex-1 truncate"
             style={{ color: "var(--text-tertiary)", fontSize: 10.5, fontStyle: "italic", fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive' }}
           >
-            Pergunte ao Fisco...
+            {/* Piloto: o Fisco atende pelo WhatsApp, nao no app */}
+            {MOSTRAR_CHAT_FISCO ? "Pergunte ao Fisco..." : "Fisco no WhatsApp"}
           </span>
           <Send size={12} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
         </span>
@@ -406,16 +414,17 @@ function MiniWhatsApp() {
       <div className="flex flex-col" style={{ gap: 6, padding: "10px 9px" }}>
         <Balao enviada>Quanto já usei do meu limite?</Balao>
         <Balao>Você já usou <b>58%</b> do limite do ano. Tá tranquilo 👍</Balao>
-        <Balao enviada>Emite uma nota pro meu cliente</Balao>
+        {/* v4 (piloto): o Fisco anota o frete do dia (antes: emitia nota) */}
+        <Balao enviada>Hoje recebi um frete</Balao>
         <div className="flex flex-col" style={{ maxWidth: "84%", gap: 2 }}>
           <div className="rounded-lg" style={{ backgroundColor: WA.recebida, color: WA.texto, fontSize: 10.5, lineHeight: 1.35, padding: "5px 7px 4px" }}>
-            Confere antes de eu emitir:
+            Confere antes de eu anotar:
             <div style={{ marginTop: 4, paddingLeft: 6, borderLeft: `2px solid ${WA.acao}` }}>
-              <div style={{ color: WA.hora, fontSize: 9 }}>Nota fiscal de serviço</div>
-              <div className="font-semibold">Cliente · R$ •••</div>
+              <div style={{ color: WA.hora, fontSize: 9 }}>Frete recebido hoje</div>
+              <div className="font-semibold">Transportadora · R$ •••</div>
             </div>
           </div>
-          <div className="rounded-lg text-center font-semibold" style={{ backgroundColor: WA.recebida, color: WA.acao, fontSize: 10.5, padding: "6px 0" }}>Emitir nota</div>
+          <div className="rounded-lg text-center font-semibold" style={{ backgroundColor: WA.recebida, color: WA.acao, fontSize: 10.5, padding: "6px 0" }}>Está certo</div>
           <div className="rounded-lg text-center font-semibold" style={{ backgroundColor: WA.recebida, color: WA.acao, fontSize: 10.5, padding: "6px 0" }}>Corrigir</div>
         </div>
       </div>
@@ -440,16 +449,16 @@ function MiniWhatsApp() {
    desligada em src/config/piloto.js — banco (Open Finance) e
    historicos (saidas, DAS e notas). Nada foi apagado. */
 const SLIDES = [
-  { Mini: MiniInicio, titulo: "Seu limite em tempo real", subtitulo: "Veja na hora quanto do limite do seu MEI você já usou no ano." },
+  { Mini: MiniInicio, titulo: "Seu limite em tempo real", subtitulo: "Veja quanto do limite do ano você já usou com seus fretes." },
   { Mini: MiniBanco, mostrar: MOSTRAR_OPEN_FINANCE, titulo: "Tudo chega sozinho", subtitulo: "Conecte o banco do seu MEI e as entradas e os gastos aparecem no app." },
-  { Mini: MiniConferir, titulo: "O Fisco organiza pra você", subtitulo: "Você diz uma vez se é faturamento. Da próxima, ele já sabe." },
+  { Mini: MiniConferir, titulo: "Só conta o que é frete", subtitulo: "Você diz o que é faturamento. Dinheiro seu e empréstimo ficam de fora." },
   {
     Mini: MiniHistoricos,
     mostrar: MOSTRAR_SAIDAS && MOSTRAR_HISTORICO_DAS && MOSTRAR_NOTAS_FISCAIS,
     titulo: "Tudo guardado",
     subtitulo: "Entradas, saídas, DAS e notas fiscais, organizados mês a mês.",
   },
-  { Mini: MiniWhatsApp, titulo: "O Fisco no WhatsApp", subtitulo: "Tire dúvidas e emita nota fiscal numa conversa, sem abrir o app." },
+  { Mini: MiniWhatsApp, titulo: "O Fisco no WhatsApp", subtitulo: "Todo dia, às 21h, ele pergunta quanto você recebeu. E tira suas dúvidas." },
 ].filter((s) => s.mostrar !== false);
 
 export default function Welcome() {
