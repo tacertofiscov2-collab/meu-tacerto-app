@@ -1,8 +1,9 @@
-/* ONBOARDING v7 — piloto: MEI Caminhoneiro primeiro e ja marcado + nova etapa "Quanto voce ja faturou" (faixa, valor digitado ou "Nao sei agora") */
+/* ONBOARDING v8 — "Digitar valor" abre uma folha que fica acima do teclado do iPhone + titulo sem "mais ou menos" */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
-  ArrowLeft, ArrowRight, Briefcase, Truck, CheckCircle2, Clock, Gauge, CalendarDays,
+  ArrowLeft, ArrowRight, Briefcase, Truck, CheckCircle2, Clock, Gauge, CalendarDays, X,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
@@ -12,6 +13,25 @@ import SeletorMesAno from "@/components/SeletorMesAno";
 import Valor from "@/components/Valor";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 import { useAppState } from "@/context/AppStateContext";
+
+/* ===================================================================
+   ONBOARDING v8 (04/10/2026) — pedido do Fernando, testado no iPhone
+
+   1) TECLADO: o campo do "Digitar valor" ficava no meio da tela e o
+      teclado do iPhone subia por cima dele. Agora o "Digitar valor"
+      abre uma FOLHA que sobe de baixo (FolhaDigitarValor), com a mesma
+      tecnica da folha "Lançar saída" (Saidas.jsx): a folha acompanha o
+      espaco visivel acima do teclado (visualViewport), entao o campo e
+      o botao nunca ficam escondidos. O botao da folha ja termina o
+      cadastro ("Começar a usar"). Fechar pelo X guarda o valor: ele
+      aparece no proprio quadrinho ("R$ 98.000") e o "Começar a usar"
+      da tela tambem funciona.
+      Sem campo na tela, o step 4 voltou a ficar centralizado, como o
+      2 e o 3.
+
+   2) TITULO: "Quanto você já faturou em <ano>?" — sem o "mais ou
+      menos".
+   =================================================================== */
 
 /* ===================================================================
    ONBOARDING v7 (04/10/2026) — PILOTO COM MEI CAMINHONEIROS
@@ -145,6 +165,161 @@ function Progress({ step }) {
   );
 }
 
+/* ===================================================================
+   FOLHA "DIGITAR VALOR" (v8)
+
+   Mesma tecnica da folha "Lançar saída" (Saidas.jsx), que ja funciona
+   no iPhone: a area da folha acompanha o espaco visivel ACIMA do
+   teclado (visualViewport). A folha fica no fim dessa area, entao o
+   campo e o botao sobem junto com o teclado e nunca ficam por baixo
+   dele. Vive num portal, fora da tela do onboarding.
+   =================================================================== */
+function FolhaDigitarValor({ ano, valor, onMudar, finalizando, onFechar, onConfirmar }) {
+  const areaRef = useRef(null);
+
+  useEffect(() => {
+    const area = areaRef.current;
+    const vv = window.visualViewport;
+    const htmlEl = document.documentElement;
+    const bodyEl = document.body;
+    const oh = htmlEl.style.overflow;
+    const ob = bodyEl.style.overflow;
+    htmlEl.style.overflow = "hidden";
+    bodyEl.style.overflow = "hidden";
+
+    // Sem isso, arrastar o dedo rolava a tela de tras
+    const bloquear = (e) => e.preventDefault();
+    document.addEventListener("touchmove", bloquear, { passive: false });
+
+    const ajustar = () => {
+      if (!area || !vv) return;
+      area.style.top = `${vv.offsetTop}px`;
+      area.style.height = `${vv.height}px`;
+    };
+    ajustar();
+    vv?.addEventListener("resize", ajustar);
+    vv?.addEventListener("scroll", ajustar);
+    return () => {
+      document.removeEventListener("touchmove", bloquear);
+      htmlEl.style.overflow = oh;
+      bodyEl.style.overflow = ob;
+      vv?.removeEventListener("resize", ajustar);
+      vv?.removeEventListener("scroll", ajustar);
+    };
+  }, []);
+
+  const numero = Number(valor || 0);
+  const podeConfirmar = numero > 0 && !finalizando;
+
+  return createPortal(
+    <>
+      <style>{`
+        @keyframes folhaValorSobe { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes folhaValorFundo { from { opacity: 0; } to { opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) { .folha-valor { animation: none !important; } }
+      `}</style>
+
+      <div
+        className="fixed inset-0"
+        style={{ zIndex: 80, background: "rgba(0,0,0,0.55)", animation: "folhaValorFundo 220ms ease-out" }}
+        onClick={() => !finalizando && onFechar()}
+      />
+
+      <div
+        ref={areaRef}
+        className="fixed flex flex-col justify-end"
+        style={{ zIndex: 81, left: 0, right: 0, top: 0, height: "100dvh", paddingTop: 24, pointerEvents: "none" }}
+      >
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Digitar o valor faturado"
+          className="folha-valor w-full mx-auto flex flex-col rounded-t-3xl"
+          style={{
+            pointerEvents: "auto",
+            maxWidth: 480,
+            maxHeight: "100%",
+            backgroundColor: "var(--bg)",
+            border: "1px solid var(--card-borda)",
+            borderBottom: "none",
+            animation: "folhaValorSobe 280ms cubic-bezier(0.22,0.61,0.36,1)",
+          }}
+        >
+          {/* titulo + fechar */}
+          <div className="shrink-0 flex items-center justify-between" style={{ padding: "16px 18px 6px" }}>
+            <p className="font-bold" style={{ fontSize: 18, color: "var(--text)" }}>
+              Faturado em {ano}
+            </p>
+            <button
+              onClick={onFechar}
+              disabled={finalizando}
+              aria-label="Fechar"
+              className="rounded-full flex items-center justify-center"
+              style={{ width: 32, height: 32, border: "1px solid var(--border)" }}
+            >
+              <X size={16} style={{ color: "var(--text-secondary)" }} />
+            </button>
+          </div>
+
+          {/* campo */}
+          <div className="shrink-0" style={{ padding: "8px 18px 14px" }}>
+            <input
+              type="text"
+              inputMode="numeric"
+              autoFocus
+              aria-label="Valor faturado no ano"
+              placeholder="R$ 0"
+              value={numero ? `R$ ${numero.toLocaleString("pt-BR")}` : ""}
+              onChange={(e) =>
+                onMudar(
+                  e.target.value.replace(/\D/g, "").replace(/^0+/, "").slice(0, MAX_DIGITOS_ESTIMADO),
+                )
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && podeConfirmar) onConfirmar();
+              }}
+              className="campo-tacerto w-full rounded-2xl font-bold focus:outline-none placeholder:opacity-50"
+              style={{
+                backgroundColor: "var(--surface)",
+                border: "1px solid var(--border)",
+                color: "var(--text)",
+                fontSize: 22,
+                padding: "12px 14px",
+              }}
+            />
+          </div>
+
+          {/* rodape: o botao nunca some atras do teclado */}
+          <div
+            className="shrink-0"
+            style={{
+              padding: "12px 18px",
+              paddingBottom: "calc(14px + env(safe-area-inset-bottom))",
+              borderTop: "1px solid var(--border)",
+            }}
+          >
+            <button
+              onClick={onConfirmar}
+              disabled={!podeConfirmar}
+              className="w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 transition active:scale-[0.99] disabled:opacity-40"
+              style={{
+                backgroundColor: "var(--primary)",
+                color: "var(--primary-contrast)",
+                fontSize: 16,
+                lineHeight: "22px",
+              }}
+            >
+              Começar a usar
+              <ArrowRight size={18} strokeWidth={2.4} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </>,
+    document.body,
+  );
+}
+
 export default function Onboarding() {
   useTemaEscuroForcado();
   const navigate = useNavigate();
@@ -166,6 +341,8 @@ export default function Onboarding() {
   const [faixaFat, setFaixaFat] = useState(null);
   const [valorDigitado, setValorDigitado] = useState("");
   const [finalizando, setFinalizando] = useState(false);
+  /* v8: folha do "Digitar valor" (fica acima do teclado) */
+  const [folhaValor, setFolhaValor] = useState(false);
 
   const { lancamentos, adicionarLancamento, setModoSimulacao } = useAppState();
 
@@ -324,8 +501,9 @@ export default function Onboarding() {
 
      Os steps 2 e 3 sao escolhas por botao — nao abrem teclado, entao
      continuam centralizados e travados, como sempre. */
-  /* v7: o step 4 tambem — o "Digitar valor" abre o teclado. */
-  const temCampoDeTexto = step === 0 || step === 1 || step === 4 || isVerificar;
+  /* v8: o step 4 NAO entra aqui — o "Digitar valor" abre uma folha
+     propria (FolhaDigitarValor), que ja cuida do teclado. */
+  const temCampoDeTexto = step === 0 || step === 1 || isVerificar;
 
   return (
     <div
@@ -775,24 +953,36 @@ export default function Onboarding() {
           {/* ====== STEP 4: FATURAMENTO ESTIMADO (v7) ====== */}
           {step === 4 && (
             <div className="shrink-0">
+              {/* v8: linhas equilibradas ("Quanto você já / faturou em
+                  2026?") — sem isso o "2026?" ficava sozinho embaixo */}
               <h1
                 className="text-2xl font-bold text-center mb-5"
-                style={{ color: "var(--text)" }}
+                style={{ color: "var(--text)", textWrap: "balance" }}
               >
-                Quanto você mais ou menos já faturou em {anoAtual}?
+                Quanto você já faturou em{" "}{anoAtual}?
               </h1>
 
-              {/* Mesmo padrao de escolha do step 3 (grade de 2) */}
+              {/* Mesmo padrao de escolha do step 3 (grade de 2).
+                  v8: "Digitar valor" abre a folha; depois de digitado, o
+                  quadrinho mostra o valor ("R$ 98.000"). */}
               <div className="grid grid-cols-2 gap-2.5">
                 {[
                   ...FAIXAS_FATURAMENTO,
-                  { id: FAIXA_DIGITAR, rotulo: "Digitar valor" },
+                  {
+                    id: FAIXA_DIGITAR,
+                    rotulo: valorDigitado
+                      ? `R$ ${Number(valorDigitado).toLocaleString("pt-BR")}`
+                      : "Digitar valor",
+                  },
                 ].map((f) => {
                   const sel = faixaFat === f.id;
                   return (
                     <button
                       key={f.id}
-                      onClick={() => setFaixaFat(f.id)}
+                      onClick={() => {
+                        setFaixaFat(f.id);
+                        if (f.id === FAIXA_DIGITAR) setFolhaValor(true);
+                      }}
                       className="py-3 px-2 rounded-xl text-sm font-medium inline-flex items-center justify-center text-center"
                       style={{
                         ...estiloCard(sel, faixaFat !== null),
@@ -806,59 +996,46 @@ export default function Onboarding() {
                 })}
               </div>
 
-              <div style={{ minHeight: 76 }} className="pt-3">
-                {faixaFat === FAIXA_DIGITAR && (
-                  <div className="relative">
-                    <span
-                      className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold"
-                      style={{ color: "var(--text-secondary)", fontSize: 16 }}
-                    >
-                      R$
-                    </span>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      autoFocus
-                      aria-label="Valor aproximado faturado no ano"
-                      placeholder="0"
-                      value={valorDigitado ? Number(valorDigitado).toLocaleString("pt-BR") : ""}
-                      onChange={(e) =>
-                        setValorDigitado(
-                          e.target.value.replace(/\D/g, "").replace(/^0+/, "").slice(0, MAX_DIGITOS_ESTIMADO),
-                        )
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && valorEstimado > 0) handleFinalizar(valorEstimado);
-                      }}
-                      className="campo-tacerto w-full pl-12 pr-4 py-3.5 rounded-xl font-semibold focus:outline-none placeholder:opacity-50"
-                      style={{ ...fieldStyle, fontSize: 16 }}
-                    />
-                  </div>
-                )}
+              <div className="mt-6">
+                <button
+                  onClick={() => handleFinalizar(valorEstimado)}
+                  disabled={finalizando || valorEstimado <= 0}
+                  className={btnPrincipalClasse}
+                  style={btnPrincipal}
+                >
+                  Começar a usar
+                  <ArrowRight size={18} strokeWidth={2.4} />
+                </button>
+
+                <button
+                  onClick={() => handleFinalizar(0)}
+                  disabled={finalizando}
+                  className="w-full text-center text-sm pt-4 disabled:opacity-40"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Não sei agora
+                </button>
               </div>
-
-              <button
-                onClick={() => handleFinalizar(valorEstimado)}
-                disabled={finalizando || valorEstimado <= 0}
-                className={btnPrincipalClasse}
-                style={btnPrincipal}
-              >
-                Começar a usar
-                <ArrowRight size={18} strokeWidth={2.4} />
-              </button>
-
-              <button
-                onClick={() => handleFinalizar(0)}
-                disabled={finalizando}
-                className="w-full text-center text-sm pt-4 disabled:opacity-40"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                Não sei agora
-              </button>
             </div>
           )}
         </div>
       </div>
+
+      {/* v8: folha do "Digitar valor" — fica acima do teclado */}
+      {folhaValor && (
+        <FolhaDigitarValor
+          ano={anoAtual}
+          valor={valorDigitado}
+          onMudar={setValorDigitado}
+          finalizando={finalizando}
+          onFechar={() => {
+            setFolhaValor(false);
+            // Fechou sem digitar nada: desmarca o quadrinho
+            if (!valorDigitado) setFaixaFat(null);
+          }}
+          onConfirmar={() => handleFinalizar(Number(valorDigitado || 0))}
+        />
+      )}
 
       <SeletorMesAno
         aberto={seletorMes}
