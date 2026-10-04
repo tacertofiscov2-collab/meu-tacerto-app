@@ -1,6 +1,24 @@
-/* WELCOME v5 — textos NEUTROS (MEI e MEI Caminhoneiro) + slide 2 "DAS e nota" + slide 3 enxuto + desenho sempre inteiro na moldura */
+/* WELCOME v6 — 5 slides do piloto (limite, DAS, nota, gratis, Fisco no WhatsApp) + mesma escala e mesma altura em todos (bug do slide 2) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
+
+   v6 (04/10/2026) — pedido do Fernando:
+   - BUG DO SLIDE 2: na v5 cada desenho escolhia a propria escala para
+     caber na moldura. No iPhone o slide 1 ficava em tamanho cheio e o
+     2 (e o 3) um pouco menores: o desenho mudava de tamanho no meio do
+     deslize e parecia desenquadrado. E a altura do texto de baixo
+     dependia do texto de cada slide (frase de 3 linhas em tela estreita
+     empurraria "Criar conta"). Agora: UMA escala para todos
+     (useEscalaComum) e o bloco de texto com a altura do texto mais alto
+     (todos empilhados, so o atual visivel). Nenhum elemento aparece ou
+     some entre um slide e outro.
+   - 5 SLIDES, so com o que o piloto entrega: limite (MiniInicio) / DAS
+     com aviso e boleto no WhatsApp (MiniDas) / ajuda com a nota pelo
+     WhatsApp (MiniNota) / gratis no piloto (MiniPiloto, com o Fisco
+     fazendo joinha) / Fisco no WhatsApp (MiniWhatsApp). Nada de banco
+     conectado, nota automatica ou chat com IA no app.
+   - O ponteiro do velocimetro do slide 1 e o desenho de sempre (ele
+     nunca teve animacao nos slides) — nao mudou.
 
    v5 (04/10/2026) — pedido do Fernando, depois de testar no iPhone:
    - LINGUAGEM NEUTRA: aqui a pessoa ainda nao disse se e MEI ou MEI
@@ -58,7 +76,8 @@ import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import {
   Gauge, ArrowLeft, ChevronRight, ChevronDown, Send, Mic, Plus, Smile,
-  ArrowDownLeft, ArrowUpRight, CalendarCheck, FileText, Check, CheckCheck, ExternalLink,
+  ArrowDownLeft, ArrowUpRight, CalendarCheck, FileText, Check, CheckCheck,
+  MessageCircle, Headphones, ListChecks, Globe,
 } from "lucide-react";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 import SimboloPluggy from "@/components/SimboloPluggy";
@@ -81,38 +100,49 @@ const VIDRO = {
 };
 
 /* ===================================================================
-   ENCAIXE NA MOLDURA (v5)
+   ENCAIXE NA MOLDURA (v6 — UMA escala para TODOS os slides)
 
    A moldura do celular tem 48dvh: no iPhone (com as barras do Safari)
-   ela fica bem mais baixa que no PC. Se o desenho for mais alto que a
-   moldura, ele ENCOLHE por igual (escala) ate caber inteiro — nada fica
-   cortado atras do card de baixo. Se couber, nao muda nada.
+   ela fica bem mais baixa que no PC. Se algum desenho for mais alto que
+   a moldura, os desenhos ENCOLHEM por igual ate caber inteiros.
 
-   Como mede: solta a altura (height auto) para ler a altura natural do
-   desenho, compara com a da moldura e escolhe a escala. Mede de novo
-   quando a moldura muda de tamanho e quando as fontes terminam de
-   carregar.
+   v5 errava aqui (era o BUG do slide 2): cada slide escolhia a SUA
+   escala. No iPhone o slide 1 ficava em tamanho cheio e os slides 2 e
+   3 um pouco menores, entao o desenho "mudava de tamanho" no meio do
+   deslize e parecia desenquadrado. Agora o Welcome mede todos os
+   desenhos (useEscalaComum) e usa a MESMA escala em todos: nada muda
+   de tamanho entre um slide e outro.
+
+   O desenho e montado mais largo (100% / escala) e depois encolhido,
+   entao continua ocupando a largura toda da moldura.
    =================================================================== */
-function MiniEncaixada({ children }) {
-  const caixaRef = useRef(null);
+function useEscalaComum(molduraRef, caixasRef, quantos) {
   const [ajuste, setAjuste] = useState({ escala: 1, altura: null });
 
   useLayoutEffect(() => {
-    const caixa = caixaRef.current;
-    const moldura = caixa?.parentElement;
-    if (!caixa || !moldura) return undefined;
+    const moldura = molduraRef.current;
+    if (!moldura) return undefined;
 
     const medir = () => {
       const disponivel = moldura.clientHeight;
-      if (!disponivel) return;
-      const alturaAntes = caixa.style.height;
-      caixa.style.height = "auto";
-      const natural = caixa.scrollHeight;
-      caixa.style.height = alturaAntes;
-      const escala = natural > disponivel ? disponivel / natural : 1;
-      const altura = Math.max(disponivel, natural);
+      const caixas = caixasRef.current.slice(0, quantos).filter(Boolean);
+      if (!disponivel || !caixas.length) return;
+      // Altura natural de cada desenho: com altura solta e largura normal
+      let maior = 0;
+      for (const caixa of caixas) {
+        const antes = { h: caixa.style.height, w: caixa.style.width };
+        caixa.style.height = "auto";
+        caixa.style.width = "100%";
+        maior = Math.max(maior, caixa.scrollHeight);
+        caixa.style.height = antes.h;
+        caixa.style.width = antes.w;
+      }
+      const escala = maior > disponivel ? disponivel / maior : 1;
+      const altura = disponivel / escala;
       setAjuste((a) =>
-        a.altura === altura && Math.abs(a.escala - escala) < 0.002 ? a : { escala, altura },
+        a.altura && Math.abs(a.altura - altura) < 0.5 && Math.abs(a.escala - escala) < 0.002
+          ? a
+          : { escala, altura },
       );
     };
 
@@ -121,16 +151,23 @@ function MiniEncaixada({ children }) {
     ro.observe(moldura);
     document.fonts?.ready?.then(medir).catch(() => {});
     return () => ro.disconnect();
-  }, []);
+  }, [molduraRef, caixasRef, quantos]);
 
+  return ajuste;
+}
+
+/* O desenho dentro da moldura, com a escala comum (ver acima). */
+function MiniNaMoldura({ ajuste, caixaRef, children }) {
+  const encolhe = ajuste.escala < 1;
   return (
     <div
       ref={caixaRef}
       className="flex flex-col"
       style={{
         height: ajuste.altura ?? "100%",
-        transform: ajuste.escala < 1 ? `scale(${ajuste.escala})` : undefined,
-        transformOrigin: "top center",
+        width: encolhe ? `${100 / ajuste.escala}%` : "100%",
+        transform: encolhe ? `scale(${ajuste.escala})` : undefined,
+        transformOrigin: "top left",
       }}
     >
       {children}
@@ -403,69 +440,160 @@ function MiniConferir() {
   );
 }
 
-/* ------------------------ 2. DAS E NOTA (v5) ------------------------
-   O que o piloto entrega de verdade: o card "Próximo DAS" do Início
-   (com "Pagar no gov.br") e o passo a passo "Como emitir sua nota".
-   Texto neutro: serve para MEI e MEI Caminhoneiro. */
-function MiniDasNota() {
-  const passos = ["Entre no Emissor Nacional", "Preencha o cliente e o valor", "Baixe o PDF da nota"];
+/* --------------------------- 2. DAS (v6) ---------------------------
+   O Inicio com o card "Próximo DAS" e, subindo de baixo, o painel
+   "Como você quer pagar seu DAS?" — igual ao do app. A primeira opcao
+   (boleto todo mes no WhatsApp) com o destaque leve. Neutro. */
+function MiniDas() {
+  const opcoes = [
+    { Icon: MessageCircle, t: "Boleto todo mês no WhatsApp", selo: "Automático" },
+    { Icon: Headphones, t: "Fisco me ajuda agora" },
+    { Icon: ListChecks, t: "Quero fazer sozinho" },
+    { Icon: Globe, t: "Abrir o site do governo" },
+  ];
   return (
-    <MiniTela>
-      <div className="flex items-center gap-1.5 shrink-0" style={{ marginBottom: 12 }}>
+    <MiniTela padding="16px 0 0">
+      <div className="flex items-center gap-1.5 shrink-0" style={{ margin: "0 14px 10px" }}>
         <Gauge size={18} strokeWidth={2.3} style={{ color: VERDE }} />
         <span className="font-bold" style={{ color: "var(--text)", fontSize: 14 }}>
           Ta<span style={{ color: VERDE }}>Certo!</span>
         </span>
       </div>
 
-      {/* card "Próximo DAS", igual ao do Início */}
-      <div className="rounded-2xl flex items-center gap-2 shrink-0" style={{ ...CARD, padding: "10px 10px 10px 12px" }}>
+      {/* card "Próximo DAS", igual ao do Inicio */}
+      <div className="rounded-2xl flex items-center gap-2 shrink-0" style={{ ...CARD, margin: "0 14px", padding: "9px 9px 9px 11px", opacity: 0.55 }}>
         <span className="flex-1 min-w-0">
-          <span className="block whitespace-nowrap" style={{ color: "var(--text-secondary)", fontSize: 10 }}>Próximo DAS · 20/••</span>
-          <span className="block font-bold" style={{ color: "var(--text)", fontSize: 13, marginTop: 1 }}>R$ •••</span>
+          <span className="block whitespace-nowrap" style={{ color: "var(--text-secondary)", fontSize: 10 }}>Próximo DAS: 20/••</span>
+          <span className="block font-bold" style={{ color: "var(--text)", fontSize: 12.5, marginTop: 1 }}>R$ •••</span>
         </span>
         <span
-          className="rounded-lg font-semibold flex items-center gap-1 shrink-0"
-          style={{
-            fontSize: 10,
-            padding: "5px 7px",
-            color: VERDE,
-            backgroundColor: "rgba(34,197,94,0.16)",
-            border: "1px solid rgba(34,197,94,0.45)",
-          }}
+          className="rounded-lg font-semibold shrink-0"
+          style={{ fontSize: 10, padding: "5px 8px", color: VERDE, backgroundColor: "rgba(34,197,94,0.16)", border: "1px solid rgba(34,197,94,0.45)" }}
         >
-          Pagar no gov.br
-          <ExternalLink size={10} strokeWidth={2.4} />
+          Emitir boleto
         </span>
       </div>
 
-      {/* passo a passo da nota */}
-      <p className="font-semibold shrink-0" style={{ color: "var(--text-secondary)", fontSize: 10.5, marginTop: 14, marginBottom: 7 }}>
-        Como emitir sua nota
-      </p>
-      <div className="flex flex-col shrink-0" style={{ gap: 6 }}>
-        {passos.map((p, i) => (
-          <div key={p} className="rounded-xl flex items-center gap-2" style={{ ...CARD, padding: "7px 10px" }}>
-            <span
-              className="rounded-full flex items-center justify-center shrink-0 font-bold"
-              style={{ width: 18, height: 18, fontSize: 9.5, color: VERDE, backgroundColor: "rgba(34,197,94,0.14)" }}
+      {/* painel que sobe de baixo, no pe */}
+      <div
+        className="shrink-0 rounded-t-2xl"
+        style={{ ...VIDRO, marginTop: "auto", borderBottom: "none", padding: "8px 11px 12px" }}
+      >
+        <div className="mx-auto rounded-full" style={{ width: 28, height: 3, backgroundColor: "var(--border)", marginBottom: 8 }} />
+        <p className="font-bold text-center" style={{ color: "var(--text)", fontSize: 11.5, marginBottom: 8 }}>
+          Como você quer pagar seu DAS?
+        </p>
+        <div className="flex flex-col" style={{ gap: 5 }}>
+          {opcoes.map(({ Icon, t, selo }, i) => (
+            <div
+              key={t}
+              className="rounded-xl flex items-center gap-2"
+              style={{
+                padding: "6px 8px",
+                border: `1px solid ${i === 0 ? "rgba(34,197,94,0.45)" : "var(--card-borda)"}`,
+                backgroundColor: i === 0 ? "rgba(34,197,94,0.08)" : "transparent",
+              }}
             >
-              {i + 1}
-            </span>
-            <span className="font-semibold" style={{ color: "var(--text)", fontSize: 11 }}>{p}</span>
-          </div>
-        ))}
+              <Icon size={13} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
+              <span className="flex-1 min-w-0">
+                <span className="block font-semibold" style={{ color: "var(--text)", fontSize: 10.5, lineHeight: 1.25 }}>{t}</span>
+                {selo && (
+                  <span
+                    className="inline-block rounded-full font-semibold"
+                    style={{ fontSize: 8.5, padding: "1px 6px", marginTop: 3, color: VERDE, backgroundColor: "rgba(34,197,94,0.16)" }}
+                  >
+                    {selo}
+                  </span>
+                )}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </MiniTela>
+  );
+}
+
+/* --------------------------- 3. NOTA (v6) ---------------------------
+   A tela "Como emitir sua nota": o Fisco ajuda pelo WhatsApp (gratis no
+   piloto) ou a pessoa faz sozinha. Sem a nota automatica (Certificado
+   A1): no piloto ela e so "em breve" e o slide nao pode prometer. */
+function MiniNota() {
+  return (
+    <MiniTela>
+      <MiniHeader titulo="Como emitir sua nota" />
+
+      <p className="font-semibold shrink-0" style={{ color: "var(--text-secondary)", fontSize: 10.5, marginBottom: 7 }}>
+        Escolha como emitir
+      </p>
+
+      <div className="rounded-2xl shrink-0" style={{ padding: "10px 11px", border: "1px solid rgba(34,197,94,0.45)", backgroundColor: "rgba(34,197,94,0.08)" }}>
+        <div className="flex items-center gap-2">
+          <MessageCircle size={14} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
+          <span className="font-bold" style={{ color: "var(--text)", fontSize: 11.5 }}>Com o Fisco no WhatsApp</span>
+        </div>
+        <span
+          className="inline-block rounded-full font-semibold"
+          style={{ fontSize: 8.5, padding: "1px 7px", marginTop: 6, color: VERDE, backgroundColor: "rgba(34,197,94,0.16)" }}
+        >
+          Grátis no piloto
+        </span>
+        <p style={{ color: "var(--text-secondary)", fontSize: 10, lineHeight: 1.35, marginTop: 5 }}>
+          Você manda o valor e para quem foi. O Fisco monta tudo com você.
+        </p>
       </div>
 
-      {/* no pe, como na tela do tutorial (sem espaco vazio na moldura) */}
+      <div className="rounded-2xl flex items-center gap-2 shrink-0" style={{ ...CARD, padding: "10px 11px", marginTop: 7 }}>
+        <ListChecks size={14} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
+        <span className="flex-1 font-bold" style={{ color: "var(--text)", fontSize: 11.5 }}>Fazer sozinho</span>
+        <ChevronRight size={12} style={{ color: "var(--text-tertiary)" }} />
+      </div>
+
+      {/* no pe: o botao do card do Fisco */}
       <div className="shrink-0" style={{ marginTop: "auto", paddingTop: 12 }}>
         <span
           className="rounded-xl font-semibold flex items-center justify-center gap-1.5"
           style={{ padding: "9px 0", fontSize: 11.5, backgroundColor: VERDE, color: "var(--primary-contrast)" }}
         >
-          Abrir o Emissor Nacional
-          <ExternalLink size={12} strokeWidth={2.4} />
+          <MessageCircle size={12} strokeWidth={2.4} />
+          Chamar o Fisco
         </span>
+      </div>
+    </MiniTela>
+  );
+}
+
+/* -------------------------- 4. PILOTO (v6) --------------------------
+   O resumo do que o piloto da, de graca. O Fisco fazendo joinha. */
+function MiniPiloto() {
+  const itens = [
+    "Velocímetro do limite",
+    "Aviso e boleto do DAS",
+    "Ajuda com a nota fiscal",
+    "Fisco no WhatsApp",
+  ];
+  return (
+    <MiniTela>
+      <div className="flex flex-col items-center shrink-0" style={{ marginTop: "auto" }}>
+        <span className="rounded-full overflow-hidden block" style={{ width: 74, height: 74, ...VIDRO, border: "1.5px solid rgba(34,197,94,0.45)" }}>
+          <img src="/fisco-joinha.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 20%" }} />
+        </span>
+        <span
+          className="rounded-full font-bold"
+          style={{ fontSize: 11, padding: "4px 12px", marginTop: 10, color: VERDE, backgroundColor: "rgba(34,197,94,0.16)", border: "1px solid rgba(34,197,94,0.45)" }}
+        >
+          Grátis durante o piloto
+        </span>
+      </div>
+      <div className="flex flex-col shrink-0" style={{ gap: 6, marginTop: 14, marginBottom: "auto" }}>
+        {itens.map((t) => (
+          <div key={t} className="rounded-xl flex items-center gap-2" style={{ ...CARD, padding: "7px 10px" }}>
+            <span className="rounded-full flex items-center justify-center shrink-0" style={{ width: 16, height: 16, backgroundColor: "rgba(34,197,94,0.16)" }}>
+              <Check size={10} strokeWidth={3} style={{ color: VERDE }} />
+            </span>
+            <span className="font-semibold" style={{ color: "var(--text)", fontSize: 11 }}>{t}</span>
+          </div>
+        ))}
       </div>
     </MiniTela>
   );
@@ -593,31 +721,27 @@ function MiniWhatsApp() {
    v4 (piloto): `mostrar` esconde o slide quando a funcao dele esta
    desligada em src/config/piloto.js — banco (Open Finance) e
    historicos (saidas, DAS e notas). Nada foi apagado. */
+/* v6 (piloto): 5 slides, so com o que o piloto entrega AGORA —
+   limite / DAS (aviso e boleto no WhatsApp) / ajuda com a nota /
+   gratis no piloto / Fisco no WhatsApp. NAO prometem: banco conectado
+   (Open Finance), nota emitida sozinha, chat com IA dentro do app.
+   Textos neutros (MEI e MEI Caminhoneiro), frases curtas. */
 const SLIDES = [
-  { Mini: MiniInicio, titulo: "Seu limite em tempo real", subtitulo: "Veja na hora quanto do limite do seu MEI você já usou no ano." },
+  { Mini: MiniInicio, titulo: "Seu limite em tempo real", subtitulo: "Veja quanto você já faturou e quanto falta para o limite do ano." },
   { Mini: MiniBanco, mostrar: MOSTRAR_OPEN_FINANCE, titulo: "Tudo chega sozinho", subtitulo: "Conecte o banco do seu MEI e as entradas e os gastos aparecem no app." },
-  /* v5: o slide 2 do piloto e o do DAS e da nota. O "O Fisco organiza"
-     volta sozinho se o card do DAS ou o tutorial da nota forem
-     desligados (src/config/piloto.js). */
-  {
-    Mini: MiniDasNota,
-    mostrar: MOSTRAR_CARD_DAS && MOSTRAR_TUTORIAL_NOTA,
-    titulo: "DAS e nota sem mistério",
-    subtitulo: "Veja quando vence o DAS e aprenda a emitir sua nota, passo a passo.",
-  },
-  {
-    Mini: MiniConferir,
-    mostrar: !(MOSTRAR_CARD_DAS && MOSTRAR_TUTORIAL_NOTA),
-    titulo: "O Fisco organiza pra você",
-    subtitulo: "Você diz uma vez se é faturamento. Da próxima, ele já sabe.",
-  },
+  { Mini: MiniDas, mostrar: MOSTRAR_CARD_DAS, titulo: "DAS sem susto", subtitulo: "Todo mês o Fisco te avisa e manda o boleto do DAS no WhatsApp." },
+  { Mini: MiniNota, mostrar: MOSTRAR_TUTORIAL_NOTA, titulo: "Ajuda com a nota fiscal", subtitulo: "O Fisco te ajuda a emitir sua nota pelo WhatsApp, passo a passo." },
+  /* Conferencia "É faturamento?": fora dos slides do piloto (a
+     "propaganda" foi reprovada em 04/10). Troque para true para voltar. */
+  { Mini: MiniConferir, mostrar: false, titulo: "O Fisco organiza pra você", subtitulo: "Você diz uma vez se é faturamento. Da próxima, ele já sabe." },
   {
     Mini: MiniHistoricos,
     mostrar: MOSTRAR_SAIDAS && MOSTRAR_HISTORICO_DAS && MOSTRAR_NOTAS_FISCAIS,
     titulo: "Tudo guardado",
     subtitulo: "Entradas, saídas, DAS e notas fiscais, organizados mês a mês.",
   },
-  { Mini: MiniWhatsApp, titulo: "O Fisco no WhatsApp", subtitulo: "Todo dia, às 21h, ele pergunta quanto você recebeu. E tira suas dúvidas." },
+  { Mini: MiniPiloto, titulo: "Grátis no piloto", subtitulo: "Você não paga nada para usar o TaCerto! durante o piloto." },
+  { Mini: MiniWhatsApp, titulo: "O Fisco no WhatsApp", subtitulo: "Todo dia, às 21h, ele pergunta quanto você recebeu. Dúvidas? É só chamar." },
 ].filter((s) => s.mostrar !== false);
 
 export default function Welcome() {
@@ -625,6 +749,10 @@ export default function Welcome() {
   const navigate = useNavigate();
   const scrollerRef = useRef(null);
   const [active, setActive] = useState(0);
+  /* v6: uma escala so para todos os desenhos (ver useEscalaComum) */
+  const molduraRef = useRef(null);
+  const caixasRef = useRef([]);
+  const ajuste = useEscalaComum(molduraRef, caixasRef, SLIDES.length);
 
   useEffect(() => {
     const el = scrollerRef.current;
@@ -655,6 +783,7 @@ export default function Welcome() {
             <div className="flex justify-center px-6 pt-2">
               <div className="w-full flex flex-col min-h-0" style={{ maxWidth: 250 }}>
                 <div
+                  ref={i === 0 ? molduraRef : undefined}
                   className="relative w-full flex flex-col"
                   style={{
                     height: "48dvh",
@@ -668,10 +797,10 @@ export default function Welcome() {
                     overflow: "hidden",
                   }}
                 >
-                  {/* v5: o desenho encolhe se nao couber na moldura */}
-                  <MiniEncaixada>
+                  {/* v6: todos os desenhos com a MESMA escala */}
+                  <MiniNaMoldura ajuste={ajuste} caixaRef={(el) => { caixasRef.current[i] = el; }}>
                     <Mini />
-                  </MiniEncaixada>
+                  </MiniNaMoldura>
                 </div>
               </div>
             </div>
@@ -693,9 +822,21 @@ export default function Welcome() {
             padding: "16px 18px 18px",
           }}
         >
-          <div className="text-center px-2" style={{ minHeight: 60 }}>
-            <h2 className="font-bold leading-tight" style={{ color: "var(--text)", fontSize: 18 }}>{SLIDES[active].titulo}</h2>
-            <p className="leading-snug" style={{ color: "var(--text-secondary)", fontSize: 12.5, marginTop: 6 }}>{SLIDES[active].subtitulo}</p>
+          {/* v6: TODOS os textos ficam empilhados no mesmo lugar (grade de
+              uma celula) e so o do slide atual aparece. Assim a altura do
+              bloco e sempre a do texto mais alto: nada cresce nem encolhe
+              ao trocar de slide, e "Criar conta" nunca pula. */}
+          <div className="grid text-center px-2" style={{ minHeight: 60 }}>
+            {SLIDES.map((s, i) => (
+              <div
+                key={s.titulo}
+                aria-hidden={i !== active}
+                style={{ gridArea: "1 / 1", visibility: i === active ? "visible" : "hidden" }}
+              >
+                <h2 className="font-bold leading-tight" style={{ color: "var(--text)", fontSize: 18 }}>{s.titulo}</h2>
+                <p className="leading-snug" style={{ color: "var(--text-secondary)", fontSize: 12.5, marginTop: 6 }}>{s.subtitulo}</p>
+              </div>
+            ))}
           </div>
 
           <div className="flex justify-center gap-2 py-3">
