@@ -1,4 +1,4 @@
-﻿/* PERFIL v7 — piloto: itens escondidos por chave + "Sair da conta" sai de verdade (signOut) */
+﻿/* PERFIL v8 — reorganizado: nome + chip do tipo + WhatsApp no topo; cartoes Meu MEI, Minha conta, Ajuda, Sobre; Sair e Excluir no fim; sem a bola da inicial */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
@@ -6,8 +6,11 @@ import {
   User, Settings, Info, Shield, Lock, LogOut,
   ChevronDown, ChevronRight, UserPlus, X, Check, TrendingUp, BarChart3,
   Trash2, FileText, ArrowUpRight, ArrowDownLeft, CalendarCheck,
+  Phone, Mail, Briefcase, CalendarDays, Gauge, MessageCircle, Sparkles,
 } from "lucide-react";
 import TopoRolavel from "../components/TopoRolavel.jsx";
+import Valor from "../components/Valor.jsx";
+import { LABEL_TIPO, calcularFaltamOuExcedeu } from "@/lib/fiscal";
 
 import { useUserState, setUserState } from "@/lib/userState";
 import {
@@ -18,9 +21,31 @@ import { useAppState } from "@/context/AppStateContext";
 import {
   MOSTRAR_PREFERENCIAS, MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_NOTAS_FISCAIS,
   MOSTRAR_ADICIONAR_MOVIMENTACOES, MOSTRAR_RESUMO_ANO, MOSTRAR_SOBRE,
+  MOSTRAR_AVATAR, MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS,
+  MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
 } from "@/config/piloto";
 
 /* ===================================================================
+   PERFIL v8 (04/10/2026) — pedido do Fernando, so com o que ja existe
+   (nada novo no banco; dado que nao existe, a linha nao aparece):
+   - Topo: nome em destaque, chip com o tipo de MEI e o WhatsApp.
+   - A bola redonda com a inicial (ou foto) saiu: chave MOSTRAR_AVATAR
+     em src/config/piloto.js (o codigo da foto continua aqui).
+   - Cartoes de vidro (CardSecao/Linha):
+       Meu MEI     tipo, abertura (se abriu este ano), limite do ano
+                   (proporcional se abriu este ano — limiteAtual do
+                   AppState, que usa o fiscal.js), quanto ja faturou
+                   (abre o Historico de entradas) e quanto falta (ou
+                   quanto passou, que abre a regra dos 20%).
+       Minha conta Editar perfil, WhatsApp, e-mail, Alterar senha.
+       Ajuda       Falar com o Fisco no WhatsApp, Como emitir nota,
+                   Como pagar o DAS.
+       Sobre       Termos de uso, Politica de privacidade, selo
+                   "Você faz parte do piloto TaCerto!" e a versao.
+   - Por ultimo: Sair da conta e Excluir conta (vermelhos). O Excluir
+     abre a tela de exclusao que ja existia (com as confirmacoes).
+   - O CNPJ nao aparece: o perfil ainda nao guarda CNPJ.
+
    PERFIL v7 (04/10/2026) — PILOTO
 
    1) Itens escondidos pelas chaves de src/config/piloto.js (nada foi
@@ -44,57 +69,105 @@ const FOTO_KEY = "tacerto_foto_usuario";
    com Capacitor e o gesto nativo entrar. */
 const DE_PERFIL = { state: { de: "perfil" } };
 
-function Secao({ titulo, children, primeira }) {
+/* ===================================================================
+   CARTOES DE VIDRO DO PERFIL (v8)
+
+   Cada secao e um cartao no estilo vidro do app (o mesmo dos cards do
+   Inicio), com um titulo pequeno em cima. Dentro, uma Linha por item:
+   icone, rotulo, valor (se tiver) e a setinha quando da para tocar.
+   As linhas sao separadas por uma risca fina (divide-y), entao tanto faz
+   quais aparecem: item escondido por chave nao deixa risca sobrando.
+   =================================================================== */
+const VIDRO_CARD = {
+  background:
+    "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
+  border: "1px solid var(--vidro-borda)",
+  boxShadow: "inset 0 1px 0 0 var(--vidro-topo-medio), 0 8px 24px var(--vidro-sombra)",
+};
+
+function CardSecao({ titulo, children }) {
   return (
-    <div
-      style={{
-        marginTop: primeira ? 0 : 18,
-        paddingTop: primeira ? 0 : 18,
-        /* A linha separa SEÇÕES, não itens — some o efeito de "grade"
-           que as divisórias entre cada opção davam. */
-        borderTop: primeira ? "none" : "1px solid var(--border)",
-      }}
-    >
+    <section style={{ marginTop: 20 }}>
       {titulo && (
         <p
-          className="text-[12px] font-semibold uppercase mb-1"
-          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
+          className="text-[12px] font-semibold uppercase"
+          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em", margin: "0 4px 8px" }}
         >
           {titulo}
         </p>
       )}
-      <div>{children}</div>
-    </div>
+      <div
+        className="rounded-2xl overflow-hidden divide-y divide-[color:var(--border)]"
+        style={VIDRO_CARD}
+      >
+        {children}
+      </div>
+    </section>
   );
 }
 
-function Item({ Icon, label, onClick, cor }) {
-  return (
-    <button
-      onClick={onClick}
-      className="toque w-full flex items-center gap-3 py-3 text-left"
-    >
-      <Icon
-        size={21}
-        strokeWidth={2}
-        style={{ color: cor || "var(--primary)" }}
-        className="shrink-0"
-      />
-      <span
-        className="flex-1 text-[15px] font-semibold"
-        style={{ color: cor || "var(--text)" }}
-      >
-        {label}
+function Linha({ Icon, rotulo, detalhe, valor, onClick, cor }) {
+  const conteudo = (
+    <>
+      {Icon && (
+        <Icon size={20} strokeWidth={2} style={{ color: cor || "var(--primary)" }} className="shrink-0" />
+      )}
+      <span className="flex-1 min-w-0">
+        <span className="block text-[15px] font-semibold leading-snug" style={{ color: cor || "var(--text)" }}>
+          {rotulo}
+        </span>
+        {detalhe && (
+          <span className="block text-[12.5px]" style={{ color: "var(--text-tertiary)", marginTop: 1 }}>
+            {detalhe}
+          </span>
+        )}
       </span>
-      <ChevronRight size={17} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+      {valor != null && valor !== "" && (
+        <span
+          className="shrink-0 text-right text-[14px] truncate"
+          style={{ color: "var(--text-secondary)", maxWidth: "55%" }}
+        >
+          {valor}
+        </span>
+      )}
+      {onClick && <ChevronRight size={17} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />}
+    </>
+  );
+  const estilo = { gap: 12, padding: "13px 14px", minHeight: 52 };
+  if (!onClick) {
+    return (
+      <div className="w-full flex items-center text-left" style={estilo}>
+        {conteudo}
+      </div>
+    );
+  }
+  return (
+    <button type="button" onClick={onClick} className="toque w-full flex items-center text-left" style={estilo}>
+      {conteudo}
     </button>
   );
 }
 
+/* "+5537999999999" -> "+55 (37) 99999-9999" */
+function formatarWhatsapp(valor) {
+  const d = String(valor || "").replace(/\D/g, "").replace(/^55/, "");
+  if (d.length < 10) return valor || "";
+  const ddd = d.slice(0, 2);
+  const resto = d.slice(2);
+  const meio = resto.length === 9 ? resto.slice(0, 5) : resto.slice(0, 4);
+  return `+55 (${ddd}) ${meio}-${resto.slice(meio.length)}`;
+}
+
+const MESES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
 export default function Perfil() {
   const navigate = useNavigate();
   const { nome, visitante } = useUserState();
-  const { resetarConta } = useAppState();
+  const app = useAppState();
+  const { resetarConta, tipoMEI, mesAnoAbertura, limiteAtual, faturamentoAtual, email } = app;
   const [saindo, setSaindo] = useState(false);
 
   /* v7: sai de verdade (ver o topo do arquivo). */
@@ -117,6 +190,28 @@ export default function Perfil() {
   const [confirmarSair, setConfirmarSair] = useState(false);
   const [contaARemover, setContaARemover] = useState(null);
 
+  /* v8: WhatsApp do perfil (coluna `whatsapp` da tabela perfis, a mesma
+     que o Cadastro e o Editar perfil usam). So leitura. */
+  const [whatsapp, setWhatsapp] = useState("");
+  useEffect(() => {
+    let ativo = true;
+    (async () => {
+      try {
+        const { data: u } = await supabase.auth.getUser();
+        if (!u?.user) return;
+        const { data } = await supabase
+          .from("perfis")
+          .select("whatsapp")
+          .eq("id", u.user.id)
+          .single();
+        if (ativo && data?.whatsapp) setWhatsapp(formatarWhatsapp(data.whatsapp));
+      } catch {
+        /* sem rede: a linha mostra "Não informado" */
+      }
+    })();
+    return () => { ativo = false; };
+  }, []);
+
   useEffect(() => {
     const handler = () => {
       setContas(lerContas());
@@ -138,6 +233,16 @@ export default function Perfil() {
   const nomeExibido = nome && nome.trim() ? nome : "Visitante";
   const inicial = (nomeExibido || "?").trim().charAt(0).toUpperCase();
   const anoAtual = new Date().getFullYear();
+
+  /* v8: o que aparece no cartao "Meu MEI" (so dados que ja existem) */
+  const rotuloTipo = LABEL_TIPO[tipoMEI] || "";
+  const abertura = mesAnoAbertura?.mes && mesAnoAbertura?.ano
+    ? `${MESES[Number(mesAnoAbertura.mes) - 1]} de ${mesAnoAbertura.ano}`
+    : "";
+  // Limite proporcional: abriu este ano depois de janeiro (fiscal.js)
+  const limiteEhProporcional =
+    Number(mesAnoAbertura?.ano) === anoAtual && Number(mesAnoAbertura?.mes) > 1;
+  const situacao = calcularFaltamOuExcedeu(faturamentoAtual, limiteAtual);
 
   function trocarConta(id) {
     const conta = ativarConta(id);
@@ -201,119 +306,223 @@ export default function Perfil() {
         {/* v6: titulo sobe com a rolagem, setinha fica (transparente) */}
         <TopoRolavel titulo="Perfil" onVoltar={() => navigate(-1)} recuo={20} />
 
-        <div className="px-5 pt-3 pb-5 flex flex-col items-center">
-          <div
-            className="rounded-full overflow-hidden shrink-0"
-            style={{
-              /* Tamanho travado em px + box-sizing: sem isso a borda
-                 somava ao total e a foto parecia encolher. */
-              width: 80,
-              height: 80,
-              minWidth: 80,
-              minHeight: 80,
-              boxSizing: "border-box",
-              flexShrink: 0,
-              background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
-              backdropFilter: "blur(6px) saturate(160%)",
-              WebkitBackdropFilter: "blur(6px) saturate(160%)",
-              border: "1px solid var(--vidro-borda)",
-              boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
-            }}
-          >
-            {foto && !visitante ? (
-              <img
-                src={foto}
-                alt=""
-                className="object-cover"
-                style={{ width: "100%", height: "100%", display: "block" }}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="font-bold" style={{ color: "var(--primary)", fontSize: 34 }}>
-                  {inicial || "?"}
-                </span>
-              </div>
-            )}
-          </div>
-
-          <button
-            type="button"
-            disabled={!temMultiplas}
-            onClick={() => temMultiplas && setSeletorAberto(true)}
-            className="mt-3 flex items-center gap-1.5"
-          >
-            <span className="font-bold" style={{ color: "var(--text)", fontSize: 20 }}>
-              {nomeExibido}
-            </span>
-            {temMultiplas && (
-              <ChevronDown size={17} style={{ color: "var(--text-secondary)" }} />
-            )}
-          </button>
-        </div>
-
-        <div className="px-5">
-          <Secao titulo="Geral" primeira>
-            <Item Icon={User} label="Editar perfil" onClick={() => navigate("/editar-perfil", DE_PERFIL)} />
-            {MOSTRAR_PREFERENCIAS && (
-              <Item Icon={Settings} label="Preferências" onClick={() => navigate("/preferencias", DE_PERFIL)} />
-            )}
-            {contaItem && <Item Icon={contaItem.Icon} label={contaItem.label} onClick={contaItem.onClick} />}
-          </Secao>
-
-          <Secao titulo="Meu MEI">
-            {/* v5/v6: entrada = seta para BAIXO (dinheiro chegando), saida = seta para CIMA */}
-            <Item Icon={ArrowDownLeft} label="Histórico de entradas" onClick={() => navigate("/historico", DE_PERFIL)} />
-            {/* v2/v3 (28/09/2026): o que saiu da conta + "Lançar saída" + parte isenta do IR */}
-            {MOSTRAR_SAIDAS && (
-              <Item Icon={ArrowUpRight} label="Histórico de saídas" onClick={() => navigate("/saidas", DE_PERFIL)} />
-            )}
-            {/* v4 (28/09/2026): mes a mes, com o comprovante de cada DAS paga */}
-            {MOSTRAR_HISTORICO_DAS && (
-              <Item Icon={CalendarCheck} label="Histórico de DAS" onClick={() => navigate("/das", DE_PERFIL)} />
-            )}
-            {MOSTRAR_NOTAS_FISCAIS && (
-              <Item Icon={FileText} label="Histórico de notas fiscais" onClick={() => navigate("/notas-fiscais", DE_PERFIL)} />
-            )}
-            {/* v6: antes "Adicionar faturamento" — agora cobre entradas E saidas (e o banco) */}
-            {MOSTRAR_ADICIONAR_MOVIMENTACOES && (
-              <Item Icon={TrendingUp} label="Adicionar movimentações" onClick={() => navigate("/adicionar-faturamento", DE_PERFIL)} />
-            )}
-            {MOSTRAR_RESUMO_ANO && (
-              <Item Icon={BarChart3} label={`Resumo de ${anoAtual}`} onClick={() => navigate("/perfil/resumo", DE_PERFIL)} />
-            )}
-          </Secao>
-
-          <Secao titulo="Segurança e Privacidade">
-            {!visitante && (
-              <Item Icon={Lock} label="Alterar senha" onClick={() => navigate("/alterar-senha", DE_PERFIL)} />
-            )}
-            <Item Icon={Shield} label="Termos e Privacidade" onClick={() => navigate("/termos", DE_PERFIL)} />
-            {MOSTRAR_SOBRE && (
-              <Item Icon={Info} label="Sobre o TaCerto!" onClick={() => navigate("/sobre", DE_PERFIL)} />
-            )}
-          </Secao>
-
-          <Secao>
-            <button
-              onClick={() => setConfirmarSair(true)}
-              className="toque w-full flex items-center gap-3 py-3 text-left"
-            >
-              <LogOut size={21} strokeWidth={2} style={{ color: "var(--danger)" }} className="shrink-0" />
-              <span className="flex-1 text-[15px] font-semibold" style={{ color: "var(--danger)" }}>
-                Sair da conta
-              </span>
-            </button>
-            <p
-              className="text-center"
+        {/* v8: bola com foto/inicial escondida (MOSTRAR_AVATAR) */}
+        {MOSTRAR_AVATAR && (
+          <div className="px-5 pt-3 flex flex-col items-center">
+            <div
+              className="rounded-full overflow-hidden shrink-0"
               style={{
-                color: "var(--text-tertiary)",
-                fontSize: 11,
-                marginTop: 10,
+                /* Tamanho travado em px + box-sizing: sem isso a borda
+                   somava ao total e a foto parecia encolher. */
+                width: 80,
+                height: 80,
+                minWidth: 80,
+                minHeight: 80,
+                boxSizing: "border-box",
+                flexShrink: 0,
+                background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
+                backdropFilter: "blur(6px) saturate(160%)",
+                WebkitBackdropFilter: "blur(6px) saturate(160%)",
+                border: "1px solid var(--vidro-borda)",
+                boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
               }}
             >
-              v0.1
-            </p>
-          </Secao>
+              {foto && !visitante ? (
+                <img
+                  src={foto}
+                  alt=""
+                  className="object-cover"
+                  style={{ width: "100%", height: "100%", display: "block" }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="font-bold" style={{ color: "var(--primary)", fontSize: 34 }}>
+                    {inicial || "?"}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="px-5">
+          {/* ===== Topo: nome em destaque + chip do tipo + WhatsApp ===== */}
+          <div style={{ paddingTop: 6 }}>
+            <button
+              type="button"
+              disabled={!temMultiplas}
+              onClick={() => temMultiplas && setSeletorAberto(true)}
+              className="flex items-center gap-1.5 text-left max-w-full"
+            >
+              <span className="font-bold truncate" style={{ color: "var(--text)", fontSize: 26, lineHeight: 1.2 }}>
+                {nomeExibido}
+              </span>
+              {temMultiplas && (
+                <ChevronDown size={18} style={{ color: "var(--text-secondary)" }} className="shrink-0" />
+              )}
+            </button>
+
+            <div className="flex items-center flex-wrap" style={{ gap: 8, marginTop: 8 }}>
+              {!visitante && rotuloTipo && (
+                <span
+                  className="rounded-full font-semibold"
+                  style={{
+                    fontSize: 13,
+                    padding: "4px 11px",
+                    color: "var(--primary)",
+                    backgroundColor: "rgba(34,197,94,0.14)",
+                    border: "1px solid rgba(34,197,94,0.4)",
+                  }}
+                >
+                  {rotuloTipo}
+                </span>
+              )}
+              {whatsapp && (
+                <span className="flex items-center text-[13.5px]" style={{ gap: 5, color: "var(--text-secondary)" }}>
+                  <Phone size={14} strokeWidth={2} className="shrink-0" />
+                  {whatsapp}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* ===== Meu MEI ===== */}
+          {!visitante && (
+            <CardSecao titulo="Meu MEI">
+              <Linha
+                Icon={Briefcase}
+                rotulo="Tipo de MEI"
+                valor={rotuloTipo}
+                onClick={() => navigate("/editar-perfil", DE_PERFIL)}
+              />
+              {abertura && (
+                <Linha
+                  Icon={CalendarDays}
+                  rotulo="Abertura"
+                  valor={abertura}
+                  onClick={() => navigate("/editar-perfil", DE_PERFIL)}
+                />
+              )}
+              <Linha
+                Icon={Gauge}
+                rotulo={`Limite de ${anoAtual}`}
+                detalhe={limiteEhProporcional ? "Proporcional aos meses desde a abertura" : null}
+                valor={<Valor tamanho="sm">{limiteAtual}</Valor>}
+              />
+              <Linha
+                Icon={ArrowDownLeft}
+                rotulo="Já faturou"
+                valor={<Valor tamanho="sm">{faturamentoAtual}</Valor>}
+                onClick={() => navigate("/historico", DE_PERFIL)}
+              />
+              {situacao.tipo === "faltam" ? (
+                <Linha
+                  Icon={TrendingUp}
+                  rotulo="Falta para o limite"
+                  valor={<Valor tamanho="sm">{situacao.valor}</Valor>}
+                />
+              ) : (
+                <Linha
+                  Icon={TrendingUp}
+                  rotulo="Passou do limite"
+                  cor="var(--danger)"
+                  valor={<Valor tamanho="sm">{situacao.valor}</Valor>}
+                  onClick={() => navigate("/regra-vinte", DE_PERFIL)}
+                />
+              )}
+              {/* Telas escondidas no piloto (chaves em src/config/piloto.js) */}
+              {MOSTRAR_SAIDAS && (
+                <Linha Icon={ArrowUpRight} rotulo="Histórico de saídas" onClick={() => navigate("/saidas", DE_PERFIL)} />
+              )}
+              {MOSTRAR_HISTORICO_DAS && (
+                <Linha Icon={CalendarCheck} rotulo="Histórico de DAS" onClick={() => navigate("/das", DE_PERFIL)} />
+              )}
+              {MOSTRAR_NOTAS_FISCAIS && (
+                <Linha Icon={FileText} rotulo="Histórico de notas fiscais" onClick={() => navigate("/notas-fiscais", DE_PERFIL)} />
+              )}
+              {MOSTRAR_ADICIONAR_MOVIMENTACOES && (
+                <Linha Icon={TrendingUp} rotulo="Adicionar movimentações" onClick={() => navigate("/adicionar-faturamento", DE_PERFIL)} />
+              )}
+              {MOSTRAR_RESUMO_ANO && (
+                <Linha Icon={BarChart3} rotulo={`Resumo de ${anoAtual}`} onClick={() => navigate("/perfil/resumo", DE_PERFIL)} />
+              )}
+            </CardSecao>
+          )}
+
+          {/* ===== Minha conta ===== */}
+          <CardSecao titulo="Minha conta">
+            {contaItem && <Linha Icon={contaItem.Icon} rotulo={contaItem.label} onClick={contaItem.onClick} />}
+            {!visitante && (
+              <Linha Icon={User} rotulo="Editar perfil" onClick={() => navigate("/editar-perfil", DE_PERFIL)} />
+            )}
+            {!visitante && (
+              <Linha
+                Icon={Phone}
+                rotulo="WhatsApp"
+                valor={whatsapp || "Não informado"}
+                onClick={() => navigate("/editar-perfil", DE_PERFIL)}
+              />
+            )}
+            {!visitante && email && (
+              <Linha Icon={Mail} rotulo="E-mail" valor={email} onClick={() => navigate("/editar-perfil", DE_PERFIL)} />
+            )}
+            {!visitante && (
+              <Linha Icon={Lock} rotulo="Alterar senha" onClick={() => navigate("/alterar-senha", DE_PERFIL)} />
+            )}
+            {MOSTRAR_PREFERENCIAS && (
+              <Linha Icon={Settings} rotulo="Preferências" onClick={() => navigate("/preferencias", DE_PERFIL)} />
+            )}
+          </CardSecao>
+
+          {/* ===== Ajuda ===== */}
+          <CardSecao titulo="Ajuda">
+            <Linha
+              Icon={MessageCircle}
+              rotulo="Falar com o Fisco no WhatsApp"
+              onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.falarComFisco(dadosParaWhatsApp(app)))}
+            />
+            {MOSTRAR_TUTORIAL_NOTA && (
+              <Linha Icon={FileText} rotulo="Como emitir nota" onClick={() => navigate("/como-emitir-nota", DE_PERFIL)} />
+            )}
+            {MOSTRAR_TUTORIAL_DAS && (
+              <Linha Icon={CalendarCheck} rotulo="Como pagar o DAS" onClick={() => navigate("/como-pagar-das", DE_PERFIL)} />
+            )}
+          </CardSecao>
+
+          {/* ===== Sobre ===== */}
+          <CardSecao titulo="Sobre">
+            <Linha Icon={Shield} rotulo="Termos de uso" onClick={() => navigate("/termos-de-uso", DE_PERFIL)} />
+            <Linha Icon={Lock} rotulo="Política de privacidade" onClick={() => navigate("/privacidade", DE_PERFIL)} />
+            {MOSTRAR_SOBRE && (
+              <Linha Icon={Info} rotulo="Sobre o TaCerto!" onClick={() => navigate("/sobre", DE_PERFIL)} />
+            )}
+          </CardSecao>
+
+          {/* selo discreto do piloto + versao */}
+          <div className="flex flex-col items-center" style={{ marginTop: 14, gap: 6 }}>
+            <span
+              className="rounded-full flex items-center"
+              style={{
+                gap: 5,
+                fontSize: 12,
+                padding: "4px 10px",
+                color: "var(--text-secondary)",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <Sparkles size={12} strokeWidth={2.2} style={{ color: "var(--primary)" }} />
+              Você faz parte do piloto TaCerto!
+            </span>
+            <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>v0.1</span>
+          </div>
+
+          {/* ===== Sair e Excluir (por ultimo) ===== */}
+          {!visitante && (
+            <CardSecao>
+              <Linha Icon={LogOut} rotulo="Sair da conta" cor="var(--danger)" onClick={() => setConfirmarSair(true)} />
+              <Linha Icon={Trash2} rotulo="Excluir conta" cor="var(--danger)" onClick={() => navigate("/excluir-conta", DE_PERFIL)} />
+            </CardSecao>
+          )}
         </div>
       </div>
 

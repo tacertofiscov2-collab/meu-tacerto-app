@@ -1,4 +1,4 @@
-/* EDITARPERFIL v13 — topo que rola (titulo sobe, setinha fica transparente) */
+/* EDITARPERFIL v14 — piloto: bola com a inicial escondida (MOSTRAR_AVATAR em src/config/piloto.js); o resto igual a v13 */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -13,6 +13,7 @@ import { useAppState } from "@/context/AppStateContext";
 import { supabase } from "@/lib/supabase";
 import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 import { EMAIL_VERIFICACAO_ATIVA } from "@/lib/flags";
+import { MOSTRAR_AVATAR } from "@/config/piloto";
 
 /* ===================================================================
    EDITARPERFIL v13 (28/09/2026): o cabecalho passou para DENTRO da area
@@ -639,7 +640,11 @@ export default function EditarPerfil() {
         <TopoRolavel titulo="Editar perfil" onVoltar={() => navigate(-1)} />
 
         {/* Avatar: só a inicial. A opção de foto foi retirada no piloto
-            (será reativada quando o app for empacotado como nativo). */}
+            (será reativada quando o app for empacotado como nativo).
+            v14: a bola toda fica escondida (MOSTRAR_AVATAR); no lugar,
+            so um respiro antes de "Informações pessoais". */}
+        {!MOSTRAR_AVATAR && <div aria-hidden style={{ height: 12 }} />}
+        {MOSTRAR_AVATAR && (
         <div
           className="flex flex-col items-center"
           style={{ paddingTop: ESPACO_ACIMA_AVATAR, paddingBottom: ESPACO_ABAIXO_AVATAR }}
@@ -666,6 +671,7 @@ export default function EditarPerfil() {
             </span>
           </div>
         </div>
+        )}
 
         {/* ================= INFORMACOES PESSOAIS ================= */}
         <TituloSecao primeiro>Informações pessoais</TituloSecao>

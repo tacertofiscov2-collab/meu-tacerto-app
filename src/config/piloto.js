@@ -108,6 +108,13 @@ export const MOSTRAR_SOBRE = false;
 export const MOSTRAR_INACABADOS = false;
 
 /* -------------------------------------------------------------------
+   AVATAR (bola redonda com a foto ou a inicial do nome) — v2
+   false esconde a bola no topo do Perfil e do Editar perfil. A logica
+   da foto continua no codigo, pronta para voltar.
+   ------------------------------------------------------------------- */
+export const MOSTRAR_AVATAR = false;
+
+/* -------------------------------------------------------------------
    EXTRA A — CARD "PROXIMO DAS" NO DASHBOARD
    true mostra, abaixo do velocimetro: "Proximo DAS: 20/MM" + valor
    (DAS_2026 de src/lib/fiscal.js) + botao "Emitir boleto", que abre o
