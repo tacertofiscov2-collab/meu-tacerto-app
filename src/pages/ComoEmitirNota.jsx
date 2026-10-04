@@ -1,8 +1,19 @@
-/* COMOEMITIRNOTA v1 — passo a passo para emitir a NFS-e no Emissor Nacional (piloto) */
+/* COMOEMITIRNOTA v2 — textos pelo tipo de MEI: caminhoneiro (transportadora, frete, CT-e) ou MEI comum (cliente, servico, NF-e) */
 import { useLocation, useNavigate } from "react-router-dom";
 import { AlertTriangle, ExternalLink } from "lucide-react";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco } from "@/config/piloto";
+import { useAppState } from "@/context/AppStateContext";
+
+/* ===================================================================
+   COMOEMITIRNOTA v2 (04/10/2026) — pedido do Fernando: a linguagem do
+   app e NEUTRA e so muda quando a pessoa ja escolheu o tipo de MEI.
+   Esta tela e aberta de dentro do app (o tipo ja e conhecido), entao
+   os textos seguem o tipo do perfil (CONTEUDO_POR_TIPO):
+     - MEI Caminhoneiro: transportadora, frete e o aviso NFS-e x CT-e.
+     - MEI comum (e quem ainda nao escolheu): cliente, servico e o
+       aviso de que quem vende produto emite outra nota (NF-e).
+   =================================================================== */
 
 /* ===================================================================
    CONTEUDO PROVISORIO - CONFERIR PASSOS NO SITE REAL
@@ -22,40 +33,73 @@ import { linkWhatsAppFisco } from "@/config/piloto";
 
 const LINK_EMISSOR_NACIONAL = "https://www.nfse.gov.br/EmissorNacional";
 
-const PASSOS = [
-  {
-    titulo: "Entre no Emissor Nacional",
-    texto: "Abra o site pelo botão lá embaixo e entre com a sua conta gov.br.",
+/* Passos iguais para os dois tipos (o comeco e o fim). */
+const PASSO_ENTRAR = {
+  titulo: "Entre no Emissor Nacional",
+  texto: "Abra o site pelo botão lá embaixo e entre com a sua conta gov.br.",
+};
+const PASSO_NOVA = {
+  titulo: "Comece uma nota nova",
+  texto: "No menu, toque em \"Emitir NFS-e\".",
+};
+const PASSO_EMITIR = {
+  titulo: "Emita",
+  texto: "Confira tudo e toque em \"Emitir NFS-e\".",
+};
+
+const CONTEUDO_POR_TIPO = {
+  MEI_CAMINHONEIRO: {
+    /* Texto do aviso pedido pelo Fernando (conferir com o contador) */
+    aviso: "Agregado de transportadora geralmente emite NFS-e. Se você pega frete direto, pode precisar de CT-e",
+    perguntaAviso: "Pego frete direto. Preciso emitir CT-e?",
+    passos: [
+      PASSO_ENTRAR,
+      PASSO_NOVA,
+      {
+        titulo: "Quem contratou o frete",
+        texto: "Em \"Tomador do serviço\", escolha Brasil e digite o CNPJ da transportadora. O nome dela aparece sozinho.",
+      },
+      {
+        titulo: "O serviço",
+        texto: "Informe a cidade onde o serviço foi feito, escolha o código do serviço de transporte e escreva a descrição. Exemplo: \"Frete de [cidade] para [cidade], dia [data]\".",
+      },
+      { titulo: "O valor", texto: "Digite o valor do frete." },
+      PASSO_EMITIR,
+      {
+        titulo: "Baixe o PDF",
+        texto: "Na nota emitida, toque em \"Download DANFSe\": é o PDF da nota. Guarde e mande para a transportadora.",
+      },
+    ],
   },
-  {
-    titulo: "Comece uma nota nova",
-    texto: "No menu, toque em \"Emitir NFS-e\".",
+  MEI: {
+    aviso: "Este passo a passo é para quem presta serviço (NFS-e). Se você vende produtos, a nota é outra (NF-e)",
+    perguntaAviso: "Eu vendo produtos. Como emito a minha nota?",
+    passos: [
+      PASSO_ENTRAR,
+      PASSO_NOVA,
+      {
+        titulo: "Quem contratou o serviço",
+        texto: "Em \"Tomador do serviço\", escolha Brasil e digite o CNPJ ou o CPF do cliente.",
+      },
+      {
+        titulo: "O serviço",
+        texto: "Informe a cidade onde o serviço foi feito, escolha o código do seu serviço e escreva a descrição. Exemplo: \"Serviço de [o que você fez], dia [data]\".",
+      },
+      { titulo: "O valor", texto: "Digite o valor do serviço." },
+      PASSO_EMITIR,
+      {
+        titulo: "Baixe o PDF",
+        texto: "Na nota emitida, toque em \"Download DANFSe\": é o PDF da nota. Guarde e mande para o cliente.",
+      },
+    ],
   },
-  {
-    titulo: "Quem contratou o frete",
-    texto: "Em \"Tomador do serviço\", escolha Brasil e digite o CNPJ da transportadora. O nome dela aparece sozinho.",
-  },
-  {
-    titulo: "O serviço",
-    texto: "Informe a cidade onde o serviço foi feito, escolha o código do serviço de transporte e escreva a descrição. Exemplo: \"Frete de [cidade] para [cidade], dia [data]\".",
-  },
-  {
-    titulo: "O valor",
-    texto: "Digite o valor do frete.",
-  },
-  {
-    titulo: "Emita",
-    texto: "Confira tudo e toque em \"Emitir NFS-e\".",
-  },
-  {
-    titulo: "Baixe o PDF",
-    texto: "Na nota emitida, toque em \"Download DANFSe\": é o PDF da nota. Guarde e mande para a transportadora.",
-  },
-];
+};
 
 export default function ComoEmitirNota() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { tipoMEI } = useAppState();
+  const conteudo = CONTEUDO_POR_TIPO[tipoMEI] || CONTEUDO_POR_TIPO.MEI;
 
   /* Aberta direto pelo endereco (sem tela antes): volta para o Dashboard */
   function voltar() {
@@ -75,7 +119,7 @@ export default function ComoEmitirNota() {
       >
         <TopoRolavel titulo="Como emitir sua nota" onVoltar={voltar} />
 
-        {/* Aviso do topo (texto pedido pelo Fernando) */}
+        {/* Aviso do topo (muda pelo tipo de MEI — ver CONTEUDO_POR_TIPO) */}
         <div
           className="rounded-2xl flex mt-2"
           style={{
@@ -87,10 +131,9 @@ export default function ComoEmitirNota() {
         >
           <AlertTriangle size={18} strokeWidth={2.2} className="shrink-0" style={{ color: "#f59e0b", marginTop: 2 }} />
           <p className="text-[14px] leading-relaxed" style={{ color: "var(--text)" }}>
-            Agregado de transportadora geralmente emite NFS-e. Se você pega frete direto,
-            pode precisar de CT-e —{" "}
+            {conteudo.aviso} —{" "}
             <a
-              href={linkWhatsAppFisco("Pego frete direto. Preciso emitir CT-e?")}
+              href={linkWhatsAppFisco(conteudo.perguntaAviso)}
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold"
@@ -103,7 +146,7 @@ export default function ComoEmitirNota() {
         </div>
 
         <div className="space-y-2 mt-4">
-          {PASSOS.map((p, i) => (
+          {conteudo.passos.map((p, i) => (
             <div
               key={p.titulo}
               className="rounded-2xl px-4 py-3.5 flex"

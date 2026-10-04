@@ -1,6 +1,24 @@
-/* WELCOME v4 — piloto: textos para o caminhoneiro + slides do banco e dos historicos escondidos por chave (src/config/piloto.js) */
+/* WELCOME v5 — textos NEUTROS (MEI e MEI Caminhoneiro) + slide 2 "DAS e nota" + slide 3 enxuto + desenho sempre inteiro na moldura */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
+
+   v5 (04/10/2026) — pedido do Fernando, depois de testar no iPhone:
+   - LINGUAGEM NEUTRA: aqui a pessoa ainda nao disse se e MEI ou MEI
+     Caminhoneiro, entao nada de "frete" ou "transportadora". O texto
+     so muda pelo tipo DEPOIS que a pessoa escolhe (no onboarding).
+     O slide 1 voltou ao texto da v3.
+   - SLIDE 2 NOVO (MiniDasNota): "DAS e nota sem mistério" — o card
+     "Próximo DAS" com "Pagar no gov.br" e o passo a passo da nota, que
+     sao do piloto. O antigo "O Fisco organiza pra você" (MiniConferir)
+     continua aqui e volta sozinho se o card do DAS ou o tutorial da
+     nota forem desligados em src/config/piloto.js.
+   - SLIDE 3 (WhatsApp) mais enxuto: so a pergunta das 21h, a resposta
+     e a confirmacao. Neutro ("Cliente", "Recebido hoje").
+   - ENQUADRAMENTO: no iPhone a moldura (48dvh) e mais baixa que no PC,
+     e o desenho do slide 2 ficava com o "Sim/Não" cortado atras do card
+     de baixo (o do slide 3 cortava a barra de digitar). Agora cada
+     desenho passa pelo MiniEncaixada: se for mais alto que a moldura,
+     ele encolhe um pouco ate caber INTEIRO. Vale para qualquer iPhone.
 
    v4 (04/10/2026, PILOTO): o desenho da v3 NAO mudou, so TEXTOS.
    - O slide do banco (Open Finance) e o dos historicos (saidas, DAS,
@@ -37,16 +55,16 @@
    "Já tem conta? Entrar").
    =================================================================== */
 import { useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import {
   Gauge, ArrowLeft, ChevronRight, ChevronDown, Send, Mic, Plus, Smile,
-  ArrowDownLeft, ArrowUpRight, CalendarCheck, FileText, Check, CheckCheck,
+  ArrowDownLeft, ArrowUpRight, CalendarCheck, FileText, Check, CheckCheck, ExternalLink,
 } from "lucide-react";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 import SimboloPluggy from "@/components/SimboloPluggy";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_NOTAS_FISCAIS,
-  MOSTRAR_CHAT_FISCO,
+  MOSTRAR_CHAT_FISCO, MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA,
 } from "@/config/piloto";
 
 const VERDE = "var(--primary)";
@@ -61,6 +79,64 @@ const VIDRO = {
   border: "1px solid var(--vidro-borda)",
   boxShadow: "inset 0 1px 0 0 var(--vidro-topo-medio), 0 6px 18px var(--vidro-sombra)",
 };
+
+/* ===================================================================
+   ENCAIXE NA MOLDURA (v5)
+
+   A moldura do celular tem 48dvh: no iPhone (com as barras do Safari)
+   ela fica bem mais baixa que no PC. Se o desenho for mais alto que a
+   moldura, ele ENCOLHE por igual (escala) ate caber inteiro — nada fica
+   cortado atras do card de baixo. Se couber, nao muda nada.
+
+   Como mede: solta a altura (height auto) para ler a altura natural do
+   desenho, compara com a da moldura e escolhe a escala. Mede de novo
+   quando a moldura muda de tamanho e quando as fontes terminam de
+   carregar.
+   =================================================================== */
+function MiniEncaixada({ children }) {
+  const caixaRef = useRef(null);
+  const [ajuste, setAjuste] = useState({ escala: 1, altura: null });
+
+  useLayoutEffect(() => {
+    const caixa = caixaRef.current;
+    const moldura = caixa?.parentElement;
+    if (!caixa || !moldura) return undefined;
+
+    const medir = () => {
+      const disponivel = moldura.clientHeight;
+      if (!disponivel) return;
+      const alturaAntes = caixa.style.height;
+      caixa.style.height = "auto";
+      const natural = caixa.scrollHeight;
+      caixa.style.height = alturaAntes;
+      const escala = natural > disponivel ? disponivel / natural : 1;
+      const altura = Math.max(disponivel, natural);
+      setAjuste((a) =>
+        a.altura === altura && Math.abs(a.escala - escala) < 0.002 ? a : { escala, altura },
+      );
+    };
+
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(moldura);
+    document.fonts?.ready?.then(medir).catch(() => {});
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={caixaRef}
+      className="flex flex-col"
+      style={{
+        height: ajuste.altura ?? "100%",
+        transform: ajuste.escala < 1 ? `scale(${ajuste.escala})` : undefined,
+        transformOrigin: "top center",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 /* Cada mini-tela ocupa a altura toda do celular (nada de espaco vazio:
    o que fica no pe usa marginTop auto). */
@@ -327,6 +403,74 @@ function MiniConferir() {
   );
 }
 
+/* ------------------------ 2. DAS E NOTA (v5) ------------------------
+   O que o piloto entrega de verdade: o card "Próximo DAS" do Início
+   (com "Pagar no gov.br") e o passo a passo "Como emitir sua nota".
+   Texto neutro: serve para MEI e MEI Caminhoneiro. */
+function MiniDasNota() {
+  const passos = ["Entre no Emissor Nacional", "Preencha o cliente e o valor", "Baixe o PDF da nota"];
+  return (
+    <MiniTela>
+      <div className="flex items-center gap-1.5 shrink-0" style={{ marginBottom: 12 }}>
+        <Gauge size={18} strokeWidth={2.3} style={{ color: VERDE }} />
+        <span className="font-bold" style={{ color: "var(--text)", fontSize: 14 }}>
+          Ta<span style={{ color: VERDE }}>Certo!</span>
+        </span>
+      </div>
+
+      {/* card "Próximo DAS", igual ao do Início */}
+      <div className="rounded-2xl flex items-center gap-2 shrink-0" style={{ ...CARD, padding: "10px 10px 10px 12px" }}>
+        <span className="flex-1 min-w-0">
+          <span className="block whitespace-nowrap" style={{ color: "var(--text-secondary)", fontSize: 10 }}>Próximo DAS · 20/••</span>
+          <span className="block font-bold" style={{ color: "var(--text)", fontSize: 13, marginTop: 1 }}>R$ •••</span>
+        </span>
+        <span
+          className="rounded-lg font-semibold flex items-center gap-1 shrink-0"
+          style={{
+            fontSize: 10,
+            padding: "5px 7px",
+            color: VERDE,
+            backgroundColor: "rgba(34,197,94,0.16)",
+            border: "1px solid rgba(34,197,94,0.45)",
+          }}
+        >
+          Pagar no gov.br
+          <ExternalLink size={10} strokeWidth={2.4} />
+        </span>
+      </div>
+
+      {/* passo a passo da nota */}
+      <p className="font-semibold shrink-0" style={{ color: "var(--text-secondary)", fontSize: 10.5, marginTop: 14, marginBottom: 7 }}>
+        Como emitir sua nota
+      </p>
+      <div className="flex flex-col shrink-0" style={{ gap: 6 }}>
+        {passos.map((p, i) => (
+          <div key={p} className="rounded-xl flex items-center gap-2" style={{ ...CARD, padding: "7px 10px" }}>
+            <span
+              className="rounded-full flex items-center justify-center shrink-0 font-bold"
+              style={{ width: 18, height: 18, fontSize: 9.5, color: VERDE, backgroundColor: "rgba(34,197,94,0.14)" }}
+            >
+              {i + 1}
+            </span>
+            <span className="font-semibold" style={{ color: "var(--text)", fontSize: 11 }}>{p}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* no pe, como na tela do tutorial (sem espaco vazio na moldura) */}
+      <div className="shrink-0" style={{ marginTop: "auto", paddingTop: 12 }}>
+        <span
+          className="rounded-xl font-semibold flex items-center justify-center gap-1.5"
+          style={{ padding: "9px 0", fontSize: 11.5, backgroundColor: VERDE, color: "var(--primary-contrast)" }}
+        >
+          Abrir o Emissor Nacional
+          <ExternalLink size={12} strokeWidth={2.4} />
+        </span>
+      </div>
+    </MiniTela>
+  );
+}
+
 /* --------------------------- 4. HISTÓRICOS --------------------------- */
 function MiniHistoricos() {
   const itens = [
@@ -383,7 +527,8 @@ function MiniHistoricos() {
 /* ---------------------------- 5. WHATSAPP ---------------------------- */
 const WA = { fundo: "#0b141a", topo: "#202c33", recebida: "#202c33", enviada: "#005c4b", hora: "rgba(233,237,239,0.6)", texto: "#e9edef", acao: "#00a884" };
 
-function Balao({ enviada = false, children }) {
+/* v5: `hora` — a conversa do exemplo e a pergunta das 21h */
+function Balao({ enviada = false, hora = "21:00", children }) {
   return (
     <div className={`flex ${enviada ? "justify-end" : "justify-start"}`}>
       <div
@@ -392,7 +537,7 @@ function Balao({ enviada = false, children }) {
       >
         {children}
         <span className="flex items-center justify-end gap-0.5" style={{ color: WA.hora, fontSize: 7.5, marginTop: 1 }}>
-          09:12 {enviada && <CheckCheck size={10} style={{ color: "#53bdeb" }} />}
+          {hora} {enviada && <CheckCheck size={10} style={{ color: "#53bdeb" }} />}
         </span>
       </div>
     </div>
@@ -411,17 +556,17 @@ function MiniWhatsApp() {
         </span>
       </div>
 
+      {/* v5: so a pergunta das 21h, a resposta e a confirmacao — mais
+          enxuto (cabe na moldura) e neutro (MEI e MEI Caminhoneiro) */}
       <div className="flex flex-col" style={{ gap: 6, padding: "10px 9px" }}>
-        <Balao enviada>Quanto já usei do meu limite?</Balao>
-        <Balao>Você já usou <b>58%</b> do limite do ano. Tá tranquilo 👍</Balao>
-        {/* v4 (piloto): o Fisco anota o frete do dia (antes: emitia nota) */}
-        <Balao enviada>Hoje recebi um frete</Balao>
+        <Balao>Boa noite! Quanto você recebeu hoje?</Balao>
+        <Balao enviada hora="21:02">Recebi R$ ••• de um cliente</Balao>
         <div className="flex flex-col" style={{ maxWidth: "84%", gap: 2 }}>
           <div className="rounded-lg" style={{ backgroundColor: WA.recebida, color: WA.texto, fontSize: 10.5, lineHeight: 1.35, padding: "5px 7px 4px" }}>
             Confere antes de eu anotar:
             <div style={{ marginTop: 4, paddingLeft: 6, borderLeft: `2px solid ${WA.acao}` }}>
-              <div style={{ color: WA.hora, fontSize: 9 }}>Frete recebido hoje</div>
-              <div className="font-semibold">Transportadora · R$ •••</div>
+              <div style={{ color: WA.hora, fontSize: 9 }}>Recebido hoje</div>
+              <div className="font-semibold">Cliente · R$ •••</div>
             </div>
           </div>
           <div className="rounded-lg text-center font-semibold" style={{ backgroundColor: WA.recebida, color: WA.acao, fontSize: 10.5, padding: "6px 0" }}>Está certo</div>
@@ -449,9 +594,23 @@ function MiniWhatsApp() {
    desligada em src/config/piloto.js — banco (Open Finance) e
    historicos (saidas, DAS e notas). Nada foi apagado. */
 const SLIDES = [
-  { Mini: MiniInicio, titulo: "Seu limite em tempo real", subtitulo: "Veja quanto do limite do ano você já usou com seus fretes." },
+  { Mini: MiniInicio, titulo: "Seu limite em tempo real", subtitulo: "Veja na hora quanto do limite do seu MEI você já usou no ano." },
   { Mini: MiniBanco, mostrar: MOSTRAR_OPEN_FINANCE, titulo: "Tudo chega sozinho", subtitulo: "Conecte o banco do seu MEI e as entradas e os gastos aparecem no app." },
-  { Mini: MiniConferir, titulo: "Só conta o que é frete", subtitulo: "Você diz o que é faturamento. Dinheiro seu e empréstimo ficam de fora." },
+  /* v5: o slide 2 do piloto e o do DAS e da nota. O "O Fisco organiza"
+     volta sozinho se o card do DAS ou o tutorial da nota forem
+     desligados (src/config/piloto.js). */
+  {
+    Mini: MiniDasNota,
+    mostrar: MOSTRAR_CARD_DAS && MOSTRAR_TUTORIAL_NOTA,
+    titulo: "DAS e nota sem mistério",
+    subtitulo: "Veja quando vence o DAS e aprenda a emitir sua nota, passo a passo.",
+  },
+  {
+    Mini: MiniConferir,
+    mostrar: !(MOSTRAR_CARD_DAS && MOSTRAR_TUTORIAL_NOTA),
+    titulo: "O Fisco organiza pra você",
+    subtitulo: "Você diz uma vez se é faturamento. Da próxima, ele já sabe.",
+  },
   {
     Mini: MiniHistoricos,
     mostrar: MOSTRAR_SAIDAS && MOSTRAR_HISTORICO_DAS && MOSTRAR_NOTAS_FISCAIS,
@@ -509,7 +668,10 @@ export default function Welcome() {
                     overflow: "hidden",
                   }}
                 >
-                  <Mini />
+                  {/* v5: o desenho encolhe se nao couber na moldura */}
+                  <MiniEncaixada>
+                    <Mini />
+                  </MiniEncaixada>
                 </div>
               </div>
             </div>
