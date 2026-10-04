@@ -1,4 +1,4 @@
-﻿/* EXCLUIRCONTA v4 — topo que rola (titulo sobe, setinha fica transparente) */
+﻿/* EXCLUIRCONTA v5 — piloto: aviso "Excluir todos os lançamentos" (opcao que nao existe) escondido */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -6,6 +6,14 @@ import { Check, Info } from "lucide-react";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import { supabase } from "@/lib/supabase";
+import { MOSTRAR_INACABADOS } from "@/config/piloto";
+
+/* ===================================================================
+   EXCLUIRCONTA v5 (04/10/2026) — PILOTO: o aviso "Se você quiser
+   apenas zerar sua conta... 'Excluir todos os lançamentos'" ficou
+   escondido (MOSTRAR_INACABADOS em src/config/piloto.js): essa opcao
+   nao existe no app. A exclusao em si nao mudou.
+   =================================================================== */
 
 /* ===================================================================
    EXCLUIRCONTA v4 (28/09/2026): o cabecalho passou para DENTRO da area
@@ -206,13 +214,15 @@ export default function ExcluirConta() {
               </div>
             </div>
 
-            {/* Aviso info */}
-            <div className="flex items-start gap-3 px-1">
-              <Info size={18} style={{ color: "var(--text-secondary)" }} className="shrink-0 mt-0.5" />
-              <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                Se você quiser apenas zerar sua conta, volte na tela anterior e selecione a opção "Excluir todos os lançamentos"
-              </p>
-            </div>
+            {/* Aviso info — piloto (v5): escondido, a opcao citada nao existe */}
+            {MOSTRAR_INACABADOS && (
+              <div className="flex items-start gap-3 px-1">
+                <Info size={18} style={{ color: "var(--text-secondary)" }} className="shrink-0 mt-0.5" />
+                <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  Se você quiser apenas zerar sua conta, volte na tela anterior e selecione a opção "Excluir todos os lançamentos"
+                </p>
+              </div>
+            )}
 
             <div className="pt-2 space-y-3">
               <button

@@ -1,4 +1,4 @@
-/* HISTORICO v3 — "Histórico de entradas": ano inteiro na lista (mes separando), anos so desde o inicio do uso, topo que rola */
+/* HISTORICO v4 — piloto: cartao "Comece com o velocimetro certo" escondido (MOSTRAR_INACABADOS); o resto igual a v3 */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,6 +12,15 @@ import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import useAnoInicio from "@/hooks/useAnoInicio";
+import { MOSTRAR_INACABADOS } from "@/config/piloto";
+
+/* ===================================================================
+   HISTORICO v4 (04/10/2026) — PILOTO
+   O cartao "Comece com o velocimetro certo / Adicionar faturamento"
+   ficou escondido (chave MOSTRAR_INACABADOS em src/config/piloto.js):
+   o botao dele abria uma janela que NAO salvava nada. No piloto o
+   faturamento de antes do app e perguntado no Onboarding.
+   =================================================================== */
 
 /* ===================================================================
    HISTORICO v3 — "Histórico de entradas" (28/09/2026)
@@ -120,7 +129,7 @@ export default function Historico() {
       >
         <TopoRolavel titulo="Histórico de entradas" onVoltar={() => navigate(-1)} />
 
-        {mostrarFaturamento && (
+        {MOSTRAR_INACABADOS && mostrarFaturamento && (
           <div className="card-tacerto rounded-2xl px-4 py-3.5 mt-2">
             <div className="flex items-start gap-3">
               <div

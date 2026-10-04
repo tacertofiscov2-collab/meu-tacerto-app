@@ -1,9 +1,9 @@
-﻿/* PERFIL v6 — setas de entrada/saida, "Adicionar movimentações" e topo que rola */
+﻿/* PERFIL v7 — piloto: itens escondidos por chave + "Sair da conta" sai de verdade (signOut) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
 import {
-  User, Settings, Info, Shield, Users, Lock, LogOut,
+  User, Settings, Info, Shield, Lock, LogOut,
   ChevronDown, ChevronRight, UserPlus, X, Check, TrendingUp, BarChart3,
   Trash2, FileText, ArrowUpRight, ArrowDownLeft, CalendarCheck,
 } from "lucide-react";
@@ -13,6 +13,28 @@ import { useUserState, setUserState } from "@/lib/userState";
 import {
   lerContas, lerContaAtivaId, ativarConta, removerAcessoConta,
 } from "@/lib/contas";
+import { supabase } from "@/lib/supabase";
+import { useAppState } from "@/context/AppStateContext";
+import {
+  MOSTRAR_PREFERENCIAS, MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_NOTAS_FISCAIS,
+  MOSTRAR_ADICIONAR_MOVIMENTACOES, MOSTRAR_RESUMO_ANO, MOSTRAR_SOBRE,
+} from "@/config/piloto";
+
+/* ===================================================================
+   PERFIL v7 (04/10/2026) — PILOTO
+
+   1) Itens escondidos pelas chaves de src/config/piloto.js (nada foi
+      apagado): Preferencias, Historico de saidas, Historico de DAS,
+      Historico de notas fiscais, Adicionar movimentacoes, Resumo do
+      ano e Sobre. Ficam: Editar perfil, Historico de entradas, Alterar
+      senha, Termos e Privacidade e Sair da conta.
+
+   2) "SAIR DA CONTA" NAO SAIA: so voltava para a tela de boas-vindas e
+      a sessao continuava aberta (abrindo /dashboard a pessoa estava
+      logada de novo). Agora desloga no Supabase e limpa os dados do
+      aparelho, como a Excluir conta ja fazia. Os dados continuam no
+      banco: e so entrar de novo.
+   =================================================================== */
 
 const FOTO_KEY = "tacerto_foto_usuario";
 
@@ -72,6 +94,18 @@ function Item({ Icon, label, onClick, cor }) {
 export default function Perfil() {
   const navigate = useNavigate();
   const { nome, visitante } = useUserState();
+  const { resetarConta } = useAppState();
+  const [saindo, setSaindo] = useState(false);
+
+  /* v7: sai de verdade (ver o topo do arquivo). */
+  async function sairDaConta() {
+    if (saindo) return;
+    setSaindo(true);
+    try { await supabase.auth.signOut(); } catch {}
+    try { resetarConta(); } catch {}
+    setConfirmarSair(false);
+    navigate("/", { replace: true });
+  }
 
   const [foto, setFoto] = useState(() => {
     if (typeof window === "undefined") return null;
@@ -220,7 +254,9 @@ export default function Perfil() {
         <div className="px-5">
           <Secao titulo="Geral" primeira>
             <Item Icon={User} label="Editar perfil" onClick={() => navigate("/editar-perfil", DE_PERFIL)} />
-            <Item Icon={Settings} label="Preferências" onClick={() => navigate("/preferencias", DE_PERFIL)} />
+            {MOSTRAR_PREFERENCIAS && (
+              <Item Icon={Settings} label="Preferências" onClick={() => navigate("/preferencias", DE_PERFIL)} />
+            )}
             {contaItem && <Item Icon={contaItem.Icon} label={contaItem.label} onClick={contaItem.onClick} />}
           </Secao>
 
@@ -228,13 +264,23 @@ export default function Perfil() {
             {/* v5/v6: entrada = seta para BAIXO (dinheiro chegando), saida = seta para CIMA */}
             <Item Icon={ArrowDownLeft} label="Histórico de entradas" onClick={() => navigate("/historico", DE_PERFIL)} />
             {/* v2/v3 (28/09/2026): o que saiu da conta + "Lançar saída" + parte isenta do IR */}
-            <Item Icon={ArrowUpRight} label="Histórico de saídas" onClick={() => navigate("/saidas", DE_PERFIL)} />
+            {MOSTRAR_SAIDAS && (
+              <Item Icon={ArrowUpRight} label="Histórico de saídas" onClick={() => navigate("/saidas", DE_PERFIL)} />
+            )}
             {/* v4 (28/09/2026): mes a mes, com o comprovante de cada DAS paga */}
-            <Item Icon={CalendarCheck} label="Histórico de DAS" onClick={() => navigate("/das", DE_PERFIL)} />
-            <Item Icon={FileText} label="Histórico de notas fiscais" onClick={() => navigate("/notas-fiscais", DE_PERFIL)} />
+            {MOSTRAR_HISTORICO_DAS && (
+              <Item Icon={CalendarCheck} label="Histórico de DAS" onClick={() => navigate("/das", DE_PERFIL)} />
+            )}
+            {MOSTRAR_NOTAS_FISCAIS && (
+              <Item Icon={FileText} label="Histórico de notas fiscais" onClick={() => navigate("/notas-fiscais", DE_PERFIL)} />
+            )}
             {/* v6: antes "Adicionar faturamento" — agora cobre entradas E saidas (e o banco) */}
-            <Item Icon={TrendingUp} label="Adicionar movimentações" onClick={() => navigate("/adicionar-faturamento", DE_PERFIL)} />
-            <Item Icon={BarChart3} label={`Resumo de ${anoAtual}`} onClick={() => navigate("/perfil/resumo", DE_PERFIL)} />
+            {MOSTRAR_ADICIONAR_MOVIMENTACOES && (
+              <Item Icon={TrendingUp} label="Adicionar movimentações" onClick={() => navigate("/adicionar-faturamento", DE_PERFIL)} />
+            )}
+            {MOSTRAR_RESUMO_ANO && (
+              <Item Icon={BarChart3} label={`Resumo de ${anoAtual}`} onClick={() => navigate("/perfil/resumo", DE_PERFIL)} />
+            )}
           </Secao>
 
           <Secao titulo="Segurança e Privacidade">
@@ -242,7 +288,9 @@ export default function Perfil() {
               <Item Icon={Lock} label="Alterar senha" onClick={() => navigate("/alterar-senha", DE_PERFIL)} />
             )}
             <Item Icon={Shield} label="Termos e Privacidade" onClick={() => navigate("/termos", DE_PERFIL)} />
-            <Item Icon={Info} label="Sobre o TaCerto!" onClick={() => navigate("/sobre", DE_PERFIL)} />
+            {MOSTRAR_SOBRE && (
+              <Item Icon={Info} label="Sobre o TaCerto!" onClick={() => navigate("/sobre", DE_PERFIL)} />
+            )}
           </Secao>
 
           <Secao>
@@ -433,11 +481,12 @@ export default function Perfil() {
                 Cancelar
               </button>
               <button
-                onClick={() => { setConfirmarSair(false); navigate("/"); }}
+                onClick={sairDaConta}
+                disabled={saindo}
                 className="toque flex-1 py-3 rounded-xl font-semibold"
                 style={{ backgroundColor: "#ef4444", color: "#fff" }}
               >
-                Sair
+                {saindo ? "Saindo..." : "Sair"}
               </button>
             </div>
           </div>

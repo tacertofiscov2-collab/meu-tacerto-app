@@ -1,6 +1,11 @@
-/* WELCOME v3 — slides ficticios (sem nomes nem valores), no desenho simplificado de antes, com o visual atual do app */
+/* WELCOME v4 — piloto: slides do banco e dos historicos escondidos por chave (src/config/piloto.js) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
+
+   v4 (04/10/2026, PILOTO): o desenho da v3 NAO mudou. O slide do banco
+   (Open Finance) e o dos historicos (saidas, DAS, notas) ficam
+   escondidos enquanto essas funcoes estao desligadas no piloto; o
+   simbolo do banco some do mini Inicio pelo mesmo motivo.
 
    v3 (03/10/2026): pedido do Fernando — os slides voltam a ser
    FICTICIOS como na v1 (sem nomes de pessoas nem valores: "R$ •••",
@@ -33,6 +38,9 @@ import {
 } from "lucide-react";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 import SimboloPluggy from "@/components/SimboloPluggy";
+import {
+  MOSTRAR_OPEN_FINANCE, MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_NOTAS_FISCAIS,
+} from "@/config/piloto";
 
 const VERDE = "var(--primary)";
 
@@ -184,7 +192,8 @@ function MiniInicio() {
             Ta<span style={{ color: VERDE }}>Certo!</span>
           </span>
         </span>
-        <SimboloPluggy altura={14} />
+        {/* Piloto: sem Open Finance, o Inicio nao tem o simbolo do banco */}
+        {MOSTRAR_OPEN_FINANCE && <SimboloPluggy altura={14} />}
       </div>
 
       <div className="rounded-2xl shrink-0" style={{ ...VIDRO, padding: "12px 12px 10px" }}>
@@ -426,14 +435,22 @@ function MiniWhatsApp() {
   );
 }
 
-/* Títulos CURTOS: cabem em uma linha no iPhone (ver cabeçalho, v3). */
+/* Títulos CURTOS: cabem em uma linha no iPhone (ver cabeçalho, v3).
+   v4 (piloto): `mostrar` esconde o slide quando a funcao dele esta
+   desligada em src/config/piloto.js — banco (Open Finance) e
+   historicos (saidas, DAS e notas). Nada foi apagado. */
 const SLIDES = [
   { Mini: MiniInicio, titulo: "Seu limite em tempo real", subtitulo: "Veja na hora quanto do limite do seu MEI você já usou no ano." },
-  { Mini: MiniBanco, titulo: "Tudo chega sozinho", subtitulo: "Conecte o banco do seu MEI e as entradas e os gastos aparecem no app." },
+  { Mini: MiniBanco, mostrar: MOSTRAR_OPEN_FINANCE, titulo: "Tudo chega sozinho", subtitulo: "Conecte o banco do seu MEI e as entradas e os gastos aparecem no app." },
   { Mini: MiniConferir, titulo: "O Fisco organiza pra você", subtitulo: "Você diz uma vez se é faturamento. Da próxima, ele já sabe." },
-  { Mini: MiniHistoricos, titulo: "Tudo guardado", subtitulo: "Entradas, saídas, DAS e notas fiscais, organizados mês a mês." },
+  {
+    Mini: MiniHistoricos,
+    mostrar: MOSTRAR_SAIDAS && MOSTRAR_HISTORICO_DAS && MOSTRAR_NOTAS_FISCAIS,
+    titulo: "Tudo guardado",
+    subtitulo: "Entradas, saídas, DAS e notas fiscais, organizados mês a mês.",
+  },
   { Mini: MiniWhatsApp, titulo: "O Fisco no WhatsApp", subtitulo: "Tire dúvidas e emita nota fiscal numa conversa, sem abrir o app." },
-];
+].filter((s) => s.mostrar !== false);
 
 export default function Welcome() {
   useTemaEscuroForcado();

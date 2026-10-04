@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v17 — "Tirar dúvidas": o titulo rola junto com os cards (o X continua fixo) */
+﻿/* DASHBOARD v18 — piloto: sem botao do banco, sem chat no app (botao "Falar com o Fisco no WhatsApp"), balao do ano so acima do limite */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -14,6 +14,27 @@ import {
 } from "@/lib/fiscal";
 import { supabase } from "@/lib/supabase";
 import { listarConexoes, sincronizar, organizarPelasRegras } from "@/lib/openfinance";
+import {
+  MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_RESUMO_ANO, linkWhatsAppFisco,
+} from "@/config/piloto";
+/* DASHBOARD v18 (04/10/2026) — PILOTO com 30 MEI Caminhoneiros.
+
+   Chaves em src/config/piloto.js (nada foi apagado):
+   - MOSTRAR_OPEN_FINANCE = false: o botao do banco no canto de cima
+     some, e com ele a sincronizacao ao abrir o app. O portao das
+     entradas ("E faturamento?") continua: ele so le o banco de dados.
+   - MOSTRAR_CHAT_FISCO = false: a barra "Pergunte ao Fisco..." vira o
+     botao "Falar com o Fisco no WhatsApp" (BotaoFiscoWhatsApp). O balao
+     "?" do card A (que abria o "Tirar duvidas") so aparece acima do
+     limite (+N% ou alerta) e abre a tela da regra dos 20%. No card B o
+     "?" continua abrindo a media limite; o "Nao entendi, falar com o
+     Fisco" de la vira "Falar com o Fisco no WhatsApp", com a pergunta
+     ja escrita.
+   - MOSTRAR_RESUMO_ANO = false: tocar em Faturado/Limite abre o
+     Historico de entradas (a lista dos lancamentos), nao o Resumo.
+
+   O que ja existia (carrossel, painel da media limite, caixa do chat,
+   botao do banco) continua no arquivo, pronto para religar. */
 /* DASHBOARD v3 — cabecalho no painel de perguntas + limpeza do chat morto.
 
    1) O painel de perguntas abria com um vazio grande no topo (o espaco
@@ -252,6 +273,8 @@ function PaginaVelocimetro({
   rotulo, percentual, alertaDos20 = true, apenasInterrogacao = false, descricao,
   valorEsquerda, rotuloEsquerda, valorDireita, rotuloDireita,
   onBalao, onValores,
+  /* v18: false = balao so acima de 100% (+N%/alerta), chamando onExcedente */
+  sempreMostrarBalao = true, onExcedente,
 }) {
   const areaRef = useRef(null);
   const [larguraVel, setLarguraVel] = useState(LARGURA_MAX_VELOCIMETRO);
@@ -283,8 +306,9 @@ function PaginaVelocimetro({
           percentual={percentual}
           maxWidth={larguraVel}
           numeroClasse="text-4xl font-bold"
-          sempreMostrarBalao
+          sempreMostrarBalao={sempreMostrarBalao}
           onClickBalao={onBalao}
+          onClickExcedente={onExcedente}
           alertaDos20={alertaDos20}
           apenasInterrogacao={apenasInterrogacao}
           descricao={descricao}
@@ -345,7 +369,7 @@ function PaginaVelocimetro({
 function CardVelocimetroCarrossel({
   rotuloPerfil, percentual, faturado, limite,
   percentualMedia, mediaMensal, mediaLimite,
-  onDuvidas, onResumo,
+  onDuvidas, onResumo, onExcedente,
 }) {
   const [pagina, setPagina] = useState(0);
   const [dragPx, setDragPx] = useState(0);
@@ -504,6 +528,10 @@ function CardVelocimetroCarrossel({
             rotuloDireita="Limite"
             onBalao={seNaoArrastou(() => onDuvidas("anual"))}
             onValores={seNaoArrastou(onResumo)}
+            /* Piloto (v18): sem o chat, o "?" do ano ("Tirar duvidas")
+               some; o balao so aparece acima do limite. */
+            sempreMostrarBalao={MOSTRAR_CHAT_FISCO}
+            onExcedente={seNaoArrastou(onExcedente)}
           />
 
           <PaginaVelocimetro
@@ -892,46 +920,113 @@ function PainelMediaLimite({ aberto, onFechar, onFalarComFisco, limiteAnual, med
             Entendi
           </button>
 
-          {/* Nao entendi: abre o chat do Fisco com a pergunta pronta */}
-          <button
-            type="button"
-            onClick={() => onFalarComFisco?.(PERGUNTA_NAO_ENTENDI_MEDIA)}
-            className="toque w-full rounded-2xl font-semibold transition active:scale-[0.98] flex items-center justify-center"
-            style={{
-              marginTop: 8,
-              gap: 10,
-              paddingTop: 8,
-              paddingBottom: 8,
-              fontSize: 15,
-              backgroundColor: "var(--vidro-superficie)",
-              border: "1px solid var(--vidro-borda)",
-              color: "var(--text)",
-            }}
-          >
-            <span
-              className="rounded-full overflow-hidden shrink-0 flex items-center justify-center"
+          {/* Nao entendi: abre o chat do Fisco com a pergunta pronta.
+              Piloto (v18, MOSTRAR_CHAT_FISCO = false): abre o WhatsApp do
+              Fisco com a mesma pergunta ja escrita. */}
+          {MOSTRAR_CHAT_FISCO ? (
+            <button
+              type="button"
+              onClick={() => onFalarComFisco?.(PERGUNTA_NAO_ENTENDI_MEDIA)}
+              className="toque w-full rounded-2xl font-semibold transition active:scale-[0.98] flex items-center justify-center"
               style={{
-                width: 28,
-                height: 28,
-                border: "1.5px solid rgba(34,197,94,0.45)",
+                marginTop: 8,
+                gap: 10,
+                paddingTop: 8,
+                paddingBottom: 8,
+                fontSize: 15,
+                backgroundColor: "var(--vidro-superficie)",
+                border: "1px solid var(--vidro-borda)",
+                color: "var(--text)",
               }}
             >
-              <img
-                src="/fisco-perfil.png"
-                alt=""
-                style={{
-                  width: "112%",
-                  height: "112%",
-                  objectFit: "cover",
-                  objectPosition: "50% 18%",
-                }}
-              />
-            </span>
-            Não entendi, falar com o Fisco
-          </button>
+              <FotoFiscoMini />
+              Não entendi, falar com o Fisco
+            </button>
+          ) : (
+            <a
+              href={linkWhatsAppFisco(PERGUNTA_NAO_ENTENDI_MEDIA)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="toque w-full rounded-2xl font-semibold transition active:scale-[0.98] flex items-center justify-center"
+              style={{
+                marginTop: 8,
+                gap: 10,
+                paddingTop: 8,
+                paddingBottom: 8,
+                fontSize: 15,
+                backgroundColor: "var(--vidro-superficie)",
+                border: "1px solid var(--vidro-borda)",
+                color: "var(--text)",
+                textDecoration: "none",
+              }}
+            >
+              <FotoFiscoMini />
+              Falar com o Fisco no WhatsApp
+            </a>
+          )}
         </div>
       </div>
     </div>
+  );
+}
+
+/* Foto redonda pequena do Fisco (28px, borda verde) — a mesma que ja
+   ficava no botao "Nao entendi, falar com o Fisco". Separada em v18
+   porque agora tambem aparece no botao do WhatsApp. */
+function FotoFiscoMini({ tamanho = 28 }) {
+  return (
+    <span
+      className="rounded-full overflow-hidden shrink-0 flex items-center justify-center"
+      style={{
+        width: tamanho,
+        height: tamanho,
+        border: "1.5px solid rgba(34,197,94,0.45)",
+      }}
+    >
+      <img
+        src="/fisco-perfil.png"
+        alt=""
+        style={{
+          width: "112%",
+          height: "112%",
+          objectFit: "cover",
+          objectPosition: "50% 18%",
+        }}
+      />
+    </span>
+  );
+}
+
+/* ===================================================================
+   BOTAO "FALAR COM O FISCO NO WHATSAPP" (v18 — piloto)
+
+   No piloto o Fisco atende pelo WhatsApp, nao dentro do app. Este
+   botao fica no lugar da barra "Pergunte ao Fisco..." e abre a
+   conversa no WhatsApp (numero em WHATSAPP_FISCO, src/config/piloto.js).
+   Mesma luz verde correndo na borda que a barra antiga tinha.
+   =================================================================== */
+function BotaoFiscoWhatsApp() {
+  return (
+    <a
+      href={linkWhatsAppFisco()}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="toque relative shrink-0 w-full rounded-2xl font-semibold flex items-center justify-center active:scale-[0.98] transition"
+      style={{
+        ...VIDRO_SUAVE,
+        gap: 10,
+        height: 52,
+        marginTop: 12,
+        marginBottom: 12,
+        fontSize: 15,
+        color: "var(--text)",
+        textDecoration: "none",
+      }}
+    >
+      <BordaCorrendo raio={16} />
+      <FotoFiscoMini tamanho={30} />
+      Falar com o Fisco no WhatsApp
+    </a>
   );
 }
 
@@ -1586,7 +1681,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <BotaoBanco onSincronizou={verificarEntradas} />
+          {/* Piloto (v18): sem Open Finance, sem o botao do banco */}
+          {MOSTRAR_OPEN_FINANCE && <BotaoBanco onSincronizou={verificarEntradas} />}
         </header>
 
         <div className="px-5 pt-2 flex-1 flex flex-col min-h-0 relative">
@@ -1599,8 +1695,14 @@ export default function Dashboard() {
             mediaMensal={mediaMensal}
             mediaLimite={mediaLimite}
             onDuvidas={(qual) => setPainelDuvidas(qual)}
-            onResumo={() => navigate("/perfil/resumo", DE_DASHBOARD)}
+            onResumo={() =>
+              navigate(MOSTRAR_RESUMO_ANO ? "/perfil/resumo" : "/historico", DE_DASHBOARD)
+            }
+            onExcedente={() => navigate("/regra-vinte", DE_DASHBOARD)}
           />
+
+          {/* Piloto (v18): o Fisco atende pelo WhatsApp */}
+          {!MOSTRAR_CHAT_FISCO && <BotaoFiscoWhatsApp />}
 
           {caixaExpandida && (
             <CaixaFiscoFlutuante
@@ -1609,6 +1711,7 @@ export default function Dashboard() {
             />
           )}
 
+          {MOSTRAR_CHAT_FISCO && (
           <button
             onClick={() => setCaixaExpandida(true)}
             className="shrink-0 w-full flex items-start gap-2"
@@ -1689,11 +1792,12 @@ export default function Dashboard() {
                 />
               </span>
             </button>
+          )}
         </div>
       </div>
 
       <PainelPerguntas
-        aberto={painelDuvidas === "anual"}
+        aberto={MOSTRAR_CHAT_FISCO && painelDuvidas === "anual"}
         onFechar={() => setPainelDuvidas(null)}
         perguntas={perguntasDaSituacao(faixaAnual)}
         corFaixa={FAIXA_INFO[faixaAnual].cor}
