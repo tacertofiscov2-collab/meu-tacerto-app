@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v19 — piloto: card "Proximo DAS" com "Pagar no gov.br" + botao "Como emitir nota" no canto de cima (v18: sem banco, Fisco no WhatsApp) */
+﻿/* DASHBOARD v20 — botoes do WhatsApp com a mensagem pronta de MENSAGENS_WHATSAPP (nome e tipo de MEI preenchidos); v19: card Proximo DAS + Como emitir nota */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -19,6 +19,7 @@ import { supabase } from "@/lib/supabase";
 import { listarConexoes, sincronizar, organizarPelasRegras } from "@/lib/openfinance";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_RESUMO_ANO, linkWhatsAppFisco,
+  MENSAGENS_WHATSAPP, dadosParaWhatsApp,
   MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA,
 } from "@/config/piloto";
 /* DASHBOARD v19 (04/10/2026) — EXTRAS DO PILOTO
@@ -775,7 +776,7 @@ function PainelPerguntas({
 const PERGUNTA_NAO_ENTENDI_MEDIA =
   "Me explica melhor a média limite, de um jeito mais fácil de entender? Pode usar um exemplo do dia a dia.";
 
-function PainelMediaLimite({ aberto, onFechar, onFalarComFisco, limiteAnual, mediaLimite }) {
+function PainelMediaLimite({ aberto, onFechar, onFalarComFisco, limiteAnual, mediaLimite, dadosWhats }) {
   const conteudoRef = useRef(null);
 
   /* Trava a rolagem do Dashboard enquanto aberto (mesma tecnica do
@@ -957,7 +958,7 @@ function PainelMediaLimite({ aberto, onFechar, onFalarComFisco, limiteAnual, med
             </button>
           ) : (
             <a
-              href={linkWhatsAppFisco(PERGUNTA_NAO_ENTENDI_MEDIA)}
+              href={linkWhatsAppFisco(MENSAGENS_WHATSAPP.mediaLimite(dadosWhats))}
               target="_blank"
               rel="noopener noreferrer"
               className="toque w-full rounded-2xl font-semibold transition active:scale-[0.98] flex items-center justify-center"
@@ -1018,10 +1019,10 @@ function FotoFiscoMini({ tamanho = 28 }) {
    conversa no WhatsApp (numero em WHATSAPP_FISCO, src/config/piloto.js).
    Mesma luz verde correndo na borda que a barra antiga tinha.
    =================================================================== */
-function BotaoFiscoWhatsApp() {
+function BotaoFiscoWhatsApp({ dadosWhats }) {
   return (
     <a
-      href={linkWhatsAppFisco()}
+      href={linkWhatsAppFisco(MENSAGENS_WHATSAPP.falarComFisco(dadosWhats))}
       target="_blank"
       rel="noopener noreferrer"
       className="toque relative shrink-0 w-full rounded-2xl font-semibold flex items-center justify-center active:scale-[0.98] transition"
@@ -1703,6 +1704,8 @@ export default function Dashboard() {
     nome, tipoMEI, faturamentoAtual, limiteAtual, limiteCheio, percentualAtual,
     mediaMensal, mediaLimite, adicionarLancamento,
   } = useAppState();
+  // v20: nome e tipo de MEI que vao nas mensagens prontas do WhatsApp
+  const dadosWhats = dadosParaWhatsApp({ nome, tipoMEI });
 
   /* =================================================================
      PORTAO DAS ENTRADAS (v15 — pedido do Fernando, 27/09/2026)
@@ -1832,7 +1835,7 @@ export default function Dashboard() {
           {MOSTRAR_CARD_DAS && <CardProximoDas tipoMEI={tipoMEI} />}
 
           {/* Piloto (v18): o Fisco atende pelo WhatsApp */}
-          {!MOSTRAR_CHAT_FISCO && <BotaoFiscoWhatsApp />}
+          {!MOSTRAR_CHAT_FISCO && <BotaoFiscoWhatsApp dadosWhats={dadosWhats} />}
 
           {caixaExpandida && (
             <CaixaFiscoFlutuante
@@ -1943,6 +1946,7 @@ export default function Dashboard() {
         aberto={painelDuvidas === "media"}
         onFechar={() => setPainelDuvidas(null)}
         onFalarComFisco={perguntarAoFisco}
+        dadosWhats={dadosWhats}
         limiteAnual={limiteCheio}
         mediaLimite={mediaLimite}
       />

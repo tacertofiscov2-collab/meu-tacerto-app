@@ -1,4 +1,5 @@
-/* PILOTO v1 — chaves de liga/desliga do piloto com 30 MEI Caminhoneiros (6 semanas) */
+/* PILOTO v2 — + MENSAGENS_WHATSAPP (todos os textos prontos num lugar so) e abrirWhatsAppFisco */
+import { LABEL_TIPO } from "@/lib/fiscal";
 
 /* ===================================================================
    POR QUE ESTE ARQUIVO EXISTE (04/10/2026)
@@ -134,3 +135,87 @@ export function linkWhatsAppFisco(texto) {
   const base = `https://wa.me/${WHATSAPP_FISCO}`;
   return texto ? `${base}?text=${encodeURIComponent(texto)}` : base;
 }
+
+/* Abre o WhatsApp do Fisco com a mensagem pronta. Usar DENTRO do toque
+   (onClick): o iPhone so deixa abrir outra janela a partir de um toque.
+   Se o navegador bloquear a janela nova, abre na mesma aba. */
+export function abrirWhatsAppFisco(texto) {
+  const link = linkWhatsAppFisco(texto);
+  // Sem "noopener" no window.open: com ele o navegador devolve null
+  // mesmo abrindo, e o plano B abriria o WhatsApp duas vezes.
+  const janela = window.open(link, "_blank");
+  if (janela) {
+    try { janela.opener = null; } catch { /* ignora */ }
+  } else {
+    window.location.href = link;
+  }
+}
+
+/* ===================================================================
+   MENSAGENS PRONTAS DO WHATSAPP (v2 — 04/10/2026)
+
+   No piloto, quem responde e o Fernando, na mao. Cada botao manda uma
+   mensagem DIFERENTE, que deixa claro o que a pessoa escolheu — assim
+   da para MEDIR o interesse em cada ajuda (DAS automatico, nota, A1...).
+
+   PARA EDITAR UM TEXTO: mude so a frase entre as crases (`...`). O que
+   esta dentro de ${...} e preenchido sozinho:
+     - Nome: o nome do perfil.
+     - Tipo: "MEI" ou "MEI Caminhoneiro", se o perfil tiver.
+     - Meu CNPJ: o perfil AINDA NAO GUARDA CNPJ (nao existe a coluna no
+       banco). Por isso "Meu CNPJ: " fica em branco, no FIM da mensagem,
+       para a pessoa completar antes de enviar.
+   Os textos ficam sem acento de proposito (padrao do WhatsApp e evita
+   letra quebrada no codigo).
+   =================================================================== */
+
+/* Os dados da pessoa que vao nas mensagens. Recebe o estado do app
+   (useAppState) e devolve so o que as mensagens usam. */
+export function dadosParaWhatsApp({ nome, tipoMEI, cnpj } = {}) {
+  return {
+    nome: String(nome || "").trim(),
+    tipo: tipoMEI ? LABEL_TIPO[tipoMEI] || "" : "",
+    cnpj: String(cnpj || "").trim(),
+  };
+}
+
+/* "Nome: Ana. Tipo: MEI Caminhoneiro" (o tipo so se existir; sem nome,
+   "Nome: ___" para a pessoa completar) */
+function quemSou({ nome, tipo } = {}) {
+  return `Nome: ${nome || "___"}` + (tipo ? `. Tipo: ${tipo}` : "");
+}
+
+/* Igual ao quemSou, com "Meu CNPJ: ..." no fim (em branco se nao tiver) */
+function quemSouComCnpj(dados = {}) {
+  return `${quemSou(dados)}. Meu CNPJ: ${dados.cnpj || ""}`;
+}
+
+export const MENSAGENS_WHATSAPP = {
+  /* Botao "Falar com o Fisco no WhatsApp" (Inicio, Perfil, termos) */
+  falarComFisco: (d) =>
+    `Oi Fisco! Vim pelo app e quero tirar uma duvida. ${quemSou(d)}`,
+
+  /* Painel do DAS, opcao a) "Receber meu boleto todo mes no WhatsApp" */
+  dasAutomatico: (d) =>
+    `Oi Fisco! Quero receber meu boleto do DAS automaticamente todo mes. ${quemSouComCnpj(d)}`,
+
+  /* Painel do DAS, opcao b) "Fisco me ajuda agora" e o botao
+     "Prefiro que o Fisco me ajude" da tela /como-pagar-das */
+  dasAjudaAgora: (d) =>
+    `Oi Fisco! Quero ajuda pra emitir meu boleto do DAS deste mes. ${quemSouComCnpj(d)}`,
+
+  /* /como-emitir-nota, card "Emitir com o Fisco pelo WhatsApp".
+     Caminhoneiro fala em frete; MEI comum, em servico. */
+  notaAjuda: (d, caminhoneiro = true) =>
+    caminhoneiro
+      ? `Oi Fisco! Quero ajuda pra emitir uma nota fiscal. ${quemSou(d)}. Valor do frete: R$ ___. Para quem (empresa/CNPJ): ___`
+      : `Oi Fisco! Quero ajuda pra emitir uma nota fiscal. ${quemSou(d)}. Valor do servico: R$ ___. Para quem (empresa/CNPJ ou CPF): ___`,
+
+  /* /como-emitir-nota, botao "Tenho interesse no certificado" */
+  certificadoA1: (d) =>
+    `Oi Fisco! Tenho interesse no Certificado Digital A1 pra emitir nota automatica. ${quemSou(d)}`,
+
+  /* Inicio, painel da media limite: "Falar com o Fisco no WhatsApp" */
+  mediaLimite: (d) =>
+    `Oi Fisco! Nao entendi a media limite do app. Me explica de um jeito mais facil, com um exemplo do dia a dia? ${quemSou(d)}`,
+};

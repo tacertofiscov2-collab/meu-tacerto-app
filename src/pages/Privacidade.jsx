@@ -1,7 +1,8 @@
-/* PRIVACIDADE v1 — Politica de Privacidade em portugues simples (piloto) */
+/* PRIVACIDADE v2 — botao do WhatsApp com a mensagem pronta (MENSAGENS_WHATSAPP.falarComFisco) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
-import { linkWhatsAppFisco } from "@/config/piloto";
+import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp } from "@/config/piloto";
+import { useAppState } from "@/context/AppStateContext";
 
 /* ===================================================================
    VERSAO PROVISORIA - REVISAR COM ADVOGADO
@@ -73,6 +74,7 @@ const SECOES = [
 export default function Privacidade() {
   const navigate = useNavigate();
   const location = useLocation();
+  const app = useAppState();
 
   /* Aberta direto pelo endereco (sem tela antes): volta para o inicio */
   function voltar() {
@@ -128,7 +130,7 @@ export default function Privacidade() {
             Dúvida sobre seus dados? Chame o Fisco no WhatsApp.
           </p>
           <a
-            href={linkWhatsAppFisco()}
+            href={linkWhatsAppFisco(MENSAGENS_WHATSAPP.falarComFisco(dadosParaWhatsApp(app)))}
             target="_blank"
             rel="noopener noreferrer"
             className="toque w-full rounded-2xl font-semibold flex items-center justify-center mt-3 active:scale-[0.98] transition"
