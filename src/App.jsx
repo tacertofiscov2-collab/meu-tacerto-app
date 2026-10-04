@@ -1,4 +1,4 @@
-﻿/* APP v11 — piloto: rotas novas /privacidade, /termos-de-uso e /como-emitir-nota (v10: rotas escondidas por chave voltam para o /dashboard) */
+﻿/* APP v12 — piloto: rota /como-pagar-das (v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard) */
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
@@ -47,11 +47,12 @@ import AuthCallback from "./pages/AuthCallback.jsx";
 import Privacidade from "./pages/Privacidade.jsx";
 import TermosDeUso from "./pages/TermosDeUso.jsx";
 import ComoEmitirNota from "./pages/ComoEmitirNota.jsx";
+import ComoPagarDas from "./pages/ComoPagarDas.jsx";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_NOTAS_FISCAIS,
   MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_ADICIONAR_MOVIMENTACOES,
   MOSTRAR_RESUMO_ANO, MOSTRAR_PREFERENCIAS, MOSTRAR_SOBRE, MOSTRAR_INACABADOS,
-  MOSTRAR_TUTORIAL_NOTA,
+  MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS,
 } from "./config/piloto.js";
 
 /* ===================================================================
@@ -156,6 +157,8 @@ export default function App() {
           <Route path="/termos-de-uso" element={<TermosDeUso />} />
           <Route path="/privacidade" element={<Privacidade />} />
           <Route path="/como-emitir-nota" element={<RotaComChave ligada={MOSTRAR_TUTORIAL_NOTA}><ComoEmitirNota /></RotaComChave>} />
+          {/* Piloto (v12): passo a passo do boleto do DAS */}
+          <Route path="/como-pagar-das" element={<RotaComChave ligada={MOSTRAR_TUTORIAL_DAS}><ComoPagarDas /></RotaComChave>} />
           <Route path="/excluir-conta" element={<ExcluirConta />} />
           <Route path="/perfil/informacoes-fiscais" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><InformacoesFiscais /></RotaComChave>} />
           <Route path="/historico" element={<Historico />} />
