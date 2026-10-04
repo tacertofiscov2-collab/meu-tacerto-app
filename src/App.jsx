@@ -1,4 +1,4 @@
-﻿/* APP v10 — piloto: rotas escondidas por chave (src/config/piloto.js) voltam para o /dashboard */
+﻿/* APP v11 — piloto: rotas novas /privacidade, /termos-de-uso e /como-emitir-nota (v10: rotas escondidas por chave voltam para o /dashboard) */
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
@@ -44,10 +44,14 @@ import AdicionarFaturamentoEnviar from "./pages/AdicionarFaturamentoEnviar.jsx";
 import AdicionarFaturamentoColar from "./pages/AdicionarFaturamentoColar.jsx";
 import ChatFiscoPagina from "./pages/ChatFiscoPagina.jsx";
 import AuthCallback from "./pages/AuthCallback.jsx";
+import Privacidade from "./pages/Privacidade.jsx";
+import TermosDeUso from "./pages/TermosDeUso.jsx";
+import ComoEmitirNota from "./pages/ComoEmitirNota.jsx";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_NOTAS_FISCAIS,
   MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_ADICIONAR_MOVIMENTACOES,
   MOSTRAR_RESUMO_ANO, MOSTRAR_PREFERENCIAS, MOSTRAR_SOBRE, MOSTRAR_INACABADOS,
+  MOSTRAR_TUTORIAL_NOTA,
 } from "./config/piloto.js";
 
 /* ===================================================================
@@ -148,6 +152,10 @@ export default function App() {
           <Route path="/faq" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><Faq /></RotaComChave>} />
           <Route path="/sobre" element={<RotaComChave ligada={MOSTRAR_SOBRE}><Sobre /></RotaComChave>} />
           <Route path="/termos" element={<Termos />} />
+          {/* Piloto (v11): documentos completos (o /termos e o resumo) */}
+          <Route path="/termos-de-uso" element={<TermosDeUso />} />
+          <Route path="/privacidade" element={<Privacidade />} />
+          <Route path="/como-emitir-nota" element={<RotaComChave ligada={MOSTRAR_TUTORIAL_NOTA}><ComoEmitirNota /></RotaComChave>} />
           <Route path="/excluir-conta" element={<ExcluirConta />} />
           <Route path="/perfil/informacoes-fiscais" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><InformacoesFiscais /></RotaComChave>} />
           <Route path="/historico" element={<Historico />} />

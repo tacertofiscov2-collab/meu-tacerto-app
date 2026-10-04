@@ -1,8 +1,11 @@
-﻿/* DASHBOARD v18 — piloto: sem botao do banco, sem chat no app (botao "Falar com o Fisco no WhatsApp"), balao do ano so acima do limite */
+﻿/* DASHBOARD v19 — piloto: card "Proximo DAS" com "Pagar no gov.br" + botao "Como emitir nota" no canto de cima (v18: sem banco, Fisco no WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { Gauge, ChevronRight, Send, X, Mic, Image as ImageIcon, Camera, FileText, Sparkles, BookOpen } from "lucide-react";
+import {
+  Gauge, ChevronRight, Send, X, Mic, Image as ImageIcon, Camera, FileText, Sparkles, BookOpen,
+  ExternalLink,
+} from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
@@ -10,13 +13,23 @@ import SimboloPluggy from "../components/SimboloPluggy.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
   LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO,
-  truncarNome,
+  truncarNome, DAS_2026, DAS_VENCIMENTO_DIA,
 } from "@/lib/fiscal";
 import { supabase } from "@/lib/supabase";
 import { listarConexoes, sincronizar, organizarPelasRegras } from "@/lib/openfinance";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_RESUMO_ANO, linkWhatsAppFisco,
+  MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA,
 } from "@/config/piloto";
+/* DASHBOARD v19 (04/10/2026) — EXTRAS DO PILOTO
+   - Card "Proximo DAS" logo abaixo do velocimetro (CardProximoDas,
+     chave MOSTRAR_CARD_DAS): data do proximo vencimento (dia 20) e o
+     valor do DAS de 2026 conforme o tipo de MEI, com o botao "Pagar no
+     gov.br" que abre o PGMEI. Nao grava nada no banco e nunca diz que
+     um DAS esta "em aberto".
+   - Botao pequeno "Como emitir nota" no canto de cima, no lugar do
+     botao do banco (BotaoComoEmitirNota, chave MOSTRAR_TUTORIAL_NOTA):
+     abre /como-emitir-nota. */
 /* DASHBOARD v18 (04/10/2026) — PILOTO com 30 MEI Caminhoneiros.
 
    Chaves em src/config/piloto.js (nada foi apagado):
@@ -1030,6 +1043,116 @@ function BotaoFiscoWhatsApp() {
   );
 }
 
+/* ===================================================================
+   CARD "PROXIMO DAS" (v19 — extra A do piloto)
+
+   O DAS de um mes vence no dia 20 do mes seguinte. Entao, ate o dia
+   20, o proximo vencimento e o deste mes; depois do dia 20, o do mes
+   que vem. (Fim de semana e feriado nao sao calculados aqui.)
+
+   VALOR: o perfil guarda so o TIPO de MEI, nao a atividade, e o
+   DAS_2026 (src/lib/fiscal.js) tem 3 valores por tipo. Mostramos o da
+   atividade mais comum de cada tipo (DAS_ATIVIDADE_PADRAO):
+     - MEI Caminhoneiro: frete intermunicipal/interestadual (o caso do
+       agregado de transportadora) = R$ 195,52. Frete so dentro da
+       cidade = R$ 199,52; produtos perigosos/mudancas = R$ 200,52.
+     - MEI comum: servicos = R$ 86,05 (comercio/industria R$ 82,05;
+       comercio e servicos R$ 87,05).
+   O valor exato aparece no PGMEI, no "Pagar no gov.br".
+   ⚠️ Valores de 2026: trocar em fiscal.js quando o salario minimo de
+   2027 sair.
+   =================================================================== */
+const LINK_PGMEI =
+  "https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao";
+
+const DAS_ATIVIDADE_PADRAO = {
+  MEI_CAMINHONEIRO: "intermunicipal_interestadual",
+  MEI: "servicos",
+};
+
+function proximoVencimentoDas(hoje = new Date()) {
+  const mes = hoje.getDate() <= DAS_VENCIMENTO_DIA ? hoje.getMonth() : hoje.getMonth() + 1;
+  return new Date(hoje.getFullYear(), mes, DAS_VENCIMENTO_DIA);
+}
+
+function CardProximoDas({ tipoMEI }) {
+  const vencimento = proximoVencimentoDas();
+  const dia = String(vencimento.getDate()).padStart(2, "0");
+  const mes = String(vencimento.getMonth() + 1).padStart(2, "0");
+  const tabela = DAS_2026[tipoMEI] || DAS_2026.MEI;
+  const valor = tabela[DAS_ATIVIDADE_PADRAO[tipoMEI] || DAS_ATIVIDADE_PADRAO.MEI];
+
+  return (
+    /* Sem icone a esquerda: com ele, "Proximo DAS: dia 20/10" ficava
+       cortado ao lado do botao na largura do iPhone. */
+    <div
+      className="card-tacerto shrink-0 rounded-2xl flex items-center"
+      style={{ marginTop: 12, padding: "11px 12px 11px 16px", gap: 12 }}
+    >
+      <div className="flex-1 min-w-0">
+        <p className="truncate" style={{ color: "var(--text-secondary)", fontSize: 13 }}>
+          Próximo DAS: dia {dia}/{mes}
+        </p>
+        {valor != null && (
+          <div style={{ marginTop: 2 }}>
+            <Valor tamanho="md">{valor}</Valor>
+          </div>
+        )}
+      </div>
+
+      <a
+        href={LINK_PGMEI}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="toque shrink-0 rounded-xl font-semibold flex items-center active:scale-[0.98] transition"
+        style={{
+          gap: 5,
+          padding: "9px 11px",
+          fontSize: 13.5,
+          backgroundColor: "rgba(34,197,94,0.16)",
+          border: "1px solid rgba(34,197,94,0.45)",
+          color: "var(--primary)",
+          textDecoration: "none",
+          whiteSpace: "nowrap",
+        }}
+      >
+        Pagar no gov.br
+        <ExternalLink size={14} strokeWidth={2.2} />
+      </a>
+    </div>
+  );
+}
+
+/* ===================================================================
+   BOTAO "COMO EMITIR NOTA" (v19 — extra C do piloto)
+   Pequeno, no canto de cima (onde ficava o botao do banco), na mesma
+   altura da linha do logo (34). Abre o passo a passo /como-emitir-nota.
+   =================================================================== */
+function BotaoComoEmitirNota() {
+  const navigate = useNavigate();
+  return (
+    <button
+      onClick={() => navigate("/como-emitir-nota", DE_DASHBOARD)}
+      className="toque shrink-0 flex items-center rounded-full"
+      style={{
+        height: 34,
+        gap: 6,
+        padding: "0 12px",
+        border: "1px solid var(--border)",
+        background: "none",
+      }}
+    >
+      <FileText size={15} strokeWidth={2.1} style={{ color: "var(--primary)" }} />
+      <span
+        className="font-semibold whitespace-nowrap"
+        style={{ fontSize: 13, color: "var(--text-secondary)" }}
+      >
+        Como emitir nota
+      </span>
+    </button>
+  );
+}
+
 /** Borda pulsando — acende e apaga suavemente, com halo em volta.
     Usada em verde no chat do Fisco e em vermelho no card do
     velocímetro quando o usuário passa dos 100% do limite.
@@ -1681,8 +1804,12 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Piloto (v18): sem Open Finance, sem o botao do banco */}
-          {MOSTRAR_OPEN_FINANCE && <BotaoBanco onSincronizou={verificarEntradas} />}
+          {/* Piloto: sem Open Finance, sem o botao do banco (v18); no lugar,
+              o botao pequeno do tutorial da nota (v19) */}
+          <div className="flex items-center shrink-0" style={{ gap: 8 }}>
+            {MOSTRAR_TUTORIAL_NOTA && <BotaoComoEmitirNota />}
+            {MOSTRAR_OPEN_FINANCE && <BotaoBanco onSincronizou={verificarEntradas} />}
+          </div>
         </header>
 
         <div className="px-5 pt-2 flex-1 flex flex-col min-h-0 relative">
@@ -1700,6 +1827,9 @@ export default function Dashboard() {
             }
             onExcedente={() => navigate("/regra-vinte", DE_DASHBOARD)}
           />
+
+          {/* Piloto (v19): proximo DAS, logo abaixo do velocimetro */}
+          {MOSTRAR_CARD_DAS && <CardProximoDas tipoMEI={tipoMEI} />}
 
           {/* Piloto (v18): o Fisco atende pelo WhatsApp */}
           {!MOSTRAR_CHAT_FISCO && <BotaoFiscoWhatsApp />}
