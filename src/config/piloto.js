@@ -109,11 +109,24 @@ export const MOSTRAR_INACABADOS = false;
 
 /* -------------------------------------------------------------------
    EXTRA A — CARD "PROXIMO DAS" NO DASHBOARD
-   true mostra, abaixo do velocimetro: "Proximo DAS: dia 20/MM" + valor
-   (DAS_2026 de src/lib/fiscal.js) + botao "Pagar no gov.br" (PGMEI).
-   Nao grava nada no banco.
+   true mostra, abaixo do velocimetro: "Proximo DAS: 20/MM" + valor
+   (DAS_2026 de src/lib/fiscal.js) + botao "Emitir boleto", que abre o
+   painel "Como voce quer pagar seu DAS?" (FolhaPagarDas). Tambem
+   controla o slide do DAS nas boas-vindas. Nao grava nada no banco.
    ------------------------------------------------------------------- */
 export const MOSTRAR_CARD_DAS = true;
+
+/* -------------------------------------------------------------------
+   TUTORIAL "COMO PAGAR O DAS" (v2)
+   true libera a pagina /como-pagar-das (passo a passo do PGMEI), a
+   opcao "Quero fazer sozinho" do painel do DAS e o item "Como pagar o
+   DAS" do Perfil.
+   ------------------------------------------------------------------- */
+export const MOSTRAR_TUTORIAL_DAS = true;
+
+/* Site do governo para gerar o boleto do DAS (PGMEI) */
+export const LINK_PGMEI =
+  "https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao";
 
 /* -------------------------------------------------------------------
    EXTRA C — TUTORIAL "COMO EMITIR SUA NOTA"

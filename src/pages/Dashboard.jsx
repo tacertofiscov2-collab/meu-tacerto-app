@@ -1,15 +1,15 @@
-﻿/* DASHBOARD v20 — botoes do WhatsApp com a mensagem pronta de MENSAGENS_WHATSAPP (nome e tipo de MEI preenchidos); v19: card Proximo DAS + Como emitir nota */
+﻿/* DASHBOARD v21 — card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import {
   Gauge, ChevronRight, Send, X, Mic, Image as ImageIcon, Camera, FileText, Sparkles, BookOpen,
-  ExternalLink,
 } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
 import SimboloPluggy from "../components/SimboloPluggy.jsx";
+import FolhaPagarDas from "../components/FolhaPagarDas.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
   LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO,
@@ -1059,13 +1059,15 @@ function BotaoFiscoWhatsApp({ dadosWhats }) {
        cidade = R$ 199,52; produtos perigosos/mudancas = R$ 200,52.
      - MEI comum: servicos = R$ 86,05 (comercio/industria R$ 82,05;
        comercio e servicos R$ 87,05).
-   O valor exato aparece no PGMEI, no "Pagar no gov.br".
+   O valor exato aparece no PGMEI (painel "Emitir boleto").
+
+   v21: texto "Proximo DAS: 20/10" (sem o "dia") numa linha so, sem
+   reticencias (cabe ao lado do botao num iPhone de 375px). O botao
+   virou "Emitir boleto" e abre o painel FolhaPagarDas (boleto todo
+   mes no WhatsApp, Fisco ajuda agora, fazer sozinho, site do governo).
    ⚠️ Valores de 2026: trocar em fiscal.js quando o salario minimo de
    2027 sair.
    =================================================================== */
-const LINK_PGMEI =
-  "https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao";
-
 const DAS_ATIVIDADE_PADRAO = {
   MEI_CAMINHONEIRO: "intermunicipal_interestadual",
   MEI: "servicos",
@@ -1076,7 +1078,7 @@ function proximoVencimentoDas(hoje = new Date()) {
   return new Date(hoje.getFullYear(), mes, DAS_VENCIMENTO_DIA);
 }
 
-function CardProximoDas({ tipoMEI }) {
+function CardProximoDas({ tipoMEI, onEmitirBoleto }) {
   const vencimento = proximoVencimentoDas();
   const dia = String(vencimento.getDate()).padStart(2, "0");
   const mes = String(vencimento.getMonth() + 1).padStart(2, "0");
@@ -1091,8 +1093,8 @@ function CardProximoDas({ tipoMEI }) {
       style={{ marginTop: 12, padding: "11px 12px 11px 16px", gap: 12 }}
     >
       <div className="flex-1 min-w-0">
-        <p className="truncate" style={{ color: "var(--text-secondary)", fontSize: 13 }}>
-          Próximo DAS: dia {dia}/{mes}
+        <p className="whitespace-nowrap" style={{ color: "var(--text-secondary)", fontSize: 13 }}>
+          Próximo DAS: {dia}/{mes}
         </p>
         {valor != null && (
           <div style={{ marginTop: 2 }}>
@@ -1101,10 +1103,9 @@ function CardProximoDas({ tipoMEI }) {
         )}
       </div>
 
-      <a
-        href={LINK_PGMEI}
-        target="_blank"
-        rel="noopener noreferrer"
+      <button
+        type="button"
+        onClick={onEmitirBoleto}
         className="toque shrink-0 rounded-xl font-semibold flex items-center active:scale-[0.98] transition"
         style={{
           gap: 5,
@@ -1113,13 +1114,11 @@ function CardProximoDas({ tipoMEI }) {
           backgroundColor: "rgba(34,197,94,0.16)",
           border: "1px solid rgba(34,197,94,0.45)",
           color: "var(--primary)",
-          textDecoration: "none",
           whiteSpace: "nowrap",
         }}
       >
-        Pagar no gov.br
-        <ExternalLink size={14} strokeWidth={2.2} />
-      </a>
+        Emitir boleto
+      </button>
     </div>
   );
 }
@@ -1751,6 +1750,8 @@ export default function Dashboard() {
   const saudacao = saudacaoPorHora();
 
   const [caixaExpandida, setCaixaExpandida] = useState(false);
+  // v21: painel "Como voce quer pagar seu DAS?" (botao "Emitir boleto")
+  const [folhaDas, setFolhaDas] = useState(false);
 
   // Paineis dos baloes: null (fechado), "anual" (card A -> Tirar duvidas)
   // ou "media" (card B -> explicacao da media limite)
@@ -1832,7 +1833,9 @@ export default function Dashboard() {
           />
 
           {/* Piloto (v19): proximo DAS, logo abaixo do velocimetro */}
-          {MOSTRAR_CARD_DAS && <CardProximoDas tipoMEI={tipoMEI} />}
+          {MOSTRAR_CARD_DAS && (
+            <CardProximoDas tipoMEI={tipoMEI} onEmitirBoleto={() => setFolhaDas(true)} />
+          )}
 
           {/* Piloto (v18): o Fisco atende pelo WhatsApp */}
           {!MOSTRAR_CHAT_FISCO && <BotaoFiscoWhatsApp dadosWhats={dadosWhats} />}
@@ -1941,6 +1944,10 @@ export default function Dashboard() {
           navigate("/regra-vinte", DE_DASHBOARD);
         }}
       />
+
+      {MOSTRAR_CARD_DAS && (
+        <FolhaPagarDas aberto={folhaDas} onFechar={() => setFolhaDas(false)} />
+      )}
 
       <PainelMediaLimite
         aberto={painelDuvidas === "media"}
