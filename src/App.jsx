@@ -1,5 +1,5 @@
-﻿/* APP v9 — rota /das (Historico de DAS, aberta pelo Perfil) */
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+﻿/* APP v10 — piloto: rotas escondidas por chave (src/config/piloto.js) voltam para o /dashboard */
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
 import TecladoVisivel from "./components/TecladoVisivel.jsx";
@@ -44,6 +44,23 @@ import AdicionarFaturamentoEnviar from "./pages/AdicionarFaturamentoEnviar.jsx";
 import AdicionarFaturamentoColar from "./pages/AdicionarFaturamentoColar.jsx";
 import ChatFiscoPagina from "./pages/ChatFiscoPagina.jsx";
 import AuthCallback from "./pages/AuthCallback.jsx";
+import {
+  MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_NOTAS_FISCAIS,
+  MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_ADICIONAR_MOVIMENTACOES,
+  MOSTRAR_RESUMO_ANO, MOSTRAR_PREFERENCIAS, MOSTRAR_SOBRE, MOSTRAR_INACABADOS,
+} from "./config/piloto.js";
+
+/* ===================================================================
+   PILOTO (04/10/2026) — ROTAS ESCONDIDAS
+
+   O que nao e usado no piloto continua aqui, mas atras de uma chave de
+   src/config/piloto.js. Com a chave desligada, quem abrir o endereco
+   direto (ex.: digitando /saidas) volta para o /dashboard — nunca fica
+   tela branca. Para religar, e so trocar a chave para true.
+   =================================================================== */
+function RotaComChave({ ligada, children }) {
+  return ligada ? children : <Navigate to="/dashboard" replace />;
+}
 
 /* ===================================================================
    NAVEGACAO POR GESTO - DESATIVADA DE PROPOSITO
@@ -113,42 +130,44 @@ export default function App() {
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/esqueci-senha" element={<EsqueciSenha />} />
-          <Route path="/cadastro-obrigatorio" element={<CadastroObrigatorio />} />
+          <Route path="/cadastro-obrigatorio" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><CadastroObrigatorio /></RotaComChave>} />
 
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/perfil" element={<Perfil />} />
 
           <Route path="/editar-perfil" element={<EditarPerfil />} />
-          <Route path="/preferencias" element={<Preferencias />} />
+          <Route path="/preferencias" element={<RotaComChave ligada={MOSTRAR_PREFERENCIAS}><Preferencias /></RotaComChave>} />
           <Route path="/alterar-senha" element={<AlterarSenha />} />
           <Route path="/alterar-whatsapp" element={<AlterarWhatsapp />} />
-          <Route path="/conectar-banco" element={<ConectarBanco />} />
-          <Route path="/conectar-banco/escolher" element={<EscolherBanco />} />
-          <Route path="/conectar-banco/retorno" element={<RetornoBanco />} />
+          <Route path="/conectar-banco" element={<RotaComChave ligada={MOSTRAR_OPEN_FINANCE}><ConectarBanco /></RotaComChave>} />
+          <Route path="/conectar-banco/escolher" element={<RotaComChave ligada={MOSTRAR_OPEN_FINANCE}><EscolherBanco /></RotaComChave>} />
+          <Route path="/conectar-banco/retorno" element={<RotaComChave ligada={MOSTRAR_OPEN_FINANCE}><RetornoBanco /></RotaComChave>} />
           <Route path="/conferir-entradas" element={<ConferirEntradas />} />
-          <Route path="/saidas" element={<Saidas />} />
-          <Route path="/das" element={<HistoricoDas />} />
-          <Route path="/faq" element={<Faq />} />
-          <Route path="/sobre" element={<Sobre />} />
+          <Route path="/saidas" element={<RotaComChave ligada={MOSTRAR_SAIDAS}><Saidas /></RotaComChave>} />
+          <Route path="/das" element={<RotaComChave ligada={MOSTRAR_HISTORICO_DAS}><HistoricoDas /></RotaComChave>} />
+          <Route path="/faq" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><Faq /></RotaComChave>} />
+          <Route path="/sobre" element={<RotaComChave ligada={MOSTRAR_SOBRE}><Sobre /></RotaComChave>} />
           <Route path="/termos" element={<Termos />} />
           <Route path="/excluir-conta" element={<ExcluirConta />} />
-          <Route path="/perfil/informacoes-fiscais" element={<InformacoesFiscais />} />
+          <Route path="/perfil/informacoes-fiscais" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><InformacoesFiscais /></RotaComChave>} />
           <Route path="/historico" element={<Historico />} />
-          <Route path="/notas-fiscais" element={<HistoricoNotas />} />
-          <Route path="/perfil/resumo" element={<ResumoPerfil />} />
-          <Route path="/alertas" element={<Alertas />} />
+          <Route path="/notas-fiscais" element={<RotaComChave ligada={MOSTRAR_NOTAS_FISCAIS}><HistoricoNotas /></RotaComChave>} />
+          <Route path="/perfil/resumo" element={<RotaComChave ligada={MOSTRAR_RESUMO_ANO}><ResumoPerfil /></RotaComChave>} />
+          <Route path="/alertas" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><Alertas /></RotaComChave>} />
           <Route path="/regra-vinte" element={<RegraVinte />} />
-          <Route path="/fisco" element={<ChatFiscoPagina />} />
+          <Route path="/fisco" element={<RotaComChave ligada={MOSTRAR_CHAT_FISCO}><ChatFiscoPagina /></RotaComChave>} />
 
           <Route path="/lancar" element={<Lancar />} />
           <Route path="/lancar/limite-atingido" element={<LimiteAtingido />} />
-          <Route path="/velocimetro" element={<Velocimetro />} />
-          <Route path="/dev/simulador" element={<DevSimulador />} />
-          <Route path="/adicionar-faturamento" element={<AdicionarFaturamento />} />
-          <Route path="/adicionar-faturamento/digitar" element={<AdicionarFaturamentoDigitar />} />
-          <Route path="/adicionar-faturamento/enviar" element={<AdicionarFaturamentoEnviar />} />
-          <Route path="/adicionar-faturamento/colar" element={<AdicionarFaturamentoColar />} />
-          <Route path="*" element={<EmConstrucao />} />
+          <Route path="/velocimetro" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><Velocimetro /></RotaComChave>} />
+          <Route path="/dev/simulador" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><DevSimulador /></RotaComChave>} />
+          <Route path="/adicionar-faturamento" element={<RotaComChave ligada={MOSTRAR_ADICIONAR_MOVIMENTACOES}><AdicionarFaturamento /></RotaComChave>} />
+          <Route path="/adicionar-faturamento/digitar" element={<RotaComChave ligada={MOSTRAR_ADICIONAR_MOVIMENTACOES}><AdicionarFaturamentoDigitar /></RotaComChave>} />
+          <Route path="/adicionar-faturamento/enviar" element={<RotaComChave ligada={MOSTRAR_ADICIONAR_MOVIMENTACOES}><AdicionarFaturamentoEnviar /></RotaComChave>} />
+          <Route path="/adicionar-faturamento/colar" element={<RotaComChave ligada={MOSTRAR_ADICIONAR_MOVIMENTACOES}><AdicionarFaturamentoColar /></RotaComChave>} />
+          {/* Endereco desconhecido: no piloto volta para o /dashboard em vez
+              da tela "Em construcao" (MOSTRAR_INACABADOS). */}
+          <Route path="*" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><EmConstrucao /></RotaComChave>} />
         </Routes>
       </TransicaoTela>
       <Toaster
