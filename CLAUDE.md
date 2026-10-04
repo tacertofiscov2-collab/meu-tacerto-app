@@ -170,6 +170,16 @@ O projeto **não tem backup automático**. Por isso:
 
 ## Onde estamos (atualizar ao fim de cada sessão)
 
+- **04/10: branch `piloto-simplificado`** (piloto com 30 MEI
+  Caminhoneiros, 6 semanas, canal principal = WhatsApp). O que não é do
+  piloto foi ESCONDIDO (nada apagado) pelas chaves de
+  **`src/config/piloto.js`**; rota escondida volta para o `/dashboard`.
+  Novos: pergunta "Quanto você já faturou" no Onboarding (vira
+  lançamento "Faturamento estimado até hoje"), card "Próximo DAS",
+  `/termos-de-uso`, `/privacidade`, `/como-emitir-nota`, botão "Falar com
+  o Fisco no WhatsApp" (`WHATSAPP_FISCO` provisório — trocar).
+  `PLUGGY_ATIVO = false`. "Sair da conta" agora desloga de verdade.
+  A `main` não foi mexida.
 - `main` com **33 commits sem push** (o Fernando decide quando
   publicar). Produção ainda em `f1832bb`.
 - 03/10 (fim): advisors de segurança rodados; as funções-gatilho
