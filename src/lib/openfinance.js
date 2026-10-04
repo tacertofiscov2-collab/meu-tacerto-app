@@ -1,4 +1,4 @@
-/* OPENFINANCE v8 — SAIDAS: guardadas sozinhas ao sincronizar + lancar saida a mao + segmento do IR */
+/* OPENFINANCE v9 — piloto: PLUGGY_ATIVO = false (antes true); o resto igual a v8 */
 import { supabase } from "@/lib/supabase";
 
 /* ===================================================================
@@ -34,8 +34,13 @@ import { supabase } from "@/lib/supabase";
    =================================================================== */
 
 /* true  = fala com a Pluggy de verdade (via Edge Function `pluggy`).
-   false = devolve os dados falsos abaixo. */
-export const PLUGGY_ATIVO = true;
+   false = devolve os dados falsos abaixo.
+
+   v9 (04/10/2026, PILOTO): DESLIGADA. No piloto nao ha conexao com
+   banco: as telas do banco estao escondidas por MOSTRAR_OPEN_FINANCE
+   (src/config/piloto.js) e nada no app chama `sincronizar`. Ao religar
+   o Open Finance, troque as DUAS chaves juntas. */
+export const PLUGGY_ATIVO = false;
 
 /* -------------------------------------------------------------------
    DADOS FALSOS

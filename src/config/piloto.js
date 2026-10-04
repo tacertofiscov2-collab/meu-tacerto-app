@@ -1,0 +1,136 @@
+/* PILOTO v1 — chaves de liga/desliga do piloto com 30 MEI Caminhoneiros (6 semanas) */
+
+/* ===================================================================
+   POR QUE ESTE ARQUIVO EXISTE (04/10/2026)
+
+   No piloto o canal principal e o WhatsApp: todo dia as 21h o Fisco
+   pergunta o que a pessoa recebeu, e as respostas sao lancadas pela
+   equipe no Supabase. O app serve para ver o velocimetro e os
+   lancamentos. Por isso ele fica SIMPLES, so com o basico.
+
+   NADA FOI APAGADO. O que nao e usado no piloto foi ESCONDIDO por
+   estas chaves. Para religar qualquer coisa: troque false por true,
+   salve e pronto. Cada chave diz o que ela religa.
+
+   Rota escondida aberta direto pela URL volta para o /dashboard (ver
+   RotaComChave em src/App.jsx) — nunca fica tela branca.
+   =================================================================== */
+
+/* -------------------------------------------------------------------
+   OPEN FINANCE (Pluggy)
+   false esconde: o botao do banco no canto do Dashboard (e a
+   sincronizacao que ele faz ao abrir o app), as telas /conectar-banco,
+   /conectar-banco/escolher e /conectar-banco/retorno, e o slide do
+   banco nas boas-vindas.
+   A conferencia "E faturamento?" (/conferir-entradas) CONTINUA: ela so
+   le a tabela `entradas`, nao chama a Pluggy.
+   ⚠️ AO RELIGAR: troque tambem PLUGGY_ATIVO para true em
+   src/lib/openfinance.js. Com PLUGGY_ATIVO = false o arquivo devolve
+   DADOS FALSOS de teste se alguem sincronizar.
+   ------------------------------------------------------------------- */
+export const MOSTRAR_OPEN_FINANCE = false;
+
+/* -------------------------------------------------------------------
+   CHAT DO FISCO DENTRO DO APP
+   false esconde: a pagina /fisco (ChatFiscoUI, historico de conversas,
+   menu de anexos), a barra "Pergunte ao Fisco..." do Dashboard, o
+   painel "Tirar duvidas" (o balao "?" do velocimetro do ano) e o botao
+   "Nao entendi, falar com o Fisco" da media limite.
+   No lugar entra o botao "Falar com o Fisco no WhatsApp".
+   Com false, o balao do velocimetro do ano so aparece quando passa do
+   limite (+N%) e abre a tela da regra dos 20%.
+   ------------------------------------------------------------------- */
+export const MOSTRAR_CHAT_FISCO = false;
+
+/* -------------------------------------------------------------------
+   NOTAS FISCAIS (historico e lancar nota)
+   false esconde: a tela /notas-fiscais e o item "Historico de notas
+   fiscais" do Perfil.
+   ------------------------------------------------------------------- */
+export const MOSTRAR_NOTAS_FISCAIS = false;
+
+/* -------------------------------------------------------------------
+   SAIDAS
+   false esconde: a tela /saidas e o item "Historico de saidas" do
+   Perfil. (Sem Open Finance a lista ficaria vazia.)
+   ------------------------------------------------------------------- */
+export const MOSTRAR_SAIDAS = false;
+
+/* -------------------------------------------------------------------
+   HISTORICO DE DAS (grade de 12 meses com comprovantes)
+   false esconde: a tela /das e o item "Historico de DAS" do Perfil.
+   (O card "Proximo DAS" do Dashboard tem chave propria, abaixo.)
+   ------------------------------------------------------------------- */
+export const MOSTRAR_HISTORICO_DAS = false;
+
+/* -------------------------------------------------------------------
+   ADICIONAR MOVIMENTACOES
+   false esconde: /adicionar-faturamento (e /digitar, /enviar, /colar)
+   e o item "Adicionar movimentacoes" do Perfil. Lancar a mao continua
+   pelo botao "+" da barra de baixo.
+   ------------------------------------------------------------------- */
+export const MOSTRAR_ADICIONAR_MOVIMENTACOES = false;
+
+/* -------------------------------------------------------------------
+   RESUMO DO ANO (com saidas e Imposto de Renda)
+   false esconde: /perfil/resumo e o item "Resumo de <ano>" do Perfil.
+   Com false, tocar em "Faturado"/"Limite" no velocimetro abre o
+   Historico de entradas (a lista dos lancamentos).
+   ------------------------------------------------------------------- */
+export const MOSTRAR_RESUMO_ANO = false;
+
+/* -------------------------------------------------------------------
+   PREFERENCIAS
+   false esconde: /preferencias e o item do Perfil. A tela tem chaves
+   de "Alertas do Fisco" e "Lembrete do DAS" que ainda nao fazem nada.
+   ------------------------------------------------------------------- */
+export const MOSTRAR_PREFERENCIAS = false;
+
+/* -------------------------------------------------------------------
+   SOBRE O TACERTO
+   false esconde: /sobre e o item do Perfil. O texto ainda fala em
+   "educacao fiscal" e lista "calculadoras e calendario fiscal", que o
+   app nao tem.
+   ------------------------------------------------------------------- */
+export const MOSTRAR_SOBRE = false;
+
+/* -------------------------------------------------------------------
+   TELAS E TEXTOS INACABADOS (orfaos, de teste ou que prometem algo
+   que o app ainda nao faz)
+   false esconde: /faq, /alertas, /velocimetro, /dev/simulador,
+   /perfil/informacoes-fiscais, /cadastro-obrigatorio; a tela "Em
+   construcao" de endereco desconhecido (vira /dashboard); o cartao
+   "Comece com o velocimetro certo" do Historico de entradas (o botao
+   dele nao salvava nada); e o aviso da Excluir conta que manda usar
+   "Excluir todos os lancamentos" (opcao que nao existe).
+   ------------------------------------------------------------------- */
+export const MOSTRAR_INACABADOS = false;
+
+/* -------------------------------------------------------------------
+   EXTRA A — CARD "PROXIMO DAS" NO DASHBOARD
+   true mostra, abaixo do velocimetro: "Proximo DAS: dia 20/MM" + valor
+   (DAS_2026 de src/lib/fiscal.js) + botao "Pagar no gov.br" (PGMEI).
+   Nao grava nada no banco.
+   ------------------------------------------------------------------- */
+export const MOSTRAR_CARD_DAS = true;
+
+/* -------------------------------------------------------------------
+   EXTRA C — TUTORIAL "COMO EMITIR SUA NOTA"
+   true mostra o botao pequeno "Como emitir nota" no Dashboard e libera
+   a pagina /como-emitir-nota.
+   ------------------------------------------------------------------- */
+export const MOSTRAR_TUTORIAL_NOTA = true;
+
+/* -------------------------------------------------------------------
+   WHATSAPP DO FISCO
+   So numeros: 55 + DDD + numero.
+   ⚠️ TROCAR PELO NUMERO REAL (este e provisorio).
+   ------------------------------------------------------------------- */
+export const WHATSAPP_FISCO = "5537999999999";
+
+/* Link que abre a conversa com o Fisco no WhatsApp. Com `texto`, a
+   mensagem ja chega escrita (a pessoa so toca em enviar). */
+export function linkWhatsAppFisco(texto) {
+  const base = `https://wa.me/${WHATSAPP_FISCO}`;
+  return texto ? `${base}?text=${encodeURIComponent(texto)}` : base;
+}
