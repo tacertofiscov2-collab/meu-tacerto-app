@@ -1,4 +1,4 @@
-/* ONBOARDING v6 — sem o aviso "Confira" no tipo de MEI (volta ao que era) + acentos nos textos */
+/* ONBOARDING v7 — piloto: MEI Caminhoneiro primeiro e ja marcado + nova etapa "Quanto voce ja faturou" (faixa, valor digitado ou "Nao sei agora") */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import {
@@ -11,6 +11,54 @@ import { LIMITES_ANUAIS, limiteProporcional, LIMITE_NOME_INPUT } from "@/lib/fis
 import SeletorMesAno from "@/components/SeletorMesAno";
 import Valor from "@/components/Valor";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
+import { useAppState } from "@/context/AppStateContext";
+
+/* ===================================================================
+   ONBOARDING v7 (04/10/2026) — PILOTO COM MEI CAMINHONEIROS
+
+   1) TIPO DE MEI: "MEI Caminhoneiro" vem PRIMEIRO e JA MARCADO (e o
+      publico do piloto). "MEI (outras atividades)" continua ali, e so
+      tocar. Sem aviso nenhum (o "Confira" segue rejeitado, ver v6).
+
+   2) ETAPA NOVA (step 4), depois da data de abertura:
+      "Quanto voce mais ou menos ja faturou em <ano>?"
+        - faixas para tocar (FAIXAS_FATURAMENTO): grava o PONTO MEDIO
+          da faixa. "Mais de R$ 200 mil" nao tem fim: grava 225 mil
+          (meio do caminho entre 200 mil e 250 mil, perto do limite do
+          caminhoneiro).
+        - "Digitar valor": grava o valor digitado (em reais, sem
+          centavos).
+        - "Nao sei agora": pula, nao grava nada.
+      SEM MUDAR O BANCO: vira um LANCAMENTO normal na tabela
+      `lancamentos` que ja existe, com a descricao DESCRICAO_ESTIMADO e
+      a data de hoje, pelo mesmo adicionarLancamento do botao "+". Por
+      isso o velocimetro ja mostra o valor ao abrir o Dashboard, e a
+      pessoa pode editar ou apagar depois no Historico de entradas.
+      Se ja existir um lancamento com essa descricao (onboarding feito
+      de novo), nao grava outro — nao conta em dobro.
+      O step 4 rola e ancora no topo (temCampoDeTexto), porque o
+      "Digitar valor" abre o teclado.
+
+   3) O "Comecar a usar" saiu do step 3 (virou "Continuar") e foi para
+      o step 4. Os botoes finais travam enquanto salva (toque duplo nao
+      grava duas vezes).
+   =================================================================== */
+
+/* Descricao do lancamento do faturamento estimado (aparece no
+   Historico de entradas). */
+const DESCRICAO_ESTIMADO = "Faturamento estimado até hoje";
+
+/* Faixas do step 4. `valor` = o que vai para o velocimetro. */
+const FAIXAS_FATURAMENTO = [
+  { id: "ate50", rotulo: "Até R$ 50 mil", valor: 25000 },
+  { id: "50a100", rotulo: "R$ 50 a 100 mil", valor: 75000 },
+  { id: "100a150", rotulo: "R$ 100 a 150 mil", valor: 125000 },
+  { id: "150a200", rotulo: "R$ 150 a 200 mil", valor: 175000 },
+  { id: "mais200", rotulo: "Mais de R$ 200 mil", valor: 225000 },
+];
+const FAIXA_DIGITAR = "digitar";
+/* Ate 9.999.999 (7 digitos), dentro do teto de um lancamento. */
+const MAX_DIGITOS_ESTIMADO = 7;
 
 /* ===================================================================
    ONBOARDING v6 (26/09/2026)
@@ -83,7 +131,7 @@ function telefoneValido(valor) {
 function Progress({ step }) {
   return (
     <div className="flex justify-center gap-2 mb-5">
-      {[1, 2, 3].map((s) => (
+      {[1, 2, 3, 4].map((s) => (
         <div
           key={s}
           className="h-1.5 rounded-full transition-all"
@@ -109,10 +157,17 @@ export default function Onboarding() {
   const [telefone, setTelefone] = useState("");
   const [codigo, setCodigo] = useState("");
   const [nome, setNome] = useState("");
-  const [tipoMei, setTipoMei] = useState("");
+  /* v7: o piloto e de MEI Caminhoneiros — ja vem marcado */
+  const [tipoMei, setTipoMei] = useState("MEI_CAMINHONEIRO");
   const [meiEsseAno, setMeiEsseAno] = useState(null);
   const [mesMei, setMesMei] = useState("");
   const [seletorMes, setSeletorMes] = useState(false);
+  /* v7: step 4 (faturamento estimado) */
+  const [faixaFat, setFaixaFat] = useState(null);
+  const [valorDigitado, setValorDigitado] = useState("");
+  const [finalizando, setFinalizando] = useState(false);
+
+  const { lancamentos, adicionarLancamento, setModoSimulacao } = useAppState();
 
   const inputCodigoRef = useRef(null);
 
@@ -146,8 +201,16 @@ export default function Onboarding() {
       ? limiteProporcional(tipoCanonico, parseInt(mesMei), anoAtual, anoAtual)
       : limiteCheio;
 
+  /* v7: valor que o step 4 vai gravar (0 = nada escolhido ainda) */
+  const valorEstimado =
+    faixaFat === FAIXA_DIGITAR
+      ? Number(valorDigitado || 0)
+      : FAIXAS_FATURAMENTO.find((f) => f.id === faixaFat)?.valor || 0;
+
   const progressStep =
-    step === 3
+    step === 4
+      ? faixaFat && valorEstimado > 0 ? 4 : 3
+      : step === 3
       ? meiEsseAno === false || (meiEsseAno === true && mesMei) ? 3 : 2
       : step === 0 || step === "verificar" ? 1 : step;
 
@@ -200,7 +263,11 @@ export default function Onboarding() {
     setStep(1);
   }
 
-  async function handleFinalizar() {
+  /* v7: `estimado` = faturamento do ano informado no step 4 (0 = "Nao
+     sei agora"). Vira um lancamento normal — ver o topo do arquivo. */
+  async function handleFinalizar(estimado = 0) {
+    if (finalizando) return;
+    setFinalizando(true);
     salvarPerfilLocal({
       nome,
       perfil: tipoCanonico.toLowerCase(),
@@ -212,6 +279,16 @@ export default function Onboarding() {
       mesAbertura: meiEsseAno && mesMei ? parseInt(mesMei) : null,
       anoAbertura: meiEsseAno && mesMei ? anoAtual : null,
     });
+    const jaTemEstimado = lancamentos.some((l) => l.descricao === DESCRICAO_ESTIMADO);
+    if (estimado > 0 && !jaTemEstimado) {
+      // Igual ao "+": sai do modo simulacao para o velocimetro somar os lancamentos
+      setModoSimulacao(false);
+      adicionarLancamento({
+        descricao: DESCRICAO_ESTIMADO,
+        valor: estimado,
+        data: new Date().toISOString(),
+      });
+    }
     try {
       const { data } = await supabase.auth.getUser();
       if (data.user) {
@@ -247,7 +324,8 @@ export default function Onboarding() {
 
      Os steps 2 e 3 sao escolhas por botao — nao abrem teclado, entao
      continuam centralizados e travados, como sempre. */
-  const temCampoDeTexto = step === 0 || step === 1 || isVerificar;
+  /* v7: o step 4 tambem — o "Digitar valor" abre o teclado. */
+  const temCampoDeTexto = step === 0 || step === 1 || step === 4 || isVerificar;
 
   return (
     <div
@@ -518,11 +596,12 @@ export default function Onboarding() {
               </h1>
 
               <div className="space-y-2.5">
+                {/* v7: Caminhoneiro primeiro (publico do piloto) */}
                 {[
-                  { v: "MEI", Icon: Briefcase, titulo: "MEI (outras atividades)",
-                    limite: LIMITES_ANUAIS.MEI },
                   { v: "MEI_CAMINHONEIRO", Icon: Truck, titulo: "MEI Caminhoneiro",
                     limite: LIMITES_ANUAIS.MEI_CAMINHONEIRO },
+                  { v: "MEI", Icon: Briefcase, titulo: "MEI (outras atividades)",
+                    limite: LIMITES_ANUAIS.MEI },
                 ].map((o) => {
                   const sel = tipoMei === o.v;
                   const Ico = o.Icon;
@@ -680,14 +759,101 @@ export default function Onboarding() {
                 )}
               </div>
 
+              {/* v7: segue para o faturamento estimado (step 4) */}
               <button
-                onClick={handleFinalizar}
+                onClick={() => setStep(4)}
                 disabled={meiEsseAno === null || (meiEsseAno === true && !mesMei)}
+                className={btnPrincipalClasse}
+                style={btnPrincipal}
+              >
+                Continuar
+                <ArrowRight size={18} strokeWidth={2.4} />
+              </button>
+            </div>
+          )}
+
+          {/* ====== STEP 4: FATURAMENTO ESTIMADO (v7) ====== */}
+          {step === 4 && (
+            <div className="shrink-0">
+              <h1
+                className="text-2xl font-bold text-center mb-5"
+                style={{ color: "var(--text)" }}
+              >
+                Quanto você mais ou menos já faturou em {anoAtual}?
+              </h1>
+
+              {/* Mesmo padrao de escolha do step 3 (grade de 2) */}
+              <div className="grid grid-cols-2 gap-2.5">
+                {[
+                  ...FAIXAS_FATURAMENTO,
+                  { id: FAIXA_DIGITAR, rotulo: "Digitar valor" },
+                ].map((f) => {
+                  const sel = faixaFat === f.id;
+                  return (
+                    <button
+                      key={f.id}
+                      onClick={() => setFaixaFat(f.id)}
+                      className="py-3 px-2 rounded-xl text-sm font-medium inline-flex items-center justify-center text-center"
+                      style={{
+                        ...estiloCard(sel, faixaFat !== null),
+                        color: "var(--text)",
+                        minHeight: 48,
+                      }}
+                    >
+                      {f.rotulo}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div style={{ minHeight: 76 }} className="pt-3">
+                {faixaFat === FAIXA_DIGITAR && (
+                  <div className="relative">
+                    <span
+                      className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold"
+                      style={{ color: "var(--text-secondary)", fontSize: 16 }}
+                    >
+                      R$
+                    </span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      autoFocus
+                      aria-label="Valor aproximado faturado no ano"
+                      placeholder="0"
+                      value={valorDigitado ? Number(valorDigitado).toLocaleString("pt-BR") : ""}
+                      onChange={(e) =>
+                        setValorDigitado(
+                          e.target.value.replace(/\D/g, "").replace(/^0+/, "").slice(0, MAX_DIGITOS_ESTIMADO),
+                        )
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && valorEstimado > 0) handleFinalizar(valorEstimado);
+                      }}
+                      className="campo-tacerto w-full pl-12 pr-4 py-3.5 rounded-xl font-semibold focus:outline-none placeholder:opacity-50"
+                      style={{ ...fieldStyle, fontSize: 16 }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={() => handleFinalizar(valorEstimado)}
+                disabled={finalizando || valorEstimado <= 0}
                 className={btnPrincipalClasse}
                 style={btnPrincipal}
               >
                 Começar a usar
                 <ArrowRight size={18} strokeWidth={2.4} />
+              </button>
+
+              <button
+                onClick={() => handleFinalizar(0)}
+                disabled={finalizando}
+                className="w-full text-center text-sm pt-4 disabled:opacity-40"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Não sei agora
               </button>
             </div>
           )}
