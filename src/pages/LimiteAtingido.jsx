@@ -1,3 +1,4 @@
+/* LIMITEATINGIDO v2 — botao "Cadastrar agora" em contorno verde (botao-confirmar), sem verde cheio */
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Sparkles, CheckCircle2 } from "lucide-react";
 
@@ -69,7 +70,7 @@ export default function LimiteAtingido() {
           <div className="w-full mt-8 space-y-3">
             <button
               onClick={() => navigate("/cadastro")}
-              className="w-full py-3.5 rounded-xl font-medium text-sm hover:opacity-90"
+              className="botao-confirmar w-full py-3.5 rounded-xl font-medium text-sm hover:opacity-90"
               style={{
                 backgroundColor: "var(--primary)",
                 color: "var(--primary-contrast)",

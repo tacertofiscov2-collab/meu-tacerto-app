@@ -1,4 +1,4 @@
-﻿/* PERFIL v11 — sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes) */
+﻿/* PERFIL v12 — sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
@@ -41,6 +41,10 @@ import {
    - Letras maiores: ListaSimples v2 e valores em 15px.
    =================================================================== */
 const MOSTRAR_NOME_NO_TOPO = false;
+
+/* v12 (pedido do Fernando): a barra de baixo (Inicio, +, Perfil) some no
+   Perfil. Volta-se ao Inicio pela setinha do topo ou pelo gesto. */
+const MOSTRAR_BARRA_NO_PERFIL = false;
 
 /* Preto | Branco, na propria linha do Tema */
 function SeletorTema({ tema, onEscolher }) {
@@ -142,6 +146,14 @@ export default function Perfil() {
   const app = useAppState();
   const { resetarConta, tipoMEI, mesAnoAbertura, limiteAtual, faturamentoAtual, email } = app;
   const [saindo, setSaindo] = useState(false);
+
+  /* v12: sem a barra de baixo, a setinha e o caminho de volta. Se o
+     Perfil foi aberto de dentro do app, volta uma tela; se foi aberto
+     direto (link/recarregou), vai para o Inicio. */
+  function voltarDoPerfil() {
+    if ((window.history.state?.idx ?? 0) > 0) navigate(-1);
+    else navigate("/dashboard", { replace: true });
+  }
 
   /* v11: tema Preto/Branco. "auto" (de versoes antigas) vira o que
      estiver valendo agora. */
@@ -267,10 +279,10 @@ export default function Perfil() {
     >
       <div
         className="conteudo-rolavel hide-scrollbar"
-        style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: MOSTRAR_BARRA_NO_PERFIL ? "calc(100px + env(safe-area-inset-bottom))" : "calc(32px + env(safe-area-inset-bottom))" }}
       >
         {/* v6: titulo sobe com a rolagem, setinha fica (transparente) */}
-        <TopoRolavel titulo="Perfil" onVoltar={() => navigate(-1)} recuo={20} />
+        <TopoRolavel titulo="Perfil" onVoltar={voltarDoPerfil} recuo={20} />
 
         {/* v8: bola com foto/inicial escondida (MOSTRAR_AVATAR) */}
         {MOSTRAR_AVATAR && (
@@ -577,7 +589,7 @@ export default function Perfil() {
               </button>
               <button
                 onClick={confirmarRemocao}
-                className="toque flex-1 py-3 rounded-xl font-semibold"
+                className="botao-perigo toque flex-1 py-3 rounded-xl font-semibold"
                 style={{ backgroundColor: "#ef4444", color: "#fff" }}
               >
                 Remover
@@ -610,7 +622,7 @@ export default function Perfil() {
               <button
                 onClick={sairDaConta}
                 disabled={saindo}
-                className="toque flex-1 py-3 rounded-xl font-semibold"
+                className="botao-perigo toque flex-1 py-3 rounded-xl font-semibold"
                 style={{ backgroundColor: "#ef4444", color: "#fff" }}
               >
                 {saindo ? "Saindo..." : "Sair"}
@@ -620,7 +632,8 @@ export default function Perfil() {
         </div>
       )}
 
-      <BottomNav ativo="perfil" />
+      {/* v12: sem a barra de baixo no Perfil (MOSTRAR_BARRA_NO_PERFIL) */}
+      {MOSTRAR_BARRA_NO_PERFIL && <BottomNav ativo="perfil" />}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+/* LANCAR v6 — padrao do Perfil: rotulos em cinza maiusculo, campos com 16px (sem zoom no iPhone), "Ultimo lancamento" em linha simples, letras maiores, botao em contorno (botao-confirmar) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useMemo, useEffect } from "react";
 import { ArrowLeft, Calendar as CalendarIcon, TrendingUp } from "lucide-react";
@@ -27,6 +28,17 @@ import { dataMinimaLancamento, LIMITE_VALOR_LANCAMENTO } from "@/lib/fiscal";
 const MAX_CENTAVOS = Math.round(LIMITE_VALOR_LANCAMENTO * 100);
 const MAX_DIGITOS = String(MAX_CENTAVOS).length;
 const LIMITE_DESCRICAO = 60;
+
+/* v6: rotulo dos campos no padrao do Perfil (titulo de secao: cinza,
+   maiusculo, com espacamento) */
+const ROTULO_CAMPO = {
+  color: "var(--text-tertiary)",
+  fontSize: 12.5,
+  fontWeight: 600,
+  letterSpacing: "0.08em",
+  textTransform: "uppercase",
+  marginBottom: 8,
+};
 const LIMITE_VISITANTE = 8;
 
 const MESES = [
@@ -221,7 +233,7 @@ export default function Lancar() {
         >
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
         </button>
-        <h1 className="text-lg font-bold" style={{ color: "var(--text)" }}>
+        <h1 className="font-bold" style={{ color: "var(--text)", fontSize: 20 }}>
           {modoEdicao ? "Editar lançamento" : "Novo lançamento"}
         </h1>
       </header>
@@ -244,7 +256,7 @@ export default function Lancar() {
           <div>
             <label
               className="block"
-              style={{ color: "var(--text-secondary)", fontSize: 12, marginBottom: 6 }}
+              style={ROTULO_CAMPO}
             >
               Valor
             </label>
@@ -282,8 +294,8 @@ export default function Lancar() {
             <p
               style={{
                 color: atingiuTeto ? "#ef4444" : "var(--text-secondary)",
-                fontSize: 11.5,
-                marginTop: 6,
+                fontSize: 13.5,
+                marginTop: 7,
               }}
             >
               {atingiuTeto
@@ -295,7 +307,7 @@ export default function Lancar() {
           <div>
             <label
               className="block"
-              style={{ color: "var(--text-secondary)", fontSize: 12, marginBottom: 6 }}
+              style={ROTULO_CAMPO}
             >
               Descrição
             </label>
@@ -308,10 +320,10 @@ export default function Lancar() {
               className="campo-tacerto card-tacerto w-full rounded-xl placeholder:opacity-70"
               style={{
                 color: "var(--text)",
-                minHeight: 46,
+                minHeight: 50,
                 paddingLeft: 16,
                 paddingRight: 16,
-                fontSize: 14,
+                fontSize: 16,
               }}
             />
           </div>
@@ -319,7 +331,7 @@ export default function Lancar() {
           <div>
             <label
               className="block"
-              style={{ color: "var(--text-secondary)", fontSize: 12, marginBottom: 6 }}
+              style={ROTULO_CAMPO}
             >
               Data
             </label>
@@ -329,7 +341,7 @@ export default function Lancar() {
                 color: "var(--text)",
                 /* Só o erro sobrescreve a moldura padrão do card. */
                 borderColor: mostrarErroData ? "#ef4444" : undefined,
-                minHeight: 46,
+                minHeight: 50,
                 paddingLeft: 16,
                 paddingRight: 16,
               }}
@@ -342,7 +354,7 @@ export default function Lancar() {
                 placeholder="dd/mm/aaaa"
                 maxLength={10}
                 className="flex-1 bg-transparent focus:outline-none placeholder:opacity-70"
-                style={{ color: "var(--text)", fontSize: 14 }}
+                style={{ color: "var(--text)", fontSize: 16 }}
               />
               <button
                 type="button"
@@ -350,11 +362,11 @@ export default function Lancar() {
                 aria-label="Selecionar data"
                 className="toque ml-2 shrink-0 flex items-center justify-center"
               >
-                <CalendarIcon size={18} style={{ color: "var(--text-secondary)" }} />
+                <CalendarIcon size={20} style={{ color: "var(--text-secondary)" }} />
               </button>
             </div>
             {mostrarErroData && (
-              <p style={{ color: "#ef4444", fontSize: 11.5, marginTop: 6 }}>
+              <p style={{ color: "#ef4444", fontSize: 13.5, marginTop: 7 }}>
                 {msgErroData}
               </p>
             )}
@@ -362,23 +374,17 @@ export default function Lancar() {
 
           <div style={{ marginTop: 4 }}>
             <p
-              style={{ color: "var(--text-secondary)", fontSize: 12, marginBottom: 6 }}
+              style={ROTULO_CAMPO}
             >
               Último lançamento
             </p>
             {ultimoLancamento ? (
               <div
-                className="card-tacerto w-full rounded-xl flex items-center"
-                style={{
-                  gap: 12,
-                  paddingLeft: 16,
-                  paddingRight: 16,
-                  paddingTop: 11,
-                  paddingBottom: 11,
-                }}
+                className="w-full flex items-center"
+                style={{ gap: 14, paddingTop: 6, paddingBottom: 6 }}
               >
                 <TrendingUp
-                  size={19}
+                  size={20}
                   strokeWidth={1.75}
                   style={{ color: "var(--primary)" }}
                   className="shrink-0"
@@ -386,31 +392,23 @@ export default function Lancar() {
                 <div className="flex-1 min-w-0">
                   <p
                     className="leading-tight truncate"
-                    style={{ color: "var(--text)", fontSize: 13.5 }}
+                    style={{ color: "var(--text)", fontSize: 16.5, fontWeight: 500 }}
                   >
                     {ultimoLancamento.descricao}
                   </p>
                   <p
-                    style={{ color: "var(--text-secondary)", fontSize: 11.5, marginTop: 2 }}
+                    style={{ color: "var(--text-tertiary)", fontSize: 13.5, marginTop: 2 }}
                   >
                     {labelDataCurta(ultimoLancamento.data)}
                   </p>
                 </div>
                 <div className="shrink-0">
-                  <Valor px={13.5} peso={700} sinal="+">{ultimoLancamento.valor}</Valor>
+                  <Valor px={15.5} peso={600} sinal="+">{ultimoLancamento.valor}</Valor>
                 </div>
               </div>
             ) : (
-              <div
-                className="card-tacerto w-full rounded-xl text-center"
-                style={{
-                  paddingTop: 14,
-                  paddingBottom: 14,
-                  /* Tracejado mantido: e ele que diz "vazio". */
-                  borderStyle: "dashed",
-                }}
-              >
-                <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
+              <div className="w-full" style={{ paddingTop: 4 }}>
+                <p style={{ color: "var(--text-tertiary)", fontSize: 15 }}>
                   Nenhum lançamento ainda
                 </p>
               </div>
@@ -444,11 +442,11 @@ export default function Lancar() {
           <button
             onClick={handleSalvar}
             disabled={salvando || centavos <= 0 || !dataValida}
-            className="toque toque-escala w-full rounded-2xl font-bold disabled:opacity-40"
+            className="botao-confirmar toque toque-escala w-full rounded-2xl font-bold disabled:opacity-40"
             style={{
               paddingTop: 16,
               paddingBottom: 16,
-              fontSize: 15.5,
+              fontSize: 16.5,
               letterSpacing: "0.01em",
               backgroundColor: "var(--primary)",
               color: "var(--primary-contrast)",

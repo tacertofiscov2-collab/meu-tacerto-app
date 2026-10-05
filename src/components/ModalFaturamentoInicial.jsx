@@ -1,3 +1,4 @@
+/* MODALFATURAMENTOINICIAL v2 — botao Salvar em contorno verde (botao-confirmar), valor em verde */
 import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 import Valor from "./Valor.jsx";
@@ -224,13 +225,13 @@ export default function ModalFaturamentoInicial({ aberto, onClose, onSalvar }) {
           <button
             onClick={handleSalvar}
             disabled={valorFinal <= 0}
-            className="w-full py-3.5 rounded-xl font-semibold text-sm disabled:opacity-40"
+            className="botao-confirmar w-full py-3.5 rounded-xl font-semibold text-sm disabled:opacity-40"
             style={{
               backgroundColor: "var(--primary)",
               color: "var(--primary-contrast)",
             }}
           >
-            Salvar <Valor tamanho="sm" style={{ color: "var(--primary-contrast)" }}>{valorFinal}</Valor> e atualizar
+            Salvar <Valor tamanho="sm" cor="var(--primary)">{valorFinal}</Valor> e atualizar
           </button>
           <p className="text-[11px] leading-relaxed text-center" style={{ color: "var(--text-secondary)" }}>
             Os valores informados são de sua responsabilidade. O TaCerto! não

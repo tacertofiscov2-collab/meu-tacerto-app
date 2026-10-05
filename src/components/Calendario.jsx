@@ -1,3 +1,4 @@
+/* CALENDARIO v2 — dia/mes/ano escolhido so com contorno verde (sem verde cheio); hoje em verde; botao Salvar em contorno (botao-confirmar) */
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Gauge, X } from "lucide-react";
 
@@ -183,10 +184,10 @@ export default function Calendario({
                     onClick={() => onSelecionar?.(iso)}
                     className="aspect-square rounded-xl flex items-center justify-center text-sm transition active:scale-95 disabled:opacity-25"
                     style={{
-                      backgroundColor: selecionado ? "var(--primary)" : "transparent",
-                      color: selecionado ? "var(--primary-contrast)" : "var(--text)",
+                      backgroundColor: "transparent",
+                      color: selecionado || ehHoje ? "var(--primary)" : "var(--text)",
                       fontWeight: selecionado || ehHoje ? 700 : 400,
-                      border: ehHoje && !selecionado
+                      border: selecionado
                         ? "1.5px solid var(--primary)"
                         : "1.5px solid transparent",
                     }}
@@ -225,8 +226,9 @@ export default function Calendario({
                       onClick={() => setMesSel(num)}
                       className="py-2.5 rounded-xl text-[13px] transition active:scale-95 disabled:opacity-25"
                       style={{
-                        backgroundColor: ativo ? "var(--primary)" : "var(--field)",
-                        color: ativo ? "var(--primary-contrast)" : "var(--text)",
+                        backgroundColor: "var(--field)",
+                    boxShadow: ativo ? "inset 0 0 0 1.5px var(--primary)" : "none",
+                        color: ativo ? "var(--primary)" : "var(--text)",
                         fontWeight: ativo ? 700 : 400,
                       }}
                     >
@@ -253,8 +255,9 @@ export default function Calendario({
                       }}
                       className="px-4 py-2.5 rounded-xl text-[13px] shrink-0 transition active:scale-95"
                       style={{
-                        backgroundColor: ativo ? "var(--primary)" : "var(--field)",
-                        color: ativo ? "var(--primary-contrast)" : "var(--text)",
+                        backgroundColor: "var(--field)",
+                    boxShadow: ativo ? "inset 0 0 0 1.5px var(--primary)" : "none",
+                        color: ativo ? "var(--primary)" : "var(--text)",
                         fontWeight: ativo ? 700 : 400,
                       }}
                     >
@@ -276,7 +279,7 @@ export default function Calendario({
               <button
                 onClick={() => mesSel && onSelecionarMesAno?.(mesSel, anoSel)}
                 disabled={!mesSel}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-40"
+                className="botao-confirmar flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-40"
                 style={{
                   backgroundColor: "var(--primary)",
                   color: "var(--primary-contrast)",

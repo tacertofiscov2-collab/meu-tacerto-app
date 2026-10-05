@@ -1,7 +1,8 @@
-/* COMOPAGARDAS v2 — "Fisco" vira "Fisco.ia" nos textos da tela (v1: passo a passo para gerar e pagar o boleto do DAS no PGMEI (piloto)) */
+/* COMOPAGARDAS v3 — padrao do Perfil (lista simples, sem cartoes nem caixa amarela, letras maiores; acoes como linhas) (v2: Fisco.ia; v1: passo a passo do PGMEI) */
 import { useLocation, useNavigate } from "react-router-dom";
 import { CalendarClock, ExternalLink, MessageCircle } from "lucide-react";
 import TopoRolavel from "../components/TopoRolavel.jsx";
+import { SecaoLista, LinhaLista, numeroDoPasso } from "../components/ListaSimples.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
   LINK_PGMEI, MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
@@ -24,7 +25,7 @@ import {
 const PASSOS = [
   {
     titulo: "Abra o PGMEI",
-    texto: "Toque no botão lá embaixo. É o site do governo que gera o boleto do DAS.",
+    texto: "Toque em \"Abrir o PGMEI\", lá embaixo. É o site do governo que gera o boleto do DAS.",
   },
   {
     titulo: "Digite seu CNPJ",
@@ -75,94 +76,37 @@ export default function ComoPagarDas() {
       >
         <TopoRolavel titulo="Como pagar o DAS" onVoltar={voltar} />
 
-        {/* Lembrete */}
-        <div
-          className="rounded-2xl flex mt-2"
-          style={{
-            gap: 10,
-            padding: "12px 14px",
-            backgroundColor: "rgba(245,158,11,0.10)",
-            border: "1px solid rgba(245,158,11,0.40)",
-          }}
-        >
-          <CalendarClock size={18} strokeWidth={2.2} className="shrink-0" style={{ color: "#f59e0b", marginTop: 2 }} />
-          <div className="text-[14px] leading-relaxed" style={{ color: "var(--text)" }}>
-            <p><strong>Vence todo dia 20.</strong></p>
-            <p style={{ color: "var(--text-secondary)" }}>
-              Atrasou, vem multa e juros. Pagando em dia, você mantém seus direitos no INSS.
-            </p>
-          </div>
-        </div>
+        {/* v3: lembrete como linha simples (sem a caixa amarela) */}
+        <SecaoLista style={{ marginTop: 4 }}>
+          <LinhaLista
+            Icon={CalendarClock}
+            rotulo="Vence todo dia 20"
+            detalhe="Atrasou, vem multa e juros. Pagando em dia, você mantém seus direitos no INSS."
+          />
+        </SecaoLista>
 
-        <div className="space-y-2 mt-4">
+        {/* v3: passos em lista (numero no lugar do icone), sem cartoes */}
+        <SecaoLista titulo="Passo a passo">
           {PASSOS.map((p, i) => (
-            <div
-              key={p.titulo}
-              className="rounded-2xl px-4 py-3.5 flex"
-              style={{ gap: 12, border: "1px solid var(--border)", backgroundColor: "transparent" }}
-            >
-              <span
-                className="rounded-full flex items-center justify-center shrink-0"
-                style={{
-                  width: 26,
-                  height: 26,
-                  backgroundColor: "rgba(34,197,94,0.14)",
-                  color: "var(--primary)",
-                  fontSize: 13,
-                  fontWeight: 700,
-                }}
-              >
-                {i + 1}
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-[14.5px] font-semibold leading-snug" style={{ color: "var(--text)" }}>
-                  {p.titulo}
-                </p>
-                <p className="text-[13.5px] leading-relaxed mt-1" style={{ color: "var(--text-secondary)" }}>
-                  {p.texto}
-                </p>
-              </div>
-            </div>
+            <LinhaLista key={p.titulo} Icon={numeroDoPasso(i + 1)} rotulo={p.titulo} detalhe={p.texto} />
           ))}
-        </div>
+        </SecaoLista>
 
-        <a
-          href={LINK_PGMEI}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="toque w-full rounded-2xl font-semibold flex items-center justify-center mt-5 active:scale-[0.98] transition"
-          style={{
-            gap: 8,
-            paddingTop: 14,
-            paddingBottom: 14,
-            fontSize: 16,
-            backgroundColor: "var(--primary)",
-            color: "var(--primary-contrast)",
-            textDecoration: "none",
-          }}
-        >
-          Abrir o PGMEI
-          <ExternalLink size={17} strokeWidth={2.2} />
-        </a>
-
-        {/* No fim: a mesma mensagem da opcao "Fisco me ajuda agora" */}
-        <button
-          type="button"
-          onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.dasAjudaAgora(dadosParaWhatsApp(app)))}
-          className="toque w-full rounded-2xl font-semibold flex items-center justify-center mt-3 active:scale-[0.98] transition"
-          style={{
-            gap: 8,
-            paddingTop: 13,
-            paddingBottom: 13,
-            fontSize: 15,
-            backgroundColor: "rgba(34,197,94,0.16)",
-            border: "1px solid rgba(34,197,94,0.45)",
-            color: "var(--primary)",
-          }}
-        >
-          <MessageCircle size={17} strokeWidth={2.2} />
-          Prefiro que o Fisco.ia me ajude
-        </button>
+        {/* v3: acoes como linhas, igual ao Perfil */}
+        <SecaoLista titulo="Abrir">
+          <LinhaLista
+            Icon={ExternalLink}
+            rotulo="Abrir o PGMEI"
+            detalhe="Site do governo que gera o boleto"
+            onClick={() => window.open(LINK_PGMEI, "_blank", "noopener")}
+          />
+          {/* a mesma mensagem da opcao "Fisco.ia me ajuda agora" */}
+          <LinhaLista
+            Icon={MessageCircle}
+            rotulo="Prefiro que o Fisco.ia me ajude"
+            onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.dasAjudaAgora(dadosParaWhatsApp(app)))}
+          />
+        </SecaoLista>
       </div>
     </div>
   );

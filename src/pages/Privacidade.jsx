@@ -1,4 +1,4 @@
-/* PRIVACIDADE v6 — secao "Fale com a gente" inteira escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v5: so o botao; v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta) */
+/* PRIVACIDADE v7 — letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v6: secao "Fale com a gente" inteira escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v5: so o botao; v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp, MOSTRAR_WHATSAPP_DOCUMENTOS } from "@/config/piloto";
@@ -94,26 +94,26 @@ export default function Privacidade() {
       >
         <TopoRolavel titulo="Política de privacidade" onVoltar={voltar} />
 
-        <p className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>
+        <p className="mt-1" style={{ color: "var(--text-tertiary)", fontSize: 13 }}>
           Atualizada em 4 de outubro de 2026
         </p>
 
-        <p className="text-[15px] leading-relaxed mt-3" style={{ color: "var(--text)" }}>
+        <p className="leading-relaxed mt-3" style={{ color: "var(--text)", fontSize: 16.5 }}>
           Aqui explicamos, sem juridiquês, o que o TaCerto! guarda sobre você e o que
           faz com isso.
         </p>
 
         {SECOES.map((s) => (
-          <section key={s.titulo} className="mt-6">
-            <h2 className="text-[16px] font-bold" style={{ color: "var(--text)" }}>
+          <section key={s.titulo} style={{ marginTop: 22, paddingTop: 20, borderTop: "1px solid color-mix(in srgb, var(--border) 55%, transparent)" }}>
+            <h2 className="font-bold" style={{ color: "var(--text)", fontSize: 17 }}>
               {s.titulo}
             </h2>
             <div className="mt-2 space-y-2">
               {s.paragrafos.map((p) => (
                 <p
                   key={p}
-                  className="text-[14.5px] leading-relaxed"
-                  style={{ color: "var(--text-secondary)" }}
+                  className="leading-relaxed"
+                  style={{ color: "var(--text-secondary)", fontSize: 16 }}
                 >
                   {p}
                 </p>

@@ -1,4 +1,4 @@
-/* SELETORMESANO v2 — prop anoMinimo: a faixa de anos comeca no ano em que a pessoa comecou a usar o app */
+/* SELETORMESANO v3 — mes/ano escolhido so com contorno verde (sem verde cheio); botao Confirmar em contorno (botao-confirmar) (v2: prop anoMinimo: a faixa de anos comeca no ano em que a pessoa comecou a usar o app */
 import { useState, useEffect } from "react";
 import { Gauge, X } from "lucide-react";
 
@@ -102,8 +102,9 @@ export default function SeletorMesAno({
                   onClick={() => setMesSel(num)}
                   className="py-2.5 rounded-xl text-[13px] transition active:scale-95 disabled:opacity-25"
                   style={{
-                    backgroundColor: ativo ? "var(--primary)" : "var(--field)",
-                    color: ativo ? "var(--primary-contrast)" : "var(--text)",
+                    backgroundColor: "var(--field)",
+                    boxShadow: ativo ? "inset 0 0 0 1.5px var(--primary)" : "none",
+                    color: ativo ? "var(--primary)" : "var(--text)",
                     fontWeight: ativo ? 700 : 400,
                   }}
                 >
@@ -133,8 +134,9 @@ export default function SeletorMesAno({
                     }}
                     className="px-4 py-2.5 rounded-xl text-[13px] shrink-0 transition active:scale-95"
                     style={{
-                      backgroundColor: ativo ? "var(--primary)" : "var(--field)",
-                      color: ativo ? "var(--primary-contrast)" : "var(--text)",
+                      backgroundColor: "var(--field)",
+                    boxShadow: ativo ? "inset 0 0 0 1.5px var(--primary)" : "none",
+                      color: ativo ? "var(--primary)" : "var(--text)",
                       fontWeight: ativo ? 700 : 400,
                     }}
                   >
@@ -157,7 +159,7 @@ export default function SeletorMesAno({
           <button
             onClick={() => mesSel && onSelecionar?.(mesSel, anoSel)}
             disabled={!mesSel}
-            className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-40"
+            className="botao-confirmar flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-40"
             style={{
               backgroundColor: "var(--primary)",
               color: "var(--primary-contrast)",

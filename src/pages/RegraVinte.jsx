@@ -1,11 +1,12 @@
-/* REGRAVINTE v2 — topo que rola (titulo sobe, setinha fica transparente) */
+/* REGRAVINTE v3 — padrao do Perfil: aviso, numeros, regra e passos em lista simples (sem cartoes vermelhos); vermelho so no icone e no valor que passou; letras maiores (v2: topo que rola) */
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, TrendingUp, Gauge, ArrowUpRight, Scale, OctagonAlert } from "lucide-react";
 import Valor from "../components/Valor.jsx";
+import { SecaoLista, LinhaLista, numeroDoPasso } from "../components/ListaSimples.jsx";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
-  LIMITES_ANUAIS, limiteAte20Percent, excedenteAcimaDoLimite, vocab,
+  limiteAte20Percent, excedenteAcimaDoLimite, vocab,
 } from "@/lib/fiscal";
 
 /* REGRAVINTE v2 (28/09/2026): o cabecalho "Passou do limite" passou para
@@ -73,168 +74,62 @@ export default function RegraVinte() {
       >
         <TopoRolavel titulo="Passou do limite" onVoltar={() => navigate(-1)} />
 
-        {/* Faixa de destaque */}
-        <div
-          className="rounded-3xl px-5 py-5 relative overflow-hidden mt-1"
-          style={{
-            background: `linear-gradient(150deg, ${cor}26 0%, ${cor}0d 55%, transparent 100%), var(--surface)`,
-            border: `1px solid ${cor}3d`,
-          }}
-        >
-          <div className="flex items-center gap-3.5">
-            <span
-              className="rounded-2xl flex items-center justify-center shrink-0"
-              style={{
-                width: 52,
-                height: 52,
-                backgroundColor: `${cor}22`,
-              }}
-            >
-              <AlertTriangle size={26} strokeWidth={2.2} style={{ color: cor }} />
-            </span>
-            <div className="flex-1 min-w-0">
-              <p
-                className="text-[11px] font-bold uppercase mb-1"
-                style={{ color: cor, letterSpacing: "0.08em" }}
-              >
-                {passouDos20 ? "Situação crítica" : "Dentro da margem legal"}
-              </p>
-              <p
-                className="text-[15px] font-semibold leading-snug"
-                style={{ color: "var(--text)" }}
-              >
-                {passouDos20
-                  ? `Passei ${pctExcesso}% do limite anual.`
-                  : "Passei do limite, mas ainda dentro dos 20% que a lei permite."}
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* v3: aviso como linha simples (vermelho so no icone) */}
+        <SecaoLista style={{ marginTop: 4 }}>
+          <LinhaLista
+            Icon={(props) => <AlertTriangle {...props} style={{ color: cor }} />}
+            rotulo={
+              passouDos20
+                ? `Passei ${pctExcesso}% do limite anual`
+                : "Passei do limite, mas dentro dos 20% que a lei permite"
+            }
+            detalhe={passouDos20 ? "Situação crítica" : "Dentro da margem legal"}
+          />
+        </SecaoLista>
 
-        {/* Situação em números */}
-        <div
-          className="rounded-2xl px-4 py-3.5 mt-2.5"
-          style={{
-            backgroundColor: `${cor}14`,
-            border: `1px solid ${cor}44`,
-          }}
-        >
-          <p
-            className="text-[11px] font-semibold uppercase mb-2.5"
-            style={{ color: cor, letterSpacing: "0.06em" }}
-          >
-            Como estou hoje
-          </p>
-          <div className="flex items-baseline justify-between gap-3 mb-1.5">
-            <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
-              Faturei
-            </span>
-            <Valor tamanho="md" autoAjustar>{faturamentoAtual}</Valor>
-          </div>
-          <div className="flex items-baseline justify-between gap-3 mb-1.5">
-            <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
-              Meu limite
-            </span>
-            <Valor tamanho="md" autoAjustar>{limiteAtual}</Valor>
-          </div>
-          <div
-            className="flex items-baseline justify-between gap-3 pt-2"
-            style={{ borderTop: `1px solid ${cor}33` }}
-          >
-            <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
-              Passei
-            </span>
-            <Valor tamanho="md" autoAjustar cor={cor}>
-              {excedente?.valor || 0}
-            </Valor>
-          </div>
-        </div>
+        {/* v3: situacao em numeros, linhas com valor a direita */}
+        <SecaoLista titulo="Como estou hoje">
+          <LinhaLista
+            Icon={TrendingUp}
+            rotulo="Faturei"
+            valor={<Valor px={15} cor="var(--text-secondary)">{faturamentoAtual}</Valor>}
+          />
+          <LinhaLista
+            Icon={Gauge}
+            rotulo="Meu limite"
+            valor={<Valor px={15} cor="var(--text-secondary)">{limiteAtual}</Valor>}
+          />
+          <LinhaLista
+            Icon={ArrowUpRight}
+            rotulo="Passei"
+            valor={<Valor px={15} cor={cor}>{excedente?.valor || 0}</Valor>}
+          />
+        </SecaoLista>
 
-        {/* Explicação da régua */}
-        <div
-          className="rounded-2xl px-4 py-3.5 mt-2.5"
-          style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
-        >
-          <p
-            className="text-[11px] font-semibold uppercase mb-2"
-            style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
-          >
-            Como a lei enxerga
-          </p>
-          <div className="space-y-2.5">
-            <div className="flex items-start gap-2.5">
-              <span
-                className="rounded-full shrink-0 mt-1.5"
-                style={{ width: 8, height: 8, backgroundColor: "#ef4444" }}
-              />
-              <p className="text-[13px] leading-snug" style={{ color: "var(--text)" }}>
-                Até <Valor tamanho="sm">{tetoDos20}</Valor> (20% acima): continua MEI até
-                dezembro e paga uma guia complementar.
-              </p>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <span
-                className="rounded-full shrink-0 mt-1.5"
-                style={{ width: 8, height: 8, backgroundColor: "#dc2626" }}
-              />
-              <p className="text-[13px] leading-snug" style={{ color: "var(--text)" }}>
-                Acima disso: deixa de ser MEI desde janeiro deste ano, com recálculo de
-                impostos, multa e juros.
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* v3: a regra dos 20% */}
+        <SecaoLista titulo="Como a lei enxerga">
+          <LinhaLista
+            Icon={Scale}
+            rotulo={<>Até <Valor px={16.5} peso={500}>{tetoDos20}</Valor> (20% acima)</>}
+            detalhe="Continua MEI até dezembro e paga uma guia complementar."
+          />
+          <LinhaLista
+            Icon={OctagonAlert}
+            rotulo="Acima disso"
+            detalhe="Deixa de ser MEI desde janeiro deste ano, com recálculo de impostos, multa e juros."
+          />
+        </SecaoLista>
 
-        {/* Passos */}
-        <p
-          className="text-[12px] font-semibold uppercase mt-6 mb-2"
-          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
-        >
-          O que fazer agora
-        </p>
-
-        <div className="space-y-2">
+        {/* v3: passos numerados em lista */}
+        <SecaoLista titulo="O que fazer agora">
           {passos.map((p, i) => (
-            <div
-              key={i}
-              className="rounded-2xl px-4 py-3.5 flex gap-3"
-              style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
-            >
-              <span
-                className="rounded-full flex items-center justify-center shrink-0"
-                style={{
-                  width: 26,
-                  height: 26,
-                  backgroundColor: "var(--surface-raised)",
-                  border: "1px solid var(--border)",
-                  color: "var(--text-secondary)",
-                  fontSize: 13,
-                  fontWeight: 700,
-                }}
-              >
-                {i + 1}
-              </span>
-              <div className="flex-1 min-w-0">
-                <p
-                  className="text-[14px] font-semibold leading-snug"
-                  style={{ color: "var(--text)" }}
-                >
-                  {p.titulo}
-                </p>
-                <p
-                  className="text-[13px] leading-relaxed mt-1"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  {p.texto}
-                </p>
-              </div>
-            </div>
+            <LinhaLista key={i} Icon={numeroDoPasso(i + 1)} rotulo={p.titulo} detalhe={p.texto} />
           ))}
-        </div>
+        </SecaoLista>
 
         <p
-          className="text-[11px] leading-relaxed text-center mt-4 px-2"
-          style={{ color: "var(--text-tertiary)" }}
+          className="leading-relaxed text-center px-2"
+          style={{ color: "var(--text-tertiary)", fontSize: 13, marginTop: 28 }}
         >
           O TaCerto! é parceiro do seu contador, não substituto. As informações acima são
           baseadas no que você registrou no app e servem como orientação geral.

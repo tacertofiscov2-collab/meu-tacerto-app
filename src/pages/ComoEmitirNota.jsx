@@ -1,10 +1,12 @@
-/* COMOEMITIRNOTA v5 — A1: "Custa a partir de R$ 99,90" (vale 1 ano) no lugar de "valor a confirmar"; Fisco.ia (v4: selo so "Grátis"; v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1 */
+/* COMOEMITIRNOTA v6 — padrao do Perfil: lista simples sem cartoes, selos nem botao verde cheio; aviso como linha; passos e Certificado A1 abrem em secoes abaixo; letras maiores (v5: A1: "Custa a partir de R$ 99,90" (vale 1 ano) no lugar de "valor a confirmar"; Fisco.ia (v4: selo so "Grátis"; v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1 */
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   AlertTriangle, ExternalLink, MessageCircle, ListChecks, BadgeCheck, ChevronDown,
+  Info, Sparkles, Video, ShieldCheck,
 } from "lucide-react";
 import TopoRolavel from "../components/TopoRolavel.jsx";
+import { SecaoLista, LinhaLista, numeroDoPasso } from "../components/ListaSimples.jsx";
 import {
   MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
 } from "@/config/piloto";
@@ -41,7 +43,7 @@ const LINK_EMISSOR_NACIONAL = "https://www.nfse.gov.br/EmissorNacional";
 /* Passos iguais para os dois tipos (o comeco e o fim). */
 const PASSO_ENTRAR = {
   titulo: "Entre no Emissor Nacional",
-  texto: "Abra o site pelo botão lá embaixo e entre com a sua conta gov.br.",
+  texto: "Toque em \"Abrir o Emissor Nacional\", lá embaixo, e entre com a sua conta gov.br.",
 };
 const PASSO_NOVA = {
   titulo: "Comece uma nota nova",
@@ -55,6 +57,7 @@ const PASSO_EMITIR = {
 const CONTEUDO_POR_TIPO = {
   MEI_CAMINHONEIRO: {
     /* Texto do aviso pedido pelo Fernando (conferir com o contador) */
+    avisoTitulo: "NFS-e ou CT-e?",
     aviso: "Agregado de transportadora geralmente emite NFS-e. Se você pega frete direto, pode precisar de CT-e.",
     explicacaoFisco: "Você me manda o valor e pra quem foi o frete, eu monto tudo e te guio no gov.br.",
     passos: [
@@ -79,6 +82,7 @@ const CONTEUDO_POR_TIPO = {
     vantagemExtra: "Serve também para CT-e e MDF-e.",
   },
   MEI: {
+    avisoTitulo: "Serviço ou produto?",
     aviso: "Este passo a passo é para quem presta serviço (NFS-e). Se você vende produtos, a nota é outra (NF-e).",
     explicacaoFisco: "Você me manda o valor e pra quem foi o serviço, eu monto tudo e te guio no gov.br.",
     passos: [
@@ -103,39 +107,25 @@ const CONTEUDO_POR_TIPO = {
   },
 };
 
-/* Selo pequeno (verde = disponivel; cinza = em breve) */
-function Selo({ children, apagado = false }) {
+/* v6: setinha que gira ao abrir/fechar (no lugar da "maior que") */
+function SetaAbre({ aberto }) {
   return (
-    <span
-      className="inline-block rounded-full font-semibold"
+    <ChevronDown
+      size={18}
       style={{
-        fontSize: 11.5,
-        padding: "2px 9px",
-        color: apagado ? "var(--text-secondary)" : "var(--primary)",
-        backgroundColor: apagado ? "var(--vidro-superficie)" : "rgba(34,197,94,0.16)",
-        border: apagado ? "1px solid var(--border)" : "none",
+        color: "var(--text-tertiary)",
+        transform: aberto ? "rotate(180deg)" : "none",
+        transition: "transform 200ms ease",
       }}
-    >
-      {children}
-    </span>
+    />
   );
 }
 
-/* Bloco de texto da explicacao do A1 */
-function BlocoA1({ titulo, itens }) {
-  return (
-    <div style={{ marginTop: 14 }}>
-      <p className="text-[14px] font-semibold" style={{ color: "var(--text)" }}>{titulo}</p>
-      <ul className="mt-1.5 space-y-1">
-        {itens.map((t) => (
-          <li key={t} className="flex text-[13.5px] leading-relaxed" style={{ gap: 8, color: "var(--text-secondary)" }}>
-            <span aria-hidden style={{ color: "var(--primary)" }}>•</span>
-            <span>{t}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+/* v6: lista de frases curtas dentro do detalhe de uma linha */
+function Itens({ lista }) {
+  return lista.map((t) => (
+    <span key={t} className="block" style={{ marginTop: 2 }}>{t}</span>
+  ));
 }
 
 export default function ComoEmitirNota() {
@@ -164,11 +154,6 @@ export default function ComoEmitirNota() {
     if (abrir) setTimeout(() => ref.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
   }
 
-  const cardBase = {
-    border: "1px solid var(--border)",
-    backgroundColor: "var(--vidro-superficie)",
-  };
-
   return (
     <div
       className="tela-rolavel w-full flex flex-col"
@@ -181,247 +166,97 @@ export default function ComoEmitirNota() {
       >
         <TopoRolavel titulo="Como emitir sua nota" onVoltar={voltar} />
 
-        {/* Aviso curto do topo (pelo tipo de MEI) */}
-        <div
-          className="rounded-2xl flex mt-2"
-          style={{
-            gap: 10,
-            padding: "12px 14px",
-            backgroundColor: "rgba(245,158,11,0.10)",
-            border: "1px solid rgba(245,158,11,0.40)",
-          }}
-        >
-          <AlertTriangle size={18} strokeWidth={2.2} className="shrink-0" style={{ color: "#f59e0b", marginTop: 2 }} />
-          <p className="text-[14px] leading-relaxed" style={{ color: "var(--text)" }}>
-            {conteudo.aviso}
-          </p>
+        {/* v6: aviso como linha simples (sem a caixa amarela) */}
+        <SecaoLista style={{ marginTop: 4 }}>
+          <LinhaLista Icon={AlertTriangle} rotulo={conteudo.avisoTitulo} detalhe={conteudo.aviso} />
+        </SecaoLista>
+
+        {/* v6: as 3 formas em lista (sem cartoes nem selos) */}
+        <SecaoLista titulo="Escolha como emitir">
+          <LinhaLista
+            Icon={MessageCircle}
+            rotulo="Com o Fisco.ia no WhatsApp"
+            detalhe={conteudo.explicacaoFisco}
+            onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.notaAjuda(dados, caminhoneiro))}
+          />
+          <LinhaLista
+            Icon={ListChecks}
+            rotulo="Fazer sozinho"
+            detalhe="Passo a passo no Emissor Nacional"
+            semSeta
+            valor={<SetaAbre aberto={sozinhoAberto} />}
+            onClick={() => alternar(sozinhoAberto, setSozinhoAberto, sozinhoRef)}
+          />
+          <LinhaLista
+            Icon={BadgeCheck}
+            rotulo="Nota automática (Certificado A1)"
+            detalhe="Em breve"
+            semSeta
+            valor={<SetaAbre aberto={a1Aberto} />}
+            onClick={() => alternar(a1Aberto, setA1Aberto, a1Ref)}
+          />
+        </SecaoLista>
+
+        {/* Fazer sozinho: os passos, abertos logo abaixo */}
+        <div ref={sozinhoRef} className="scroll-mt-16">
+          {sozinhoAberto && (
+            <SecaoLista titulo="Passo a passo">
+              {conteudo.passos.map((p, i) => (
+                <LinhaLista key={p.titulo} Icon={numeroDoPasso(i + 1)} rotulo={p.titulo} detalhe={p.texto} />
+              ))}
+              <LinhaLista
+                Icon={ExternalLink}
+                rotulo="Abrir o Emissor Nacional"
+                onClick={() => window.open(LINK_EMISSOR_NACIONAL, "_blank", "noopener")}
+              />
+            </SecaoLista>
+          )}
         </div>
 
-        <h2 className="text-[17px] font-bold" style={{ color: "var(--text)", marginTop: 22, marginBottom: 10 }}>
-          Escolha como emitir sua nota
-        </h2>
-
-        <div className="space-y-2.5">
-          {/* a) Com o Fisco pelo WhatsApp (destaque leve) */}
-          <div
-            className="rounded-2xl"
-            style={{
-              padding: "14px 14px 12px",
-              border: "1px solid rgba(34,197,94,0.45)",
-              backgroundColor: "rgba(34,197,94,0.08)",
-            }}
-          >
-            <div className="flex items-start" style={{ gap: 12 }}>
-              <span
-                className="rounded-xl flex items-center justify-center shrink-0"
-                style={{ width: 36, height: 36, backgroundColor: "rgba(34,197,94,0.14)" }}
-              >
-                <MessageCircle size={18} strokeWidth={2.1} style={{ color: "var(--primary)" }} />
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-[15.5px] font-semibold leading-snug" style={{ color: "var(--text)" }}>
-                  Emitir com o Fisco.ia pelo WhatsApp
-                </p>
-                <div style={{ marginTop: 5 }}>
-                  <Selo>Grátis</Selo>
-                </div>
-                <p className="text-[13.5px] leading-relaxed" style={{ color: "var(--text-secondary)", marginTop: 6 }}>
-                  {conteudo.explicacaoFisco}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.notaAjuda(dados, caminhoneiro))}
-              className="toque w-full rounded-2xl font-semibold flex items-center justify-center active:scale-[0.98] transition"
-              style={{
-                gap: 8,
-                marginTop: 12,
-                paddingTop: 12,
-                paddingBottom: 12,
-                fontSize: 15,
-                backgroundColor: "var(--primary)",
-                color: "var(--primary-contrast)",
-              }}
-            >
-              <MessageCircle size={17} strokeWidth={2.2} />
-              Chamar o Fisco.ia no WhatsApp
-            </button>
-          </div>
-
-          {/* b) Fazer sozinho (recolhivel) */}
-          <div ref={sozinhoRef} className="rounded-2xl" style={cardBase}>
-            <button
-              type="button"
-              onClick={() => alternar(sozinhoAberto, setSozinhoAberto, sozinhoRef)}
-              aria-expanded={sozinhoAberto}
-              className="toque w-full flex items-center text-left"
-              style={{ gap: 12, padding: "14px" }}
-            >
-              <span
-                className="rounded-xl flex items-center justify-center shrink-0"
-                style={{ width: 36, height: 36, backgroundColor: "rgba(34,197,94,0.14)" }}
-              >
-                <ListChecks size={18} strokeWidth={2.1} style={{ color: "var(--primary)" }} />
-              </span>
-              <span className="flex-1 min-w-0">
-                <span className="block text-[15.5px] font-semibold" style={{ color: "var(--text)" }}>Fazer sozinho</span>
-                <span className="block text-[13px]" style={{ color: "var(--text-secondary)", marginTop: 2 }}>
-                  Passo a passo no Emissor Nacional
-                </span>
-              </span>
-              <ChevronDown
-                size={18}
-                className="shrink-0"
-                style={{
-                  color: "var(--text-tertiary)",
-                  transform: sozinhoAberto ? "rotate(180deg)" : "none",
-                  transition: "transform 200ms ease",
-                }}
+        {/* Certificado A1: a explicacao, aberta logo abaixo */}
+        <div ref={a1Ref} className="scroll-mt-16">
+          {a1Aberto && (
+            <SecaoLista titulo="Certificado Digital A1">
+              <LinhaLista
+                Icon={Info}
+                rotulo="O que é"
+                detalhe="A assinatura digital do seu CNPJ. É como uma CNH da sua empresa na internet."
               />
-            </button>
-
-            {sozinhoAberto && (
-              <div style={{ padding: "0 14px 14px" }}>
-                <div className="space-y-2">
-                  {conteudo.passos.map((p, i) => (
-                    <div
-                      key={p.titulo}
-                      className="rounded-2xl px-3.5 py-3 flex"
-                      style={{ gap: 12, border: "1px solid var(--border)", backgroundColor: "var(--bg)" }}
-                    >
-                      <span
-                        className="rounded-full flex items-center justify-center shrink-0"
-                        style={{
-                          width: 24,
-                          height: 24,
-                          backgroundColor: "rgba(34,197,94,0.14)",
-                          color: "var(--primary)",
-                          fontSize: 12.5,
-                          fontWeight: 700,
-                        }}
-                      >
-                        {i + 1}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[14px] font-semibold leading-snug" style={{ color: "var(--text)" }}>
-                          {p.titulo}
-                        </p>
-                        <p className="text-[13px] leading-relaxed mt-1" style={{ color: "var(--text-secondary)" }}>
-                          {p.texto}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <a
-                  href={LINK_EMISSOR_NACIONAL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="toque w-full rounded-2xl font-semibold flex items-center justify-center mt-3 active:scale-[0.98] transition"
-                  style={{
-                    gap: 8,
-                    paddingTop: 12,
-                    paddingBottom: 12,
-                    fontSize: 15,
-                    backgroundColor: "rgba(34,197,94,0.16)",
-                    border: "1px solid rgba(34,197,94,0.45)",
-                    color: "var(--primary)",
-                    textDecoration: "none",
-                  }}
-                >
-                  Abrir o Emissor Nacional
-                  <ExternalLink size={16} strokeWidth={2.2} />
-                </a>
-              </div>
-            )}
-          </div>
-
-          {/* c) Certificado Digital A1 — em breve (recolhivel) */}
-          <div ref={a1Ref} className="rounded-2xl" style={cardBase}>
-            <button
-              type="button"
-              onClick={() => alternar(a1Aberto, setA1Aberto, a1Ref)}
-              aria-expanded={a1Aberto}
-              className="toque w-full flex items-center text-left"
-              style={{ gap: 12, padding: "14px" }}
-            >
-              <span
-                className="rounded-xl flex items-center justify-center shrink-0"
-                style={{ width: 36, height: 36, backgroundColor: "var(--vidro-superficie)", border: "1px solid var(--border)" }}
-              >
-                <BadgeCheck size={18} strokeWidth={2.1} style={{ color: "var(--text-secondary)" }} />
-              </span>
-              <span className="flex-1 min-w-0">
-                <span className="block text-[15.5px] font-semibold leading-snug" style={{ color: "var(--text)" }}>
-                  Nota automática com Certificado Digital A1
-                </span>
-                <span className="block" style={{ marginTop: 5 }}>
-                  <Selo apagado>Em breve</Selo>
-                </span>
-              </span>
-              <ChevronDown
-                size={18}
-                className="shrink-0"
-                style={{
-                  color: "var(--text-tertiary)",
-                  transform: a1Aberto ? "rotate(180deg)" : "none",
-                  transition: "transform 200ms ease",
-                }}
+              <LinhaLista
+                Icon={Sparkles}
+                rotulo="Vantagens"
+                detalhe={<Itens lista={[
+                  "O Fisco.ia emite a nota por você, e você só confirma.",
+                  "Não precisa entrar no gov.br toda vez.",
+                  ...(conteudo.vantagemExtra ? [conteudo.vantagemExtra] : []),
+                  "Nada é emitido sem a sua confirmação.",
+                ]} />}
               />
-            </button>
-
-            {a1Aberto && (
-              <div style={{ padding: "0 14px 14px" }}>
-                <BlocoA1
-                  titulo="O que é"
-                  itens={["A assinatura digital do seu CNPJ. É como uma CNH da sua empresa na internet."]}
-                />
-                <BlocoA1
-                  titulo="Vantagens"
-                  itens={[
-                    "O Fisco.ia emite a nota por você, e você só confirma.",
-                    "Não precisa entrar no gov.br toda vez.",
-                    ...(conteudo.vantagemExtra ? [conteudo.vantagemExtra] : []),
-                    "Nada é emitido sem a sua confirmação.",
-                  ]}
-                />
-                <BlocoA1
-                  titulo="Como tira"
-                  itens={[
-                    "Por videochamada no celular, com a CNH ou o RG na mão.",
-                    "Vale por 1 ano.",
-                    "Custa a partir de R$ 99,90.",
-                    "O TaCerto! te ajuda a agendar.",
-                  ]}
-                />
-                <BlocoA1
-                  titulo="Segurança"
-                  itens={[
-                    "O certificado fica numa plataforma de emissão de notas com segurança de banco.",
-                    "Nunca pedimos a sua senha do gov.br.",
-                  ]}
-                />
-                <button
-                  type="button"
-                  onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.certificadoA1(dados))}
-                  className="toque w-full rounded-2xl font-semibold flex items-center justify-center mt-4 active:scale-[0.98] transition"
-                  style={{
-                    gap: 8,
-                    paddingTop: 12,
-                    paddingBottom: 12,
-                    fontSize: 15,
-                    backgroundColor: "rgba(34,197,94,0.16)",
-                    border: "1px solid rgba(34,197,94,0.45)",
-                    color: "var(--primary)",
-                  }}
-                >
-                  <MessageCircle size={17} strokeWidth={2.2} />
-                  Tenho interesse no certificado
-                </button>
-              </div>
-            )}
-          </div>
+              <LinhaLista
+                Icon={Video}
+                rotulo="Como tira"
+                detalhe={<Itens lista={[
+                  "Por videochamada no celular, com a CNH ou o RG na mão.",
+                  "Vale por 1 ano.",
+                  "Custa a partir de R$ 99,90.",
+                  "O TaCerto! te ajuda a agendar.",
+                ]} />}
+              />
+              <LinhaLista
+                Icon={ShieldCheck}
+                rotulo="Segurança"
+                detalhe={<Itens lista={[
+                  "O certificado fica numa plataforma de emissão de notas com segurança de banco.",
+                  "Nunca pedimos a sua senha do gov.br.",
+                ]} />}
+              />
+              <LinhaLista
+                Icon={MessageCircle}
+                rotulo="Tenho interesse no certificado"
+                onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.certificadoA1(dados))}
+              />
+            </SecaoLista>
+          )}
         </div>
       </div>
     </div>

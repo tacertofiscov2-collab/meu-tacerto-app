@@ -1,4 +1,4 @@
-/* LISTASIMPLES v2 — letras maiores (rotulo 16.5, valor 15, titulo de secao 12.5, icone 20), pedido do Fernando (v1: lista clean do Perfil e Editar perfil) */
+/* LISTASIMPLES v4 — prop umaLinha (rotulo em uma linha so) (v3: numeroDoPasso (passo numerado no lugar do icone) (v2: letras maiores (rotulo 16.5, valor 15, titulo de secao 12.5, icone 20), pedido do Fernando (v1: lista clean do Perfil e Editar perfil) */
 import { Children } from "react";
 import { ChevronRight } from "lucide-react";
 
@@ -63,10 +63,31 @@ export function SecaoLista({ titulo, children, style }) {
   );
 }
 
+/* v3: numero de passo no lugar do icone (bolinha discreta com contorno).
+   Uso: <LinhaLista Icon={numeroDoPasso(1)} rotulo="..." detalhe="..." />
+   Guarda um componente por numero para nao recriar a cada desenho. */
+const numerosDosPassos = {};
+export function numeroDoPasso(n) {
+  if (!numerosDosPassos[n]) {
+    numerosDosPassos[n] = function NumeroDoPasso({ className = "" }) {
+      return (
+        <span
+          className={`${className} rounded-full flex items-center justify-center font-semibold`}
+          style={{ width: 20, height: 20, fontSize: 11.5, color: "var(--text-secondary)", border: "1px solid var(--border)" }}
+        >
+          {n}
+        </span>
+      );
+    };
+  }
+  return numerosDosPassos[n];
+}
+
 /* Uma linha. Sem onClick = so informacao (sem setinha, nao reage ao
    toque). `cor` pinta o texto (ex.: vermelho do "Sair da conta").
-   `semSeta` tira a setinha de uma linha que da para tocar. */
-export function LinhaLista({ Icon, rotulo, detalhe, valor, onClick, cor, semSeta = false }) {
+   `semSeta` tira a setinha de uma linha que da para tocar.
+   v4: `umaLinha` corta o rotulo com "..." (ex.: descricao no Historico). */
+export function LinhaLista({ Icon, rotulo, detalhe, valor, onClick, cor, semSeta = false, umaLinha = false }) {
   const conteudo = (
     <>
       {Icon && (
@@ -78,7 +99,7 @@ export function LinhaLista({ Icon, rotulo, detalhe, valor, onClick, cor, semSeta
         />
       )}
       <span className="flex-1 min-w-0">
-        <span className="block font-medium leading-snug" style={{ color: cor || "var(--text)", fontSize: 16.5 }}>
+        <span className={`block font-medium leading-snug${umaLinha ? " truncate" : ""}`} style={{ color: cor || "var(--text)", fontSize: 16.5 }}>
           {rotulo}
         </span>
         {detalhe && (

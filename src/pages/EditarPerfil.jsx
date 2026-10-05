@@ -1,4 +1,4 @@
-/* EDITARPERFIL v16 — linha do Nome no tamanho novo da lista (letras maiores, ListaSimples v2) (v15: lista simples (igual ao Perfil): nome editavel, WhatsApp abre aviso "fale com a gente", e-mail so se existir, Excluir conta no fim; layout antigo atras de MOSTRAR_LOGIN_EMAIL */
+/* EDITARPERFIL v17 — sem a linha do e-mail (MOSTRAR_EMAIL_NO_EDITAR) e botoes minimalistas (botao-confirmar) (v16: linha do Nome no tamanho novo da lista (letras maiores, ListaSimples v2) (v15: lista simples (igual ao Perfil): nome editavel, WhatsApp abre aviso "fale com a gente", e-mail so se existir, Excluir conta no fim; layout antigo atras de MOSTRAR_LOGIN_EMAIL */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -83,6 +83,9 @@ import {
      so trava se ja tiver numero. Selo verde no e-mail so para conta
      que veio do Google.
    =================================================================== */
+
+/* v17: a linha do e-mail fica escondida (pedido do Fernando, 05/10) */
+const MOSTRAR_EMAIL_NO_EDITAR = false;
 
 /* Segundos de espera entre um envio e o proximo. */
 const ESPERA_REENVIO = 60;
@@ -255,7 +258,7 @@ function AvisoFaleConosco({ texto, onWhatsApp, onFechar, cardStyle }) {
         <p style={{ color: "var(--text)", fontSize: 15, lineHeight: 1.5 }}>{texto}</p>
         <button
           onClick={onWhatsApp}
-          className="w-full py-3 rounded-xl font-semibold transition active:scale-[0.99]"
+          className="botao-confirmar w-full py-3 rounded-xl font-semibold transition active:scale-[0.99]"
           style={{ marginTop: 18, backgroundColor: "var(--primary)", color: "var(--primary-contrast)", fontSize: 15 }}
         >
           Falar no WhatsApp
@@ -295,7 +298,7 @@ function FolhaTipoMei({ tipo, podeCorrigir, onFechar, onCorrigir, cardStyle }) {
   const botaoPrincipal = (rotulo, aoTocar) => (
     <button
       onClick={aoTocar}
-      className="w-full py-3 rounded-xl font-semibold transition active:scale-[0.99]"
+      className="botao-confirmar w-full py-3 rounded-xl font-semibold transition active:scale-[0.99]"
       style={{
         marginTop: 16,
         backgroundColor: "var(--primary)",
@@ -445,7 +448,7 @@ function FolhaTipoMei({ tipo, podeCorrigir, onFechar, onCorrigir, cardStyle }) {
           </button>
           <button
             onClick={() => onCorrigir(outroTipo)}
-            className="flex-1 py-3 rounded-xl font-semibold"
+            className="botao-confirmar flex-1 py-3 rounded-xl font-semibold"
             style={{ backgroundColor: "var(--primary)", color: "var(--primary-contrast)" }}
           >
             Confirmar
@@ -781,7 +784,8 @@ export default function EditarPerfil() {
                 valor={whatsSalvo ? `+55 ${whatsSalvo}` : "Não informado"}
                 onClick={() => setAviso("whatsapp")}
               />
-              {!visitante && email && (
+              {/* v17: e-mail escondido (MOSTRAR_EMAIL_NO_EDITAR), pedido do Fernando */}
+              {MOSTRAR_EMAIL_NO_EDITAR && !visitante && email && (
                 <LinhaLista Icon={Mail} rotulo="E-mail" valor={email} onClick={() => setAviso("email")} />
               )}
             </SecaoLista>
@@ -791,7 +795,7 @@ export default function EditarPerfil() {
                 <button
                   onClick={salvarAlteracoes}
                   disabled={salvo}
-                  className="w-full py-3.5 rounded-2xl font-semibold text-sm transition active:scale-[0.99]"
+                  className={`${salvo ? "" : "botao-confirmar "}w-full py-3.5 rounded-2xl font-semibold text-sm transition active:scale-[0.99]`}
                   style={{
                     backgroundColor: salvo ? "var(--field)" : "var(--primary)",
                     color: salvo ? "var(--primary)" : "var(--primary-contrast)",
@@ -976,7 +980,7 @@ export default function EditarPerfil() {
             <button
               onClick={salvarAlteracoes}
               disabled={salvo}
-              className="w-full py-3.5 rounded-2xl font-semibold text-sm transition active:scale-[0.99]"
+              className={`${salvo ? "" : "botao-confirmar "}w-full py-3.5 rounded-2xl font-semibold text-sm transition active:scale-[0.99]`}
               style={{
                 backgroundColor: salvo ? "var(--field)" : "var(--primary)",
                 color: salvo ? "var(--primary)" : "var(--primary-contrast)",

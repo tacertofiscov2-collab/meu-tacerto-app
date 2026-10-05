@@ -1,4 +1,4 @@
-/* ONBOARDING v10 — gesto de voltar do iPhone volta UMA ETAPA (nao sai mais do onboarding para o Inicio); onboarding ja feito volta para o Inicio (v9: nome ja preenchido; v8: "Digitar valor" em folha acima do teclado) */
+/* ONBOARDING v11 — botao "Começar a usar" em contorno verde (botao-confirmar) (v10: gesto de voltar do iPhone volta UMA ETAPA (nao sai mais do onboarding para o Inicio); onboarding ja feito volta para o Inicio (v9: nome ja preenchido; v8: "Digitar valor" em folha acima do teclado) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -301,7 +301,7 @@ function FolhaDigitarValor({ ano, valor, onMudar, finalizando, onFechar, onConfi
             <button
               onClick={onConfirmar}
               disabled={!podeConfirmar}
-              className="w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 transition active:scale-[0.99] disabled:opacity-40"
+              className="botao-confirmar w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 transition active:scale-[0.99] disabled:opacity-40"
               style={{
                 backgroundColor: "var(--primary)",
                 color: "var(--primary-contrast)",
