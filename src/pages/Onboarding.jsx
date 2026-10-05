@@ -1,4 +1,4 @@
-/* ONBOARDING v9 — login por WhatsApp: o campo do nome ja vem preenchido com o nome do perfil, se existir (v8: "Digitar valor" em folha acima do teclado) */
+/* ONBOARDING v10 — gesto de voltar do iPhone volta UMA ETAPA (nao sai mais do onboarding para o Inicio); onboarding ja feito volta para o Inicio (v9: nome ja preenchido; v8: "Digitar valor" em folha acima do teclado) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -377,9 +377,16 @@ export default function Onboarding() {
         if (!data?.user) return;
         const { data: perfil } = await supabase
           .from("perfis")
-          .select("nome")
+          .select("nome, onboarding_ok")
           .eq("id", data.user.id)
           .single();
+        /* v10: onboarding ja feito (ex.: voltou do Inicio pelo gesto do
+           iPhone) -> volta para o Inicio, sem refazer o cadastro */
+        if (ativo && perfil?.onboarding_ok === true) {
+          saindoRef.current = true;
+          navigate("/dashboard", { replace: true });
+          return;
+        }
         const salvo = String(perfil?.nome || "").trim();
         // Ignora o que nao parece nome (e-mail ou numero de telefone)
         if (!ativo || !salvo || salvo.includes("@") || /^[\d\s()+-]+$/.test(salvo)) return;
@@ -505,14 +512,63 @@ export default function Onboarding() {
         }).eq("id", data.user.id);
       }
     } catch { /* visitante */ }
-    navigate("/dashboard");
+    /* v10: troca a marca do historico pelo Inicio (ver "GESTO DE VOLTAR") */
+    saindoRef.current = true;
+    navigate("/dashboard", { replace: true });
   }
 
   function handleBack() {
     if (step === "verificar") { setErro(""); setStep(0); }
     else if (step === 1 && origemGoogle) { setErro(""); setStep(0); }
     else if (step > 1) setStep(step - 1);
-    else navigate(-1);
+    else sairDoOnboarding();
+  }
+
+  /* ===================================================================
+     v10 (05/10/2026) — GESTO DE VOLTAR DO SAFARI
+
+     O BUG: as etapas do onboarding sao uma pagina so. O "arrastar da
+     borda" do iPhone e o VOLTAR do navegador, entao ele saia do
+     onboarding inteiro e caia na pagina anterior do historico — as
+     vezes o Inicio, com o cadastro pela metade.
+
+     A CORRECAO: ao abrir, o onboarding coloca uma "marca" no historico
+     (mesmo endereco). O gesto de voltar so tira a marca; a tela percebe
+     (popstate), volta UMA ETAPA (ou fecha a folha do valor) e poe a
+     marca de novo. Na primeira etapa o gesto nao faz nada. A marca
+     tambem apaga o "avancar" do historico, entao o gesto para a frente
+     nao leva ao Inicio. A setinha da primeira etapa leva para as
+     boas-vindas (sairDoOnboarding).
+     =================================================================== */
+  const saindoRef = useRef(false);
+  const voltarPeloGestoRef = useRef(null);
+  voltarPeloGestoRef.current = () => {
+    if (folhaValor) { setFolhaValor(false); return; }
+    if (step === "verificar") { setErro(""); setStep(0); }
+    else if (step === 1 && origemGoogle) { setErro(""); setStep(0); }
+    else if (typeof step === "number" && step > 1) setStep(step - 1);
+    // primeira etapa: fica aqui
+  };
+
+  useEffect(() => {
+    const marcar = () =>
+      window.history.pushState({ ...(window.history.state || {}), marcaOnboarding: true }, "");
+    if (!window.history.state?.marcaOnboarding) marcar();
+    const aoVoltar = () => {
+      if (saindoRef.current) return;
+      voltarPeloGestoRef.current?.();
+      marcar();
+    };
+    window.addEventListener("popstate", aoVoltar);
+    return () => window.removeEventListener("popstate", aoVoltar);
+  }, []);
+
+  /* Setinha da primeira etapa: volta para as boas-vindas ("/"). Nao usa
+     o "voltar" do navegador: a pagina anterior podia ser o Inicio, e a
+     pessoa entraria no app com o cadastro pela metade. */
+  function sairDoOnboarding() {
+    saindoRef.current = true;
+    navigate("/", { replace: true });
   }
 
   const isVerificar = step === "verificar";
