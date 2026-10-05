@@ -1,3 +1,4 @@
+/* PREFERENCIAS v1 — "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -293,7 +294,7 @@ export default function Preferencias() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[15px]" style={{ color: "var(--text)" }}>
-                Alertas do Fisco
+                Alertas do Fisco.ia
               </p>
               <p
                 className="text-xs mt-0.5"

@@ -1,3 +1,4 @@
+/* CHATFISCOUI v1 — "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026) */
 import { useRef, useState, useEffect } from "react";
 import {
   Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList,
@@ -713,12 +714,12 @@ export default function ChatFiscoUI({
         >
           <img
             src="/fisco-perfil.png"
-            alt="Fisco"
+            alt="Fisco.ia"
             style={{ width: "108%", height: "108%", objectFit: "cover", objectPosition: "50% 18%" }}
           />
         </span>
         <div className="flex-1 min-w-0">
-          <p className="font-bold" style={{ color: "var(--text)", fontSize: 18 }}>Fisco</p>
+          <p className="font-bold" style={{ color: "var(--text)", fontSize: 18 }}>Fisco.ia</p>
           <p style={{ color: "var(--primary)", fontSize: 13 }}>&#9679; Online</p>
         </div>
         <button

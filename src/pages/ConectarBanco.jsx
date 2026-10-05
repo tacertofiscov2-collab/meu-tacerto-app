@@ -1,4 +1,4 @@
-/* CONECTARBANCO v10 — topo que rola (titulo sobe, setinha fica transparente) */
+/* CONECTARBANCO v11 — "Fisco" vira "Fisco.ia" nos textos da tela (v10: topo que rola (titulo sobe, setinha fica transparente)) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Landmark, ShieldCheck, Lock, CheckCircle2 } from "lucide-react";
@@ -159,7 +159,7 @@ export default function ConectarBanco() {
             className="text-[14px] text-center leading-relaxed mb-6"
             style={{ color: "var(--text-secondary)" }}
           >
-            Conecte o banco do seu MEI e o Fisco organiza suas entradas e
+            Conecte o banco do seu MEI e o Fisco.ia organiza suas entradas e
             seus gastos sozinho.
           </p>
 
@@ -282,7 +282,7 @@ export default function ConectarBanco() {
                 marginTop: 8,
               }}
             >
-              O Fisco para de ver as entradas e os gastos novos desse banco. O
+              O Fisco.ia para de ver as entradas e os gastos novos desse banco. O
               que já foi guardado continua no app, e você pode conectar de novo
               quando quiser.
             </p>

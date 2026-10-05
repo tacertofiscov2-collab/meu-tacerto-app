@@ -220,7 +220,7 @@ export default function ComoEmitirNota() {
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-[15.5px] font-semibold leading-snug" style={{ color: "var(--text)" }}>
-                  Emitir com o Fisco pelo WhatsApp
+                  Emitir com o Fisco.ia pelo WhatsApp
                 </p>
                 <div style={{ marginTop: 5 }}>
                   <Selo>Grátis</Selo>
@@ -245,7 +245,7 @@ export default function ComoEmitirNota() {
               }}
             >
               <MessageCircle size={17} strokeWidth={2.2} />
-              Chamar o Fisco no WhatsApp
+              Chamar o Fisco.ia no WhatsApp
             </button>
           </div>
 
@@ -380,7 +380,7 @@ export default function ComoEmitirNota() {
                 <BlocoA1
                   titulo="Vantagens"
                   itens={[
-                    "O Fisco emite a nota por você, e você só confirma.",
+                    "O Fisco.ia emite a nota por você, e você só confirma.",
                     "Não precisa entrar no gov.br toda vez.",
                     ...(conteudo.vantagemExtra ? [conteudo.vantagemExtra] : []),
                     "Nada é emitido sem a sua confirmação.",

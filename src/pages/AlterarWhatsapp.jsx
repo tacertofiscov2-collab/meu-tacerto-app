@@ -1,4 +1,4 @@
-/* ALTERARWHATSAPP v3 — topo que rola (titulo sobe, setinha fica transparente) */
+/* ALTERARWHATSAPP v4 — "Fisco" vira "Fisco.ia" nos textos da tela (v3: topo que rola (titulo sobe, setinha fica transparente)) */
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ShieldCheck } from "lucide-react";
@@ -322,7 +322,7 @@ export default function AlterarWhatsapp() {
                 className="text-[14px] text-center leading-relaxed mb-6"
                 style={{ color: "var(--text-secondary)" }}
               >
-                O WhatsApp é por onde o Fisco fala com você sobre suas
+                O WhatsApp é por onde o Fisco.ia fala com você sobre suas
                 entradas e notas. Confirme que é você antes de trocar.
               </p>
 

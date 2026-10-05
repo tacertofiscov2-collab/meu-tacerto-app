@@ -1,4 +1,4 @@
-/* WELCOME v7 — sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos) */
+/* WELCOME v8 — "Fisco" vira "Fisco.ia" nos textos da tela (v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos)) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -353,7 +353,7 @@ function MiniInicio() {
             style={{ color: "var(--text-tertiary)", fontSize: 10.5, fontStyle: "italic", fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive' }}
           >
             {/* Piloto: o Fisco atende pelo WhatsApp, nao no app */}
-            {MOSTRAR_CHAT_FISCO ? "Pergunte ao Fisco..." : "Fisco no WhatsApp"}
+            {MOSTRAR_CHAT_FISCO ? "Pergunte ao Fisco.ia..." : "Fisco.ia no WhatsApp"}
           </span>
           <Send size={12} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
         </span>
@@ -447,7 +447,7 @@ function MiniConferir() {
 function MiniDas() {
   const opcoes = [
     { Icon: MessageCircle, t: "Boleto todo mês no WhatsApp", selo: "Automático" },
-    { Icon: Headphones, t: "Fisco me ajuda agora" },
+    { Icon: Headphones, t: "Fisco.ia me ajuda agora" },
     { Icon: ListChecks, t: "Quero fazer sozinho" },
     { Icon: Globe, t: "Abrir o site do governo" },
   ];
@@ -530,7 +530,7 @@ function MiniNota() {
       <div className="rounded-2xl shrink-0" style={{ padding: "10px 11px", border: "1px solid rgba(34,197,94,0.45)", backgroundColor: "rgba(34,197,94,0.08)" }}>
         <div className="flex items-center gap-2">
           <MessageCircle size={14} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
-          <span className="font-bold" style={{ color: "var(--text)", fontSize: 11.5 }}>Com o Fisco no WhatsApp</span>
+          <span className="font-bold" style={{ color: "var(--text)", fontSize: 11.5 }}>Com o Fisco.ia no WhatsApp</span>
         </div>
         <span
           className="inline-block rounded-full font-semibold"
@@ -539,7 +539,7 @@ function MiniNota() {
           Grátis
         </span>
         <p style={{ color: "var(--text-secondary)", fontSize: 10, lineHeight: 1.35, marginTop: 5 }}>
-          Você manda o valor e para quem foi. O Fisco monta tudo com você.
+          Você manda o valor e para quem foi. O Fisco.ia monta tudo com você.
         </p>
       </div>
 
@@ -556,7 +556,7 @@ function MiniNota() {
           style={{ padding: "9px 0", fontSize: 11.5, backgroundColor: VERDE, color: "var(--primary-contrast)" }}
         >
           <MessageCircle size={12} strokeWidth={2.4} />
-          Chamar o Fisco
+          Chamar o Fisco.ia
         </span>
       </div>
     </MiniTela>
@@ -570,7 +570,7 @@ function MiniPiloto() {
     "Velocímetro do limite",
     "Aviso e boleto do DAS",
     "Ajuda com a nota fiscal",
-    "Fisco no WhatsApp",
+    "Fisco.ia no WhatsApp",
   ];
   return (
     <MiniTela>
@@ -679,7 +679,7 @@ function MiniWhatsApp() {
         <ArrowLeft size={14} style={{ color: WA.texto }} />
         <FotoFisco tamanho={28} borda={WA.topo} />
         <span className="flex flex-col">
-          <span className="font-semibold" style={{ color: WA.texto, fontSize: 12 }}>Fisco · TaCerto!</span>
+          <span className="font-semibold" style={{ color: WA.texto, fontSize: 12 }}>Fisco.ia · TaCerto!</span>
           <span style={{ color: WA.hora, fontSize: 9 }}>online</span>
         </span>
       </div>
@@ -729,11 +729,11 @@ function MiniWhatsApp() {
 const SLIDES = [
   { Mini: MiniInicio, titulo: "Seu limite em tempo real", subtitulo: "Veja quanto você já faturou e quanto falta para o limite do ano." },
   { Mini: MiniBanco, mostrar: MOSTRAR_OPEN_FINANCE, titulo: "Tudo chega sozinho", subtitulo: "Conecte o banco do seu MEI e as entradas e os gastos aparecem no app." },
-  { Mini: MiniDas, mostrar: MOSTRAR_CARD_DAS, titulo: "DAS sem susto", subtitulo: "Todo mês o Fisco te avisa e manda o boleto do DAS no WhatsApp." },
-  { Mini: MiniNota, mostrar: MOSTRAR_TUTORIAL_NOTA, titulo: "Ajuda com a nota fiscal", subtitulo: "O Fisco te ajuda a emitir sua nota pelo WhatsApp, passo a passo." },
+  { Mini: MiniDas, mostrar: MOSTRAR_CARD_DAS, titulo: "DAS sem susto", subtitulo: "Todo mês o Fisco.ia te avisa e manda o boleto do DAS no WhatsApp." },
+  { Mini: MiniNota, mostrar: MOSTRAR_TUTORIAL_NOTA, titulo: "Ajuda com a nota fiscal", subtitulo: "O Fisco.ia te ajuda a emitir sua nota pelo WhatsApp, passo a passo." },
   /* Conferencia "É faturamento?": fora dos slides do piloto (a
      "propaganda" foi reprovada em 04/10). Troque para true para voltar. */
-  { Mini: MiniConferir, mostrar: false, titulo: "O Fisco organiza pra você", subtitulo: "Você diz uma vez se é faturamento. Da próxima, ele já sabe." },
+  { Mini: MiniConferir, mostrar: false, titulo: "O Fisco.ia organiza pra você", subtitulo: "Você diz uma vez se é faturamento. Da próxima, ele já sabe." },
   {
     Mini: MiniHistoricos,
     mostrar: MOSTRAR_SAIDAS && MOSTRAR_HISTORICO_DAS && MOSTRAR_NOTAS_FISCAIS,
@@ -741,7 +741,7 @@ const SLIDES = [
     subtitulo: "Entradas, saídas, DAS e notas fiscais, organizados mês a mês.",
   },
   { Mini: MiniPiloto, titulo: "Grátis", subtitulo: "Você não paga nada para usar o TaCerto!" },
-  { Mini: MiniWhatsApp, titulo: "O Fisco no WhatsApp", subtitulo: "Todo dia, às 21h, ele pergunta quanto você recebeu. Dúvidas? É só chamar." },
+  { Mini: MiniWhatsApp, titulo: "O Fisco.ia no WhatsApp", subtitulo: "Todo dia, às 21h, ele pergunta quanto você recebeu. Dúvidas? É só chamar." },
 ].filter((s) => s.mostrar !== false);
 
 export default function Welcome() {

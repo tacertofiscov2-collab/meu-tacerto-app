@@ -1,3 +1,4 @@
+/* CHAT v1 — "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026) */
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Paperclip, Sparkles } from "lucide-react";
@@ -148,7 +149,7 @@ export default function Chat() {
         </button>
         {!modoContextual && (
           <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-            Fisco
+            Fisco.ia
           </h1>
         )}
       </header>
@@ -300,7 +301,7 @@ export default function Chat() {
                   style={{ backgroundColor: "var(--field)", borderBottomLeftRadius: 6 }}
                 >
                   <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
-                    Fisco está digitando
+                    Fisco.ia está digitando
                   </span>
                   {[0, 1, 2].map((i) => (
                     <span
@@ -379,7 +380,7 @@ export default function Chat() {
             value={texto}
             maxLength={LIMITE_PERGUNTA_CHAT}
             onChange={(e) => setTexto(e.target.value)}
-            placeholder="Pergunte ao Fisco..."
+            placeholder="Pergunte ao Fisco.ia..."
             className="flex-1 bg-transparent outline-none text-sm py-2 min-w-0"
             style={{ color: "var(--text)" }}
           />

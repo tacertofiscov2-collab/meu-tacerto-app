@@ -1,4 +1,4 @@
-/* PRIVACIDADE v3 — sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta */
+/* PRIVACIDADE v4 — "Fisco" vira "Fisco.ia" nos textos da tela (v3: sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp } from "@/config/piloto";
@@ -30,7 +30,7 @@ const SECOES = [
     paragrafos: [
       "Seu nome (ou apelido), seu WhatsApp e seu e-mail.",
       "O tipo do seu MEI (MEI ou MEI Caminhoneiro) e, se você abriu o MEI este ano, o mês de abertura.",
-      "Os lançamentos do seu faturamento: valor, data e descrição. Isso inclui o que você lança no app, o faturamento aproximado que você informa no cadastro e o que você conta ao Fisco no WhatsApp.",
+      "Os lançamentos do seu faturamento: valor, data e descrição. Isso inclui o que você lança no app, o faturamento aproximado que você informa no cadastro e o que você conta ao Fisco.ia no WhatsApp.",
     ],
   },
   {
@@ -56,9 +56,9 @@ const SECOES = [
     ],
   },
   {
-    titulo: "O Fisco usa inteligência artificial",
+    titulo: "O Fisco.ia usa inteligência artificial",
     paragrafos: [
-      "O Fisco é um assistente baseado em inteligência artificial. Ele pode errar e não substitui um contador. Para decisões importantes, confirme com um contador.",
+      "O Fisco.ia é um assistente baseado em inteligência artificial. Ele pode errar e não substitui um contador. Para decisões importantes, confirme com um contador.",
     ],
   },
   {
@@ -127,7 +127,7 @@ export default function Privacidade() {
             Fale com a gente
           </h2>
           <p className="text-[14.5px] leading-relaxed mt-2" style={{ color: "var(--text-secondary)" }}>
-            Dúvida sobre seus dados? Chame o Fisco no WhatsApp.
+            Dúvida sobre seus dados? Chame o Fisco.ia no WhatsApp.
           </p>
           <a
             href={linkWhatsAppFisco(MENSAGENS_WHATSAPP.falarComFisco(dadosParaWhatsApp(app)))}
@@ -144,7 +144,7 @@ export default function Privacidade() {
               textDecoration: "none",
             }}
           >
-            Falar com o Fisco no WhatsApp
+            Falar com o Fisco.ia no WhatsApp
           </a>
         </section>
       </div>

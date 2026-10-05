@@ -1,4 +1,4 @@
-/* COMOPAGARDAS v1 — passo a passo para gerar e pagar o boleto do DAS no PGMEI (piloto) */
+/* COMOPAGARDAS v2 — "Fisco" vira "Fisco.ia" nos textos da tela (v1: passo a passo para gerar e pagar o boleto do DAS no PGMEI (piloto)) */
 import { useLocation, useNavigate } from "react-router-dom";
 import { CalendarClock, ExternalLink, MessageCircle } from "lucide-react";
 import TopoRolavel from "../components/TopoRolavel.jsx";
@@ -161,7 +161,7 @@ export default function ComoPagarDas() {
           }}
         >
           <MessageCircle size={17} strokeWidth={2.2} />
-          Prefiro que o Fisco me ajude
+          Prefiro que o Fisco.ia me ajude
         </button>
       </div>
     </div>

@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v21 — card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp */
+﻿/* DASHBOARD v22 — "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -954,7 +954,7 @@ function PainelMediaLimite({ aberto, onFechar, onFalarComFisco, limiteAnual, med
               }}
             >
               <FotoFiscoMini />
-              Não entendi, falar com o Fisco
+              Não entendi, falar com o Fisco.ia
             </button>
           ) : (
             <a
@@ -975,7 +975,7 @@ function PainelMediaLimite({ aberto, onFechar, onFalarComFisco, limiteAnual, med
               }}
             >
               <FotoFiscoMini />
-              Falar com o Fisco no WhatsApp
+              Falar com o Fisco.ia no WhatsApp
             </a>
           )}
         </div>
@@ -1039,7 +1039,7 @@ function BotaoFiscoWhatsApp({ dadosWhats }) {
     >
       <BordaCorrendo raio={16} />
       <FotoFiscoMini tamanho={30} />
-      Falar com o Fisco no WhatsApp
+      Falar com o Fisco.ia no WhatsApp
     </a>
   );
 }
@@ -1871,7 +1871,7 @@ export default function Dashboard() {
                 <span className="rounded-full overflow-hidden flex items-center justify-center" style={{ width: "100%", height: "100%" }}>
                   <img
                     src="/fisco-perfil.png"
-                    alt="Fisco"
+                    alt="Fisco.ia"
                     style={{
                       width: "108%",
                       height: "108%",
@@ -1917,7 +1917,7 @@ export default function Dashboard() {
                     fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive',
                   }}
                 >
-                  Pergunte ao Fisco...
+                  Pergunte ao Fisco.ia...
                 </span>
 
                 <Send
