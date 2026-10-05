@@ -1,4 +1,4 @@
-/* ONBOARDING v8 — "Digitar valor" abre uma folha que fica acima do teclado do iPhone + titulo sem "mais ou menos" */
+/* ONBOARDING v9 — login por WhatsApp: o campo do nome ja vem preenchido com o nome do perfil, se existir (v8: "Digitar valor" em folha acima do teclado) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -362,6 +362,31 @@ export default function Onboarding() {
       root.classList.remove("font-medium");
       anteriores.forEach((c) => root.classList.add(c));
     };
+  }, []);
+
+  /* v9: quem entra pelo WhatsApp pode ja ter nome no perfil (conta
+     antiga que nao terminou o onboarding). Se tiver, o campo ja vem
+     preenchido e a pessoa so confirma. Le do BANCO, e nao do estado do
+     aparelho, para nao puxar o nome de outra conta usada antes no mesmo
+     celular. So preenche se o campo ainda estiver vazio. */
+  useEffect(() => {
+    let ativo = true;
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!data?.user) return;
+        const { data: perfil } = await supabase
+          .from("perfis")
+          .select("nome")
+          .eq("id", data.user.id)
+          .single();
+        const salvo = String(perfil?.nome || "").trim();
+        // Ignora o que nao parece nome (e-mail ou numero de telefone)
+        if (!ativo || !salvo || salvo.includes("@") || /^[\d\s()+-]+$/.test(salvo)) return;
+        setNome((atual) => atual || salvo.slice(0, LIMITE_NOME_INPUT));
+      } catch { /* visitante ou sem internet: campo fica vazio */ }
+    })();
+    return () => { ativo = false; };
   }, []);
 
   useEffect(() => {

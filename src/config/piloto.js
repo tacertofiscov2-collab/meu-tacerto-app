@@ -115,6 +115,26 @@ export const MOSTRAR_INACABADOS = false;
 export const MOSTRAR_AVATAR = false;
 
 /* -------------------------------------------------------------------
+   LOGIN (v3 — 05/10/2026): ENTRA SO PELO WHATSAPP
+   A pessoa digita o numero, recebe um codigo de 6 digitos no WhatsApp e
+   entra (tela EntrarWhatsApp, em /login e /cadastro). Ver
+   docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md.
+
+   MOSTRAR_LOGIN_EMAIL = false esconde: login e cadastro por e-mail e
+   senha (/login e /cadastro passam a abrir a tela do WhatsApp),
+   "Esqueci a senha" (/esqueci-senha), "Alterar senha" (/alterar-senha),
+   a troca de WhatsApp com senha (/alterar-whatsapp) e os campos antigos
+   de e-mail/WhatsApp do Editar perfil.
+   ⚠️ Plano B: /entrar-email (sem link em lugar nenhum) continua abrindo
+   o login por e-mail e senha — e por ele que o Fernando entra nos testes
+   e se a Z-API cair.
+
+   MOSTRAR_LOGIN_GOOGLE = false esconde o botao "Continuar com Google".
+   ------------------------------------------------------------------- */
+export const MOSTRAR_LOGIN_EMAIL = false;
+export const MOSTRAR_LOGIN_GOOGLE = false;
+
+/* -------------------------------------------------------------------
    EXTRA A — CARD "PROXIMO DAS" NO DASHBOARD
    true mostra, abaixo do velocimetro: "Proximo DAS: 20/MM" + valor
    (DAS_2026 de src/lib/fiscal.js) + botao "Emitir boleto", que abre o

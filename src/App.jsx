@@ -1,4 +1,4 @@
-﻿/* APP v12 — piloto: rota /como-pagar-das (v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard) */
+﻿/* APP v13 — login so pelo WhatsApp: /login e /cadastro abrem EntrarWhatsApp; /entrar-email (plano B) abre o Login antigo; esqueci/alterar senha e alterar-whatsapp atras de MOSTRAR_LOGIN_EMAIL (v12: rota /como-pagar-das; v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard) */
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
@@ -11,6 +11,7 @@ import ExcluirConta from "./pages/ExcluirConta.jsx";
 import Welcome from "./pages/Welcome.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
 import Login from "./pages/Login.jsx";
+import EntrarWhatsApp from "./pages/EntrarWhatsApp.jsx";
 import Cadastro from "./pages/Cadastro.jsx";
 import EsqueciSenha from "./pages/EsqueciSenha.jsx";
 import CadastroObrigatorio from "./pages/CadastroObrigatorio.jsx";
@@ -52,7 +53,7 @@ import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_NOTAS_FISCAIS,
   MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_ADICIONAR_MOVIMENTACOES,
   MOSTRAR_RESUMO_ANO, MOSTRAR_PREFERENCIAS, MOSTRAR_SOBRE, MOSTRAR_INACABADOS,
-  MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS,
+  MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS, MOSTRAR_LOGIN_EMAIL,
 } from "./config/piloto.js";
 
 /* ===================================================================
@@ -131,10 +132,14 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Welcome />} />
           <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/cadastro" element={<Cadastro />} />
+          {/* v13: com MOSTRAR_LOGIN_EMAIL = false, /login e /cadastro abrem a
+              entrada pelo WhatsApp. /entrar-email (sem link em lugar nenhum)
+              e o plano B: login por e-mail e senha. */}
+          <Route path="/login" element={MOSTRAR_LOGIN_EMAIL ? <Login /> : <EntrarWhatsApp />} />
+          <Route path="/cadastro" element={MOSTRAR_LOGIN_EMAIL ? <Cadastro /> : <EntrarWhatsApp />} />
+          <Route path="/entrar-email" element={<Login />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+          <Route path="/esqueci-senha" element={<RotaComChave ligada={MOSTRAR_LOGIN_EMAIL}><EsqueciSenha /></RotaComChave>} />
           <Route path="/cadastro-obrigatorio" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><CadastroObrigatorio /></RotaComChave>} />
 
           <Route path="/dashboard" element={<Dashboard />} />
@@ -142,8 +147,8 @@ export default function App() {
 
           <Route path="/editar-perfil" element={<EditarPerfil />} />
           <Route path="/preferencias" element={<RotaComChave ligada={MOSTRAR_PREFERENCIAS}><Preferencias /></RotaComChave>} />
-          <Route path="/alterar-senha" element={<AlterarSenha />} />
-          <Route path="/alterar-whatsapp" element={<AlterarWhatsapp />} />
+          <Route path="/alterar-senha" element={<RotaComChave ligada={MOSTRAR_LOGIN_EMAIL}><AlterarSenha /></RotaComChave>} />
+          <Route path="/alterar-whatsapp" element={<RotaComChave ligada={MOSTRAR_LOGIN_EMAIL}><AlterarWhatsapp /></RotaComChave>} />
           <Route path="/conectar-banco" element={<RotaComChave ligada={MOSTRAR_OPEN_FINANCE}><ConectarBanco /></RotaComChave>} />
           <Route path="/conectar-banco/escolher" element={<RotaComChave ligada={MOSTRAR_OPEN_FINANCE}><EscolherBanco /></RotaComChave>} />
           <Route path="/conectar-banco/retorno" element={<RotaComChave ligada={MOSTRAR_OPEN_FINANCE}><RetornoBanco /></RotaComChave>} />
