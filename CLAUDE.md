@@ -180,6 +180,12 @@ O projeto **não tem backup automático**. Por isso:
   o Fisco no WhatsApp" (`WHATSAPP_FISCO` provisório — trocar).
   `PLUGGY_ATIVO = false`. "Sair da conta" agora desloga de verdade.
   A `main` não foi mexida.
+- **04-05/10 (2ª rodada do piloto):** 5 slides com a mesma escala e
+  altura (bug do slide 2), mensagens prontas em `MENSAGENS_WHATSAPP`
+  (`piloto.js`), card do DAS com "Emitir boleto" + painel de pagamento,
+  `/como-pagar-das`, `/como-emitir-nota` com 3 caminhos, Perfil em
+  cartões sem a bola da inicial. Decisões e pendências em
+  **`docs/DECISOES-PILOTO.md`**.
 - `main` com **33 commits sem push** (o Fernando decide quando
   publicar). Produção ainda em `f1832bb`.
 - 03/10 (fim): advisors de segurança rodados; as funções-gatilho
