@@ -1,4 +1,4 @@
-/* PILOTO v2 — + MENSAGENS_WHATSAPP (todos os textos prontos num lugar so) e abrirWhatsAppFisco */
+/* PILOTO v3 — chaves MOSTRAR_LOGIN_EMAIL/GOOGLE (login so pelo WhatsApp) + mensagem trocarNumero (v2: MENSAGENS_WHATSAPP e abrirWhatsAppFisco) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 
 /* ===================================================================
@@ -258,4 +258,9 @@ export const MENSAGENS_WHATSAPP = {
   /* Inicio, painel da media limite: "Falar com o Fisco no WhatsApp" */
   mediaLimite: (d) =>
     `Oi Fisco! Nao entendi a media limite do app. Me explica de um jeito mais facil, com um exemplo do dia a dia? ${quemSou(d)}`,
+
+  /* v3: Editar perfil, aviso "Seu numero e usado para entrar no app".
+     O numero e o login da pessoa, entao quem troca e a equipe. */
+  trocarNumero: (d) =>
+    `Oi Fisco! Quero trocar o numero do meu WhatsApp no TaCerto. Nome: ${d?.nome || "___"}`,
 };

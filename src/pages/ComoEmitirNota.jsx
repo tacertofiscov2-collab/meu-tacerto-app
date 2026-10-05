@@ -1,4 +1,4 @@
-/* COMOEMITIRNOTA v4 — selo so "Grátis" (sem "durante o piloto"); v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1 */
+/* COMOEMITIRNOTA v5 — A1: "Custa a partir de R$ 99,90" (vale 1 ano) no lugar de "valor a confirmar"; Fisco.ia (v4: selo so "Grátis"; v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1 */
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -391,7 +391,7 @@ export default function ComoEmitirNota() {
                   itens={[
                     "Por videochamada no celular, com a CNH ou o RG na mão.",
                     "Vale por 1 ano.",
-                    "Tem custo (valor a confirmar).",
+                    "Custa a partir de R$ 99,90.",
                     "O TaCerto! te ajuda a agendar.",
                   ]}
                 />

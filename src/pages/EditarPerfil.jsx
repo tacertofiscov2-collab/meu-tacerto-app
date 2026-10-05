@@ -1,10 +1,12 @@
-/* EDITARPERFIL v14 — piloto: bola com a inicial escondida (MOSTRAR_AVATAR em src/config/piloto.js); o resto igual a v13 */
+/* EDITARPERFIL v15 — lista simples (igual ao Perfil): nome editavel, WhatsApp abre aviso "fale com a gente", e-mail so se existir, Excluir conta no fim; layout antigo atras de MOSTRAR_LOGIN_EMAIL */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Trash2, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Lock, X,
+  User, Phone, Mail, Briefcase, CalendarDays,
 } from "lucide-react";
 import TopoRolavel from "../components/TopoRolavel.jsx";
+import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
 
 import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
@@ -13,7 +15,31 @@ import { useAppState } from "@/context/AppStateContext";
 import { supabase } from "@/lib/supabase";
 import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 import { EMAIL_VERIFICACAO_ATIVA } from "@/lib/flags";
-import { MOSTRAR_AVATAR } from "@/config/piloto";
+import {
+  MOSTRAR_AVATAR, MOSTRAR_LOGIN_EMAIL,
+  MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
+} from "@/config/piloto";
+
+/* ===================================================================
+   EDITARPERFIL v15 (05/10/2026) — LISTA SIMPLES + LOGIN PELO WHATSAPP
+
+   Com MOSTRAR_LOGIN_EMAIL = false (src/config/piloto.js) a tela vira
+   uma lista no mesmo estilo do Perfil (SecaoLista/LinhaLista):
+     DADOS PESSOAIS  Nome (editavel na propria linha), WhatsApp e
+                     E-mail (so se a conta tiver e-mail).
+     MEU MEI         Tipo de MEI (folha "O que mudou?", como antes) e
+                     Data de abertura (so quem abriu este ano).
+     No fim, separado: "Excluir conta" em vermelho (veio do Perfil).
+   O numero agora e o LOGIN da pessoa, entao nao se troca por aqui:
+   tocar no WhatsApp abre o aviso "Seu numero e usado para entrar no
+   app. Para trocar, fale com a gente." com o botao do WhatsApp
+   (mensagem trocarNumero). O e-mail abre um aviso parecido; o e-mail
+   do Auth nao e alterado.
+   Numero mostrado: perfis.whatsapp; se vazio, o telefone do login
+   (user.phone).
+   O layout antigo (e-mail com verificacao, WhatsApp que pede senha)
+   continua aqui, atras de MOSTRAR_LOGIN_EMAIL. Nada foi apagado.
+   =================================================================== */
 
 /* ===================================================================
    EDITARPERFIL v13 (28/09/2026): o cabecalho passou para DENTRO da area
@@ -193,6 +219,55 @@ function CampoEscolha({ rotulo, valor, onClick, travado = false }) {
           <ChevronRight size={18} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
         )}
       </button>
+    </div>
+  );
+}
+
+/* v15: linha da lista com um campo dentro (o Nome). E um <label>: tocar
+   em qualquer ponto da linha abre o teclado no campo. `Icon` tambem
+   serve para a SecaoLista recuar a risca igual as outras linhas. */
+function LinhaCampo({ Icon, rotulo, children }) {
+  return (
+    <label className="w-full flex items-center" style={{ gap: 14, padding: "13px 0", minHeight: 50 }}>
+      <Icon size={18} strokeWidth={1.9} className="shrink-0" style={{ color: "var(--text-tertiary)" }} />
+      <span className="shrink-0 font-medium" style={{ color: "var(--text)", fontSize: 15 }}>
+        {rotulo}
+      </span>
+      {children}
+    </label>
+  );
+}
+
+/* v15: aviso simples (troca de WhatsApp / e-mail): texto + botao do
+   WhatsApp + "Agora nao". */
+function AvisoFaleConosco({ texto, onWhatsApp, onFechar, cardStyle }) {
+  return (
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center p-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+      onClick={onFechar}
+    >
+      <div
+        className="w-full max-w-sm rounded-2xl p-5"
+        style={cardStyle}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <p style={{ color: "var(--text)", fontSize: 15, lineHeight: 1.5 }}>{texto}</p>
+        <button
+          onClick={onWhatsApp}
+          className="w-full py-3 rounded-xl font-semibold transition active:scale-[0.99]"
+          style={{ marginTop: 18, backgroundColor: "var(--primary)", color: "var(--primary-contrast)", fontSize: 15 }}
+        >
+          Falar no WhatsApp
+        </button>
+        <button
+          onClick={onFechar}
+          className="w-full py-3 rounded-xl font-semibold"
+          style={{ marginTop: 8, color: "var(--text-secondary)", fontSize: 15 }}
+        >
+          Agora não
+        </button>
+      </div>
     </div>
   );
 }
@@ -419,7 +494,10 @@ export default function EditarPerfil() {
   } = useUserState();
 
   /* Data de abertura: fonte unica no AppStateContext (ver topo). */
-  const { mesAnoAbertura, setMesAnoAbertura } = useAppState();
+  const app = useAppState();
+  const { mesAnoAbertura, setMesAnoAbertura } = app;
+  /* v15: aviso aberto: null | "whatsapp" | "email" */
+  const [aviso, setAviso] = useState(null);
   const mesAbertura = mesAnoAbertura?.mes || null;
   const anoAbertura = mesAnoAbertura?.ano || null;
   const anoAtual = new Date().getFullYear();
@@ -512,8 +590,11 @@ export default function EditarPerfil() {
           .eq("id", user.id)
           .single();
         if (!ativo) return;
-        if (data?.whatsapp) {
-          const local = formatarTelefone(String(data.whatsapp).replace(/^\+55/, ""));
+        /* v15: sem numero no perfil, usa o telefone do login (conta que
+           entrou pelo WhatsApp: user.phone vem como "5537999998888") */
+        const numero = data?.whatsapp || user.phone || "";
+        if (numero) {
+          const local = formatarTelefone(String(numero).replace(/^\+?55/, ""));
           setWhats(local);
           setWhatsSalvo(local);
         }
@@ -586,10 +667,13 @@ export default function EditarPerfil() {
     const nomeLimpo = nome.trim();
     const digitos = whats.replace(/\D/g, "");
     salvarNome(nomeLimpo);
-    sincronizarPerfilNoBanco({
-      nome: nomeLimpo,
-      whatsapp: digitos ? `+55${digitos}` : null,
-    });
+    /* v15: na lista nova o WhatsApp nao e editavel (e o login), entao so
+       o nome vai para o banco — sem risco de apagar o numero. */
+    sincronizarPerfilNoBanco(
+      MOSTRAR_LOGIN_EMAIL
+        ? { nome: nomeLimpo, whatsapp: digitos ? `+55${digitos}` : null }
+        : { nome: nomeLimpo }
+    );
     setWhatsSalvo(whats);
     setSalvo(true);
     setTimeout(() => setSalvo(false), 1800);
@@ -673,6 +757,83 @@ export default function EditarPerfil() {
         </div>
         )}
 
+        {/* v15: com o login so pelo WhatsApp, a lista nova. O layout
+            antigo (abaixo, depois do ":") volta com MOSTRAR_LOGIN_EMAIL. */}
+        {!MOSTRAR_LOGIN_EMAIL ? (
+          <>
+            <SecaoLista titulo="Dados pessoais" style={{ marginTop: 8 }}>
+              <LinhaCampo Icon={User} rotulo="Nome">
+                <input
+                  value={nome}
+                  maxLength={LIMITE_NOME_INPUT}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  onChange={(e) => setNome(e.target.value)}
+                  placeholder="Seu nome"
+                  className="flex-1 min-w-0 bg-transparent text-right outline-none"
+                  style={{ color: "var(--text-secondary)", fontSize: 16, border: "none", boxShadow: "none" }}
+                />
+              </LinhaCampo>
+              <LinhaLista
+                Icon={Phone}
+                rotulo="WhatsApp"
+                valor={whatsSalvo ? `+55 ${whatsSalvo}` : "Não informado"}
+                onClick={() => setAviso("whatsapp")}
+              />
+              {!visitante && email && (
+                <LinhaLista Icon={Mail} rotulo="E-mail" valor={email} onClick={() => setAviso("email")} />
+              )}
+            </SecaoLista>
+
+            {(mudouNome || salvo) && (
+              <div className="pt-4">
+                <button
+                  onClick={salvarAlteracoes}
+                  disabled={salvo}
+                  className="w-full py-3.5 rounded-2xl font-semibold text-sm transition active:scale-[0.99]"
+                  style={{
+                    backgroundColor: salvo ? "var(--field)" : "var(--primary)",
+                    color: salvo ? "var(--primary)" : "var(--primary-contrast)",
+                  }}
+                >
+                  {salvo ? "Alterações salvas" : "Salvar alterações"}
+                </button>
+              </div>
+            )}
+
+            <SecaoLista titulo="Meu MEI">
+              <LinhaLista
+                Icon={Briefcase}
+                rotulo="Tipo de MEI"
+                valor={LABEL_PERFIL[tipo] || "Não informado"}
+                onClick={() => setFolhaTipoAberta(true)}
+              />
+              {abriuEsteAno && (
+                <LinhaLista
+                  Icon={CalendarDays}
+                  rotulo="Data de abertura"
+                  valor={subAbertura}
+                  onClick={() => setCalendarioAberto(true)}
+                />
+              )}
+            </SecaoLista>
+
+            {/* Excluir conta: no fim, separado, so texto vermelho */}
+            {!visitante && (
+              <div style={{ marginTop: 44 }}>
+                <button
+                  onClick={() => navigate("/excluir-conta")}
+                  className="active:opacity-70 transition font-medium"
+                  style={{ color: "var(--danger)", fontSize: 15 }}
+                >
+                  Excluir conta
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+        <>
         {/* ================= INFORMACOES PESSOAIS ================= */}
         <TituloSecao primeiro>Informações pessoais</TituloSecao>
 
@@ -858,6 +1019,8 @@ export default function EditarPerfil() {
             </span>
           </button>
         </div>
+        </>
+        )}
       </div>
 
       <Calendario
@@ -875,6 +1038,27 @@ export default function EditarPerfil() {
           podeCorrigir={podeCorrigirTipo}
           onFechar={() => setFolhaTipoAberta(false)}
           onCorrigir={corrigirTipo}
+          cardStyle={cardStyle}
+        />
+      )}
+
+      {aviso && (
+        <AvisoFaleConosco
+          texto={
+            aviso === "whatsapp"
+              ? "Seu número é usado para entrar no app. Para trocar, fale com a gente."
+              : "Para trocar o e-mail, fale com a gente."
+          }
+          onWhatsApp={() => {
+            const dados = dadosParaWhatsApp({ ...app, nome: nome.trim() || nomeSalvo });
+            abrirWhatsAppFisco(
+              aviso === "whatsapp"
+                ? MENSAGENS_WHATSAPP.trocarNumero(dados)
+                : MENSAGENS_WHATSAPP.falarComFisco(dados)
+            );
+            setAviso(null);
+          }}
+          onFechar={() => setAviso(null)}
           cardStyle={cardStyle}
         />
       )}

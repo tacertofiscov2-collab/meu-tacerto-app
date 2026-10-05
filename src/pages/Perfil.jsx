@@ -1,14 +1,15 @@
-﻿/* PERFIL v9 — selo "TaCerto! é grátis" no lugar de "Você faz parte do piloto"; v8: cartoes Meu MEI, Minha conta, Ajuda, Sobre */
+﻿/* PERFIL v10 — lista simples estilo Pierre Finance (sem cartoes, sem chip, sem WhatsApp no topo, sem selo, sem Excluir conta); Fisco.ia (v9: selo "gratis"; v8: cartoes) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
 import {
   User, Settings, Info, Shield, Lock, LogOut,
-  ChevronDown, ChevronRight, UserPlus, X, Check, TrendingUp, BarChart3,
+  ChevronDown, UserPlus, X, Check, TrendingUp, BarChart3,
   Trash2, FileText, ArrowUpRight, ArrowDownLeft, CalendarCheck,
-  Phone, Mail, Briefcase, CalendarDays, Gauge, MessageCircle, Sparkles,
+  Briefcase, CalendarDays, Gauge, MessageCircle,
 } from "lucide-react";
 import TopoRolavel from "../components/TopoRolavel.jsx";
+import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
 import Valor from "../components/Valor.jsx";
 import { LABEL_TIPO, calcularFaltamOuExcedeu } from "@/lib/fiscal";
 
@@ -21,9 +22,25 @@ import { useAppState } from "@/context/AppStateContext";
 import {
   MOSTRAR_PREFERENCIAS, MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_NOTAS_FISCAIS,
   MOSTRAR_ADICIONAR_MOVIMENTACOES, MOSTRAR_RESUMO_ANO, MOSTRAR_SOBRE,
-  MOSTRAR_AVATAR, MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS,
+  MOSTRAR_AVATAR, MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS, MOSTRAR_LOGIN_EMAIL,
   MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
 } from "@/config/piloto";
+
+/* ===================================================================
+   PERFIL v10 (05/10/2026) — LISTA SIMPLES (referencia: Pierre Finance)
+   - Sem cartoes: cada item e uma linha (SecaoLista/LinhaLista, em
+     src/components/ListaSimples.jsx — o Editar perfil usa as mesmas).
+   - Topo: SO o nome. Sairam o chip verde do tipo de MEI e o WhatsApp.
+   - Saiu o selo "TaCerto! é grátis". A versao fica no rodape.
+   - WhatsApp e e-mail nao aparecem mais aqui (so no Editar perfil).
+   - MEU MEI: so informacao (sem setinha): tipo, abertura, limite do
+     ano, ja faturado e falta (ou quanto passou, em vermelho).
+   - CONTA: Editar perfil. "Alterar senha" so com MOSTRAR_LOGIN_EMAIL.
+   - AJUDA: Falar com o Fisco.ia no WhatsApp, Como emitir nota, Como
+     pagar o DAS. SOBRE: Termos de uso, Politica de privacidade.
+   - Por ultimo "Sair da conta", linha simples. O "Excluir conta" foi
+     para o fim do Editar perfil.
+   =================================================================== */
 
 /* ===================================================================
    PERFIL v8 (04/10/2026) — pedido do Fernando, so com o que ja existe
@@ -69,95 +86,6 @@ const FOTO_KEY = "tacerto_foto_usuario";
    com Capacitor e o gesto nativo entrar. */
 const DE_PERFIL = { state: { de: "perfil" } };
 
-/* ===================================================================
-   CARTOES DE VIDRO DO PERFIL (v8)
-
-   Cada secao e um cartao no estilo vidro do app (o mesmo dos cards do
-   Inicio), com um titulo pequeno em cima. Dentro, uma Linha por item:
-   icone, rotulo, valor (se tiver) e a setinha quando da para tocar.
-   As linhas sao separadas por uma risca fina (divide-y), entao tanto faz
-   quais aparecem: item escondido por chave nao deixa risca sobrando.
-   =================================================================== */
-const VIDRO_CARD = {
-  background:
-    "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
-  border: "1px solid var(--vidro-borda)",
-  boxShadow: "inset 0 1px 0 0 var(--vidro-topo-medio), 0 8px 24px var(--vidro-sombra)",
-};
-
-function CardSecao({ titulo, children }) {
-  return (
-    <section style={{ marginTop: 20 }}>
-      {titulo && (
-        <p
-          className="text-[12px] font-semibold uppercase"
-          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em", margin: "0 4px 8px" }}
-        >
-          {titulo}
-        </p>
-      )}
-      <div
-        className="rounded-2xl overflow-hidden divide-y divide-[color:var(--border)]"
-        style={VIDRO_CARD}
-      >
-        {children}
-      </div>
-    </section>
-  );
-}
-
-function Linha({ Icon, rotulo, detalhe, valor, onClick, cor }) {
-  const conteudo = (
-    <>
-      {Icon && (
-        <Icon size={20} strokeWidth={2} style={{ color: cor || "var(--primary)" }} className="shrink-0" />
-      )}
-      <span className="flex-1 min-w-0">
-        <span className="block text-[15px] font-semibold leading-snug" style={{ color: cor || "var(--text)" }}>
-          {rotulo}
-        </span>
-        {detalhe && (
-          <span className="block text-[12.5px]" style={{ color: "var(--text-tertiary)", marginTop: 1 }}>
-            {detalhe}
-          </span>
-        )}
-      </span>
-      {valor != null && valor !== "" && (
-        <span
-          className="shrink-0 text-right text-[14px] truncate"
-          style={{ color: "var(--text-secondary)", maxWidth: "55%" }}
-        >
-          {valor}
-        </span>
-      )}
-      {onClick && <ChevronRight size={17} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />}
-    </>
-  );
-  const estilo = { gap: 12, padding: "13px 14px", minHeight: 52 };
-  if (!onClick) {
-    return (
-      <div className="w-full flex items-center text-left" style={estilo}>
-        {conteudo}
-      </div>
-    );
-  }
-  return (
-    <button type="button" onClick={onClick} className="toque w-full flex items-center text-left" style={estilo}>
-      {conteudo}
-    </button>
-  );
-}
-
-/* "+5537999999999" -> "+55 (37) 99999-9999" */
-function formatarWhatsapp(valor) {
-  const d = String(valor || "").replace(/\D/g, "").replace(/^55/, "");
-  if (d.length < 10) return valor || "";
-  const ddd = d.slice(0, 2);
-  const resto = d.slice(2);
-  const meio = resto.length === 9 ? resto.slice(0, 5) : resto.slice(0, 4);
-  return `+55 (${ddd}) ${meio}-${resto.slice(meio.length)}`;
-}
-
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
@@ -189,28 +117,6 @@ export default function Perfil() {
   const [seletorAberto, setSeletorAberto] = useState(false);
   const [confirmarSair, setConfirmarSair] = useState(false);
   const [contaARemover, setContaARemover] = useState(null);
-
-  /* v8: WhatsApp do perfil (coluna `whatsapp` da tabela perfis, a mesma
-     que o Cadastro e o Editar perfil usam). So leitura. */
-  const [whatsapp, setWhatsapp] = useState("");
-  useEffect(() => {
-    let ativo = true;
-    (async () => {
-      try {
-        const { data: u } = await supabase.auth.getUser();
-        if (!u?.user) return;
-        const { data } = await supabase
-          .from("perfis")
-          .select("whatsapp")
-          .eq("id", u.user.id)
-          .single();
-        if (ativo && data?.whatsapp) setWhatsapp(formatarWhatsapp(data.whatsapp));
-      } catch {
-        /* sem rede: a linha mostra "Não informado" */
-      }
-    })();
-    return () => { ativo = false; };
-  }, []);
 
   useEffect(() => {
     const handler = () => {
@@ -346,7 +252,7 @@ export default function Perfil() {
         )}
 
         <div className="px-5">
-          {/* ===== Topo: nome em destaque + chip do tipo + WhatsApp ===== */}
+          {/* ===== Topo: SO o nome (v10: sem chip do tipo e sem WhatsApp) ===== */}
           <div style={{ paddingTop: 6 }}>
             <button
               type="button"
@@ -361,168 +267,113 @@ export default function Perfil() {
                 <ChevronDown size={18} style={{ color: "var(--text-secondary)" }} className="shrink-0" />
               )}
             </button>
-
-            <div className="flex items-center flex-wrap" style={{ gap: 8, marginTop: 8 }}>
-              {!visitante && rotuloTipo && (
-                <span
-                  className="rounded-full font-semibold"
-                  style={{
-                    fontSize: 13,
-                    padding: "4px 11px",
-                    color: "var(--primary)",
-                    backgroundColor: "rgba(34,197,94,0.14)",
-                    border: "1px solid rgba(34,197,94,0.4)",
-                  }}
-                >
-                  {rotuloTipo}
-                </span>
-              )}
-              {whatsapp && (
-                <span className="flex items-center text-[13.5px]" style={{ gap: 5, color: "var(--text-secondary)" }}>
-                  <Phone size={14} strokeWidth={2} className="shrink-0" />
-                  {whatsapp}
-                </span>
-              )}
-            </div>
           </div>
 
-          {/* ===== Meu MEI ===== */}
+          {/* ===== Meu MEI: so informacao, sem setinha ===== */}
           {!visitante && (
-            <CardSecao titulo="Meu MEI">
-              <Linha
-                Icon={Briefcase}
-                rotulo="Tipo de MEI"
-                valor={rotuloTipo}
-                onClick={() => navigate("/editar-perfil", DE_PERFIL)}
-              />
-              {abertura && (
-                <Linha
-                  Icon={CalendarDays}
-                  rotulo="Abertura"
-                  valor={abertura}
-                  onClick={() => navigate("/editar-perfil", DE_PERFIL)}
-                />
-              )}
-              <Linha
+            <SecaoLista titulo="Meu MEI">
+              <LinhaLista Icon={Briefcase} rotulo="Tipo de MEI" valor={rotuloTipo} />
+              {abertura && <LinhaLista Icon={CalendarDays} rotulo="Abertura" valor={abertura} />}
+              <LinhaLista
                 Icon={Gauge}
-                rotulo={`Limite de ${anoAtual}`}
-                detalhe={limiteEhProporcional ? "Proporcional aos meses desde a abertura" : null}
-                valor={<Valor tamanho="sm">{limiteAtual}</Valor>}
+                rotulo="Limite do ano"
+                detalhe={limiteEhProporcional ? "Proporcional" : null}
+                valor={<Valor tamanho="sm" cor="var(--text-secondary)">{limiteAtual}</Valor>}
               />
-              <Linha
+              <LinhaLista
                 Icon={ArrowDownLeft}
-                rotulo="Já faturou"
-                valor={<Valor tamanho="sm">{faturamentoAtual}</Valor>}
-                onClick={() => navigate("/historico", DE_PERFIL)}
+                rotulo="Já faturado"
+                valor={<Valor tamanho="sm" cor="var(--text-secondary)">{faturamentoAtual}</Valor>}
               />
               {situacao.tipo === "faltam" ? (
-                <Linha
+                <LinhaLista
                   Icon={TrendingUp}
-                  rotulo="Falta para o limite"
-                  valor={<Valor tamanho="sm">{situacao.valor}</Valor>}
+                  rotulo="Falta"
+                  valor={<Valor tamanho="sm" cor="var(--text-secondary)">{situacao.valor}</Valor>}
                 />
               ) : (
-                <Linha
+                <LinhaLista
                   Icon={TrendingUp}
                   rotulo="Passou do limite"
-                  cor="var(--danger)"
-                  valor={<Valor tamanho="sm">{situacao.valor}</Valor>}
-                  onClick={() => navigate("/regra-vinte", DE_PERFIL)}
+                  valor={<Valor tamanho="sm" cor="var(--danger)">{situacao.valor}</Valor>}
                 />
               )}
               {/* Telas escondidas no piloto (chaves em src/config/piloto.js) */}
               {MOSTRAR_SAIDAS && (
-                <Linha Icon={ArrowUpRight} rotulo="Histórico de saídas" onClick={() => navigate("/saidas", DE_PERFIL)} />
+                <LinhaLista Icon={ArrowUpRight} rotulo="Histórico de saídas" onClick={() => navigate("/saidas", DE_PERFIL)} />
               )}
               {MOSTRAR_HISTORICO_DAS && (
-                <Linha Icon={CalendarCheck} rotulo="Histórico de DAS" onClick={() => navigate("/das", DE_PERFIL)} />
+                <LinhaLista Icon={CalendarCheck} rotulo="Histórico de DAS" onClick={() => navigate("/das", DE_PERFIL)} />
               )}
               {MOSTRAR_NOTAS_FISCAIS && (
-                <Linha Icon={FileText} rotulo="Histórico de notas fiscais" onClick={() => navigate("/notas-fiscais", DE_PERFIL)} />
+                <LinhaLista Icon={FileText} rotulo="Histórico de notas fiscais" onClick={() => navigate("/notas-fiscais", DE_PERFIL)} />
               )}
               {MOSTRAR_ADICIONAR_MOVIMENTACOES && (
-                <Linha Icon={TrendingUp} rotulo="Adicionar movimentações" onClick={() => navigate("/adicionar-faturamento", DE_PERFIL)} />
+                <LinhaLista Icon={TrendingUp} rotulo="Adicionar movimentações" onClick={() => navigate("/adicionar-faturamento", DE_PERFIL)} />
               )}
               {MOSTRAR_RESUMO_ANO && (
-                <Linha Icon={BarChart3} rotulo={`Resumo de ${anoAtual}`} onClick={() => navigate("/perfil/resumo", DE_PERFIL)} />
+                <LinhaLista Icon={BarChart3} rotulo={`Resumo de ${anoAtual}`} onClick={() => navigate("/perfil/resumo", DE_PERFIL)} />
               )}
-            </CardSecao>
+            </SecaoLista>
           )}
 
-          {/* ===== Minha conta ===== */}
-          <CardSecao titulo="Minha conta">
-            {contaItem && <Linha Icon={contaItem.Icon} rotulo={contaItem.label} onClick={contaItem.onClick} />}
+          {/* ===== Conta ===== */}
+          <SecaoLista titulo="Conta">
+            {contaItem && <LinhaLista Icon={contaItem.Icon} rotulo={contaItem.label} onClick={contaItem.onClick} />}
             {!visitante && (
-              <Linha Icon={User} rotulo="Editar perfil" onClick={() => navigate("/editar-perfil", DE_PERFIL)} />
+              <LinhaLista Icon={User} rotulo="Editar perfil" onClick={() => navigate("/editar-perfil", DE_PERFIL)} />
             )}
-            {!visitante && (
-              <Linha
-                Icon={Phone}
-                rotulo="WhatsApp"
-                valor={whatsapp || "Não informado"}
-                onClick={() => navigate("/editar-perfil", DE_PERFIL)}
-              />
-            )}
-            {!visitante && email && (
-              <Linha Icon={Mail} rotulo="E-mail" valor={email} onClick={() => navigate("/editar-perfil", DE_PERFIL)} />
-            )}
-            {!visitante && (
-              <Linha Icon={Lock} rotulo="Alterar senha" onClick={() => navigate("/alterar-senha", DE_PERFIL)} />
+            {/* v10: so com o login por e-mail ligado (MOSTRAR_LOGIN_EMAIL) */}
+            {!visitante && MOSTRAR_LOGIN_EMAIL && (
+              <LinhaLista Icon={Lock} rotulo="Alterar senha" onClick={() => navigate("/alterar-senha", DE_PERFIL)} />
             )}
             {MOSTRAR_PREFERENCIAS && (
-              <Linha Icon={Settings} rotulo="Preferências" onClick={() => navigate("/preferencias", DE_PERFIL)} />
+              <LinhaLista Icon={Settings} rotulo="Preferências" onClick={() => navigate("/preferencias", DE_PERFIL)} />
             )}
-          </CardSecao>
+          </SecaoLista>
 
           {/* ===== Ajuda ===== */}
-          <CardSecao titulo="Ajuda">
-            <Linha
+          <SecaoLista titulo="Ajuda">
+            <LinhaLista
               Icon={MessageCircle}
-              rotulo="Falar com o Fisco no WhatsApp"
+              rotulo="Falar com o Fisco.ia no WhatsApp"
               onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.falarComFisco(dadosParaWhatsApp(app)))}
             />
             {MOSTRAR_TUTORIAL_NOTA && (
-              <Linha Icon={FileText} rotulo="Como emitir nota" onClick={() => navigate("/como-emitir-nota", DE_PERFIL)} />
+              <LinhaLista Icon={FileText} rotulo="Como emitir nota" onClick={() => navigate("/como-emitir-nota", DE_PERFIL)} />
             )}
             {MOSTRAR_TUTORIAL_DAS && (
-              <Linha Icon={CalendarCheck} rotulo="Como pagar o DAS" onClick={() => navigate("/como-pagar-das", DE_PERFIL)} />
+              <LinhaLista Icon={CalendarCheck} rotulo="Como pagar o DAS" onClick={() => navigate("/como-pagar-das", DE_PERFIL)} />
             )}
-          </CardSecao>
+          </SecaoLista>
 
           {/* ===== Sobre ===== */}
-          <CardSecao titulo="Sobre">
-            <Linha Icon={Shield} rotulo="Termos de uso" onClick={() => navigate("/termos-de-uso", DE_PERFIL)} />
-            <Linha Icon={Lock} rotulo="Política de privacidade" onClick={() => navigate("/privacidade", DE_PERFIL)} />
+          <SecaoLista titulo="Sobre">
+            <LinhaLista Icon={Shield} rotulo="Termos de uso" onClick={() => navigate("/termos-de-uso", DE_PERFIL)} />
+            <LinhaLista Icon={Lock} rotulo="Política de privacidade" onClick={() => navigate("/privacidade", DE_PERFIL)} />
             {MOSTRAR_SOBRE && (
-              <Linha Icon={Info} rotulo="Sobre o TaCerto!" onClick={() => navigate("/sobre", DE_PERFIL)} />
+              <LinhaLista Icon={Info} rotulo="Sobre o TaCerto!" onClick={() => navigate("/sobre", DE_PERFIL)} />
             )}
-          </CardSecao>
+          </SecaoLista>
 
-          {/* selo discreto do piloto + versao */}
-          <div className="flex flex-col items-center" style={{ marginTop: 14, gap: 6 }}>
-            <span
-              className="rounded-full flex items-center"
-              style={{
-                gap: 5,
-                fontSize: 12,
-                padding: "4px 10px",
-                color: "var(--text-secondary)",
-                border: "1px solid var(--border)",
-              }}
-            >
-              <Sparkles size={12} strokeWidth={2.2} style={{ color: "var(--primary)" }} />
-              TaCerto! é grátis
-            </span>
-            <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>v0.1</span>
-          </div>
-
-          {/* ===== Sair e Excluir (por ultimo) ===== */}
+          {/* ===== Sair (por ultimo, linha simples). O "Excluir conta"
+               mudou para o fim do Editar perfil (v10). ===== */}
           {!visitante && (
-            <CardSecao>
-              <Linha Icon={LogOut} rotulo="Sair da conta" cor="var(--danger)" onClick={() => setConfirmarSair(true)} />
-              <Linha Icon={Trash2} rotulo="Excluir conta" cor="var(--danger)" onClick={() => navigate("/excluir-conta", DE_PERFIL)} />
-            </CardSecao>
+            <SecaoLista>
+              <LinhaLista
+                Icon={LogOut}
+                rotulo="Sair da conta"
+                cor="var(--danger)"
+                semSeta
+                onClick={() => setConfirmarSair(true)}
+              />
+            </SecaoLista>
           )}
+
+          {/* Versao do app no rodape */}
+          <p className="text-center" style={{ color: "var(--text-tertiary)", fontSize: 11, marginTop: 24 }}>
+            v0.1
+          </p>
         </div>
       </div>
 
