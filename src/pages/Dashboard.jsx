@@ -1,11 +1,13 @@
-﻿/* DASHBOARD v22 — "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
+﻿/* DASHBOARD v23 — variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import {
   Gauge, ChevronRight, Send, X, Mic, Image as ImageIcon, Camera, FileText, Sparkles, BookOpen,
+  CalendarClock, MessageCircle,
 } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
+import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
 import SimboloPluggy from "../components/SimboloPluggy.jsx";
@@ -19,8 +21,9 @@ import { supabase } from "@/lib/supabase";
 import { listarConexoes, sincronizar, organizarPelasRegras } from "@/lib/openfinance";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_RESUMO_ANO, linkWhatsAppFisco,
-  MENSAGENS_WHATSAPP, dadosParaWhatsApp,
+  MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
   MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA,
+  MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO,
 } from "@/config/piloto";
 /* DASHBOARD v19 (04/10/2026) — EXTRAS DO PILOTO
    - Card "Proximo DAS" logo abaixo do velocimetro (CardProximoDas,
@@ -384,6 +387,9 @@ function CardVelocimetroCarrossel({
   rotuloPerfil, percentual, faturado, limite,
   percentualMedia, mediaMensal, mediaLimite,
   onDuvidas, onResumo, onExcedente,
+  /* v23: "vidro" (cartao de sempre) | "nenhuma" (solto no fundo) |
+     "suave" (fundo levemente mais claro, sem borda) */
+  moldura = "vidro",
 }) {
   const [pagina, setPagina] = useState(0);
   const [dragPx, setDragPx] = useState(0);
@@ -476,11 +482,16 @@ function CardVelocimetroCarrossel({
     return () => { if (!moveu.current) fn(); };
   }
 
-  const bgCard = {
-    ...VIDRO,
-    boxShadow:
-      "inset 0 1px 0 0 var(--vidro-topo-medio), inset 0 6px 14px -8px var(--vidro-topo-fraco), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
-  };
+  const bgCard =
+    moldura === "nenhuma"
+      ? {}
+      : moldura === "suave"
+      ? { backgroundColor: "var(--surface)" }
+      : {
+          ...VIDRO,
+          boxShadow:
+            "inset 0 1px 0 0 var(--vidro-topo-medio), inset 0 6px 14px -8px var(--vidro-topo-fraco), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
+        };
 
   const larg = larguraCard || 1;
   const base = pagina === 0 ? 0 : -50;
@@ -508,7 +519,8 @@ function CardVelocimetroCarrossel({
     >
       {/* Alerta visual: passou dos 100% do limite. So no card A — ao
           deslizar para o card B a borda some suavemente (v12). */}
-      {percentual > 100 && (
+      {/* v23: a borda vermelha so faz sentido no cartao de vidro */}
+      {percentual > 100 && moldura === "vidro" && (
         <div
           aria-hidden
           className="pointer-events-none absolute"
@@ -1153,6 +1165,162 @@ function BotaoComoEmitirNota() {
   );
 }
 
+/* ===================================================================
+   VARIACOES DO INICIO (v23 — 05/10/2026, para o Fernando escolher)
+
+   Pedido: Inicio "clean" como o Perfil, SEM a borda de vidro em volta
+   do velocimetro, do botao do Fisco e da barra de baixo. Mesmo conteudo
+   (velocimetro, proximo DAS, Fisco.ia no WhatsApp, como emitir nota).
+     atual  como era (vidro)
+     a      LISTA: velocimetro solto + linhas finas (ListaSimples)
+     b      BLOCOS: fundos suaves sem borda
+     c      ATALHOS: velocimetro solto + 3 atalhos redondos
+   O seletor de teste so aparece com MOSTRAR_SELETOR_VISUAL_INICIO.
+   =================================================================== */
+const CHAVE_VISUAL_INICIO = "tacerto_visual_inicio";
+const VISUAIS_INICIO = [["atual", "Atual"], ["a", "A"], ["b", "B"], ["c", "C"]];
+
+function lerVisualInicio() {
+  if (!MOSTRAR_SELETOR_VISUAL_INICIO) return VISUAL_INICIO_PADRAO;
+  try {
+    const v = localStorage.getItem(CHAVE_VISUAL_INICIO);
+    return VISUAIS_INICIO.some(([id]) => id === v) ? v : VISUAL_INICIO_PADRAO;
+  } catch {
+    return VISUAL_INICIO_PADRAO;
+  }
+}
+
+function SeletorVisualInicio({ visual, onEscolher }) {
+  return (
+    <div className="shrink-0 flex items-center justify-center" style={{ gap: 6, paddingTop: 8 }}>
+      <span style={{ fontSize: 11.5, color: "var(--text-tertiary)" }}>Teste do visual:</span>
+      {VISUAIS_INICIO.map(([id, rotulo]) => {
+        const ativo = visual === id;
+        return (
+          <button
+            key={id}
+            type="button"
+            onClick={() => onEscolher(id)}
+            className="rounded-full font-semibold"
+            style={{
+              fontSize: 12,
+              padding: "3px 11px",
+              color: ativo ? "var(--primary)" : "var(--text-tertiary)",
+              border: `1px solid ${ativo ? "var(--primary)" : "var(--border)"}`,
+              background: "none",
+            }}
+          >
+            {rotulo}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* Dia, mes e valor do proximo DAS (o mesmo calculo do CardProximoDas) */
+function dadosProximoDas(tipoMEI) {
+  const vencimento = proximoVencimentoDas();
+  const tabela = DAS_2026[tipoMEI] || DAS_2026.MEI;
+  return {
+    dia: String(vencimento.getDate()).padStart(2, "0"),
+    mes: String(vencimento.getMonth() + 1).padStart(2, "0"),
+    valor: tabela[DAS_ATIVIDADE_PADRAO[tipoMEI] || DAS_ATIVIDADE_PADRAO.MEI],
+  };
+}
+
+/* A — LISTA, igual ao Perfil */
+function InicioLista({ das, onDas, onFisco, onNota }) {
+  return (
+    <SecaoLista style={{ marginTop: 4 }}>
+      {MOSTRAR_CARD_DAS && (
+        <LinhaLista
+          Icon={CalendarClock}
+          rotulo="Próximo DAS"
+          detalhe={`Vence ${das.dia}/${das.mes} · toque para emitir`}
+          valor={das.valor != null ? <Valor px={15} cor="var(--text-secondary)">{das.valor}</Valor> : null}
+          onClick={onDas}
+        />
+      )}
+      <LinhaLista Icon={MessageCircle} rotulo="Falar com o Fisco.ia" detalhe="No WhatsApp" onClick={onFisco} />
+      {MOSTRAR_TUTORIAL_NOTA && <LinhaLista Icon={FileText} rotulo="Como emitir nota" onClick={onNota} />}
+    </SecaoLista>
+  );
+}
+
+/* B — BLOCOS de fundo suave, sem borda */
+function InicioBlocos({ das, onDas, onFisco, onNota }) {
+  const bloco = { backgroundColor: "var(--surface)", borderRadius: 20, border: "none" };
+  return (
+    <div className="shrink-0" style={{ marginTop: 12 }}>
+      <div className="grid grid-cols-2" style={{ gap: 10 }}>
+        {MOSTRAR_CARD_DAS && (
+          <button type="button" onClick={onDas} className="toque text-left flex flex-col" style={{ ...bloco, padding: "14px 15px" }}>
+            <span style={{ fontSize: 13, color: "var(--text-tertiary)" }}>Próximo DAS · {das.dia}/{das.mes}</span>
+            {das.valor != null && (
+              <span style={{ marginTop: 4 }}><Valor px={17} peso={700}>{das.valor}</Valor></span>
+            )}
+            <span className="font-semibold" style={{ fontSize: 13.5, color: "var(--primary)", marginTop: "auto", paddingTop: 10 }}>
+              Emitir boleto
+            </span>
+          </button>
+        )}
+        <button type="button" onClick={onFisco} className="toque text-left flex flex-col" style={{ ...bloco, padding: "14px 15px" }}>
+          <span className="flex items-center" style={{ gap: 8 }}>
+            <FotoFiscoMini tamanho={24} />
+            <span className="font-semibold" style={{ fontSize: 15, color: "var(--text)" }}>Fisco.ia</span>
+          </span>
+          <span style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 4 }}>Dúvidas e ajuda</span>
+          <span className="font-semibold" style={{ fontSize: 13.5, color: "var(--primary)", marginTop: "auto", paddingTop: 10 }}>
+            Falar no WhatsApp
+          </span>
+        </button>
+      </div>
+      {MOSTRAR_TUTORIAL_NOTA && (
+        <button
+          type="button"
+          onClick={onNota}
+          className="toque w-full flex items-center"
+          style={{ ...bloco, marginTop: 10, padding: "13px 15px", gap: 12 }}
+        >
+          <FileText size={19} strokeWidth={1.9} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+          <span className="flex-1 text-left font-medium" style={{ fontSize: 15.5, color: "var(--text)" }}>Como emitir nota</span>
+          <ChevronRight size={18} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* C — ATALHOS redondos */
+function InicioAtalhos({ das, onDas, onFisco, onNota }) {
+  const itens = [
+    MOSTRAR_CARD_DAS && { Icon: CalendarClock, rotulo: "Boleto do DAS", onClick: onDas },
+    { Icon: MessageCircle, rotulo: "Fisco.ia", onClick: onFisco },
+    MOSTRAR_TUTORIAL_NOTA && { Icon: FileText, rotulo: "Emitir nota", onClick: onNota },
+  ].filter(Boolean);
+  return (
+    <div className="shrink-0" style={{ marginTop: 10 }}>
+      {MOSTRAR_CARD_DAS && (
+        <p className="text-center flex items-center justify-center" style={{ fontSize: 14, color: "var(--text-secondary)", gap: 5 }}>
+          Próximo DAS: {das.dia}/{das.mes} ·
+          {das.valor != null && <Valor px={14} peso={600}>{das.valor}</Valor>}
+        </p>
+      )}
+      <div className="grid" style={{ gridTemplateColumns: `repeat(${itens.length}, 1fr)`, marginTop: 16 }}>
+        {itens.map(({ Icon, rotulo, onClick }) => (
+          <button key={rotulo} type="button" onClick={onClick} className="toque flex flex-col items-center" style={{ gap: 8 }}>
+            <span className="rounded-full flex items-center justify-center" style={{ width: 54, height: 54, backgroundColor: "var(--surface)" }}>
+              <Icon size={22} strokeWidth={1.9} style={{ color: "var(--primary)" }} />
+            </span>
+            <span className="font-medium" style={{ fontSize: 13.5, color: "var(--text)" }}>{rotulo}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /** Borda pulsando — acende e apaga suavemente, com halo em volta.
     Usada em verde no chat do Fisco e em vermelho no card do
     velocímetro quando o usuário passa dos 100% do limite.
@@ -1753,6 +1921,22 @@ export default function Dashboard() {
   // v21: painel "Como voce quer pagar seu DAS?" (botao "Emitir boleto")
   const [folhaDas, setFolhaDas] = useState(false);
 
+  /* v23: variacao do visual (ver "VARIACOES DO INICIO") */
+  const [visual, setVisual] = useState(lerVisualInicio);
+  function escolherVisual(v) {
+    setVisual(v);
+    try { localStorage.setItem(CHAVE_VISUAL_INICIO, v); } catch { /* ignora */ }
+  }
+  const das = dadosProximoDas(tipoMEI);
+  const acoesInicio = {
+    das,
+    onDas: () => setFolhaDas(true),
+    onFisco: () => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.falarComFisco(dadosWhats)),
+    onNota: () => navigate("/como-emitir-nota", DE_DASHBOARD),
+  };
+  const molduraVelocimetro = visual === "atual" ? "vidro" : visual === "b" ? "suave" : "nenhuma";
+  const visualBarra = { atual: "vidro", a: "linha", b: "solta", c: "lisa" }[visual] || "vidro";
+
   // Paineis dos baloes: null (fechado), "anual" (card A -> Tirar duvidas)
   // ou "media" (card B -> explicacao da media limite)
   const [painelDuvidas, setPainelDuvidas] = useState(null);
@@ -1781,6 +1965,9 @@ export default function Dashboard() {
         className="flex-1 flex flex-col min-h-0"
         style={{ paddingBottom: "calc(76px + env(safe-area-inset-bottom))" }}
       >
+        {/* v23: seletor de teste do visual (some com a chave desligada) */}
+        {MOSTRAR_SELETOR_VISUAL_INICIO && <SeletorVisualInicio visual={visual} onEscolher={escolherVisual} />}
+
         <header className="px-5 pt-4 pb-1 flex items-start justify-between shrink-0">
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2.5">
@@ -1811,7 +1998,8 @@ export default function Dashboard() {
           {/* Piloto: sem Open Finance, sem o botao do banco (v18); no lugar,
               o botao pequeno do tutorial da nota (v19) */}
           <div className="flex items-center shrink-0" style={{ gap: 8 }}>
-            {MOSTRAR_TUTORIAL_NOTA && <BotaoComoEmitirNota />}
+            {/* v23: nas variacoes, "Como emitir nota" vai para baixo */}
+            {MOSTRAR_TUTORIAL_NOTA && visual === "atual" && <BotaoComoEmitirNota />}
             {MOSTRAR_OPEN_FINANCE && <BotaoBanco onSincronizou={verificarEntradas} />}
           </div>
         </header>
@@ -1830,15 +2018,22 @@ export default function Dashboard() {
               navigate(MOSTRAR_RESUMO_ANO ? "/perfil/resumo" : "/historico", DE_DASHBOARD)
             }
             onExcedente={() => navigate("/regra-vinte", DE_DASHBOARD)}
+            moldura={molduraVelocimetro}
           />
 
           {/* Piloto (v19): proximo DAS, logo abaixo do velocimetro */}
-          {MOSTRAR_CARD_DAS && (
+          {MOSTRAR_CARD_DAS && visual === "atual" && (
             <CardProximoDas tipoMEI={tipoMEI} onEmitirBoleto={() => setFolhaDas(true)} />
           )}
 
           {/* Piloto (v18): o Fisco atende pelo WhatsApp */}
-          {!MOSTRAR_CHAT_FISCO && <BotaoFiscoWhatsApp dadosWhats={dadosWhats} />}
+          {!MOSTRAR_CHAT_FISCO && visual === "atual" && <BotaoFiscoWhatsApp dadosWhats={dadosWhats} />}
+
+          {/* v23: variacoes A, B e C (mesmo conteudo, sem vidro) */}
+          {visual === "a" && <InicioLista {...acoesInicio} />}
+          {visual === "b" && <InicioBlocos {...acoesInicio} />}
+          {visual === "c" && <InicioAtalhos {...acoesInicio} />}
+          {visual !== "atual" && <div aria-hidden className="shrink-0" style={{ height: 12 }} />}
 
           {caixaExpandida && (
             <CaixaFiscoFlutuante
@@ -1960,7 +2155,7 @@ export default function Dashboard() {
 
       {/* O rodape some enquanto a caixinha do Fisco esta aberta: ele
           ficava por cima dela e "roubava" o espaco acima do teclado. */}
-      {!caixaExpandida && <BottomNav ativo="inicio" />}
+      {!caixaExpandida && <BottomNav ativo="inicio" visual={visualBarra} />}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+/* BOTTOMNAV v2 — prop visual: "vidro" (padrao) | "linha" (lisa com risca fina, + em contorno) | "solta" (lisa sem risca, + verde cheio) | "lisa" (sem risca, + em contorno) — variacoes do Inicio */
 import { useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TrilhoContext } from "./TrilhoContext.js";
@@ -5,7 +6,11 @@ import { Home, Plus, User } from "lucide-react";
 
 const ROTAS_COM_NAVBAR = ["/dashboard", "/perfil"];
 
-export default function BottomNav({ ativo }) {
+/* v2: visuais lisos (sem vidro) para as variacoes do Inicio */
+const FUNDO_LISO = { background: "var(--bg)", backdropFilter: "none", WebkitBackdropFilter: "none", boxShadow: "none" };
+const RISCA = "1px solid color-mix(in srgb, var(--border) 55%, transparent)";
+
+export default function BottomNav({ ativo, visual = "vidro" }) {
   const navigate = useNavigate();
   const location = useLocation();
   const dentroDoTrilho = useContext(TrilhoContext);
@@ -53,6 +58,10 @@ export default function BottomNav({ ativo }) {
         borderTop: "1px solid var(--vidro-borda)",
         boxShadow:
           "inset 0 1px 0 0 var(--vidro-topo-medio), inset 0 7px 16px -8px var(--vidro-topo-fraco)",
+        /* v2: visuais lisos por cima do vidro */
+        ...(visual !== "vidro" ? FUNDO_LISO : null),
+        ...(visual === "linha" ? { borderTop: RISCA } : null),
+        ...(visual === "solta" || visual === "lisa" ? { borderTop: "none" } : null),
         paddingTop: 10,
         paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 18px)",
         paddingLeft: 13,
@@ -92,7 +101,10 @@ export default function BottomNav({ ativo }) {
             width: 48,
             height: 48,
             borderRadius: "50%",
-            backgroundColor: "var(--primary)",
+            /* v2: "+" em contorno nos visuais linha e lisa */
+            backgroundColor: visual === "linha" || visual === "lisa" ? "transparent" : "var(--primary)",
+            border: visual === "linha" || visual === "lisa" ? "1.5px solid var(--primary)" : "none",
+            boxSizing: "border-box",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -101,7 +113,7 @@ export default function BottomNav({ ativo }) {
           <Plus
             size={ICON_SIZE}
             strokeWidth={2.8}
-            style={{ color: "var(--primary-contrast)" }}
+            style={{ color: visual === "linha" || visual === "lisa" ? "var(--primary)" : "var(--primary-contrast)" }}
           />
         </span>
       </button>
