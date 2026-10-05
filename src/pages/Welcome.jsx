@@ -1,4 +1,4 @@
-/* WELCOME v6 — 5 slides do piloto (limite, DAS, nota, gratis, Fisco no WhatsApp) + mesma escala e mesma altura em todos (bug do slide 2) */
+/* WELCOME v7 — sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -536,7 +536,7 @@ function MiniNota() {
           className="inline-block rounded-full font-semibold"
           style={{ fontSize: 8.5, padding: "1px 7px", marginTop: 6, color: VERDE, backgroundColor: "rgba(34,197,94,0.16)" }}
         >
-          Grátis no piloto
+          Grátis
         </span>
         <p style={{ color: "var(--text-secondary)", fontSize: 10, lineHeight: 1.35, marginTop: 5 }}>
           Você manda o valor e para quem foi. O Fisco monta tudo com você.
@@ -582,7 +582,7 @@ function MiniPiloto() {
           className="rounded-full font-bold"
           style={{ fontSize: 11, padding: "4px 12px", marginTop: 10, color: VERDE, backgroundColor: "rgba(34,197,94,0.16)", border: "1px solid rgba(34,197,94,0.45)" }}
         >
-          Grátis durante o piloto
+          Grátis
         </span>
       </div>
       <div className="flex flex-col shrink-0" style={{ gap: 6, marginTop: 14, marginBottom: "auto" }}>
@@ -740,7 +740,7 @@ const SLIDES = [
     titulo: "Tudo guardado",
     subtitulo: "Entradas, saídas, DAS e notas fiscais, organizados mês a mês.",
   },
-  { Mini: MiniPiloto, titulo: "Grátis no piloto", subtitulo: "Você não paga nada para usar o TaCerto! durante o piloto." },
+  { Mini: MiniPiloto, titulo: "Grátis", subtitulo: "Você não paga nada para usar o TaCerto!" },
   { Mini: MiniWhatsApp, titulo: "O Fisco no WhatsApp", subtitulo: "Todo dia, às 21h, ele pergunta quanto você recebeu. Dúvidas? É só chamar." },
 ].filter((s) => s.mostrar !== false);
 

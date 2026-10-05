@@ -1,4 +1,4 @@
-/* COMOEMITIRNOTA v3 — "Escolha como emitir sua nota": com o Fisco pelo WhatsApp, fazer sozinho (passo a passo recolhivel) ou Certificado A1 (em breve) */
+/* COMOEMITIRNOTA v4 — selo so "Grátis" (sem "durante o piloto"); v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1 */
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -223,7 +223,7 @@ export default function ComoEmitirNota() {
                   Emitir com o Fisco pelo WhatsApp
                 </p>
                 <div style={{ marginTop: 5 }}>
-                  <Selo>Grátis durante o piloto</Selo>
+                  <Selo>Grátis</Selo>
                 </div>
                 <p className="text-[13.5px] leading-relaxed" style={{ color: "var(--text-secondary)", marginTop: 6 }}>
                   {conteudo.explicacaoFisco}

@@ -1,4 +1,4 @@
-/* PRIVACIDADE v2 — botao do WhatsApp com a mensagem pronta (MENSAGENS_WHATSAPP.falarComFisco) */
+/* PRIVACIDADE v3 — sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp } from "@/config/piloto";
@@ -39,7 +39,7 @@ const SECOES = [
       "Para mostrar no velocímetro quanto do limite do seu MEI você já usou e organizar seus lançamentos.",
       "Para falar com você pelo WhatsApp: a pergunta de todo dia sobre o que você recebeu, avisos sobre o seu MEI e as respostas às suas dúvidas.",
       "Para você entrar na sua conta com segurança.",
-      "Durante o piloto, a equipe do TaCerto! confere o que você responde no WhatsApp antes de lançar no app.",
+      "Por enquanto, a equipe do TaCerto! confere o que você responde no WhatsApp antes de lançar no app.",
     ],
   },
   {

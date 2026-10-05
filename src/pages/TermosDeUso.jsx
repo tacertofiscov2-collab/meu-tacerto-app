@@ -1,4 +1,4 @@
-/* TERMOSDEUSO v2 — botao do WhatsApp com a mensagem pronta (MENSAGENS_WHATSAPP.falarComFisco) */
+/* TERMOSDEUSO v3 — sem a palavra "piloto" no texto ("fase de testes"); v2: botao do WhatsApp com mensagem pronta */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp } from "@/config/piloto";
@@ -29,7 +29,7 @@ const SECOES = [
     titulo: "O que é o TaCerto!",
     paragrafos: [
       "Um app que ajuda o MEI a acompanhar o faturamento e o limite do ano.",
-      "Estamos num piloto: um teste com poucas pessoas. O app pode mudar, ter falhas, e algumas funções podem ficar fora do ar por um tempo.",
+      "O app está em fase de testes: pode mudar, ter falhas, e algumas funções podem ficar fora do ar por um tempo.",
     ],
   },
   {

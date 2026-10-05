@@ -1,4 +1,4 @@
-﻿/* PERFIL v8 — reorganizado: nome + chip do tipo + WhatsApp no topo; cartoes Meu MEI, Minha conta, Ajuda, Sobre; Sair e Excluir no fim; sem a bola da inicial */
+﻿/* PERFIL v9 — selo "TaCerto! é grátis" no lugar de "Você faz parte do piloto"; v8: cartoes Meu MEI, Minha conta, Ajuda, Sobre */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
@@ -41,7 +41,7 @@ import {
        Ajuda       Falar com o Fisco no WhatsApp, Como emitir nota,
                    Como pagar o DAS.
        Sobre       Termos de uso, Politica de privacidade, selo
-                   "Você faz parte do piloto TaCerto!" e a versao.
+                   "TaCerto! é grátis" (v9; antes falava em piloto) e a versao.
    - Por ultimo: Sair da conta e Excluir conta (vermelhos). O Excluir
      abre a tela de exclusao que ja existia (com as confirmacoes).
    - O CNPJ nao aparece: o perfil ainda nao guarda CNPJ.
@@ -511,7 +511,7 @@ export default function Perfil() {
               }}
             >
               <Sparkles size={12} strokeWidth={2.2} style={{ color: "var(--primary)" }} />
-              Você faz parte do piloto TaCerto!
+              TaCerto! é grátis
             </span>
             <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>v0.1</span>
           </div>
