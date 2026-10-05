@@ -1,4 +1,4 @@
-/* WELCOME v9 — slide 3 (nota) preenche a moldura: botao dentro do card do Fisco.ia, "Fazer sozinho" aberto com 3 passos, sem o selo "Gratis"; escala dos slides nao muda (v8: Fisco.ia; v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos)) */
+/* WELCOME v10 — correcao: o slide 3 (nota) fica FORA da conta da escala comum, entao os slides 1, 2, 4 e 5 voltam a ser como antes da v9 (v9: slide 3 preenchido, sem "Gratis"; v8: Fisco.ia; v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos)) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -125,7 +125,10 @@ function useEscalaComum(molduraRef, caixasRef, quantos) {
 
     const medir = () => {
       const disponivel = moldura.clientHeight;
-      const caixas = caixasRef.current.slice(0, quantos).filter(Boolean);
+      // v10: o slide da nota (foraDaEscala) nao entra na conta — ver MiniNota
+      const caixas = caixasRef.current
+        .slice(0, quantos)
+        .filter((c) => c && !c.dataset.foraDaEscala);
       if (!disponivel || !caixas.length) return;
       // Altura natural de cada desenho: com altura solta e largura normal
       let maior = 0;
@@ -157,11 +160,12 @@ function useEscalaComum(molduraRef, caixasRef, quantos) {
 }
 
 /* O desenho dentro da moldura, com a escala comum (ver acima). */
-function MiniNaMoldura({ ajuste, caixaRef, children }) {
+function MiniNaMoldura({ ajuste, caixaRef, foraDaEscala = false, children }) {
   const encolhe = ajuste.escala < 1;
   return (
     <div
       ref={caixaRef}
+      data-fora-da-escala={foraDaEscala ? "1" : undefined}
       className="flex flex-col"
       style={{
         height: ajuste.altura ?? "100%",
@@ -526,14 +530,20 @@ function MiniDas() {
    - o "Fazer sozinho" aparece aberto, com 3 passos curtos, e e ele que
      CRESCE para ocupar a sobra (flexGrow): os passos se espalham por
      igual, sem vao preto.
-   ⚠️ A altura natural deste desenho fica abaixo da do slide do WhatsApp
-   (o mais alto), entao a escala comum dos slides NAO muda: nenhum outro
-   slide encolhe ou pula. */
+
+   v10 (05/10/2026) — CORRECAO: no iPhone (letra um pouco maior que no
+   PC) a v9 virou o desenho MAIS ALTO, e como a escala e uma so para
+   todos (useEscalaComum), os 5 slides encolheram. Agora este slide fica
+   FORA da conta da escala (foraDaEscala em SLIDES): os slides 1, 2, 4 e
+   5 voltam a ser exatamente como antes. Ele so usa a escala que os
+   outros definirem e se ajusta ao espaco: o "Fazer sozinho" cresce
+   quando sobra e encolhe (minHeight 0) quando falta. Passos curtos, sem
+   quebrar linha. */
 function MiniNota() {
   const passos = [
     "Entre no Emissor Nacional",
-    "Preencha quem contratou e o valor",
-    "Emita e baixe o PDF da nota",
+    "Informe o cliente e o valor",
+    "Emita e baixe o PDF",
   ];
   return (
     <MiniTela>
@@ -561,13 +571,13 @@ function MiniNota() {
       </div>
 
       {/* "Fazer sozinho" aberto: cresce para ocupar a sobra da moldura */}
-      <div className="rounded-2xl flex flex-col" style={{ ...CARD, padding: "10px 11px", marginTop: 8, flexGrow: 1 }}>
+      <div className="rounded-2xl flex flex-col" style={{ ...CARD, padding: "10px 11px", marginTop: 8, flexGrow: 1, minHeight: 0, overflow: "hidden" }}>
         <div className="flex items-center gap-2 shrink-0">
           <ListChecks size={14} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
           <span className="flex-1 font-bold" style={{ color: "var(--text)", fontSize: 11.5 }}>Fazer sozinho</span>
           <ChevronDown size={12} style={{ color: "var(--text-tertiary)" }} />
         </div>
-        <div className="flex flex-col" style={{ flexGrow: 1, justifyContent: "space-evenly", gap: 6, marginTop: 8 }}>
+        <div className="flex flex-col" style={{ flexGrow: 1, justifyContent: "space-evenly", gap: 4, marginTop: 6 }}>
           {passos.map((t, i) => (
             <div key={t} className="flex items-center gap-2">
               <span
@@ -576,7 +586,7 @@ function MiniNota() {
               >
                 {i + 1}
               </span>
-              <span style={{ color: "var(--text)", fontSize: 10.5, lineHeight: 1.3 }}>{t}</span>
+              <span className="whitespace-nowrap" style={{ color: "var(--text)", fontSize: 10.5, lineHeight: 1.3 }}>{t}</span>
             </div>
           ))}
         </div>
@@ -752,7 +762,7 @@ const SLIDES = [
   { Mini: MiniInicio, titulo: "Seu limite em tempo real", subtitulo: "Veja quanto você já faturou e quanto falta para o limite do ano." },
   { Mini: MiniBanco, mostrar: MOSTRAR_OPEN_FINANCE, titulo: "Tudo chega sozinho", subtitulo: "Conecte o banco do seu MEI e as entradas e os gastos aparecem no app." },
   { Mini: MiniDas, mostrar: MOSTRAR_CARD_DAS, titulo: "DAS sem susto", subtitulo: "Todo mês o Fisco.ia te avisa e manda o boleto do DAS no WhatsApp." },
-  { Mini: MiniNota, mostrar: MOSTRAR_TUTORIAL_NOTA, titulo: "Ajuda com a nota fiscal", subtitulo: "O Fisco.ia te ajuda a emitir sua nota pelo WhatsApp, passo a passo." },
+  { Mini: MiniNota, foraDaEscala: true, mostrar: MOSTRAR_TUTORIAL_NOTA, titulo: "Ajuda com a nota fiscal", subtitulo: "O Fisco.ia te ajuda a emitir sua nota pelo WhatsApp, passo a passo." },
   /* Conferencia "É faturamento?": fora dos slides do piloto (a
      "propaganda" foi reprovada em 04/10). Troque para true para voltar. */
   { Mini: MiniConferir, mostrar: false, titulo: "O Fisco.ia organiza pra você", subtitulo: "Você diz uma vez se é faturamento. Da próxima, ele já sabe." },
@@ -800,7 +810,7 @@ export default function Welcome() {
       </div>
 
       <div ref={scrollerRef} className="min-h-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar" style={{ touchAction: "pan-x" }}>
-        {SLIDES.map(({ Mini }, i) => (
+        {SLIDES.map(({ Mini, foraDaEscala }, i) => (
           <div key={i} className="min-w-full snap-center flex flex-col min-h-0">
             <div className="flex justify-center px-6 pt-2">
               <div className="w-full flex flex-col min-h-0" style={{ maxWidth: 250 }}>
@@ -820,7 +830,7 @@ export default function Welcome() {
                   }}
                 >
                   {/* v6: todos os desenhos com a MESMA escala */}
-                  <MiniNaMoldura ajuste={ajuste} caixaRef={(el) => { caixasRef.current[i] = el; }}>
+                  <MiniNaMoldura ajuste={ajuste} foraDaEscala={foraDaEscala} caixaRef={(el) => { caixasRef.current[i] = el; }}>
                     <Mini />
                   </MiniNaMoldura>
                 </div>
