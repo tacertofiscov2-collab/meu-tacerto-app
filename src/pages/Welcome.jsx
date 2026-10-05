@@ -1,4 +1,4 @@
-/* WELCOME v10 — correcao: o slide 3 (nota) fica FORA da conta da escala comum, entao os slides 1, 2, 4 e 5 voltam a ser como antes da v9 (v9: slide 3 preenchido, sem "Gratis"; v8: Fisco.ia; v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos)) */
+/* WELCOME v11 — letras maiores (zoom de 10% igual em todos os desenhos; moldura ocupa o espaco ate o card de baixo), destaques verdes discretos (so borda, sem fundo nem selo), slide 2 "Boleto automático no WhatsApp" e "te lembra" (v10: correcao: o slide 3 (nota) fica FORA da conta da escala comum, entao os slides 1, 2, 4 e 5 voltam a ser como antes da v9 (v9: slide 3 preenchido, sem "Gratis"; v8: Fisco.ia; v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos)) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -88,6 +88,11 @@ import {
 
 const VERDE = "var(--primary)";
 
+/* v11: DESTAQUE DISCRETO dos slides — so a borda verde fina, sem fundo
+   verde, sem selo e sem mudar o tamanho do card (pedido do Fernando:
+   "mais discreto, mais profissional"). Usar em todo destaque novo. */
+const DESTAQUE_BORDA = "rgba(34,197,94,0.4)";
+
 /* Borda fina dos cards (igual ao .card-tacerto do app). */
 const CARD = { border: "1px solid var(--card-borda)", backgroundColor: "transparent" };
 
@@ -115,7 +120,17 @@ const VIDRO = {
 
    O desenho e montado mais largo (100% / escala) e depois encolhido,
    entao continua ocupando a largura toda da moldura.
+
+   v11 (05/10/2026) — LETRAS MAIORES: os desenhos podem AMPLIAR ate
+   ZOOM_SLIDES (10%), todos por igual, quando a moldura tem altura para
+   isso. A moldura agora ocupa o espaco entre o logo e o card de baixo
+   (antes era 48dvh fixo e sobrava uma faixa vazia embaixo do card no
+   iPhone), com altura maxima MOLDURA_MAX. Em tela baixa continua
+   encolhendo como antes.
    =================================================================== */
+const ZOOM_SLIDES = 1.1;
+const MOLDURA_MAX = 390;
+
 function useEscalaComum(molduraRef, caixasRef, quantos) {
   const [ajuste, setAjuste] = useState({ escala: 1, altura: null });
 
@@ -130,17 +145,19 @@ function useEscalaComum(molduraRef, caixasRef, quantos) {
         .slice(0, quantos)
         .filter((c) => c && !c.dataset.foraDaEscala);
       if (!disponivel || !caixas.length) return;
-      // Altura natural de cada desenho: com altura solta e largura normal
+      // Altura natural de cada desenho: com altura solta e na largura de
+      // desenho (a moldura dividida pelo zoom)
       let maior = 0;
       for (const caixa of caixas) {
         const antes = { h: caixa.style.height, w: caixa.style.width };
         caixa.style.height = "auto";
-        caixa.style.width = "100%";
+        caixa.style.width = `${100 / ZOOM_SLIDES}%`;
         maior = Math.max(maior, caixa.scrollHeight);
         caixa.style.height = antes.h;
         caixa.style.width = antes.w;
       }
-      const escala = maior > disponivel ? disponivel / maior : 1;
+      // v11: amplia ate ZOOM_SLIDES; encolhe se nao couber
+      const escala = Math.min(ZOOM_SLIDES, disponivel / maior);
       const altura = disponivel / escala;
       setAjuste((a) =>
         a.altura && Math.abs(a.altura - altura) < 0.5 && Math.abs(a.escala - escala) < 0.002
@@ -161,7 +178,8 @@ function useEscalaComum(molduraRef, caixasRef, quantos) {
 
 /* O desenho dentro da moldura, com a escala comum (ver acima). */
 function MiniNaMoldura({ ajuste, caixaRef, foraDaEscala = false, children }) {
-  const encolhe = ajuste.escala < 1;
+  // v11: a escala pode ser maior que 1 (zoom das letras)
+  const encolhe = ajuste.escala !== 1;
   return (
     <div
       ref={caixaRef}
@@ -449,8 +467,10 @@ function MiniConferir() {
    "Como você quer pagar seu DAS?" — igual ao do app. A primeira opcao
    (boleto todo mes no WhatsApp) com o destaque leve. Neutro. */
 function MiniDas() {
+  /* v11: sem o selo "Automático" (que deixava o card mais alto): a
+     palavra foi para a frase. Destaque so na borda verde fina. */
   const opcoes = [
-    { Icon: MessageCircle, t: "Boleto todo mês no WhatsApp", selo: "Automático" },
+    { Icon: MessageCircle, t: "Boleto automático no WhatsApp" },
     { Icon: Headphones, t: "Fisco.ia me ajuda agora" },
     { Icon: ListChecks, t: "Quero fazer sozinho" },
     { Icon: Globe, t: "Abrir o site do governo" },
@@ -472,44 +492,35 @@ function MiniDas() {
         </span>
         <span
           className="rounded-lg font-semibold shrink-0"
-          style={{ fontSize: 10, padding: "5px 8px", color: VERDE, backgroundColor: "rgba(34,197,94,0.16)", border: "1px solid rgba(34,197,94,0.45)" }}
+          style={{ fontSize: 10, padding: "5px 8px", color: VERDE, border: `1px solid ${DESTAQUE_BORDA}` }}
         >
           Emitir boleto
         </span>
       </div>
 
-      {/* painel que sobe de baixo, no pe */}
+      {/* painel que sobe de baixo, no pe. v11: ele CRESCE para ocupar a
+          sobra (flexGrow) e as opcoes se espalham por igual — sem vao preto
+          entre o card do DAS e o painel. Em tela baixa fica como antes. */}
       <div
-        className="shrink-0 rounded-t-2xl"
-        style={{ ...VIDRO, marginTop: "auto", borderBottom: "none", padding: "8px 11px 12px" }}
+        className="rounded-t-2xl flex flex-col"
+        style={{ ...VIDRO, marginTop: 14, flexGrow: 1, borderBottom: "none", padding: "8px 11px 12px" }}
       >
         <div className="mx-auto rounded-full" style={{ width: 28, height: 3, backgroundColor: "var(--border)", marginBottom: 8 }} />
         <p className="font-bold text-center" style={{ color: "var(--text)", fontSize: 11.5, marginBottom: 8 }}>
           Como você quer pagar seu DAS?
         </p>
-        <div className="flex flex-col" style={{ gap: 5 }}>
-          {opcoes.map(({ Icon, t, selo }, i) => (
+        <div className="flex flex-col" style={{ gap: 5, flexGrow: 1, justifyContent: "space-evenly" }}>
+          {opcoes.map(({ Icon, t }, i) => (
             <div
               key={t}
               className="rounded-xl flex items-center gap-2"
               style={{
                 padding: "6px 8px",
-                border: `1px solid ${i === 0 ? "rgba(34,197,94,0.45)" : "var(--card-borda)"}`,
-                backgroundColor: i === 0 ? "rgba(34,197,94,0.08)" : "transparent",
+                border: `1px solid ${i === 0 ? DESTAQUE_BORDA : "var(--card-borda)"}`,
               }}
             >
               <Icon size={13} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
-              <span className="flex-1 min-w-0">
-                <span className="block font-semibold" style={{ color: "var(--text)", fontSize: 10.5, lineHeight: 1.25 }}>{t}</span>
-                {selo && (
-                  <span
-                    className="inline-block rounded-full font-semibold"
-                    style={{ fontSize: 8.5, padding: "1px 6px", marginTop: 3, color: VERDE, backgroundColor: "rgba(34,197,94,0.16)" }}
-                  >
-                    {selo}
-                  </span>
-                )}
-              </span>
+              <span className="flex-1 min-w-0 truncate font-semibold" style={{ color: "var(--text)", fontSize: 10.5, lineHeight: 1.25 }}>{t}</span>
             </div>
           ))}
         </div>
@@ -553,7 +564,7 @@ function MiniNota() {
         Escolha como emitir
       </p>
 
-      <div className="rounded-2xl shrink-0" style={{ padding: "10px 11px", border: "1px solid rgba(34,197,94,0.45)", backgroundColor: "rgba(34,197,94,0.08)" }}>
+      <div className="rounded-2xl shrink-0" style={{ padding: "10px 11px", border: `1px solid ${DESTAQUE_BORDA}` }}>
         <div className="flex items-center gap-2">
           <MessageCircle size={14} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
           <span className="font-bold" style={{ color: "var(--text)", fontSize: 11.5 }}>Com o Fisco.ia no WhatsApp</span>
@@ -563,7 +574,7 @@ function MiniNota() {
         </p>
         <span
           className="rounded-xl font-semibold flex items-center justify-center gap-1.5"
-          style={{ marginTop: 9, padding: "8px 0", fontSize: 11, backgroundColor: VERDE, color: "var(--primary-contrast)" }}
+          style={{ marginTop: 9, padding: "7px 0", fontSize: 11, color: VERDE, border: `1px solid ${DESTAQUE_BORDA}` }}
         >
           <MessageCircle size={12} strokeWidth={2.4} />
           Chamar o Fisco.ia
@@ -612,7 +623,7 @@ function MiniPiloto() {
         </span>
         <span
           className="rounded-full font-bold"
-          style={{ fontSize: 11, padding: "4px 12px", marginTop: 10, color: VERDE, backgroundColor: "rgba(34,197,94,0.16)", border: "1px solid rgba(34,197,94,0.45)" }}
+          style={{ fontSize: 11, padding: "4px 12px", marginTop: 10, color: VERDE, border: `1px solid ${DESTAQUE_BORDA}` }}
         >
           Grátis
         </span>
@@ -761,7 +772,7 @@ function MiniWhatsApp() {
 const SLIDES = [
   { Mini: MiniInicio, titulo: "Seu limite em tempo real", subtitulo: "Veja quanto você já faturou e quanto falta para o limite do ano." },
   { Mini: MiniBanco, mostrar: MOSTRAR_OPEN_FINANCE, titulo: "Tudo chega sozinho", subtitulo: "Conecte o banco do seu MEI e as entradas e os gastos aparecem no app." },
-  { Mini: MiniDas, mostrar: MOSTRAR_CARD_DAS, titulo: "DAS sem susto", subtitulo: "Todo mês o Fisco.ia te avisa e manda o boleto do DAS no WhatsApp." },
+  { Mini: MiniDas, mostrar: MOSTRAR_CARD_DAS, titulo: "DAS sem susto", subtitulo: "Todo mês o Fisco.ia te lembra e manda o boleto do DAS no WhatsApp." },
   { Mini: MiniNota, foraDaEscala: true, mostrar: MOSTRAR_TUTORIAL_NOTA, titulo: "Ajuda com a nota fiscal", subtitulo: "O Fisco.ia te ajuda a emitir sua nota pelo WhatsApp, passo a passo." },
   /* Conferencia "É faturamento?": fora dos slides do piloto (a
      "propaganda" foi reprovada em 04/10). Troque para true para voltar. */
@@ -809,16 +820,22 @@ export default function Welcome() {
         </span>
       </div>
 
-      <div ref={scrollerRef} className="min-h-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar" style={{ touchAction: "pan-x" }}>
+      {/* v11: a moldura ocupa o espaco entre o logo e o card de baixo
+          (flex-1), ate MOLDURA_MAX, encostada no card. Mais larga (272)
+          para as letras ampliadas (ZOOM_SLIDES) quebrarem linha igual. */}
+      <div ref={scrollerRef} className="flex-1 min-h-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar" style={{ touchAction: "pan-x" }}>
         {SLIDES.map(({ Mini, foraDaEscala }, i) => (
           <div key={i} className="min-w-full snap-center flex flex-col min-h-0">
-            <div className="flex justify-center px-6 pt-2">
-              <div className="w-full flex flex-col min-h-0" style={{ maxWidth: 250 }}>
+            <div className="flex-1 min-h-0 flex justify-center px-6 pt-2">
+              <div className="w-full flex flex-col justify-end min-h-0" style={{ maxWidth: 272 }}>
                 <div
                   ref={i === 0 ? molduraRef : undefined}
+                  data-moldura-slide=""
                   className="relative w-full flex flex-col"
                   style={{
-                    height: "48dvh",
+                    flex: "1 1 auto",
+                    minHeight: 0,
+                    maxHeight: MOLDURA_MAX,
                     borderTopLeftRadius: 34,
                     borderTopRightRadius: 34,
                     borderLeft: "1.5px solid rgba(34,197,94,0.55)",
@@ -865,8 +882,8 @@ export default function Welcome() {
                 aria-hidden={i !== active}
                 style={{ gridArea: "1 / 1", visibility: i === active ? "visible" : "hidden" }}
               >
-                <h2 className="font-bold leading-tight" style={{ color: "var(--text)", fontSize: 18 }}>{s.titulo}</h2>
-                <p className="leading-snug" style={{ color: "var(--text-secondary)", fontSize: 12.5, marginTop: 6 }}>{s.subtitulo}</p>
+                <h2 className="font-bold leading-tight" style={{ color: "var(--text)", fontSize: 19 }}>{s.titulo}</h2>
+                <p className="leading-snug" style={{ color: "var(--text-secondary)", fontSize: 13.5, marginTop: 6 }}>{s.subtitulo}</p>
               </div>
             ))}
           </div>

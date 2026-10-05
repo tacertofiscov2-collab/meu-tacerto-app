@@ -1,4 +1,4 @@
-/* PILOTO v4 — MODO_TESTE_LOGIN + TELEFONES_TESTE (login de teste sem mensagem) e MOSTRAR_WHATSAPP_DOCUMENTOS (v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
+/* PILOTO v5 — MOSTRAR_WHATSAPP_DOCUMENTOS tambem esconde a secao "Fale com a gente" da Privacidade (v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 
 /* ===================================================================
@@ -200,12 +200,11 @@ export const WHATSAPP_FISCO = "5537999999999";
 
 /* -------------------------------------------------------------------
    BOTAO DO WHATSAPP NOS DOCUMENTOS (v4 — 05/10/2026)
-   false esconde o botao "Falar com o Fisco.ia no WhatsApp" do fim dos
-   Termos de uso (/termos-de-uso, a secao "Fale com a gente" inteira,
-   que so tinha o botao) e da Politica de privacidade (/privacidade: so
-   o botao; a frase "Duvida sobre seus dados? Chame o Fisco.ia no
-   WhatsApp." fica, porque a politica precisa dizer como falar com a
-   gente). O texto dos documentos nao muda.
+   false esconde a secao "Fale com a gente" (com o botao "Falar com o
+   Fisco.ia no WhatsApp") do fim dos Termos de uso (/termos-de-uso) e
+   da Politica de privacidade (/privacidade — ali, junto, some a frase
+   "Duvida sobre seus dados? Chame o Fisco.ia no WhatsApp.", pedido do
+   Fernando em 05/10). O resto do texto dos documentos nao muda.
    ------------------------------------------------------------------- */
 export const MOSTRAR_WHATSAPP_DOCUMENTOS = false;
 

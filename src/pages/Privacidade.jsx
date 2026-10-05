@@ -1,4 +1,4 @@
-/* PRIVACIDADE v5 — botao do WhatsApp escondido por MOSTRAR_WHATSAPP_DOCUMENTOS; a frase "Duvida sobre seus dados?" fica (v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta) */
+/* PRIVACIDADE v6 — secao "Fale com a gente" inteira escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v5: so o botao; v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp, MOSTRAR_WHATSAPP_DOCUMENTOS } from "@/config/piloto";
@@ -122,6 +122,8 @@ export default function Privacidade() {
           </section>
         ))}
 
+        {/* v6: secao inteira escondida (MOSTRAR_WHATSAPP_DOCUMENTOS em src/config/piloto.js) */}
+        {MOSTRAR_WHATSAPP_DOCUMENTOS && (
         <section className="mt-6">
           <h2 className="text-[16px] font-bold" style={{ color: "var(--text)" }}>
             Fale com a gente
@@ -129,8 +131,6 @@ export default function Privacidade() {
           <p className="text-[14.5px] leading-relaxed mt-2" style={{ color: "var(--text-secondary)" }}>
             Dúvida sobre seus dados? Chame o Fisco.ia no WhatsApp.
           </p>
-          {/* v5: botao escondido (MOSTRAR_WHATSAPP_DOCUMENTOS em src/config/piloto.js) */}
-          {MOSTRAR_WHATSAPP_DOCUMENTOS && (
           <a
             href={linkWhatsAppFisco(MENSAGENS_WHATSAPP.falarComFisco(dadosParaWhatsApp(app)))}
             target="_blank"
@@ -148,8 +148,8 @@ export default function Privacidade() {
           >
             Falar com o Fisco.ia no WhatsApp
           </a>
-          )}
         </section>
+        )}
       </div>
     </div>
   );
