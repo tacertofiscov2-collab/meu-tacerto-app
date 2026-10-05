@@ -1,4 +1,4 @@
-/* PILOTO v3 — chaves MOSTRAR_LOGIN_EMAIL/GOOGLE (login so pelo WhatsApp) + mensagem trocarNumero (v2: MENSAGENS_WHATSAPP e abrirWhatsAppFisco) */
+/* PILOTO v4 — MODO_TESTE_LOGIN + TELEFONES_TESTE (login de teste sem mensagem) e MOSTRAR_WHATSAPP_DOCUMENTOS (v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 
 /* ===================================================================
@@ -135,6 +135,35 @@ export const MOSTRAR_LOGIN_EMAIL = false;
 export const MOSTRAR_LOGIN_GOOGLE = false;
 
 /* -------------------------------------------------------------------
+   MODO TESTE DO LOGIN (v4 — 05/10/2026)
+   ⚠️ DESLIGAR (false) ANTES DO PILOTO COM USUARIOS REAIS.
+
+   Com true, a tela de entrada (EntrarWhatsApp):
+   - aceita os numeros de TELEFONES_TESTE, mesmo sem cara de celular
+     real (DDD + 9 + 8 digitos). Numeros reais continuam funcionando;
+   - mostra no rodape: "Modo teste: use 37 00000-0001 a 0005, codigo
+     123456".
+   Os numeros so funcionam se estiverem cadastrados no painel do
+   Supabase (Authentication -> Providers -> Phone -> "Test Phone Numbers
+   and OTPs"), com o codigo CODIGO_TESTE_LOGIN. Numero de teste NAO
+   manda mensagem nenhuma (nem SMS, nem WhatsApp): o Supabase so aceita
+   o codigo fixo. Ver docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md.
+   ------------------------------------------------------------------- */
+export const MODO_TESTE_LOGIN = true;
+
+/* So numeros: 55 + DDD 37 + 00000-000X */
+export const TELEFONES_TESTE = [
+  "5537000000001",
+  "5537000000002",
+  "5537000000003",
+  "5537000000004",
+  "5537000000005",
+];
+
+/* Codigo fixo dos numeros de teste (o mesmo para os 5) */
+export const CODIGO_TESTE_LOGIN = "123456";
+
+/* -------------------------------------------------------------------
    EXTRA A — CARD "PROXIMO DAS" NO DASHBOARD
    true mostra, abaixo do velocimetro: "Proximo DAS: 20/MM" + valor
    (DAS_2026 de src/lib/fiscal.js) + botao "Emitir boleto", que abre o
@@ -168,6 +197,17 @@ export const MOSTRAR_TUTORIAL_NOTA = true;
    ⚠️ TROCAR PELO NUMERO REAL (este e provisorio).
    ------------------------------------------------------------------- */
 export const WHATSAPP_FISCO = "5537999999999";
+
+/* -------------------------------------------------------------------
+   BOTAO DO WHATSAPP NOS DOCUMENTOS (v4 — 05/10/2026)
+   false esconde o botao "Falar com o Fisco.ia no WhatsApp" do fim dos
+   Termos de uso (/termos-de-uso, a secao "Fale com a gente" inteira,
+   que so tinha o botao) e da Politica de privacidade (/privacidade: so
+   o botao; a frase "Duvida sobre seus dados? Chame o Fisco.ia no
+   WhatsApp." fica, porque a politica precisa dizer como falar com a
+   gente). O texto dos documentos nao muda.
+   ------------------------------------------------------------------- */
+export const MOSTRAR_WHATSAPP_DOCUMENTOS = false;
 
 /* Link que abre a conversa com o Fisco no WhatsApp. Com `texto`, a
    mensagem ja chega escrita (a pessoa so toca em enviar). */

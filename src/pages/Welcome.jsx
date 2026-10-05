@@ -1,4 +1,4 @@
-/* WELCOME v8 — "Fisco" vira "Fisco.ia" nos textos da tela (v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos)) */
+/* WELCOME v9 — slide 3 (nota) preenche a moldura: botao dentro do card do Fisco.ia, "Fazer sozinho" aberto com 3 passos, sem o selo "Gratis"; escala dos slides nao muda (v8: Fisco.ia; v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos)) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -514,11 +514,27 @@ function MiniDas() {
   );
 }
 
-/* --------------------------- 3. NOTA (v6) ---------------------------
-   A tela "Como emitir sua nota": o Fisco ajuda pelo WhatsApp (gratis no
-   piloto) ou a pessoa faz sozinha. Sem a nota automatica (Certificado
-   A1): no piloto ela e so "em breve" e o slide nao pode prometer. */
+/* --------------------------- 3. NOTA (v9) ---------------------------
+   A tela "Como emitir sua nota": o Fisco.ia ajuda pelo WhatsApp ou a
+   pessoa faz sozinha. Sem a nota automatica (Certificado A1): no piloto
+   ela e so "em breve" e o slide nao pode prometer.
+
+   v9 (05/10/2026) — pedido do Fernando: sobrava muito espaco preto entre
+   o "Fazer sozinho" e o botao do pe. Agora:
+   - o botao "Chamar o Fisco.ia" fica DENTRO do card do Fisco.ia (como
+     na pagina real /como-emitir-nota) e saiu o selo "Gratis";
+   - o "Fazer sozinho" aparece aberto, com 3 passos curtos, e e ele que
+     CRESCE para ocupar a sobra (flexGrow): os passos se espalham por
+     igual, sem vao preto.
+   ⚠️ A altura natural deste desenho fica abaixo da do slide do WhatsApp
+   (o mais alto), entao a escala comum dos slides NAO muda: nenhum outro
+   slide encolhe ou pula. */
 function MiniNota() {
+  const passos = [
+    "Entre no Emissor Nacional",
+    "Preencha quem contratou e o valor",
+    "Emita e baixe o PDF da nota",
+  ];
   return (
     <MiniTela>
       <MiniHeader titulo="Como emitir sua nota" />
@@ -532,32 +548,38 @@ function MiniNota() {
           <MessageCircle size={14} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
           <span className="font-bold" style={{ color: "var(--text)", fontSize: 11.5 }}>Com o Fisco.ia no WhatsApp</span>
         </div>
-        <span
-          className="inline-block rounded-full font-semibold"
-          style={{ fontSize: 8.5, padding: "1px 7px", marginTop: 6, color: VERDE, backgroundColor: "rgba(34,197,94,0.16)" }}
-        >
-          Grátis
-        </span>
-        <p style={{ color: "var(--text-secondary)", fontSize: 10, lineHeight: 1.35, marginTop: 5 }}>
+        <p style={{ color: "var(--text-secondary)", fontSize: 10, lineHeight: 1.35, marginTop: 6 }}>
           Você manda o valor e para quem foi. O Fisco.ia monta tudo com você.
         </p>
-      </div>
-
-      <div className="rounded-2xl flex items-center gap-2 shrink-0" style={{ ...CARD, padding: "10px 11px", marginTop: 7 }}>
-        <ListChecks size={14} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
-        <span className="flex-1 font-bold" style={{ color: "var(--text)", fontSize: 11.5 }}>Fazer sozinho</span>
-        <ChevronRight size={12} style={{ color: "var(--text-tertiary)" }} />
-      </div>
-
-      {/* no pe: o botao do card do Fisco */}
-      <div className="shrink-0" style={{ marginTop: "auto", paddingTop: 12 }}>
         <span
           className="rounded-xl font-semibold flex items-center justify-center gap-1.5"
-          style={{ padding: "9px 0", fontSize: 11.5, backgroundColor: VERDE, color: "var(--primary-contrast)" }}
+          style={{ marginTop: 9, padding: "8px 0", fontSize: 11, backgroundColor: VERDE, color: "var(--primary-contrast)" }}
         >
           <MessageCircle size={12} strokeWidth={2.4} />
           Chamar o Fisco.ia
         </span>
+      </div>
+
+      {/* "Fazer sozinho" aberto: cresce para ocupar a sobra da moldura */}
+      <div className="rounded-2xl flex flex-col" style={{ ...CARD, padding: "10px 11px", marginTop: 8, flexGrow: 1 }}>
+        <div className="flex items-center gap-2 shrink-0">
+          <ListChecks size={14} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
+          <span className="flex-1 font-bold" style={{ color: "var(--text)", fontSize: 11.5 }}>Fazer sozinho</span>
+          <ChevronDown size={12} style={{ color: "var(--text-tertiary)" }} />
+        </div>
+        <div className="flex flex-col" style={{ flexGrow: 1, justifyContent: "space-evenly", gap: 6, marginTop: 8 }}>
+          {passos.map((t, i) => (
+            <div key={t} className="flex items-center gap-2">
+              <span
+                className="rounded-full flex items-center justify-center shrink-0 font-bold"
+                style={{ width: 17, height: 17, fontSize: 9.5, color: VERDE, backgroundColor: "rgba(34,197,94,0.16)" }}
+              >
+                {i + 1}
+              </span>
+              <span style={{ color: "var(--text)", fontSize: 10.5, lineHeight: 1.3 }}>{t}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </MiniTela>
   );

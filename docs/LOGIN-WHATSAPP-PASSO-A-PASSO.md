@@ -15,6 +15,45 @@ do que está escrito aqui.
 
 ---
 
+## ⚡ Caminho rápido: testar AGORA só com os números de teste
+
+Para os 5 números de teste funcionarem **não precisa** publicar a função,
+criar o hook nem ter a Z-API ligada: com número de teste, o Supabase **não
+manda mensagem nenhuma** (nem SMS, nem WhatsApp). Ele só aceita o código
+fixo. Basta isto, tudo na mesma tela:
+
+1. Painel do Supabase → menu da esquerda → **Authentication**.
+2. **Sign In / Providers** → na lista, toque em **Phone**.
+3. Ligue **Enable Phone provider**.
+4. **SMS provider:** deixe **Twilio**.
+   - Se os campos do Twilio forem obrigatórios (o **Save** não deixa salvar
+     vazio), preencha com valores **de mentira**. Eles nunca são usados
+     pelos números de teste:
+     - Twilio Account SID: `AC00000000000000000000000000000000`
+     - Twilio Auth Token: `teste`
+     - Twilio Message Service SID: `MG00000000000000000000000000000000`
+   - Com isso, um número **real** dá "Não conseguimos enviar agora" até a
+     etapa 4 (hook) ser feita. É o esperado.
+5. **SMS OTP Expiry:** `600`. **SMS OTP Length:** `6`.
+6. **Test Phone Numbers and OTPs:** cole exatamente:
+   ```
+   5537000000001=123456,5537000000002=123456,5537000000003=123456,5537000000004=123456,5537000000005=123456
+   ```
+7. **Test OTPs Valid Until:** escolha **31/12/2026** (depois dessa data os
+   números de teste param de funcionar).
+8. Toque em **Save**.
+
+No app (com `MODO_TESTE_LOGIN = true` em `src/config/piloto.js`), digite
+**(37) 00000-0001** (até 0005) e o código **123456**. O rodapé da tela
+lembra disso.
+
+> ⚠️ Antes do piloto com usuários reais: apagar os números de teste do
+> painel **e** trocar `MODO_TESTE_LOGIN` para `false`.
+
+As etapas abaixo são o caminho COMPLETO (para números reais).
+
+---
+
 ## Etapa 1 — Publicar a função `enviar-otp-whatsapp`
 
 **Jeito mais fácil:** peça ao Claude Code: *"pode publicar a
@@ -55,10 +94,9 @@ npx supabase functions deploy enviar-otp-whatsapp --no-verify-jwt
 1. Menu da esquerda → **Authentication** → **Sign In / Providers**.
 2. Na lista, abra **Phone**.
 3. Ligue **Enable Phone provider** (e **Enable phone signup**, se aparecer).
-4. **SMS provider:** se o painel exigir escolher um, escolha qualquer um
-   (ex.: Twilio) e deixe os campos como estão. O **hook da etapa 4
-   substitui o envio**: nada vai por SMS. Se ele não deixar salvar com
-   campos vazios, mande print.
+4. **SMS provider:** deixe **Twilio**. Se os campos forem obrigatórios,
+   use os valores de mentira do "Caminho rápido" acima. O **hook da
+   etapa 4 substitui o envio**: nada vai por SMS nem pelo Twilio.
 5. **SMS OTP Expiry:** `600` (10 minutos — é o que a mensagem do WhatsApp
    promete; o padrão é 60 segundos).
 6. **SMS OTP Length:** `6`.
@@ -73,18 +111,19 @@ npx supabase functions deploy enviar-otp-whatsapp --no-verify-jwt
 
 Na mesma tela do **Phone**:
 
-1. Campo **Test Phone Numbers and OTPs**: escreva
+1. Campo **Test Phone Numbers and OTPs**: cole (os 5 números de
+   `TELEFONES_TESTE` em `src/config/piloto.js`, todos com 123456):
    ```
-   5537900000001=123456
+   5537000000001=123456,5537000000002=123456,5537000000003=123456,5537000000004=123456,5537000000005=123456
    ```
-   (para mais de um, separe por vírgula:
-   `5537900000001=123456,5537900000002=654321`)
 2. **Test OTPs Valid Until:** escolha uma data depois do fim do piloto
    (ex.: 31/12/2026). Depois dessa data o número de teste para de funcionar.
 3. Toque em **Save**.
 
-> No app, o número de teste se digita assim: **(37) 90000-0001**, e o
-> código é **123456**. Ele cria uma conta nova de verdade (vazia).
+> No app, o número de teste se digita assim: **(37) 00000-0001** (até
+> 0005), e o código é **123456**. Esses números não têm cara de celular
+> real; o app só aceita com `MODO_TESTE_LOGIN = true`. Cada um cria uma
+> conta nova de verdade (vazia).
 
 ---
 
@@ -149,7 +188,7 @@ nesta tarefa.**
 
 **A) Com o número de teste (não depende da Z-API)**
 1. Abra o app → **Criar conta** (ou **Entrar**).
-2. Tela "Entre com seu WhatsApp": digite **(37) 90000-0001** → **Receber
+2. Tela "Entre com seu WhatsApp": digite **(37) 00000-0001** → **Receber
    código**.
 3. Digite **123456**. Ele entra sozinho ao completar o 6º número.
 4. Conta nova → abre o **Onboarding** (nome, tipo de MEI...) → Início.

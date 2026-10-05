@@ -119,6 +119,9 @@ ajuda.
 
 - [ ] **Ligar o login pelo WhatsApp no painel do Supabase:** seguir
       `docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md`.
+- [ ] ⚠️ **Antes de entrar gente real: desligar o modo teste.** Trocar
+      `MODO_TESTE_LOGIN` para `false` (`src/config/piloto.js`) e apagar os
+      5 números de teste (37 00000-0001 a 0005) no painel do Supabase.
 - [ ] **Conferir o gatilho `handle_new_user`** com conta de telefone (só
       leitura; o comando está no passo a passo). Não foi alterado.
 - [ ] **Reativar a Z-API** (pausada): sem ela, números reais não recebem o

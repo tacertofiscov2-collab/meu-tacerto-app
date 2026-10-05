@@ -193,6 +193,10 @@ O projeto **não tem backup automático**. Por isso:
   do Supabase ainda não foi ligado (`docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md`).
   Perfil e Editar perfil em **lista simples** (`ListaSimples.jsx`);
   assistente agora é **Fisco.ia** na tela (no WhatsApp continua "Fisco").
+  Ajustes: **`MODO_TESTE_LOGIN = true`** (5 números de teste 37
+  00000-0001 a 0005, código 123456; **desligar antes do piloto real**),
+  botão do WhatsApp escondido nos Termos/Privacidade
+  (`MOSTRAR_WHATSAPP_DOCUMENTOS`), slide 3 da nota preenchido.
 - `main` com **33 commits sem push** (o Fernando decide quando
   publicar). Produção ainda em `f1832bb`.
 - 03/10 (fim): advisors de segurança rodados; as funções-gatilho

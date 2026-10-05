@@ -1,7 +1,7 @@
-/* TERMOSDEUSO v4 — "Fisco" vira "Fisco.ia" nos textos da tela (v3: sem a palavra "piloto" no texto ("fase de testes"); v2: botao do WhatsApp com mensagem pronta) */
+/* TERMOSDEUSO v5 — secao "Fale com a gente" (botao do WhatsApp) escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("fase de testes"); v2: botao do WhatsApp com mensagem pronta) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
-import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp } from "@/config/piloto";
+import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp, MOSTRAR_WHATSAPP_DOCUMENTOS } from "@/config/piloto";
 import { useAppState } from "@/context/AppStateContext";
 
 /* ===================================================================
@@ -127,6 +127,8 @@ export default function TermosDeUso() {
           </section>
         ))}
 
+        {/* v5: escondida (MOSTRAR_WHATSAPP_DOCUMENTOS em src/config/piloto.js) */}
+        {MOSTRAR_WHATSAPP_DOCUMENTOS && (
         <section className="mt-6">
           <h2 className="text-[16px] font-bold" style={{ color: "var(--text)" }}>
             Fale com a gente
@@ -149,6 +151,7 @@ export default function TermosDeUso() {
             Falar com o Fisco.ia no WhatsApp
           </a>
         </section>
+        )}
       </div>
     </div>
   );

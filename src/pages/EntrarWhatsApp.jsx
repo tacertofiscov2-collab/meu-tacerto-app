@@ -1,4 +1,4 @@
-/* ENTRARWHATSAPP v1 — login somente pelo WhatsApp: numero -> codigo de 6 digitos -> entra (05/10/2026) */
+/* ENTRARWHATSAPP v2 — modo teste: aceita os TELEFONES_TESTE (MODO_TESTE_LOGIN) e mostra o aviso no rodape (v1: login so pelo WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { Gauge } from "lucide-react";
@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import AuthError from "@/components/AuthError";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 import TopoRolavel from "../components/TopoRolavel.jsx";
+import { MODO_TESTE_LOGIN, TELEFONES_TESTE, CODIGO_TESTE_LOGIN } from "@/config/piloto";
 
 /* ===================================================================
    ENTRAR COM O WHATSAPP (05/10/2026)
@@ -57,9 +58,12 @@ function formatarTelefone(valor) {
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 }
 
-/* DDD sem zero (11 a 99) + 8 digitos (fixo) ou 9 comecando com 9 (celular) */
+/* DDD sem zero (11 a 99) + 8 digitos (fixo) ou 9 comecando com 9 (celular).
+   v2: com MODO_TESTE_LOGIN, os numeros de TELEFONES_TESTE (ex.:
+   37 00000-0001) tambem valem, mesmo sem o 9 de celular. */
 function telefoneValido(valor) {
   const d = String(valor).replace(/\D/g, "");
+  if (MODO_TESTE_LOGIN && TELEFONES_TESTE.includes(`55${d}`)) return true;
   if (!/^[1-9]{2}/.test(d)) return false;
   if (d.length === 10) return true;
   return d.length === 11 && d[2] === "9";
@@ -423,6 +427,13 @@ export default function EntrarWhatsApp() {
           )}
         </div>
       </div>
+
+      {/* v2: aviso discreto do modo teste (some com MODO_TESTE_LOGIN = false) */}
+      {MODO_TESTE_LOGIN && (
+        <p className="px-6 pb-2 shrink-0 text-center" style={{ color: "var(--text-tertiary)", fontSize: 11 }}>
+          Modo teste: use 37 00000-0001 a 0005, código {CODIGO_TESTE_LOGIN}
+        </p>
+      )}
 
       {/* Termos so na etapa do numero (igual ao Cadastro) */}
       {etapa === "numero" && (
