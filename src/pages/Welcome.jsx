@@ -1,4 +1,4 @@
-/* WELCOME v11 — letras maiores (zoom de 10% igual em todos os desenhos; moldura ocupa o espaco ate o card de baixo), destaques verdes discretos (so borda, sem fundo nem selo), slide 2 "Boleto automático no WhatsApp" e "te lembra" (v10: correcao: o slide 3 (nota) fica FORA da conta da escala comum, entao os slides 1, 2, 4 e 5 voltam a ser como antes da v9 (v9: slide 3 preenchido, sem "Gratis"; v8: Fisco.ia; v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos)) */
+/* WELCOME v12 — textos com destaque em facilidades (titulos e frases novos), slide 3 nota por audio/mensagem/automatica/sozinho, slide 4 itens de facilidade (v11: letras maiores (zoom de 10% igual em todos os desenhos; moldura ocupa o espaco ate o card de baixo), destaques verdes discretos (so borda, sem fundo nem selo), slide 2 "Boleto automático no WhatsApp" e "te lembra" (v10: correcao: o slide 3 (nota) fica FORA da conta da escala comum, entao os slides 1, 2, 4 e 5 voltam a ser como antes da v9 (v9: slide 3 preenchido, sem "Gratis"; v8: Fisco.ia; v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos)) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -77,7 +77,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import {
   Gauge, ArrowLeft, ChevronRight, ChevronDown, Send, Mic, Plus, Smile,
   ArrowDownLeft, ArrowUpRight, CalendarCheck, FileText, Check, CheckCheck,
-  MessageCircle, Headphones, ListChecks, Globe,
+  MessageCircle, Headphones, ListChecks, Globe, Zap, CheckCircle2,
 } from "lucide-react";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 import SimboloPluggy from "@/components/SimboloPluggy";
@@ -549,58 +549,55 @@ function MiniDas() {
    5 voltam a ser exatamente como antes. Ele so usa a escala que os
    outros definirem e se ajusta ao espaco: o "Fazer sozinho" cresce
    quando sobra e encolhe (minHeight 0) quando falta. Passos curtos, sem
-   quebrar linha. */
+   quebrar linha.
+
+   v12 (05/10/2026) — pedido do Fernando: o "Fazer sozinho" estava mal
+   explicado, e o slide tem que mostrar que o Fisco.ia EMITE a nota do
+   jeito que a pessoa quiser (audio, mensagem, automatica). Agora sao 4
+   opcoes do mesmo tamanho, cada uma com titulo + uma frase curta
+   (destaque discreto so na primeira, DESTAQUE_BORDA), e no pe o
+   resultado: "Nota emitida / PDF direto no seu WhatsApp". A lista
+   cresce para ocupar a sobra (flexGrow) e continua FORA da escala
+   comum (foraDaEscala): os outros slides nao mudam por causa dela. */
 function MiniNota() {
-  const passos = [
-    "Entre no Emissor Nacional",
-    "Informe o cliente e o valor",
-    "Emita e baixe o PDF",
+  const opcoes = [
+    { Icon: Mic, t: "Por áudio", d: "Você fala, o Fisco.ia emite" },
+    { Icon: MessageCircle, t: "Por mensagem", d: "Só o valor e para quem foi" },
+    { Icon: Zap, t: "Automática", d: "Todo mês, sem digitar nada" },
+    { Icon: ListChecks, t: "Sozinho", d: "Passo a passo no gov.br" },
   ];
   return (
     <MiniTela>
-      <MiniHeader titulo="Como emitir sua nota" />
+      <MiniHeader titulo="Emitir nota fiscal" />
 
       <p className="font-semibold shrink-0" style={{ color: "var(--text-secondary)", fontSize: 10.5, marginBottom: 7 }}>
-        Escolha como emitir
+        Do jeito que você quiser
       </p>
 
-      <div className="rounded-2xl shrink-0" style={{ padding: "10px 11px", border: `1px solid ${DESTAQUE_BORDA}` }}>
-        <div className="flex items-center gap-2">
-          <MessageCircle size={14} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
-          <span className="font-bold" style={{ color: "var(--text)", fontSize: 11.5 }}>Com o Fisco.ia no WhatsApp</span>
-        </div>
-        <p style={{ color: "var(--text-secondary)", fontSize: 10, lineHeight: 1.35, marginTop: 6 }}>
-          Você manda o valor e para quem foi. O Fisco.ia monta tudo com você.
-        </p>
-        <span
-          className="rounded-xl font-semibold flex items-center justify-center gap-1.5"
-          style={{ marginTop: 9, padding: "7px 0", fontSize: 11, color: VERDE, border: `1px solid ${DESTAQUE_BORDA}` }}
-        >
-          <MessageCircle size={12} strokeWidth={2.4} />
-          Chamar o Fisco.ia
-        </span>
+      {/* opcoes: mesmo tamanho; a lista cresce para ocupar a sobra */}
+      <div className="flex flex-col" style={{ gap: 5, flexGrow: 1, justifyContent: "space-evenly", minHeight: 0 }}>
+        {opcoes.map(({ Icon, t, d }, i) => (
+          <div
+            key={t}
+            className="rounded-xl flex items-center gap-2.5 shrink-0"
+            style={{ padding: "6px 9px", border: `1px solid ${i === 0 ? DESTAQUE_BORDA : "var(--card-borda)"}` }}
+          >
+            <Icon size={14} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
+            <span className="flex-1 min-w-0">
+              <span className="block font-bold truncate" style={{ color: "var(--text)", fontSize: 11, lineHeight: 1.25 }}>{t}</span>
+              <span className="block truncate" style={{ color: "var(--text-secondary)", fontSize: 9.5, lineHeight: 1.3 }}>{d}</span>
+            </span>
+          </div>
+        ))}
       </div>
 
-      {/* "Fazer sozinho" aberto: cresce para ocupar a sobra da moldura */}
-      <div className="rounded-2xl flex flex-col" style={{ ...CARD, padding: "10px 11px", marginTop: 8, flexGrow: 1, minHeight: 0, overflow: "hidden" }}>
-        <div className="flex items-center gap-2 shrink-0">
-          <ListChecks size={14} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
-          <span className="flex-1 font-bold" style={{ color: "var(--text)", fontSize: 11.5 }}>Fazer sozinho</span>
-          <ChevronDown size={12} style={{ color: "var(--text-tertiary)" }} />
-        </div>
-        <div className="flex flex-col" style={{ flexGrow: 1, justifyContent: "space-evenly", gap: 4, marginTop: 6 }}>
-          {passos.map((t, i) => (
-            <div key={t} className="flex items-center gap-2">
-              <span
-                className="rounded-full flex items-center justify-center shrink-0 font-bold"
-                style={{ width: 17, height: 17, fontSize: 9.5, color: VERDE, backgroundColor: "rgba(34,197,94,0.16)" }}
-              >
-                {i + 1}
-              </span>
-              <span className="whitespace-nowrap" style={{ color: "var(--text)", fontSize: 10.5, lineHeight: 1.3 }}>{t}</span>
-            </div>
-          ))}
-        </div>
+      {/* no pe: o resultado */}
+      <div className="rounded-xl flex items-center gap-2.5 shrink-0" style={{ ...CARD, marginTop: 8, padding: "7px 9px" }}>
+        <CheckCircle2 size={16} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
+        <span className="flex-1 min-w-0">
+          <span className="block font-bold" style={{ color: "var(--text)", fontSize: 11, lineHeight: 1.25 }}>Nota emitida</span>
+          <span className="block truncate" style={{ color: "var(--text-secondary)", fontSize: 9.5, lineHeight: 1.3 }}>PDF direto no seu WhatsApp</span>
+        </span>
       </div>
     </MiniTela>
   );
@@ -609,11 +606,13 @@ function MiniNota() {
 /* -------------------------- 4. PILOTO (v6) --------------------------
    O resumo do que o piloto da, de graca. O Fisco fazendo joinha. */
 function MiniPiloto() {
+  /* v12: cada item e uma FACILIDADE (pedido do Fernando), frase curta
+     para caber em uma linha */
   const itens = [
-    "Velocímetro do limite",
-    "Aviso e boleto do DAS",
-    "Ajuda com a nota fiscal",
-    "Fisco.ia no WhatsApp",
+    "Limite anual acompanhado 24h",
+    "Boleto do DAS no WhatsApp",
+    "Nota fiscal por áudio",
+    "Fisco.ia sempre à mão",
   ];
   return (
     <MiniTela>
@@ -770,10 +769,12 @@ function MiniWhatsApp() {
    (Open Finance), nota emitida sozinha, chat com IA dentro do app.
    Textos neutros (MEI e MEI Caminhoneiro), frases curtas. */
 const SLIDES = [
-  { Mini: MiniInicio, titulo: "Seu limite em tempo real", subtitulo: "Veja quanto você já faturou e quanto falta para o limite do ano." },
+  /* v12: titulos e frases com destaque em FACILIDADE e tempo ganho
+     (pedido do Fernando). Titulos curtos: uma linha no iPhone. */
+  { Mini: MiniInicio, titulo: "Limite sob controle 24h", subtitulo: "Veja na hora quanto já faturou e quanto ainda pode faturar no ano." },
   { Mini: MiniBanco, mostrar: MOSTRAR_OPEN_FINANCE, titulo: "Tudo chega sozinho", subtitulo: "Conecte o banco do seu MEI e as entradas e os gastos aparecem no app." },
-  { Mini: MiniDas, mostrar: MOSTRAR_CARD_DAS, titulo: "DAS sem susto", subtitulo: "Todo mês o Fisco.ia te lembra e manda o boleto do DAS no WhatsApp." },
-  { Mini: MiniNota, foraDaEscala: true, mostrar: MOSTRAR_TUTORIAL_NOTA, titulo: "Ajuda com a nota fiscal", subtitulo: "O Fisco.ia te ajuda a emitir sua nota pelo WhatsApp, passo a passo." },
+  { Mini: MiniDas, mostrar: MOSTRAR_CARD_DAS, titulo: "DAS no automático", subtitulo: "Todo mês o Fisco.ia te lembra e manda o boleto do DAS no WhatsApp." },
+  { Mini: MiniNota, foraDaEscala: true, mostrar: MOSTRAR_TUTORIAL_NOTA, titulo: "Nota fiscal do seu jeito", subtitulo: "Mande um áudio ou uma mensagem e o Fisco.ia emite sua nota. Pode ser automática." },
   /* Conferencia "É faturamento?": fora dos slides do piloto (a
      "propaganda" foi reprovada em 04/10). Troque para true para voltar. */
   { Mini: MiniConferir, mostrar: false, titulo: "O Fisco.ia organiza pra você", subtitulo: "Você diz uma vez se é faturamento. Da próxima, ele já sabe." },
@@ -783,8 +784,8 @@ const SLIDES = [
     titulo: "Tudo guardado",
     subtitulo: "Entradas, saídas, DAS e notas fiscais, organizados mês a mês.",
   },
-  { Mini: MiniPiloto, titulo: "Grátis", subtitulo: "Você não paga nada para usar o TaCerto!" },
-  { Mini: MiniWhatsApp, titulo: "O Fisco.ia no WhatsApp", subtitulo: "Todo dia, às 21h, ele pergunta quanto você recebeu. Dúvidas? É só chamar." },
+  { Mini: MiniPiloto, titulo: "Tudo isso, grátis", subtitulo: "Menos burocracia e mais tempo para trabalhar, sem pagar nada." },
+  { Mini: MiniWhatsApp, titulo: "Tudo pelo WhatsApp", subtitulo: "Às 21h o Fisco.ia pergunta quanto você recebeu e anota tudo para você." },
 ].filter((s) => s.mostrar !== false);
 
 export default function Welcome() {

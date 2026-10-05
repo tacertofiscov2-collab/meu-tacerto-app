@@ -197,6 +197,10 @@ O projeto **não tem backup automático**. Por isso:
   00000-0001 a 0005, código 123456; **desligar antes do piloto real**),
   botão do WhatsApp escondido nos Termos/Privacidade
   (`MOSTRAR_WHATSAPP_DOCUMENTOS`), slide 3 da nota preenchido.
+  O **Phone continua desligado no painel**; o modo teste entra por uma
+  "ponte" (conta de e-mail de teste por número, `contaDoNumeroTeste`).
+  Slides com textos de facilidade, letras 10% maiores e destaque verde
+  discreto (`DESTAQUE_BORDA`).
 - `main` com **33 commits sem push** (o Fernando decide quando
   publicar). Produção ainda em `f1832bb`.
 - 03/10 (fim): advisors de segurança rodados; as funções-gatilho

@@ -1,4 +1,4 @@
-/* ENTRARWHATSAPP v2 — modo teste: aceita os TELEFONES_TESTE (MODO_TESTE_LOGIN) e mostra o aviso no rodape (v1: login so pelo WhatsApp) */
+/* ENTRARWHATSAPP v3 — ponte do modo teste: numeros de teste entram sem o login por telefone do painel (contaDoNumeroTeste) (v2: aceita TELEFONES_TESTE e aviso no rodape; v1: login so pelo WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { Gauge } from "lucide-react";
@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import AuthError from "@/components/AuthError";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 import TopoRolavel from "../components/TopoRolavel.jsx";
-import { MODO_TESTE_LOGIN, TELEFONES_TESTE, CODIGO_TESTE_LOGIN } from "@/config/piloto";
+import { MODO_TESTE_LOGIN, TELEFONES_TESTE, CODIGO_TESTE_LOGIN, contaDoNumeroTeste } from "@/config/piloto";
 
 /* ===================================================================
    ENTRAR COM O WHATSAPP (05/10/2026)
@@ -97,6 +97,8 @@ export default function EntrarWhatsApp() {
 
   const digitos = telefone.replace(/\D/g, "");
   const phone = `+55${digitos}`;
+  /* v3: numero de teste com MODO_TESTE_LOGIN ligado (ver contaDoNumeroTeste) */
+  const numeroDeTeste = MODO_TESTE_LOGIN && TELEFONES_TESTE.includes(`55${digitos}`);
 
   /* Contagem do "Reenviar codigo" */
   useEffect(() => {
@@ -151,6 +153,13 @@ export default function EntrarWhatsApp() {
       setErro(ERRO_INTERNET);
       return false;
     }
+    /* v3: numero de teste nao pede codigo ao Supabase (o login por
+       telefone do painel ainda esta desligado): vai direto para o codigo. */
+    if (numeroDeTeste) {
+      enviadoEmRef.current = Date.now();
+      setSegundos(ESPERA_REENVIO_S);
+      return true;
+    }
     setEnviando(true);
     try {
       const { error } = await supabase.auth.signInWithOtp({ phone });
@@ -199,6 +208,29 @@ export default function EntrarWhatsApp() {
     if (enviou) setAviso("Enviamos um código novo.");
   }
 
+  /* v3: PONTE DO MODO TESTE. Confere o codigo fixo e entra na conta de
+     e-mail de teste do numero (contaDoNumeroTeste, em src/config/piloto.js).
+     Primeira vez: a conta nao existe, entao e criada (o Supabase confirma
+     o e-mail sozinho neste projeto) e ja entra. Devolve o usuario, ou
+     null com a mensagem de erro na tela. */
+  async function entrarComNumeroDeTeste(valor) {
+    if (valor !== CODIGO_TESTE_LOGIN) {
+      setErro("Código errado. Confira e digite de novo.");
+      return null;
+    }
+    const { email, senha } = contaDoNumeroTeste(`55${digitos}`);
+    let { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+    if (error && /invalid login credentials/i.test(error.message || "")) {
+      ({ data, error } = await supabase.auth.signUp({ email, password: senha }));
+    }
+    if (error || !data?.session || !data?.user) {
+      const m = String(error?.message || "").toLowerCase();
+      setErro(erroDeRede(m) ? ERRO_INTERNET : "Não foi possível entrar. Tente de novo.");
+      return null;
+    }
+    return data.user;
+  }
+
   /* Confere o codigo. Chamado sozinho quando completa 6 digitos. */
   async function conferirCodigo(valor = codigo) {
     if (conferindoRef.current) return;
@@ -217,6 +249,14 @@ export default function EntrarWhatsApp() {
 
     let user = null;
     try {
+      /* v3: ponte do modo teste (sem o login por telefone do painel) */
+      if (numeroDeTeste) {
+        user = await entrarComNumeroDeTeste(valor);
+        if (!user) {
+          setCodigo("");
+          return;
+        }
+      } else {
       const { data, error } = await supabase.auth.verifyOtp({ phone, token: valor, type: "sms" });
       if (error) {
         const m = String(error.message || "").toLowerCase();
@@ -233,6 +273,7 @@ export default function EntrarWhatsApp() {
         return;
       }
       user = data?.user || null;
+      }
     } catch (e) {
       setErro(erroDeRede(String(e?.message || "").toLowerCase()) ? ERRO_INTERNET : "Não foi possível entrar. Tente de novo.");
       setCodigo("");

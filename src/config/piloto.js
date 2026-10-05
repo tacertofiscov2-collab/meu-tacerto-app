@@ -1,4 +1,4 @@
-/* PILOTO v5 — MOSTRAR_WHATSAPP_DOCUMENTOS tambem esconde a secao "Fale com a gente" da Privacidade (v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
+/* PILOTO v6 — ponte do modo teste (contaDoNumeroTeste): numeros de teste entram sem o login por telefone do painel (v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 
 /* ===================================================================
@@ -162,6 +162,25 @@ export const TELEFONES_TESTE = [
 
 /* Codigo fixo dos numeros de teste (o mesmo para os 5) */
 export const CODIGO_TESTE_LOGIN = "123456";
+
+/* v6 — PONTE DO MODO TESTE (05/10/2026)
+   O login por telefone ainda esta DESLIGADO no painel do Supabase, e
+   sem ele nenhum numero (nem o de teste) recebe codigo. Para o teste
+   funcionar ja, com MODO_TESTE_LOGIN = true os numeros de
+   TELEFONES_TESTE NAO pedem codigo ao Supabase: a tela confere o
+   CODIGO_TESTE_LOGIN e entra numa conta de e-mail de teste ligada
+   aquele numero (criada sozinha no primeiro acesso; o Supabase confirma
+   e-mail automaticamente neste projeto). O resto e igual: numero
+   gravado no perfil, Onboarding na primeira vez, Inicio depois.
+   Numeros reais continuam pelo login por telefone de verdade.
+   ⚠️ A senha fica no codigo: so serve para estas contas de teste. Com
+   MODO_TESTE_LOGIN = false, a ponte some. */
+export function contaDoNumeroTeste(numero) {
+  return {
+    email: `tacerto.teste.${numero}@gmail.com`,
+    senha: `teste-${numero}-${CODIGO_TESTE_LOGIN}`,
+  };
+}
 
 /* -------------------------------------------------------------------
    EXTRA A — CARD "PROXIMO DAS" NO DASHBOARD

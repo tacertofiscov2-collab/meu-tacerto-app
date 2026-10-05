@@ -64,8 +64,11 @@
 **O app NÃO PODE prometer:**
 
 - Conexão automática com o banco (Open Finance).
-- Nota fiscal emitida automaticamente (o Certificado A1 aparece só como
-  "Em breve", para medir interesse).
+- ~~Nota fiscal emitida automaticamente~~ — **mudou em 05/10:** a pedido
+  do Fernando, o slide da nota diz que o Fisco.ia emite a nota por áudio,
+  por mensagem ou de forma automática (no piloto, quem faz é a equipe,
+  pelo WhatsApp). A página `/como-emitir-nota` ainda mostra o Certificado
+  A1 como "Em breve".
 - Chat com IA dentro do app (o Fisco atende pelo WhatsApp).
 
 Os textos dos slides de boas-vindas seguem esta lista. Antes de a pessoa

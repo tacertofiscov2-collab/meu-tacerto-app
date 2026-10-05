@@ -15,7 +15,16 @@ do que está escrito aqui.
 
 ---
 
-## ⚡ Caminho rápido: testar AGORA só com os números de teste
+## ✅ Modo teste já funciona SEM o painel (05/10)
+
+Com `MODO_TESTE_LOGIN = true`, os 5 números de teste **não usam** o login
+por telefone do Supabase: o app confere o código 123456 e entra numa conta
+de teste ligada ao número (`contaDoNumeroTeste` em `src/config/piloto.js`,
+criada sozinha no primeiro acesso). Dá para testar o fluxo inteiro (número
+→ código → Onboarding → Início) mesmo com o Phone desligado. O "Caminho
+rápido" abaixo só é preciso para o login por telefone de verdade.
+
+## ⚡ Caminho rápido: ligar o login por telefone no painel
 
 Para os 5 números de teste funcionarem **não precisa** publicar a função,
 criar o hook nem ter a Z-API ligada: com número de teste, o Supabase **não
