@@ -20,3 +20,11 @@ entrypoint = "./functions/verificar-codigo/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/verificar-codigo/*.html" ]
+
+[functions.enviar-otp-whatsapp]
+# Send SMS Hook do login por WhatsApp (05/10/2026). Quem chama e o
+# Supabase Auth, nao o app: por isso verify_jwt = false. A seguranca vem
+# da assinatura do hook (SEND_SMS_HOOK_SECRET), conferida no index.ts.
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/enviar-otp-whatsapp/index.ts"
