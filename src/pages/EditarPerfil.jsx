@@ -1,4 +1,4 @@
-/* EDITARPERFIL v15 — lista simples (igual ao Perfil): nome editavel, WhatsApp abre aviso "fale com a gente", e-mail so se existir, Excluir conta no fim; layout antigo atras de MOSTRAR_LOGIN_EMAIL */
+/* EDITARPERFIL v16 — linha do Nome no tamanho novo da lista (letras maiores, ListaSimples v2) (v15: lista simples (igual ao Perfil): nome editavel, WhatsApp abre aviso "fale com a gente", e-mail so se existir, Excluir conta no fim; layout antigo atras de MOSTRAR_LOGIN_EMAIL */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -228,9 +228,9 @@ function CampoEscolha({ rotulo, valor, onClick, travado = false }) {
    serve para a SecaoLista recuar a risca igual as outras linhas. */
 function LinhaCampo({ Icon, rotulo, children }) {
   return (
-    <label className="w-full flex items-center" style={{ gap: 14, padding: "13px 0", minHeight: 50 }}>
-      <Icon size={18} strokeWidth={1.9} className="shrink-0" style={{ color: "var(--text-tertiary)" }} />
-      <span className="shrink-0 font-medium" style={{ color: "var(--text)", fontSize: 15 }}>
+    <label className="w-full flex items-center" style={{ gap: 14, padding: "14px 0", minHeight: 54 }}>
+      <Icon size={20} strokeWidth={1.9} className="shrink-0" style={{ color: "var(--text-tertiary)" }} />
+      <span className="shrink-0 font-medium" style={{ color: "var(--text)", fontSize: 16.5 }}>
         {rotulo}
       </span>
       {children}

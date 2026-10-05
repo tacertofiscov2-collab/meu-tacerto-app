@@ -1,4 +1,4 @@
-/* WELCOME v12 — textos com destaque em facilidades (titulos e frases novos), slide 3 nota por audio/mensagem/automatica/sozinho, slide 4 itens de facilidade (v11: letras maiores (zoom de 10% igual em todos os desenhos; moldura ocupa o espaco ate o card de baixo), destaques verdes discretos (so borda, sem fundo nem selo), slide 2 "Boleto automático no WhatsApp" e "te lembra" (v10: correcao: o slide 3 (nota) fica FORA da conta da escala comum, entao os slides 1, 2, 4 e 5 voltam a ser como antes da v9 (v9: slide 3 preenchido, sem "Gratis"; v8: Fisco.ia; v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos)) */
+/* WELCOME v13 — slide 5: WhatsApp claro (original) e conversa nova (soma no velocimetro + "Devo emitir a nota fiscal?" Sim/Nao); slide 4: "Emissão de nota fiscal" e "Fisco.ia 24h para te ajudar" (v12: textos com destaque em facilidades (titulos e frases novos), slide 3 nota por audio/mensagem/automatica/sozinho, slide 4 itens de facilidade (v11: letras maiores (zoom de 10% igual em todos os desenhos; moldura ocupa o espaco ate o card de baixo), destaques verdes discretos (so borda, sem fundo nem selo), slide 2 "Boleto automático no WhatsApp" e "te lembra" (v10: correcao: o slide 3 (nota) fica FORA da conta da escala comum, entao os slides 1, 2, 4 e 5 voltam a ser como antes da v9 (v9: slide 3 preenchido, sem "Gratis"; v8: Fisco.ia; v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos)) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -611,8 +611,8 @@ function MiniPiloto() {
   const itens = [
     "Limite anual acompanhado 24h",
     "Boleto do DAS no WhatsApp",
-    "Nota fiscal por áudio",
-    "Fisco.ia sempre à mão",
+    "Emissão de nota fiscal",
+    "Fisco.ia 24h para te ajudar",
   ];
   return (
     <MiniTela>
@@ -694,8 +694,16 @@ function MiniHistoricos() {
   );
 }
 
-/* ---------------------------- 5. WHATSAPP ---------------------------- */
-const WA = { fundo: "#0b141a", topo: "#202c33", recebida: "#202c33", enviada: "#005c4b", hora: "rgba(233,237,239,0.6)", texto: "#e9edef", acao: "#00a884" };
+/* ---------------------------- 5. WHATSAPP ----------------------------
+   v13 (05/10/2026): o WhatsApp do exemplo passou para o tema CLARO, o
+   original do app (o escuro se misturava com o fundo preto das
+   boas-vindas). Cores do WhatsApp claro: fundo bege, balao recebido
+   branco, enviado verde-claro, sombra fina embaixo de cada balao. */
+const WA = {
+  fundo: "#efeae2", topo: "#f0f2f5", recebida: "#ffffff", enviada: "#d9fdd3",
+  hora: "#667781", texto: "#111b21", acao: "#00a884", linha: "#e9edef",
+  sombra: "0 1px 0.5px rgba(11,20,26,0.13)",
+};
 
 /* v5: `hora` — a conversa do exemplo e a pergunta das 21h */
 function Balao({ enviada = false, hora = "21:00", children }) {
@@ -703,7 +711,7 @@ function Balao({ enviada = false, hora = "21:00", children }) {
     <div className={`flex ${enviada ? "justify-end" : "justify-start"}`}>
       <div
         className="rounded-lg"
-        style={{ maxWidth: "84%", backgroundColor: enviada ? WA.enviada : WA.recebida, color: WA.texto, fontSize: 10.5, lineHeight: 1.35, padding: "5px 7px 4px" }}
+        style={{ maxWidth: "84%", backgroundColor: enviada ? WA.enviada : WA.recebida, color: WA.texto, fontSize: 10.5, lineHeight: 1.35, padding: "5px 7px 4px", boxShadow: WA.sombra }}
       >
         {children}
         <span className="flex items-center justify-end gap-0.5" style={{ color: WA.hora, fontSize: 7.5, marginTop: 1 }}>
@@ -715,9 +723,18 @@ function Balao({ enviada = false, hora = "21:00", children }) {
 }
 
 function MiniWhatsApp() {
+  /* botao de resposta rapida do WhatsApp (embaixo do balao) */
+  const botaoResposta = (rotulo) => (
+    <div
+      className="flex-1 rounded-lg text-center font-semibold"
+      style={{ backgroundColor: WA.recebida, color: WA.acao, fontSize: 10.5, padding: "6px 0", boxShadow: WA.sombra }}
+    >
+      {rotulo}
+    </div>
+  );
   return (
     <MiniTela padding="0" fundo={WA.fundo}>
-      <div className="flex items-center gap-2 shrink-0" style={{ backgroundColor: WA.topo, padding: "12px 12px 9px" }}>
+      <div className="flex items-center gap-2 shrink-0" style={{ backgroundColor: WA.topo, padding: "12px 12px 9px", borderBottom: `1px solid ${WA.linha}` }}>
         <ArrowLeft size={14} style={{ color: WA.texto }} />
         <FotoFisco tamanho={28} borda={WA.topo} />
         <span className="flex flex-col">
@@ -726,33 +743,34 @@ function MiniWhatsApp() {
         </span>
       </div>
 
-      {/* v5: so a pergunta das 21h, a resposta e a confirmacao — mais
-          enxuto (cabe na moldura) e neutro (MEI e MEI Caminhoneiro) */}
-      <div className="flex flex-col" style={{ gap: 6, padding: "10px 9px" }}>
+      {/* v13 (pedido do Fernando): a pessoa conta o que recebeu, o
+          Fisco.ia ja soma no velocimetro (sem pedir confirmacao) e
+          oferece a nota fiscal, com "Sim" e "Nao". Neutro (cliente). */}
+      <div className="flex flex-col" style={{ gap: 5, padding: "9px 9px" }}>
         <Balao>Boa noite! Quanto você recebeu hoje?</Balao>
         <Balao enviada hora="21:02">Recebi R$ ••• de um cliente</Balao>
+        <Balao hora="21:02">Pronto! Já somei no seu velocímetro.</Balao>
         <div className="flex flex-col" style={{ maxWidth: "84%", gap: 2 }}>
-          <div className="rounded-lg" style={{ backgroundColor: WA.recebida, color: WA.texto, fontSize: 10.5, lineHeight: 1.35, padding: "5px 7px 4px" }}>
-            Confere antes de eu anotar:
-            <div style={{ marginTop: 4, paddingLeft: 6, borderLeft: `2px solid ${WA.acao}` }}>
-              <div style={{ color: WA.hora, fontSize: 9 }}>Recebido hoje</div>
-              <div className="font-semibold">Cliente · R$ •••</div>
-            </div>
+          <div className="rounded-lg" style={{ backgroundColor: WA.recebida, color: WA.texto, fontSize: 10.5, lineHeight: 1.35, padding: "5px 7px 4px", boxShadow: WA.sombra }}>
+            Devo emitir a nota pro cliente?
+            <span className="flex justify-end" style={{ color: WA.hora, fontSize: 7.5, marginTop: 1 }}>21:02</span>
           </div>
-          <div className="rounded-lg text-center font-semibold" style={{ backgroundColor: WA.recebida, color: WA.acao, fontSize: 10.5, padding: "6px 0" }}>Está certo</div>
-          <div className="rounded-lg text-center font-semibold" style={{ backgroundColor: WA.recebida, color: WA.acao, fontSize: 10.5, padding: "6px 0" }}>Corrigir</div>
+          <div className="flex" style={{ gap: 2 }}>
+            {botaoResposta("Sim")}
+            {botaoResposta("Não")}
+          </div>
         </div>
       </div>
 
       {/* barra de digitar, no pé */}
-      <div className="flex items-center gap-1.5 shrink-0" style={{ marginTop: "auto", padding: "6px 8px 10px" }}>
-        <span className="flex-1 rounded-full flex items-center gap-2" style={{ backgroundColor: WA.topo, height: 30, padding: "0 10px" }}>
+      <div className="flex items-center gap-1.5 shrink-0" style={{ marginTop: "auto", padding: "6px 8px 10px", backgroundColor: WA.topo, borderTop: `1px solid ${WA.linha}` }}>
+        <span className="flex-1 rounded-full flex items-center gap-2" style={{ backgroundColor: "#ffffff", height: 30, padding: "0 10px" }}>
           <Smile size={14} style={{ color: WA.hora }} />
           <span className="flex-1" style={{ color: WA.hora, fontSize: 10.5 }}>Mensagem</span>
           <Plus size={14} style={{ color: WA.hora }} />
         </span>
         <span className="rounded-full flex items-center justify-center shrink-0" style={{ width: 30, height: 30, backgroundColor: WA.acao }}>
-          <Mic size={14} style={{ color: WA.fundo }} />
+          <Mic size={14} style={{ color: "#ffffff" }} />
         </span>
       </div>
     </MiniTela>

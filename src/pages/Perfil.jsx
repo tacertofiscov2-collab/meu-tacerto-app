@@ -1,4 +1,4 @@
-﻿/* PERFIL v10 — lista simples estilo Pierre Finance (sem cartoes, sem chip, sem WhatsApp no topo, sem selo, sem Excluir conta); Fisco.ia (v9: selo "gratis"; v8: cartoes) */
+﻿/* PERFIL v11 — sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
@@ -6,8 +6,9 @@ import {
   User, Settings, Info, Shield, Lock, LogOut,
   ChevronDown, UserPlus, X, Check, TrendingUp, BarChart3,
   Trash2, FileText, ArrowUpRight, ArrowDownLeft, CalendarCheck,
-  Briefcase, CalendarDays, Gauge, MessageCircle,
+  Briefcase, CalendarDays, Gauge, MessageCircle, Sun, Moon,
 } from "lucide-react";
+import { aplicarTema, temaEfetivo } from "./Preferencias.jsx";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
 import Valor from "../components/Valor.jsx";
@@ -25,6 +26,50 @@ import {
   MOSTRAR_AVATAR, MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS, MOSTRAR_LOGIN_EMAIL,
   MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
 } from "@/config/piloto";
+
+/* ===================================================================
+   PERFIL v11 (05/10/2026) — pedido do Fernando
+   - Saiu o NOME GRANDE do topo (MOSTRAR_NOME_NO_TOPO = false, abaixo;
+     o codigo continua). A tela abre direto na lista, sob o titulo
+     "Perfil".
+   - Ordem nova: CONTA primeiro (Editar perfil e Tema), depois MEU MEI,
+     AJUDA, SOBRE e, por ultimo, Sair da conta.
+   - TEMA de volta, so Preto ou Branco (sem "automatico"): grava em
+     localStorage "tacerto_tema" ("escuro"/"claro") — a mesma chave que
+     o main.jsx le ao abrir o app — e aplica na hora (aplicarTema, de
+     Preferencias.jsx).
+   - Letras maiores: ListaSimples v2 e valores em 15px.
+   =================================================================== */
+const MOSTRAR_NOME_NO_TOPO = false;
+
+/* Preto | Branco, na propria linha do Tema */
+function SeletorTema({ tema, onEscolher }) {
+  const opcoes = [["escuro", "Preto"], ["claro", "Branco"]];
+  return (
+    <span className="inline-flex rounded-full" style={{ padding: 2, border: "1px solid var(--border)" }}>
+      {opcoes.map(([valor, rotulo]) => {
+        const ativo = tema === valor;
+        return (
+          <button
+            key={valor}
+            type="button"
+            onClick={() => onEscolher(valor)}
+            aria-pressed={ativo}
+            className="rounded-full font-medium transition-colors"
+            style={{
+              fontSize: 14,
+              padding: "5px 13px",
+              backgroundColor: ativo ? "var(--field)" : "transparent",
+              color: ativo ? "var(--text)" : "var(--text-tertiary)",
+            }}
+          >
+            {rotulo}
+          </button>
+        );
+      })}
+    </span>
+  );
+}
 
 /* ===================================================================
    PERFIL v10 (05/10/2026) — LISTA SIMPLES (referencia: Pierre Finance)
@@ -97,6 +142,21 @@ export default function Perfil() {
   const app = useAppState();
   const { resetarConta, tipoMEI, mesAnoAbertura, limiteAtual, faturamentoAtual, email } = app;
   const [saindo, setSaindo] = useState(false);
+
+  /* v11: tema Preto/Branco. "auto" (de versoes antigas) vira o que
+     estiver valendo agora. */
+  const [tema, setTema] = useState(() => {
+    try {
+      return temaEfetivo(localStorage.getItem("tacerto_tema") || "escuro");
+    } catch {
+      return "escuro";
+    }
+  });
+  function escolherTema(valor) {
+    setTema(valor);
+    try { localStorage.setItem("tacerto_tema", valor); } catch { /* ignora */ }
+    aplicarTema(valor);
+  }
 
   /* v7: sai de verdade (ver o topo do arquivo). */
   async function sairDaConta() {
@@ -252,7 +312,28 @@ export default function Perfil() {
         )}
 
         <div className="px-5">
-          {/* ===== Topo: SO o nome (v10: sem chip do tipo e sem WhatsApp) ===== */}
+          {/* ===== v11: Conta PRIMEIRO (Editar perfil + Tema) ===== */}
+          <SecaoLista titulo="Conta" style={{ marginTop: 8 }}>
+            {contaItem && <LinhaLista Icon={contaItem.Icon} rotulo={contaItem.label} onClick={contaItem.onClick} />}
+            {!visitante && (
+              <LinhaLista Icon={User} rotulo="Editar perfil" onClick={() => navigate("/editar-perfil", DE_PERFIL)} />
+            )}
+            <LinhaLista
+              Icon={tema === "claro" ? Sun : Moon}
+              rotulo="Tema"
+              valor={<SeletorTema tema={tema} onEscolher={escolherTema} />}
+            />
+            {/* v10: so com o login por e-mail ligado (MOSTRAR_LOGIN_EMAIL) */}
+            {!visitante && MOSTRAR_LOGIN_EMAIL && (
+              <LinhaLista Icon={Lock} rotulo="Alterar senha" onClick={() => navigate("/alterar-senha", DE_PERFIL)} />
+            )}
+            {MOSTRAR_PREFERENCIAS && (
+              <LinhaLista Icon={Settings} rotulo="Preferências" onClick={() => navigate("/preferencias", DE_PERFIL)} />
+            )}
+          </SecaoLista>
+
+          {/* ===== Topo: SO o nome (v10). v11: escondido (MOSTRAR_NOME_NO_TOPO) ===== */}
+          {MOSTRAR_NOME_NO_TOPO && (
           <div style={{ paddingTop: 6 }}>
             <button
               type="button"
@@ -268,6 +349,7 @@ export default function Perfil() {
               )}
             </button>
           </div>
+          )}
 
           {/* ===== Meu MEI: so informacao, sem setinha ===== */}
           {!visitante && (
@@ -278,24 +360,24 @@ export default function Perfil() {
                 Icon={Gauge}
                 rotulo="Limite do ano"
                 detalhe={limiteEhProporcional ? "Proporcional" : null}
-                valor={<Valor tamanho="sm" cor="var(--text-secondary)">{limiteAtual}</Valor>}
+                valor={<Valor px={15} cor="var(--text-secondary)">{limiteAtual}</Valor>}
               />
               <LinhaLista
                 Icon={ArrowDownLeft}
                 rotulo="Já faturado"
-                valor={<Valor tamanho="sm" cor="var(--text-secondary)">{faturamentoAtual}</Valor>}
+                valor={<Valor px={15} cor="var(--text-secondary)">{faturamentoAtual}</Valor>}
               />
               {situacao.tipo === "faltam" ? (
                 <LinhaLista
                   Icon={TrendingUp}
                   rotulo="Falta"
-                  valor={<Valor tamanho="sm" cor="var(--text-secondary)">{situacao.valor}</Valor>}
+                  valor={<Valor px={15} cor="var(--text-secondary)">{situacao.valor}</Valor>}
                 />
               ) : (
                 <LinhaLista
                   Icon={TrendingUp}
                   rotulo="Passou do limite"
-                  valor={<Valor tamanho="sm" cor="var(--danger)">{situacao.valor}</Valor>}
+                  valor={<Valor px={15} cor="var(--danger)">{situacao.valor}</Valor>}
                 />
               )}
               {/* Telas escondidas no piloto (chaves em src/config/piloto.js) */}
@@ -316,21 +398,6 @@ export default function Perfil() {
               )}
             </SecaoLista>
           )}
-
-          {/* ===== Conta ===== */}
-          <SecaoLista titulo="Conta">
-            {contaItem && <LinhaLista Icon={contaItem.Icon} rotulo={contaItem.label} onClick={contaItem.onClick} />}
-            {!visitante && (
-              <LinhaLista Icon={User} rotulo="Editar perfil" onClick={() => navigate("/editar-perfil", DE_PERFIL)} />
-            )}
-            {/* v10: so com o login por e-mail ligado (MOSTRAR_LOGIN_EMAIL) */}
-            {!visitante && MOSTRAR_LOGIN_EMAIL && (
-              <LinhaLista Icon={Lock} rotulo="Alterar senha" onClick={() => navigate("/alterar-senha", DE_PERFIL)} />
-            )}
-            {MOSTRAR_PREFERENCIAS && (
-              <LinhaLista Icon={Settings} rotulo="Preferências" onClick={() => navigate("/preferencias", DE_PERFIL)} />
-            )}
-          </SecaoLista>
 
           {/* ===== Ajuda ===== */}
           <SecaoLista titulo="Ajuda">

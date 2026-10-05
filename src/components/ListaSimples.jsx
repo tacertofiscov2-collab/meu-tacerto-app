@@ -1,4 +1,4 @@
-/* LISTASIMPLES v1 — lista "clean" do Perfil e do Editar perfil (05/10/2026) */
+/* LISTASIMPLES v2 — letras maiores (rotulo 16.5, valor 15, titulo de secao 12.5, icone 20), pedido do Fernando (v1: lista clean do Perfil e Editar perfil) */
 import { Children } from "react";
 import { ChevronRight } from "lucide-react";
 
@@ -25,7 +25,7 @@ function Divisor({ comIcone }) {
       aria-hidden
       style={{
         height: 1,
-        marginLeft: comIcone ? 32 : 0,
+        marginLeft: comIcone ? 34 : 0,
         backgroundColor: "var(--border)",
         opacity: 0.55,
       }}
@@ -43,9 +43,9 @@ export function SecaoLista({ titulo, children, style }) {
           className="font-semibold uppercase"
           style={{
             color: "var(--text-tertiary)",
-            fontSize: 11.5,
-            letterSpacing: "0.09em",
-            marginBottom: 4,
+            fontSize: 12.5,
+            letterSpacing: "0.08em",
+            marginBottom: 2,
           }}
         >
           {titulo}
@@ -71,18 +71,18 @@ export function LinhaLista({ Icon, rotulo, detalhe, valor, onClick, cor, semSeta
     <>
       {Icon && (
         <Icon
-          size={18}
+          size={20}
           strokeWidth={1.9}
           className="shrink-0"
           style={{ color: cor || "var(--text-tertiary)" }}
         />
       )}
       <span className="flex-1 min-w-0">
-        <span className="block font-medium leading-snug" style={{ color: cor || "var(--text)", fontSize: 15 }}>
+        <span className="block font-medium leading-snug" style={{ color: cor || "var(--text)", fontSize: 16.5 }}>
           {rotulo}
         </span>
         {detalhe && (
-          <span className="block" style={{ color: "var(--text-tertiary)", fontSize: 12.5, marginTop: 1 }}>
+          <span className="block" style={{ color: "var(--text-tertiary)", fontSize: 13.5, marginTop: 1 }}>
             {detalhe}
           </span>
         )}
@@ -90,17 +90,17 @@ export function LinhaLista({ Icon, rotulo, detalhe, valor, onClick, cor, semSeta
       {valor != null && valor !== "" && (
         <span
           className="shrink-0 text-right truncate"
-          style={{ color: "var(--text-secondary)", fontSize: 14, maxWidth: "55%" }}
+          style={{ color: "var(--text-secondary)", fontSize: 15, maxWidth: "58%" }}
         >
           {valor}
         </span>
       )}
       {onClick && !semSeta && (
-        <ChevronRight size={16} className="shrink-0" style={{ color: "var(--text-tertiary)", opacity: 0.7 }} />
+        <ChevronRight size={18} className="shrink-0" style={{ color: "var(--text-tertiary)", opacity: 0.7 }} />
       )}
     </>
   );
-  const estilo = { gap: 14, padding: "13px 0", minHeight: 50 };
+  const estilo = { gap: 14, padding: "14px 0", minHeight: 54 };
   if (!onClick) {
     return (
       <div className="w-full flex items-center text-left" style={estilo}>
