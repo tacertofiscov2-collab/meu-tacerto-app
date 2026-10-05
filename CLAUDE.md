@@ -186,6 +186,13 @@ O projeto **não tem backup automático**. Por isso:
   `/como-pagar-das`, `/como-emitir-nota` com 3 caminhos, Perfil em
   cartões sem a bola da inicial. Decisões e pendências em
   **`docs/DECISOES-PILOTO.md`**.
+- **05/10 (3ª rodada):** **login só pelo WhatsApp** no app (tela
+  `EntrarWhatsApp` em `/login` e `/cadastro`; plano B `/entrar-email`;
+  chaves `MOSTRAR_LOGIN_EMAIL`/`MOSTRAR_LOGIN_GOOGLE`). Edge Function
+  `enviar-otp-whatsapp` no repositório, **ainda não publicada**; o painel
+  do Supabase ainda não foi ligado (`docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md`).
+  Perfil e Editar perfil em **lista simples** (`ListaSimples.jsx`);
+  assistente agora é **Fisco.ia** na tela (no WhatsApp continua "Fisco").
 - `main` com **33 commits sem push** (o Fernando decide quando
   publicar). Produção ainda em `f1832bb`.
 - 03/10 (fim): advisors de segurança rodados; as funções-gatilho
