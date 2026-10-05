@@ -5,7 +5,8 @@
 > ajudas pelo WhatsApp (boleto do DAS, nota fiscal, dúvidas) são feitas
 > **à mão pelo Fernando**.
 >
-> Branch: `piloto-simplificado`. Atualizado em 05/10/2026.
+> Branch: `piloto-simplificado`. Atualizado em 05/10/2026 (fim do dia).
+> Resumo de passagem da sessão: **`docs/HANDOFF.md`**.
 
 ---
 
@@ -33,7 +34,20 @@
   ganha uma conta nova, vazia.
 - **Falta ligar no painel do Supabase:** passo a passo clique por clique em
   **`docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md`** (publicar a função, ligar o
-  Phone, números de teste, hook, segredo, limite de envios).
+  Phone, números de teste, hook, segredo, limite de envios). Conferido ao
+  vivo em 05/10: o Phone continua **desligado** e a função
+  `enviar-otp-whatsapp` **não foi publicada**.
+- **Modo teste (`MODO_TESTE_LOGIN = true`):** funciona SEM o painel.
+  Qualquer número de **37 00000-0001 a 37 00000-9999**, com **qualquer
+  código de 6 números**, entra numa conta de teste de e-mail ligada ao
+  número (`contaDoNumeroTeste` / `ehTelefoneTeste` em `piloto.js`; e-mail
+  `tacerto.teste.55...@gmail.com`). Cada número novo = conta nova (para
+  passar pelo onboarding quantas vezes quiser). Testado de verdade em
+  05/10 (contas criadas e login de novo OK). O rodapé da tela de entrada
+  avisa o modo teste.
+- **Gesto de voltar do iPhone no Onboarding:** volta uma etapa; na
+  primeira etapa não sai da tela (antes levava ao Início com o cadastro
+  pela metade).
 
 ---
 
@@ -48,6 +62,28 @@
   do código de login ("Seu código do TaCerto é...").
 - Nomes de arquivos, componentes e funções **não** mudaram (`Fisco.jsx`,
   `ChatFiscoUI`, `abrirWhatsAppFisco`...).
+
+---
+
+## 1C. Padrão visual (05/10)
+
+- **Lista simples estilo Pierre Finance** (`src/components/ListaSimples.jsx`:
+  `SecaoLista`, `LinhaLista`, `numeroDoPasso`): Perfil, Editar perfil e as
+  páginas internas (Como emitir nota, Como pagar o DAS, Lançar,
+  Histórico, Passou do limite, Excluir conta, Termos, Privacidade). Sem
+  cartões; títulos de seção em cinza maiúsculo; letras maiores (rótulo
+  16,5). O **Início mantém** o tamanho de letra dele.
+- **Destaque verde discreto:** só a borda verde fina, sem fundo verde e
+  sem selo, sem mudar o tamanho do card.
+- **Botões de confirmar/salvar em contorno verde** (classe
+  `botao-confirmar` no `index.css`); apagar/sair em contorno vermelho
+  (`botao-perigo`). O "+" da barra e o "Criar conta" dos slides ficaram
+  como estavam. As telas escondidas ainda têm o verde cheio.
+- **Tema Preto | Branco** no Perfil (sem "automático"). Telas antes de
+  entrar (slides, login, onboarding) são sempre pretas.
+- **Início:** variações em teste (Atual, A, B, C) com seletor no topo;
+  ver seção 3.
+- **Campos de digitar com 16px** (abaixo disso o iPhone dá zoom).
 
 ---
 
@@ -98,6 +134,19 @@ Início (`/dashboard`).
 | `MOSTRAR_AVATAR` | Bola com a foto/inicial no Perfil e no Editar perfil | `false` |
 | `MOSTRAR_LOGIN_EMAIL` | Login e cadastro por e-mail e senha (`/login` e `/cadastro` abrem o WhatsApp), `/esqueci-senha`, `/alterar-senha`, `/alterar-whatsapp`, "Alterar senha" do Perfil e o layout antigo do Editar perfil. Plano B: `/entrar-email` | `false` |
 | `MOSTRAR_LOGIN_GOOGLE` | Botão "Continuar com Google" | `false` |
+| `MOSTRAR_WHATSAPP_DOCUMENTOS` | Seção "Fale com a gente" (botão do WhatsApp) nos Termos e na Privacidade | `false` |
+
+**Chaves de TESTE (ligadas agora, desligar antes do piloto real):**
+
+| Chave | O que faz | Valor |
+|---|---|---|
+| `MODO_TESTE_LOGIN` | Números 37 00000-0001 a 9999 + qualquer código entram sem o painel; aviso no rodapé do login | `true` |
+| `MOSTRAR_SELETOR_VISUAL_INICIO` | Seletor "Atual / A / B / C" no topo do Início | `true` |
+| `VISUAL_INICIO_PADRAO` | Variação que abre por padrão (quando o seletor sair, fica esta) | `"a"` |
+
+**Chaves dentro das próprias telas:** `MOSTRAR_NOME_NO_TOPO = false` e
+`MOSTRAR_BARRA_NO_PERFIL = false` (`Perfil.jsx`: sem o nome grande e sem a
+barra de baixo); `MOSTRAR_EMAIL_NO_EDITAR = false` (`EditarPerfil.jsx`).
 
 **Ligadas no piloto:** `MOSTRAR_CARD_DAS` (card "Próximo DAS" + painel
 "Emitir boleto" + slide do DAS), `MOSTRAR_TUTORIAL_DAS` (`/como-pagar-das`),
@@ -120,8 +169,14 @@ ajuda.
 
 ## 4. Pendências antes do piloto
 
+- [ ] **Escolher o visual do Início** (Atual/A/B/C ou mistura): depois,
+      `VISUAL_INICIO_PADRAO` = a escolhida e `MOSTRAR_SELETOR_VISUAL_INICIO = false`.
 - [ ] **Ligar o login pelo WhatsApp no painel do Supabase:** seguir
-      `docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md`.
+      `docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md`. Antes: publicar a função
+      `enviar-otp-whatsapp` (ainda não publicada).
+- [ ] **Alinhar "Como emitir nota" com o slide da nota:** o slide promete
+      nota por áudio/mensagem/automática; a página ainda mostra o
+      Certificado A1 como "Em breve".
 - [ ] ⚠️ **Antes de entrar gente real: desligar o modo teste.** Trocar
       `MODO_TESTE_LOGIN` para `false` (`src/config/piloto.js`) e apagar os
       5 números de teste (37 00000-0001 a 0005) no painel do Supabase, se
