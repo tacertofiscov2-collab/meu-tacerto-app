@@ -1,4 +1,4 @@
-/* PILOTO v6 — ponte do modo teste (contaDoNumeroTeste): numeros de teste entram sem o login por telefone do painel (v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
+/* PILOTO v7 — testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 
 /* ===================================================================
@@ -162,6 +162,18 @@ export const TELEFONES_TESTE = [
 
 /* Codigo fixo dos numeros de teste (o mesmo para os 5) */
 export const CODIGO_TESTE_LOGIN = "123456";
+
+/* v7 — TESTES SEM LIMITE (05/10/2026), pedido do Fernando para criar
+   quantas contas novas quiser e passar pelo onboarding inteiro:
+   com MODO_TESTE_LOGIN = true, QUALQUER numero de 37 00000-0001 ate
+   37 00000-9999 e numero de teste (cada um vira uma conta nova, do
+   zero), e QUALQUER codigo de 6 numeros e aceito para eles. Os 5 de
+   TELEFONES_TESTE continuam valendo (estao dentro dessa faixa).
+   Numeros reais nao mudam. */
+export function ehTelefoneTeste(numero) {
+  const d = String(numero || "").replace(/\D/g, "");
+  return MODO_TESTE_LOGIN && /^553700000\d{4}$/.test(d) && !d.endsWith("0000");
+}
 
 /* v6 — PONTE DO MODO TESTE (05/10/2026)
    O login por telefone ainda esta DESLIGADO no painel do Supabase, e

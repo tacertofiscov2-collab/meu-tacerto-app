@@ -17,7 +17,12 @@ do que está escrito aqui.
 
 ## ✅ Modo teste já funciona SEM o painel (05/10)
 
-Com `MODO_TESTE_LOGIN = true`, os 5 números de teste **não usam** o login
+**Atualizado (05/10, noite):** vale **qualquer número de 37 00000-0001 até
+37 00000-9999**, com **qualquer código de 6 números** — cada número novo
+é uma conta nova, para passar pelo onboarding quantas vezes quiser
+(`ehTelefoneTeste` em `src/config/piloto.js`).
+
+Com `MODO_TESTE_LOGIN = true`, os números de teste **não usam** o login
 por telefone do Supabase: o app confere o código 123456 e entra numa conta
 de teste ligada ao número (`contaDoNumeroTeste` em `src/config/piloto.js`,
 criada sozinha no primeiro acesso). Dá para testar o fluxo inteiro (número

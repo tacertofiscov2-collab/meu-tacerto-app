@@ -1,4 +1,4 @@
-/* ENTRARWHATSAPP v3 — ponte do modo teste: numeros de teste entram sem o login por telefone do painel (contaDoNumeroTeste) (v2: aceita TELEFONES_TESTE e aviso no rodape; v1: login so pelo WhatsApp) */
+/* ENTRARWHATSAPP v4 — testes sem limite: qualquer 37 00000-0001 a 9999 e qualquer codigo de 6 numeros (ehTelefoneTeste) (v3: ponte do modo teste: numeros de teste entram sem o login por telefone do painel (contaDoNumeroTeste) (v2: aceita TELEFONES_TESTE e aviso no rodape; v1: login so pelo WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { Gauge } from "lucide-react";
@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import AuthError from "@/components/AuthError";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 import TopoRolavel from "../components/TopoRolavel.jsx";
-import { MODO_TESTE_LOGIN, TELEFONES_TESTE, CODIGO_TESTE_LOGIN, contaDoNumeroTeste } from "@/config/piloto";
+import { MODO_TESTE_LOGIN, contaDoNumeroTeste, ehTelefoneTeste } from "@/config/piloto";
 
 /* ===================================================================
    ENTRAR COM O WHATSAPP (05/10/2026)
@@ -63,7 +63,7 @@ function formatarTelefone(valor) {
    37 00000-0001) tambem valem, mesmo sem o 9 de celular. */
 function telefoneValido(valor) {
   const d = String(valor).replace(/\D/g, "");
-  if (MODO_TESTE_LOGIN && TELEFONES_TESTE.includes(`55${d}`)) return true;
+  if (ehTelefoneTeste(`55${d}`)) return true;
   if (!/^[1-9]{2}/.test(d)) return false;
   if (d.length === 10) return true;
   return d.length === 11 && d[2] === "9";
@@ -98,7 +98,8 @@ export default function EntrarWhatsApp() {
   const digitos = telefone.replace(/\D/g, "");
   const phone = `+55${digitos}`;
   /* v3: numero de teste com MODO_TESTE_LOGIN ligado (ver contaDoNumeroTeste) */
-  const numeroDeTeste = MODO_TESTE_LOGIN && TELEFONES_TESTE.includes(`55${digitos}`);
+  /* v4: qualquer 37 00000-0001 a 9999 (ehTelefoneTeste) */
+  const numeroDeTeste = ehTelefoneTeste(`55${digitos}`);
 
   /* Contagem do "Reenviar codigo" */
   useEffect(() => {
@@ -214,8 +215,9 @@ export default function EntrarWhatsApp() {
      o e-mail sozinho neste projeto) e ja entra. Devolve o usuario, ou
      null com a mensagem de erro na tela. */
   async function entrarComNumeroDeTeste(valor) {
-    if (valor !== CODIGO_TESTE_LOGIN) {
-      setErro("Código errado. Confira e digite de novo.");
+    /* v4: qualquer codigo de 6 numeros vale para numero de teste */
+    if (!/^\d{6}$/.test(valor)) {
+      setErro("Digite os 6 números do código.");
       return null;
     }
     const { email, senha } = contaDoNumeroTeste(`55${digitos}`);
@@ -472,7 +474,7 @@ export default function EntrarWhatsApp() {
       {/* v2: aviso discreto do modo teste (some com MODO_TESTE_LOGIN = false) */}
       {MODO_TESTE_LOGIN && (
         <p className="px-6 pb-2 shrink-0 text-center" style={{ color: "var(--text-tertiary)", fontSize: 11 }}>
-          Modo teste: use 37 00000-0001 a 0005, código {CODIGO_TESTE_LOGIN}
+          Modo teste: use 37 00000-0001 a 9999, qualquer código
         </p>
       )}
 
