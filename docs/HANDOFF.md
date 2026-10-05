@@ -38,7 +38,7 @@
 
 | Tela | Endereço | Como está |
 |---|---|---|
-| **Início** | `/dashboard` | **Em teste**: seletor "Atual / A / B / C" no topo. Padrão = **A** (velocímetro solto + lista: Próximo DAS, Falar com o Fisco.ia, Como emitir nota; barra de baixo lisa com "+" em contorno). B = blocos de fundo suave; C = atalhos redondos; Atual = visual antigo de vidro. Letras do Início **mantidas** no tamanho de antes. |
+| **Início** | `/dashboard` | **Visual C** (escolhido em 05/10): velocímetro solto, "Próximo DAS: 20/10 · R$ ..." e 3 atalhos redondos (Boleto do DAS, Fisco.ia, Emitir nota); barra de baixo lisa com "+" em contorno. Seletor de teste desligado. As variações A (lista), B (blocos) e Atual (vidro) continuam no código. Letras do Início **mantidas** no tamanho de antes. |
 | **Painel do DAS** | (abre no Início) | "Como você quer pagar seu DAS?": boleto automático no WhatsApp, Fisco.ia me ajuda agora, fazer sozinho, site do governo. |
 | **Lançar (+)** | `/lancar` | Rótulos em cinza maiúsculo, campos com 16px (sem zoom), "Último lançamento" em linha simples, "Salvar lançamento" em contorno. |
 | **Histórico de entradas** | `/historico` | Busca, linha do mês, "Lançar entrada", total do mês, lista por mês com risca fina (editar/excluir em cada linha). |
@@ -96,8 +96,8 @@ volta para o Início.
 | `TELEFONES_TESTE` | 5537000000001 a …0005 (a faixa de teste hoje é 0001–9999, ver `ehTelefoneTeste`) |
 | `CODIGO_TESTE_LOGIN` | `"123456"` (usado na senha das contas de teste; qualquer código é aceito) |
 | `MOSTRAR_CARD_DAS` | `true` |
-| **`MOSTRAR_SELETOR_VISUAL_INICIO`** | **`true`** (seletor de teste no Início) |
-| `VISUAL_INICIO_PADRAO` | `"a"` |
+| `MOSTRAR_SELETOR_VISUAL_INICIO` | `false` (desligado em 05/10) |
+| `VISUAL_INICIO_PADRAO` | `"c"` (escolhido em 05/10) |
 | `MOSTRAR_TUTORIAL_DAS` | `true` |
 | `MOSTRAR_TUTORIAL_NOTA` | `true` |
 | `WHATSAPP_FISCO` | `"5537999999999"` ⚠️ provisório, trocar pelo real |
@@ -167,10 +167,9 @@ escondido).
 
 ## 4. Pendente ou pela metade
 
-1. **Escolher o visual do Início** (o Fernando ia avaliar A, B, C no
-   iPhone). Depois: `VISUAL_INICIO_PADRAO` = escolhida,
-   `MOSTRAR_SELETOR_VISUAL_INICIO = false`. Se ele quiser misturar (ex.:
-   lista da A + barra da B), ajustar em `Dashboard.jsx` (`InicioLista`,
+1. ~~Escolher o visual do Início~~ — **feito em 05/10: visual C**,
+   seletor desligado. Se ele quiser misturar depois (ex.: atalhos da C
+   + barra da B), ajustar em `Dashboard.jsx` (`InicioLista`,
    `InicioBlocos`, `InicioAtalhos`, `visualBarra`) e `BottomNav.jsx`.
 2. **Login por telefone de verdade**: publicar `enviar-otp-whatsapp` e
    fazer o painel (seção 5). Até lá, só o modo teste funciona.

@@ -1,4 +1,4 @@
-/* PILOTO v8 — variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
+/* PILOTO v9 — Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 
 /* ===================================================================
@@ -214,9 +214,11 @@ export const MOSTRAR_CARD_DAS = true;
      c      ATALHOS: velocimetro solto + 3 atalhos redondos
    Depois da escolha: VISUAL_INICIO_PADRAO = a escolhida e o seletor
    desligado (false).
+   v9 (05/10/2026): o Fernando escolheu o C. Seletor desligado; A, B e
+   "atual" continuam no Dashboard.jsx (para voltar, trocar a letra).
    ------------------------------------------------------------------- */
-export const MOSTRAR_SELETOR_VISUAL_INICIO = true;
-export const VISUAL_INICIO_PADRAO = "a";
+export const MOSTRAR_SELETOR_VISUAL_INICIO = false;
+export const VISUAL_INICIO_PADRAO = "c";
 
 /* -------------------------------------------------------------------
    TUTORIAL "COMO PAGAR O DAS" (v2)

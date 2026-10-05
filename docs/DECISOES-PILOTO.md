@@ -81,8 +81,9 @@
   como estavam. As telas escondidas ainda têm o verde cheio.
 - **Tema Preto | Branco** no Perfil (sem "automático"). Telas antes de
   entrar (slides, login, onboarding) são sempre pretas.
-- **Início:** variações em teste (Atual, A, B, C) com seletor no topo;
-  ver seção 3.
+- **Início:** visual **C** (velocímetro solto + 3 atalhos redondos:
+  Boleto do DAS, Fisco.ia, Emitir nota), escolhido pelo Fernando em
+  05/10. As variações Atual, A e B continuam no código; ver seção 3.
 - **Campos de digitar com 16px** (abaixo disso o iPhone dá zoom).
 
 ---
@@ -141,8 +142,8 @@ Início (`/dashboard`).
 | Chave | O que faz | Valor |
 |---|---|---|
 | `MODO_TESTE_LOGIN` | Números 37 00000-0001 a 9999 + qualquer código entram sem o painel; aviso no rodapé do login | `true` |
-| `MOSTRAR_SELETOR_VISUAL_INICIO` | Seletor "Atual / A / B / C" no topo do Início | `true` |
-| `VISUAL_INICIO_PADRAO` | Variação que abre por padrão (quando o seletor sair, fica esta) | `"a"` |
+| `MOSTRAR_SELETOR_VISUAL_INICIO` | Seletor "Atual / A / B / C" no topo do Início | `false` (desligado em 05/10) |
+| `VISUAL_INICIO_PADRAO` | Visual do Início (com o seletor desligado, é sempre este) | `"c"` |
 
 **Chaves dentro das próprias telas:** `MOSTRAR_NOME_NO_TOPO = false` e
 `MOSTRAR_BARRA_NO_PERFIL = false` (`Perfil.jsx`: sem o nome grande e sem a
@@ -169,8 +170,8 @@ ajuda.
 
 ## 4. Pendências antes do piloto
 
-- [ ] **Escolher o visual do Início** (Atual/A/B/C ou mistura): depois,
-      `VISUAL_INICIO_PADRAO` = a escolhida e `MOSTRAR_SELETOR_VISUAL_INICIO = false`.
+- [x] ~~Escolher o visual do Início~~: **C** (05/10).
+      `VISUAL_INICIO_PADRAO = "c"` e `MOSTRAR_SELETOR_VISUAL_INICIO = false`.
 - [ ] **Ligar o login pelo WhatsApp no painel do Supabase:** seguir
       `docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md`. Antes: publicar a função
       `enviar-otp-whatsapp` (ainda não publicada).
