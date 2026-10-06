@@ -170,6 +170,12 @@ O projeto **não tem backup automático**. Por isso:
 
 ## Onde estamos (atualizar ao fim de cada sessão)
 
+- **06/10 (fim da sessão): CHAT NOVO, LER PRIMEIRO `docs/HANDOFF.md`**
+  (resumo de passagem atualizado: telas, chaves, pendências, cuidados
+  técnicos). Branch `piloto-simplificado` com **16 commits sem push**
+  (a prévia da Vercel ainda está no `353c036`). WhatsApp real do Fisco e
+  do suporte: **(37) 99199-9373** (`WHATSAPP_FISCO`). O `npm run dev` do
+  Cursor estava desligado em 06/10 de manhã.
 - **06/10 (madrugada, Fernando dormindo, "trabalhe direto"):** Início com
   velocímetro maior e barra DAS|Fisco|NF centrada; celular do tutorial na
   proporção certa; setinha de voltar maior (46/24) em todas as telas;
