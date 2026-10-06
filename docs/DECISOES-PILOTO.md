@@ -261,8 +261,9 @@ ajuda.
       (Declaração anual, calculadora e respostas do Suporte) e atualizar
       `LIMITE_DECLARAR_IR` (`src/lib/declaracao.js`) quando sair o de 2027.
 - [ ] Conferir no site real os passos da **DASN-SIMEI** (escritos de memória).
-- [ ] **Número real do WhatsApp do suporte:** hoje o suporte usa o mesmo
-      `WHATSAPP_FISCO` (provisório).
+- [x] ~~Número do WhatsApp do suporte~~: é o mesmo do Fisco,
+      **(37) 99199-9373** (06/10). A mensagem pronta do suporte começa com
+      "Oi Fisco! Preciso de suporte no app TaCerto...".
 - [ ] **Notificação "Atualize seu velocímetro" voltar todo mês?** Hoje
       ela some depois de aberta uma vez (decidir com o Fernando).
 - [ ] **Slide 1 das boas-vindas** ainda mostra o Início antigo (cartão de
@@ -287,8 +288,8 @@ ajuda.
       leitura; o comando está no passo a passo). Não foi alterado.
 - [ ] **Reativar a Z-API** (pausada): sem ela, números reais não recebem o
       código. Os números de teste funcionam.
-- [ ] **Número real do WhatsApp do Fisco:** trocar `WHATSAPP_FISCO` em
-      `src/config/piloto.js` (hoje é o provisório `5537999999999`).
+- [x] ~~Número real do WhatsApp do Fisco~~: `WHATSAPP_FISCO =
+      "5537991999373"` em `src/config/piloto.js` (06/10).
 - [x] ~~Decidir o `MODO_PREVIA`~~ (`WHATSAPP_ATIVO` em `src/lib/flags.js`):
       ele só valia para a verificação antiga do Cadastro por e-mail, que
       agora está escondida. O login novo não usa essa chave.

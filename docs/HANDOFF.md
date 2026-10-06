@@ -111,7 +111,7 @@ volta para o Início.
 | `VISUAL_INICIO_PADRAO` | `"f"` (escolhido em 05/10) |
 | `MOSTRAR_TUTORIAL_DAS` | `true` |
 | `MOSTRAR_TUTORIAL_NOTA` | `true` |
-| `WHATSAPP_FISCO` | `"5537999999999"` ⚠️ provisório, trocar pelo real |
+| `WHATSAPP_FISCO` | `"5537991999373"` — número real, (37) 99199-9373 (06/10); o mesmo do suporte |
 | `MOSTRAR_WHATSAPP_DOCUMENTOS` | `false` |
 
 **Fora do `piloto.js`:** `PLUGGY_ATIVO = false` (`src/lib/openfinance.js`),

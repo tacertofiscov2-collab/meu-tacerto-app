@@ -1,4 +1,4 @@
-/* PILOTO v15 — chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
+/* PILOTO v16 — numero REAL do WhatsApp do Fisco (37 99199-9373), o mesmo do suporte; mensagem do suporte comeca com "Oi Fisco!" e pede suporte (v15: chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 
 /* ===================================================================
@@ -274,9 +274,11 @@ export const MOSTRAR_DECLARACAO_ANUAL = true;
 /* -------------------------------------------------------------------
    WHATSAPP DO FISCO
    So numeros: 55 + DDD + numero.
-   ⚠️ TROCAR PELO NUMERO REAL (este e provisorio).
+   v16 (06/10/2026): numero real, passado pelo Fernando: (37) 99199-9373.
+   E o MESMO para o Fisco e para o suporte (Perfil > Ajuda): o que muda
+   e a mensagem pronta de cada botao (MENSAGENS_WHATSAPP).
    ------------------------------------------------------------------- */
-export const WHATSAPP_FISCO = "5537999999999";
+export const WHATSAPP_FISCO = "5537991999373";
 
 /* -------------------------------------------------------------------
    BOTAO DO WHATSAPP NOS DOCUMENTOS (v4 — 05/10/2026)
@@ -388,7 +390,7 @@ export const MENSAGENS_WHATSAPP = {
   /* v15: chat de suporte (/suporte), quando a pergunta pronta nao resolveu.
      Vai com o assunto, a pergunta escolhida e o que a pessoa escreveu. */
   suporte: (d, { assunto, pergunta, detalhe } = {}) =>
-    `Oi! Preciso do suporte do TaCerto. ${quemSou(d)}.` +
+    `Oi Fisco! Preciso de suporte no app TaCerto. ${quemSou(d)}.` +
     (assunto ? ` Assunto: ${assunto}.` : "") +
     (pergunta ? ` Duvida: ${pergunta}${/[.!?]$/.test(pergunta) ? "" : "."}` : "") +
     (detalhe ? ` O que aconteceu: ${detalhe}` : ""),

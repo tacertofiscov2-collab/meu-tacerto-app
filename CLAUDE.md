@@ -196,7 +196,8 @@ O projeto **não tem backup automático**. Por isso:
   Novos: pergunta "Quanto você já faturou" no Onboarding (vira
   lançamento "Faturamento estimado até hoje"), card "Próximo DAS",
   `/termos-de-uso`, `/privacidade`, `/como-emitir-nota`, botão "Falar com
-  o Fisco no WhatsApp" (`WHATSAPP_FISCO` provisório — trocar).
+  o Fisco no WhatsApp" (`WHATSAPP_FISCO` = número real (37) 99199-9373
+  desde 06/10, o mesmo do suporte).
   `PLUGGY_ATIVO = false`. "Sair da conta" agora desloga de verdade.
   A `main` não foi mexida.
 - **04-05/10 (2ª rodada do piloto):** 5 slides com a mesma escala e
