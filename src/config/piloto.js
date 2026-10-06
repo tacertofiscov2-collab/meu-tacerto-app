@@ -1,4 +1,4 @@
-/* PILOTO v11 — Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
+/* PILOTO v12 — chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 
 /* ===================================================================
@@ -224,6 +224,16 @@ export const MOSTRAR_CARD_DAS = true;
    ------------------------------------------------------------------- */
 export const MOSTRAR_SELETOR_VISUAL_INICIO = false;
 export const VISUAL_INICIO_PADRAO = "f";
+
+/* -------------------------------------------------------------------
+   NOTIFICACOES (v12 — 05/10/2026)
+   true mostra o sininho discreto no canto de cima do Inicio e a folha
+   "Notificacoes" (src/components/Notificacoes.jsx). A primeira
+   notificacao, desde o primeiro login, e a "Apresentacao do Fisco.ia"
+   (tutorial em slides, src/components/ApresentacaoFisco.jsx). So abre
+   se a pessoa tocar. false esconde tudo.
+   ------------------------------------------------------------------- */
+export const MOSTRAR_NOTIFICACOES = true;
 
 /* -------------------------------------------------------------------
    TUTORIAL "COMO PAGAR O DAS" (v2)

@@ -172,7 +172,8 @@ O projeto **não tem backup automático**. Por isso:
 
 - **05/10 (fim do dia): ler primeiro `docs/HANDOFF.md`** (resumo de
   passagem: telas, chaves, o que falta no Supabase, pendências). Início
-  no **visual F** (barra única; "+" sem círculo; seletor desligado); explicação
+  no **visual F** (barra única; "+" grande sem círculo; seletor desligado);
+  sininho de notificações com a "Apresentação do Fisco.ia"; explicação
   da média só uma vez; Perfil com "Limite restante" e "Histórico de
   lançamentos"; páginas internas
   no padrão do Perfil; botões em contorno; modo teste do login ligado.

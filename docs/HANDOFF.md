@@ -38,7 +38,7 @@
 
 | Tela | Endereço | Como está |
 |---|---|---|
-| **Início** | `/dashboard` | **Visual F** (escolhido em 05/10): velocímetro solto + os 3 atalhos (DAS 20/10, Fisco.ia, Emitir nota) numa barra só, em contorno. Barra de baixo lisa com o **"+" sem círculo** (só o + verde, 40px). Seletor desligado; Atual, A, B, C, D e E continuam no código. A explicação da média limite (o "?" do 2º velocímetro) tem só texto + "Entendi" e aparece **uma vez só**. Letras do Início **mantidas** no tamanho de antes. |
+| **Início** | `/dashboard` | **Visual F** (escolhido em 05/10): velocímetro solto + os 3 atalhos (DAS 20/10, Fisco.ia, Emitir nota) numa barra só, em contorno. Barra de baixo lisa com o **"+" sem círculo** (só o + verde, 56px, no centro da tela e no meio da barra). **Sininho** discreto no canto de cima (Notificações → "Apresentação do Fisco.ia", tutorial em slides). Seletor desligado; Atual, A, B, C, D e E continuam no código. A explicação da média limite (o "?" do 2º velocímetro) tem só texto + "Entendi" e aparece **uma vez só**. Letras do Início **mantidas** no tamanho de antes. |
 | **Painel do DAS** | (abre no Início) | "Como você quer pagar seu DAS?": boleto automático no WhatsApp, Fisco.ia me ajuda agora, fazer sozinho, site do governo. |
 | **Lançar (+)** | `/lancar` | Rótulos em cinza maiúsculo, campos com 16px (sem zoom), "Último lançamento" em linha simples, "Salvar lançamento" em contorno. |
 | **Histórico de entradas** | `/historico` | Busca, linha do mês, "Lançar entrada", total do mês, lista por mês com risca fina (editar/excluir em cada linha). |
@@ -97,6 +97,7 @@ volta para o Início.
 | `CODIGO_TESTE_LOGIN` | `"123456"` (usado na senha das contas de teste; qualquer código é aceito) |
 | `MOSTRAR_CARD_DAS` | `true` |
 | `MOSTRAR_SELETOR_VISUAL_INICIO` | `false` (desligado em 05/10) |
+| `MOSTRAR_NOTIFICACOES` | `true` (sininho + Apresentação do Fisco.ia) |
 | `VISUAL_INICIO_PADRAO` | `"f"` (escolhido em 05/10) |
 | `MOSTRAR_TUTORIAL_DAS` | `true` |
 | `MOSTRAR_TUTORIAL_NOTA` | `true` |

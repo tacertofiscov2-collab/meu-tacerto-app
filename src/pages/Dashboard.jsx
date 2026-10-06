@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v25 — Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
+﻿/* DASHBOARD v26 — sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -12,6 +12,9 @@ import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
 import SimboloPluggy from "../components/SimboloPluggy.jsx";
 import FolhaPagarDas from "../components/FolhaPagarDas.jsx";
+import BotaoNotificacoes from "../components/Notificacoes.jsx";
+import ApresentacaoFisco from "../components/ApresentacaoFisco.jsx";
+import { useMarcaDaConta } from "@/lib/marcasDaConta";
 import { useAppState } from "@/context/AppStateContext";
 import {
   LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO,
@@ -23,7 +26,7 @@ import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_RESUMO_ANO, linkWhatsAppFisco,
   MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
   MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA,
-  MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO,
+  MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO, MOSTRAR_NOTIFICACOES,
 } from "@/config/piloto";
 /* DASHBOARD v19 (04/10/2026) — EXTRAS DO PILOTO
    - Card "Proximo DAS" logo abaixo do velocimetro (CardProximoDas,
@@ -799,25 +802,12 @@ function PainelPerguntas({
 const CHAVE_MEDIA_EXPLICADA = "tacerto_media_explicada";
 
 /* Lembra, por conta e por aparelho, se a pessoa ja leu a explicacao da
-   media limite. Enquanto a conta carrega, conta como "nao leu". */
+   media limite. Enquanto a conta carrega, conta como "nao leu".
+   v26: usa useMarcaDaConta (src/lib/marcasDaConta.js); o "1" guardado
+   pela v25 continua valendo. */
 function useMediaExplicada() {
-  const [chave, setChave] = useState(null);
-  const [lida, setLida] = useState(false);
-  useEffect(() => {
-    let ativo = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (!ativo) return;
-      const c = `${CHAVE_MEDIA_EXPLICADA}_${data?.session?.user?.id || "visitante"}`;
-      setChave(c);
-      try { setLida(localStorage.getItem(c) === "1"); } catch { /* ignora */ }
-    });
-    return () => { ativo = false; };
-  }, []);
-  function marcarLida() {
-    setLida(true);
-    try { if (chave) localStorage.setItem(chave, "1"); } catch { /* ignora */ }
-  }
-  return [lida, marcarLida];
+  const [lida, salvar] = useMarcaDaConta(CHAVE_MEDIA_EXPLICADA, false);
+  return [Boolean(lida), () => salvar(true)];
 }
 
 function PainelMediaLimite({ aberto, onFechar, limiteAnual, mediaLimite }) {
@@ -2012,6 +2002,8 @@ export default function Dashboard() {
   const [caixaExpandida, setCaixaExpandida] = useState(false);
   // v21: painel "Como voce quer pagar seu DAS?" (botao "Emitir boleto")
   const [folhaDas, setFolhaDas] = useState(false);
+  // v26: Apresentacao do Fisco.ia (abre pela notificacao do sininho)
+  const [apresentacao, setApresentacao] = useState(false);
 
   /* v23: variacao do visual (ver "VARIACOES DO INICIO") */
   const [visual, setVisual] = useState(lerVisualInicio);
@@ -2096,6 +2088,10 @@ export default function Dashboard() {
             {/* v23: nas variacoes, "Como emitir nota" vai para baixo */}
             {MOSTRAR_TUTORIAL_NOTA && visual === "atual" && <BotaoComoEmitirNota />}
             {MOSTRAR_OPEN_FINANCE && <BotaoBanco onSincronizou={verificarEntradas} />}
+            {/* v26: sininho discreto das notificacoes */}
+            {MOSTRAR_NOTIFICACOES && (
+              <BotaoNotificacoes onAbrir={(id) => id === "apresentacao" && setApresentacao(true)} />
+            )}
           </div>
         </header>
 
@@ -2242,6 +2238,10 @@ export default function Dashboard() {
 
       {MOSTRAR_CARD_DAS && (
         <FolhaPagarDas aberto={folhaDas} onFechar={() => setFolhaDas(false)} />
+      )}
+
+      {MOSTRAR_NOTIFICACOES && (
+        <ApresentacaoFisco aberto={apresentacao} onFechar={() => setApresentacao(false)} />
       )}
 
       <PainelMediaLimite

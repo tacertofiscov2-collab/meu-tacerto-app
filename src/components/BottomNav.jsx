@@ -1,4 +1,4 @@
-/* BOTTOMNAV v3 — visual "simples" (Inicio F): o "+" sem circulo, so o + verde e maior, alinhado com os icones (v2: prop visual: "vidro" (padrao) | "linha" (lisa com risca fina, + em contorno) | "solta" (lisa sem risca, + verde cheio) | "lisa" (sem risca, + em contorno) — variacoes do Inicio */
+/* BOTTOMNAV v4 — "simples": + maior (56), no meio da altura da barra e no centro exato da tela (3 colunas iguais); botoes sem contorno de foco (o Safari podia desenhar um anel em volta da casinha) (v3: visual "simples" (Inicio F): o "+" sem circulo, so o + verde e maior, alinhado com os icones (v2: prop visual: "vidro" (padrao) | "linha" (lisa com risca fina, + em contorno) | "solta" (lisa sem risca, + verde cheio) | "lisa" (sem risca, + em contorno) — variacoes do Inicio */
 import { useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TrilhoContext } from "./TrilhoContext.js";
@@ -9,6 +9,10 @@ const ROTAS_COM_NAVBAR = ["/dashboard", "/perfil"];
 /* v2: visuais lisos (sem vidro) para as variacoes do Inicio */
 const FUNDO_LISO = { background: "var(--bg)", backdropFilter: "none", WebkitBackdropFilter: "none", boxShadow: "none" };
 const RISCA = "1px solid color-mix(in srgb, var(--border) 55%, transparent)";
+
+/* v4: nenhum anel/contorno em volta dos botoes ao tocar (foco do
+   navegador). Pedido do Fernando: "tira o circulo verde da casinha". */
+const SEM_CONTORNO = { outline: "none", boxShadow: "none", WebkitTapHighlightColor: "transparent" };
 
 export default function BottomNav({ ativo, visual = "vidro" }) {
   const navigate = useNavigate();
@@ -36,8 +40,13 @@ export default function BottomNav({ ativo, visual = "vidro" }) {
      ícone vazado do mesmo tamanho. Por isso a foto ganha alguns px. */
   const FOTO_SIZE = 34;
   const LABEL_SIZE = 11;
-  /* v3: tamanho do "+" sem circulo (visual "simples") */
-  const PLUS_SIMPLES_SIZE = 40;
+  /* v3: tamanho do "+" sem circulo (visual "simples"). v4: 40 -> 56 */
+  const PLUS_SIMPLES_SIZE = 56;
+  /* v4: altura de Inicio/Perfil (icone + espaco + rotulo). O "+" ocupa
+     essa mesma altura e fica centrado nela: no meio da barra. */
+  const ALTURA_ITEM = ICON_SIZE + 4 + LABEL_SIZE;
+  /* v4: no "simples", 3 colunas iguais: o "+" fica no centro exato */
+  const COLUNA = visual === "simples" ? { flex: "1 1 0" } : null;
 
   const corTexto = (isAtivo) =>
     isAtivo ? "var(--primary)" : "var(--text-secondary)";
@@ -77,7 +86,7 @@ export default function BottomNav({ ativo, visual = "vidro" }) {
         onClick={() => navigate("/dashboard")}
         aria-label="Início"
         className="flex flex-col items-center gap-1 transition"
-        style={{ background: "none", border: "none", padding: 0 }}
+        style={{ background: "none", border: "none", padding: 0, ...SEM_CONTORNO, ...COLUNA }}
       >
         <Home
           size={ICON_SIZE}
@@ -92,23 +101,24 @@ export default function BottomNav({ ativo, visual = "vidro" }) {
         </span>
       </button>
 
-      {/* v3: "simples" = so o + verde, sem circulo, maior. O marginBottom
-          poe o centro do + na altura do centro da casinha e do boneco. */}
+      {/* v3: "simples" = so o + verde, sem circulo, maior.
+          v4: o botao tem a altura de Inicio/Perfil e o + (maior que ela)
+          fica centrado: no meio da barra, nem colado no topo nem embaixo. */}
       {visual === "simples" ? (
       <button
         onClick={() => navigate("/lancar")}
         aria-label="Lançar"
         className="flex items-center justify-center transition"
-        style={{ background: "none", border: "none", padding: 0, width: 56, height: 48, marginBottom: 4 }}
+        style={{ background: "none", border: "none", padding: 0, height: ALTURA_ITEM, overflow: "visible", ...SEM_CONTORNO, ...COLUNA }}
       >
-        <Plus size={PLUS_SIMPLES_SIZE} strokeWidth={2.3} style={{ color: "var(--primary)" }} />
+        <Plus size={PLUS_SIMPLES_SIZE} strokeWidth={1.9} style={{ color: "var(--primary)", flexShrink: 0 }} />
       </button>
       ) : (
       <button
         onClick={() => navigate("/lancar")}
         aria-label="Lançar"
         className="flex flex-col items-center transition"
-        style={{ background: "none", border: "none", padding: 0 }}
+        style={{ background: "none", border: "none", padding: 0, ...SEM_CONTORNO }}
       >
         <span
           style={{
@@ -137,7 +147,7 @@ export default function BottomNav({ ativo, visual = "vidro" }) {
         onClick={() => navigate("/perfil")}
         aria-label="Perfil"
         className="flex flex-col items-center gap-1 transition"
-        style={{ background: "none", border: "none", padding: 0 }}
+        style={{ background: "none", border: "none", padding: 0, ...SEM_CONTORNO, ...COLUNA }}
       >
         {foto ? (
           <span

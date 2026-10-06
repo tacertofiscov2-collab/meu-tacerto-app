@@ -84,8 +84,19 @@
 - **Início: visual F** (escolhido em 05/10, depois de C, D e E): os 3
   atalhos (DAS 20/10, Fisco.ia, Emitir nota) numa barra só, em contorno,
   com risca fina entre eles. Na barra de baixo, o **"+" sem círculo**:
-  só o + verde, maior (40px), na altura da casinha e do boneco. Seletor
-  desligado; as outras variações continuam no código; ver seção 3.
+  só o + verde, grande (56px), no centro exato da tela e no meio da
+  altura da barra. Botões da barra sem contorno de foco (pedido "tira o
+  círculo verde da casinha"; no PC não aparece círculo nenhum, falta
+  conferir no iPhone). Seletor desligado; as outras variações continuam
+  no código; ver seção 3.
+- **Notificações** (`MOSTRAR_NOTIFICACOES`): sininho discreto no canto
+  de cima do Início (só o ícone cinza; pontinho verde = nova). Abre a
+  folha "Notificações". A primeira, desde o primeiro login, é a
+  **"Apresentação do Fisco.ia"**: tutorial em 8 slides com um celular de
+  exemplo do Início (sem nome, "R$ •••") e um círculo verde passando por
+  cada função (velocímetro, +, DAS, Fisco.ia, nota, Perfil, sininho); o
+  Fisco.ia explica embaixo. Só abre se a pessoa tocar; dá para rever.
+  "Lida" fica guardado no aparelho, por conta.
 - **Explicação da média limite** (o "?" do 2º velocímetro): só o texto e
   o "Entendi" (sem "Falar com o Fisco.ia" e sem "X"). Aparece **uma vez
   só**: ao fechar, o "?" some para sempre naquela conta, naquele
@@ -158,7 +169,8 @@ Início (`/dashboard`).
 `MOSTRAR_BARRA_NO_PERFIL = false` (`Perfil.jsx`: sem o nome grande e sem a
 barra de baixo); `MOSTRAR_EMAIL_NO_EDITAR = false` (`EditarPerfil.jsx`).
 
-**Ligadas no piloto:** `MOSTRAR_CARD_DAS` (card "Próximo DAS" + painel
+**Ligadas no piloto:** `MOSTRAR_NOTIFICACOES` (sininho + Apresentação
+do Fisco.ia), `MOSTRAR_CARD_DAS` (card "Próximo DAS" + painel
 "Emitir boleto" + slide do DAS), `MOSTRAR_TUTORIAL_DAS` (`/como-pagar-das`),
 `MOSTRAR_TUTORIAL_NOTA` (`/como-emitir-nota` + slide da nota).
 
