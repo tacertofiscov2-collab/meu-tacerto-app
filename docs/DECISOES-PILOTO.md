@@ -51,9 +51,13 @@
 
 ---
 
-## 1B. Nome do assistente: **Fisco.ia** (05/10)
+## 1B. Nome do assistente: **Fisco** (06/10 — antes Fisco.ia)
 
-- Em **todo texto que aparece dentro do app** (slides, Início, botões,
+- **06/10 (pedido do Fernando): "Fisco.ia" saiu de tudo e virou "Fisco".**
+  O nome "Fisco.ia" ficou **só na Apresentação do Fisco.ia** (o tutorial
+  e a notificação dele). O suporte humano (Perfil > Ajuda) **não** é o
+  Fisco: é "o suporte do TaCerto".
+- (Como era em 05/10:) Em **todo texto que aparece dentro do app** (slides, Início, botões,
   painel do DAS, Como emitir nota, Como pagar o DAS, Perfil, Termos,
   Privacidade, textos de imagem): **"Fisco.ia"** (F maiúsculo, ".ia"
   minúsculo, sem espaço). Telas escondidas também já foram trocadas.
@@ -65,7 +69,20 @@
 
 ---
 
-## 1C. Padrão visual (05/10)
+## 1C. Padrão visual (05/10; 06/10 em negrito)
+
+- **06/10 — MENOS COR, MAIS MINIMALISMO:** fundo preto em tudo (sem
+  barras e janelas cinza); opção ESCOLHIDA sem verde e sem fundo, só
+  "mais acesa" (borda e texto mais claros); **verde só no botão de
+  continuar/confirmar** (contorno). Vale para o onboarding, a entrada
+  pelo WhatsApp, o calendário, o seletor de mês, as janelas de
+  confirmar, o Tipo de MEI e os alternadores (Preto|Branco,
+  Recebimento|Total do ano). Os slides de boas-vindas ficaram como
+  estavam (pedido).
+- **06/10 — SETINHA DE VOLTAR MAIOR em todas as telas:** bolinha 46
+  com seta 24; sem bolinha (entrada, onboarding) seta 26.
+- **06/10 — campos com 16px também no onboarding** (nome e WhatsApp
+  estavam com 14 e o iPhone dava zoom).
 
 - **Lista simples estilo Pierre Finance** (`src/components/ListaSimples.jsx`:
   `SecaoLista`, `LinhaLista`, `numeroDoPasso`): Perfil, Editar perfil e as
@@ -81,6 +98,10 @@
   como estavam. As telas escondidas ainda têm o verde cheio.
 - **Tema Preto | Branco** no Perfil (sem "automático"). Telas antes de
   entrar (slides, login, onboarding) são sempre pretas.
+- **06/10 — Início:** velocímetro MAIOR (arco até 250, número 48,
+  valores 19, rótulos 14, bolinhas maiores; o "MEI · anual" ficou do
+  mesmo tamanho), encolhendo sozinho em tela baixa; a barra DAS | Fisco |
+  NF fica CENTRADA entre as bolinhas e o rodapé (respiros iguais).
 - **Início: visual F** (escolhido em 05/10, depois de C, D, E e da
   "tela B" invertida): os 3 atalhos numa barra só, em contorno, com
   risca fina entre eles, com rótulos curtos **DAS**, **Fisco** (símbolo
@@ -113,6 +134,29 @@
   o "Entendi" (sem "Falar com o Fisco.ia" e sem "X"). Aparece **uma vez
   só**: ao fechar, o "?" some para sempre naquela conta, naquele
   aparelho (guardado no aparelho, não no banco).
+- **06/10 — Perfil:** "Excluir conta" logo **abaixo do Tema** (longe do
+  "Sair da conta"). AJUDA: **"Falar com o suporte"** (chat dentro do
+  app, `/suporte`) no lugar do "Falar com o Fisco no WhatsApp"; Como
+  emitir nota; Como pagar o DAS; **"Declaração anual"**.
+- **06/10 — Suporte (`/suporte`, `MOSTRAR_SUPORTE`):** atendimento
+  HUMANO. Chat com perguntas prontas por assunto (Velocímetro, DAS, Nota,
+  Declaração anual, Minha conta, Outro) para afunilar; resposta curta e
+  "Isso resolveu?"; se não, a pessoa escreve e toca em "Abrir o WhatsApp
+  do suporte" — a mensagem vai com assunto, pergunta e o texto dela
+  (`MENSAGENS_WHATSAPP.suporte`).
+- **06/10 — Declaração anual (`/declaracao-anual`,
+  `MOSTRAR_DECLARACAO_ANUAL`):** prazo (31/05), "Calcular meu Imposto de
+  Renda" (`/declaracao-anual/calcular`: atividade, faturamento, gastos,
+  outras rendas, funcionário → parte isenta, se precisa declarar, o que
+  vai na DASN), "Como o TaCerto ajuda hoje", explicação sem
+  juridiquês, faturamento do ano e o passo a passo da DASN-SIMEI.
+  Regras e números em `src/lib/declaracao.js`. Até onde dá para
+  automatizar: **`docs/AUTOMACAO-PILOTO.md`**.
+- **06/10 — Como emitir nota:** sem o "Em breve" no Certificado A1;
+  explicação nova (identidade digital oficial ICP-Brasil, agendado com a
+  certificadora parceira credenciada, videochamada, a partir de R$ 99,90,
+  segurança) e "Quero agendar meu certificado". Como emitir nota e Como
+  pagar o DAS ganharam "Como o TaCerto ajuda hoje".
 - **Perfil:** "Falta" virou **"Limite restante"**; linha nova
   **"Histórico de lançamentos"** no Meu MEI (abre o `/historico`, que
   tem o título "Histórico de entradas"). Os itens do **Editar perfil
@@ -186,7 +230,9 @@ Início (`/dashboard`).
 `MOSTRAR_BARRA_NO_PERFIL = false` (`Perfil.jsx`: sem o nome grande e sem a
 barra de baixo); `MOSTRAR_EMAIL_NO_EDITAR = false` (`EditarPerfil.jsx`).
 
-**Ligadas no piloto:** `MOSTRAR_NOTIFICACOES` (sininho + Apresentação
+**Ligadas no piloto:** `MOSTRAR_SUPORTE` (chat de suporte),
+`MOSTRAR_DECLARACAO_ANUAL` (página + calculadora do IR),
+`MOSTRAR_NOTIFICACOES` (sininho + Apresentação
 do Fisco.ia), `MOSTRAR_CARD_DAS` (card "Próximo DAS" + painel
 "Emitir boleto" + slide do DAS), `MOSTRAR_TUTORIAL_DAS` (`/como-pagar-das`),
 `MOSTRAR_TUTORIAL_NOTA` (`/como-emitir-nota` + slide da nota).
@@ -211,6 +257,12 @@ ajuda.
 - [x] ~~Início: A ou B~~: ficou a **A (F)** (05/10).
 - [x] ~~"Contorno verde na casinha"~~: era o verde de "página atual";
       a casinha agora fica cinza (05/10).
+- [ ] **Conferir com o contador** os textos novos do Imposto de Renda
+      (Declaração anual, calculadora e respostas do Suporte) e atualizar
+      `LIMITE_DECLARAR_IR` (`src/lib/declaracao.js`) quando sair o de 2027.
+- [ ] Conferir no site real os passos da **DASN-SIMEI** (escritos de memória).
+- [ ] **Número real do WhatsApp do suporte:** hoje o suporte usa o mesmo
+      `WHATSAPP_FISCO` (provisório).
 - [ ] **Notificação "Atualize seu velocímetro" voltar todo mês?** Hoje
       ela some depois de aberta uma vez (decidir com o Fernando).
 - [ ] **Slide 1 das boas-vindas** ainda mostra o Início antigo (cartão de

@@ -170,6 +170,16 @@ O projeto **não tem backup automático**. Por isso:
 
 ## Onde estamos (atualizar ao fim de cada sessão)
 
+- **06/10 (madrugada, Fernando dormindo, "trabalhe direto"):** Início com
+  velocímetro maior e barra DAS|Fisco|NF centrada; celular do tutorial na
+  proporção certa; setinha de voltar maior (46/24) em todas as telas;
+  "Fisco.ia" virou "Fisco" (o nome fica só na Apresentação); Perfil >
+  Ajuda com **Suporte** (chat com perguntas prontas → WhatsApp) e
+  **Declaração anual** (calculadora do IR); Excluir conta abaixo do Tema;
+  A1 sem "Em breve" e com a certificadora parceira; "Como o TaCerto ajuda
+  hoje" nas páginas de DAS, nota e declaração; onboarding/entrada e
+  janelas sem verde nem cinza (verde só no confirmar). Análise de
+  automação em `docs/AUTOMACAO-PILOTO.md`.
 - **05/10 (fim do dia): ler primeiro `docs/HANDOFF.md`** (resumo de
   passagem: telas, chaves, o que falta no Supabase, pendências). Início
   no **visual F** (DAS / Fisco / NF; "+" grande sem círculo; casinha cinza);

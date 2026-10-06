@@ -1,4 +1,9 @@
-# TaCerto! — Resumo de passagem (sessão de 05/10/2026)
+# TaCerto! — Resumo de passagem (sessão de 05/10/2026, atualizado na madrugada de 06/10)
+
+> **06/10 (madrugada):** ver o item de 06/10 no `CLAUDE.md` (Onde
+> estamos) e as linhas com "06/10" em `docs/DECISOES-PILOTO.md`. Telas
+> novas: `/suporte`, `/declaracao-anual`, `/declaracao-anual/calcular`.
+> Até onde dá para automatizar: `docs/AUTOMACAO-PILOTO.md`.
 
 > Este arquivo é o **resumo desta sessão**, para começar um chat novo.
 > A referência completa do projeto continua no **`HANDOFF.md` da raiz**
@@ -30,9 +35,9 @@
 | Tela | Endereço | Como está |
 |---|---|---|
 | **Boas-vindas** (slides) | `/` | 5 slides: 1 "Limite sob controle 24h", 2 "DAS no automático", 3 "Nota fiscal do seu jeito", 4 "Tudo isso, grátis", 5 "Tudo pelo WhatsApp". Letras 10% maiores (zoom igual em todos), celular de exemplo ocupa o espaço até o card de baixo, destaques verdes discretos, WhatsApp do slide 5 no tema claro. Botões "Criar conta" e "Entrar" levam para a entrada pelo WhatsApp. |
-| **Entrar pelo WhatsApp** | `/login` e `/cadastro` | Tela `EntrarWhatsApp`: número com DDD (+55 fixo) → "Receber código" → 6 quadradinhos (confere sozinho). Erros amigáveis. Rodapé com o aviso do modo teste e os links dos Termos/Privacidade. |
+| **Entrar pelo WhatsApp** | `/login` e `/cadastro` | Tela `EntrarWhatsApp`: número com DDD (+55 fixo) → "Receber código" → 6 quadradinhos (confere sozinho). Erros amigáveis. Rodapé com o aviso do modo teste e os links dos Termos/Privacidade (sem verde, sublinhados). Quadradinhos do código sem verde (só mais claros). |
 | **Plano B: e-mail e senha** | `/entrar-email` | Login antigo, sem link em lugar nenhum. Só e-mail e senha (sem "esqueci", sem Google, sem cadastro). |
-| **Onboarding** | `/onboarding` | Nome (vem preenchido se o perfil já tiver), tipo de MEI, abertura, faturamento estimado. O **gesto de voltar do iPhone volta uma etapa** e não sai da tela; a setinha da 1ª etapa vai para as boas-vindas; cadastro já feito → vai para o Início. Botão "Começar a usar" em contorno. |
+| **Onboarding** | `/onboarding` | Nome (vem preenchido se o perfil já tiver), tipo de MEI, abertura, faturamento estimado. O **gesto de voltar do iPhone volta uma etapa** e não sai da tela; a setinha da 1ª etapa vai para as boas-vindas; cadastro já feito → vai para o Início. Botão "Começar a usar" em contorno. **06/10:** opção escolhida sem verde e sem fundo cinza (só mais clara), barra de progresso branca, verde só no botão, letras maiores e campos com 16px. |
 
 ### Dentro do app
 
@@ -43,11 +48,14 @@
 | **Lançar (+)** | `/lancar` | **"Recebimento / Total do ano"** no topo. Recebimento: como antes (rótulos em cinza maiúsculo, campos com 16px, "Último lançamento", "Salvar lançamento" em contorno). Total do ano (`/lancar?modo=total`): só o valor; o velocímetro fica igual a ele (um lançamento "Ajuste do total do ano", substituído a cada vez). |
 | **Histórico de entradas** | `/historico` | Busca, linha do mês, "Lançar entrada", total do mês, lista por mês com risca fina (editar/excluir em cada linha). A descrição quebra em até 2 linhas (antes cortava "Transportes Al..."). |
 | **Passou do limite** | `/regra-vinte` | Lista simples: aviso, como estou hoje, como a lei enxerga, o que fazer agora. Vermelho só no ícone e no valor que passou. |
-| **Perfil** | `/perfil` | **Sem o nome grande e sem a barra de baixo.** Ordem: CONTA (Nome editável na linha, WhatsApp, Tema Preto/Branco), MEU MEI (tipo, abertura, limite, já faturado, **limite restante**, **Histórico de lançamentos** → `/historico`), AJUDA (Fisco.ia no WhatsApp, Como emitir nota, Como pagar o DAS), SOBRE (Termos, Privacidade), Sair da conta, **Excluir conta** (tamanho normal), versão. Tipo de MEI e Abertura tocáveis (vieram do Editar perfil). Setinha volta ao Início. |
+| **Perfil** | `/perfil` | **Sem o nome grande e sem a barra de baixo.** Ordem: CONTA (Nome editável na linha, WhatsApp, Tema Preto/Branco, **Excluir conta** logo abaixo do Tema), MEU MEI (tipo, abertura, limite, já faturado, **limite restante**, **Histórico de lançamentos** → `/historico`), AJUDA (**Falar com o suporte** → `/suporte`, Como emitir nota, Como pagar o DAS, **Declaração anual** → `/declaracao-anual`), SOBRE (Termos, Privacidade), Sair da conta, versão. Tipo de MEI e Abertura tocáveis (vieram do Editar perfil). Setinha volta ao Início. |
 | **Editar perfil** | `/editar-perfil` | **Sem link desde 05/10** (os itens foram para o Perfil). Nome editável, WhatsApp (toque = aviso "fale com a gente" + botão do WhatsApp), Tipo de MEI (folha "O que mudou?"), Data de abertura (só quem abriu este ano), "Excluir conta" em vermelho no fim. **Sem a linha do e-mail.** |
 | **Excluir conta** | `/excluir-conta` | Confirmações em linhas, campo "EXCLUIR" com 16px, botões em contorno vermelho. |
-| **Como emitir nota** | `/como-emitir-nota` | Aviso em linha; 3 formas em lista (Fisco.ia no WhatsApp, Fazer sozinho, Certificado A1 "Em breve" — custa a partir de R$ 99,90); os passos e o A1 abrem logo abaixo. |
-| **Como pagar o DAS** | `/como-pagar-das` | Lembrete "vence todo dia 20", 7 passos numerados, linhas "Abrir o PGMEI" e "Prefiro que o Fisco.ia me ajude". |
+| **Como emitir nota** | `/como-emitir-nota` | Aviso em linha; 3 formas em lista (Fisco no WhatsApp, Fazer sozinho, Nota automática com Certificado A1 — "A nota sai sozinha"); "Como o TaCerto ajuda hoje"; os passos e o A1 abrem logo abaixo (A1: ICP-Brasil, certificadora parceira credenciada, videochamada, a partir de R$ 99,90, segurança, "Quero agendar meu certificado"). |
+| **Suporte** | `/suporte` | Chat do suporte humano dentro do app: assuntos → perguntas prontas → resposta + "Isso resolveu?" → se não, a pessoa escreve e vai pro WhatsApp com tudo anotado. |
+| **Declaração anual** | `/declaracao-anual` | Prazo 31/05, "Calcular meu Imposto de Renda", "Como o TaCerto ajuda hoje", Entenda (2 declarações, parte isenta, declarar ≠ pagar, atraso), faturamento do ano, passo a passo da DASN-SIMEI. |
+| **Calcular IR** | `/declaracao-anual/calcular?passo=1..6` | Uma pergunta por tela (atividade, faturamento, gastos, outras rendas, funcionário) e o resultado. Respostas no sessionStorage. |
+| **Como pagar o DAS** | `/como-pagar-das` | Lembrete "vence todo dia 20", "Como o TaCerto ajuda hoje" (boleto pronto no WhatsApp; atrasado também), 7 passos numerados, linhas "Abrir o PGMEI" e "Prefiro que o Fisco me ajude". |
 | **Termos de uso / Privacidade** | `/termos-de-uso`, `/privacidade` | Letras maiores, risca fina entre seções. Sem a seção "Fale com a gente". |
 
 ### Escondido por chave (nada foi apagado)
@@ -98,6 +106,8 @@ volta para o Início.
 | `MOSTRAR_CARD_DAS` | `true` |
 | `MOSTRAR_SELETOR_VISUAL_INICIO` | `false` (ficou a A = F; o `g`, "tela B", continua no código) |
 | `MOSTRAR_NOTIFICACOES` | `true` (sininho + Apresentação do Fisco.ia) |
+| `MOSTRAR_SUPORTE` | `true` (chat de suporte no Perfil > Ajuda) |
+| `MOSTRAR_DECLARACAO_ANUAL` | `true` (Declaração anual + calculadora do IR) |
 | `VISUAL_INICIO_PADRAO` | `"f"` (escolhido em 05/10) |
 | `MOSTRAR_TUTORIAL_DAS` | `true` |
 | `MOSTRAR_TUTORIAL_NOTA` | `true` |
