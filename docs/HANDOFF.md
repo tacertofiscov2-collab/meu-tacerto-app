@@ -96,7 +96,7 @@ volta para o Início.
 | `TELEFONES_TESTE` | 5537000000001 a …0005 (a faixa de teste hoje é 0001–9999, ver `ehTelefoneTeste`) |
 | `CODIGO_TESTE_LOGIN` | `"123456"` (usado na senha das contas de teste; qualquer código é aceito) |
 | `MOSTRAR_CARD_DAS` | `true` |
-| `MOSTRAR_SELETOR_VISUAL_INICIO` | `false` (desligado em 05/10) |
+| **`MOSTRAR_SELETOR_VISUAL_INICIO`** | **`true`** (seletor "A / B": A = F, B = `g`, F invertido) |
 | `MOSTRAR_NOTIFICACOES` | `true` (sininho + Apresentação do Fisco.ia) |
 | `VISUAL_INICIO_PADRAO` | `"f"` (escolhido em 05/10) |
 | `MOSTRAR_TUTORIAL_DAS` | `true` |
@@ -168,10 +168,12 @@ escondido).
 
 ## 4. Pendente ou pela metade
 
-1. ~~Escolher o visual do Início~~ — **feito em 05/10: visual F**,
-   seletor desligado, "+" sem círculo (`BottomNav` visual `"simples"`).
-   Para mexer: `Dashboard.jsx` (`InicioBarra`, `visualBarra`) e
-   `BottomNav.jsx`.
+1. **Início: A ou B?** Visual F escolhido; agora o seletor compara
+   "A" (F) com "B" (`g`: os 3 atalhos em cima, velocímetro embaixo).
+   Depois: `VISUAL_INICIO_PADRAO` = escolhida e seletor desligado. Para
+   mexer: `Dashboard.jsx` (`InicioBarra`, `visualBarra`) e
+   `BottomNav.jsx`. **Círculo na casinha** (só no iPhone): não existe
+   no código; suspeita do botão redondo do Safari — pedir print.
 2. **Login por telefone de verdade**: publicar `enviar-otp-whatsapp` e
    fazer o painel (seção 5). Até lá, só o modo teste funciona.
 3. **Desligar o modo teste** antes de gente real (`MODO_TESTE_LOGIN =

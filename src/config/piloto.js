@@ -1,4 +1,4 @@
-/* PILOTO v12 — chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
+/* PILOTO v13 — seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 
 /* ===================================================================
@@ -221,8 +221,11 @@ export const MOSTRAR_CARD_DAS = true;
      mais o C para comparar. Depois da escolha: desligar de novo.
    v11 (05/10/2026): o Fernando escolheu o F. Seletor desligado; o "+"
      da barra de baixo fica sem circulo (BottomNav visual "simples").
+   v13 (05/10/2026): seletor religado para comparar "A" (F) com "B"
+     (G = F invertido: os 3 atalhos em cima, velocimetro embaixo).
+     Depois da escolha: VISUAL_INICIO_PADRAO = "f" ou "g" e false aqui.
    ------------------------------------------------------------------- */
-export const MOSTRAR_SELETOR_VISUAL_INICIO = false;
+export const MOSTRAR_SELETOR_VISUAL_INICIO = true;
 export const VISUAL_INICIO_PADRAO = "f";
 
 /* -------------------------------------------------------------------

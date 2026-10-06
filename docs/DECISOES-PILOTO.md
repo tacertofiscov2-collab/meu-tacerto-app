@@ -89,6 +89,11 @@
   círculo verde da casinha"; no PC não aparece círculo nenhum, falta
   conferir no iPhone). Seletor desligado; as outras variações continuam
   no código; ver seção 3.
+- **Em teste (05/10):** seletor "A / B" no topo do Início. A = o F de
+  hoje; B (visual `g`) = F invertido: os 3 atalhos em cima, logo abaixo
+  do logo, e o velocímetro com os dados embaixo. Depois da escolha:
+  `VISUAL_INICIO_PADRAO` = `"f"` ou `"g"` e o seletor desligado (se for
+  o B, ajustar também o celular de exemplo da Apresentação do Fisco.ia).
 - **Notificações** (`MOSTRAR_NOTIFICACOES`): sininho discreto no canto
   de cima do Início (só o ícone cinza; pontinho verde = nova). Abre a
   folha "Notificações". A primeira, desde o primeiro login, é a
@@ -162,7 +167,7 @@ Início (`/dashboard`).
 | Chave | O que faz | Valor |
 |---|---|---|
 | `MODO_TESTE_LOGIN` | Números 37 00000-0001 a 9999 + qualquer código entram sem o painel; aviso no rodapé do login | `true` |
-| `MOSTRAR_SELETOR_VISUAL_INICIO` | Seletor "C / D / E / F" no topo do Início | `false` (desligado em 05/10) |
+| `MOSTRAR_SELETOR_VISUAL_INICIO` | Seletor "A / B" no topo do Início (A = F, B = F invertido) | `true` (religado em 05/10) |
 | `VISUAL_INICIO_PADRAO` | Visual do Início (com o seletor desligado, é sempre este) | `"f"` |
 
 **Chaves dentro das próprias telas:** `MOSTRAR_NOME_NO_TOPO = false` e
@@ -191,8 +196,11 @@ ajuda.
 
 ## 4. Pendências antes do piloto
 
-- [x] ~~Escolher o visual do Início~~: **F** (05/10).
-      `VISUAL_INICIO_PADRAO = "f"` e `MOSTRAR_SELETOR_VISUAL_INICIO = false`.
+- [ ] **Início: A (F) ou B (F invertido)?** Depois: `VISUAL_INICIO_PADRAO`
+      = `"f"` ou `"g"` e `MOSTRAR_SELETOR_VISUAL_INICIO = false`.
+- [ ] **"Círculo verde na casinha"** que o Fernando vê no iPhone: não
+      existe no código (nem na produção). Suspeita: o botão redondo do
+      próprio Safari (iOS novo) flutuando por cima da casinha. Pedir print.
 - [ ] **Ligar o login pelo WhatsApp no painel do Supabase:** seguir
       `docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md`. Antes: publicar a função
       `enviar-otp-whatsapp` (ainda não publicada).

@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v26 — sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
+﻿/* DASHBOARD v27 — "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -1144,12 +1144,18 @@ function BotaoComoEmitirNota() {
      f      BARRA: os 3 atalhos numa barra so, em contorno, risca fina
    O seletor mostra so as que estao em teste (VISUAIS_NO_SELETOR); as
    outras continuam valendo pela chave VISUAL_INICIO_PADRAO.
+
+   v27: o F foi escolhido. Para comparar, a "tela B" do Fernando:
+     g      F INVERTIDO: a barra dos 3 atalhos em cima (logo abaixo do
+            logo) e o velocimetro com os dados embaixo
+   No seletor elas aparecem como "A" (f, a de hoje) e "B" (g).
    =================================================================== */
 const CHAVE_VISUAL_INICIO = "tacerto_visual_inicio";
 const VISUAIS_INICIO = [
-  ["atual", "Atual"], ["a", "A"], ["b", "B"], ["c", "C"], ["d", "D"], ["e", "E"], ["f", "F"],
+  ["atual", "Atual"], ["a", "A"], ["b", "B"], ["c", "C"], ["d", "D"], ["e", "E"], ["f", "F"], ["g", "G"],
 ];
-const VISUAIS_NO_SELETOR = VISUAIS_INICIO.filter(([id]) => ["c", "d", "e", "f"].includes(id));
+/* v27: [id, rotulo no seletor] — o rotulo pode ser diferente do id */
+const VISUAIS_NO_SELETOR = [["f", "A"], ["g", "B"]];
 
 function lerVisualInicio() {
   if (!MOSTRAR_SELETOR_VISUAL_INICIO) return VISUAL_INICIO_PADRAO;
@@ -1375,8 +1381,9 @@ function InicioDestaque({ das, onDas, onFisco, onNota }) {
   );
 }
 
-/* F — BARRA: os 3 atalhos numa barra so, em contorno, risca fina entre eles */
-function InicioBarra(acoes) {
+/* F — BARRA: os 3 atalhos numa barra so, em contorno, risca fina entre eles.
+   v27: `emCima` = a barra vem antes do velocimetro (visual G, "tela B") */
+function InicioBarra({ emCima = false, ...acoes }) {
   const rotulos = {
     das: `DAS ${acoes.das.dia}/${acoes.das.mes}`,
     fisco: "Fisco.ia",
@@ -1385,7 +1392,12 @@ function InicioBarra(acoes) {
   return (
     <div
       className="shrink-0 flex items-stretch overflow-hidden"
-      style={{ marginTop: 14, border: "1px solid var(--border)", borderRadius: 18 }}
+      style={{
+        marginTop: emCima ? 6 : 14,
+        marginBottom: emCima ? 10 : 0,
+        border: "1px solid var(--border)",
+        borderRadius: 18,
+      }}
     >
       {atalhosInicio(acoes).map(({ id, Icon, onClick }, i) => (
         <button
@@ -2020,7 +2032,7 @@ export default function Dashboard() {
   };
   const molduraVelocimetro = visual === "atual" ? "vidro" : visual === "b" ? "suave" : "nenhuma";
   /* v25: no F, o "+" fica sem circulo (BottomNav "simples") */
-  const visualBarra = { atual: "vidro", a: "linha", b: "solta", c: "lisa", d: "lisa", e: "lisa", f: "simples" }[visual] || "vidro";
+  const visualBarra = { atual: "vidro", a: "linha", b: "solta", c: "lisa", d: "lisa", e: "lisa", f: "simples", g: "simples" }[visual] || "vidro";
   /* v25: explicacao da media limite so aparece uma vez */
   const [mediaExplicada, marcarMediaExplicada] = useMediaExplicada();
 
@@ -2096,6 +2108,9 @@ export default function Dashboard() {
         </header>
 
         <div className="px-5 pt-2 flex-1 flex flex-col min-h-0 relative">
+          {/* v27: "tela B" (G) — os 3 atalhos em cima do velocimetro */}
+          {visual === "g" && <InicioBarra {...acoesInicio} emCima />}
+
           <CardVelocimetroCarrossel
             rotuloPerfil={rotuloPerfil}
             percentual={percentualAtual}
