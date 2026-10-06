@@ -81,9 +81,11 @@
   como estavam. As telas escondidas ainda têm o verde cheio.
 - **Tema Preto | Branco** no Perfil (sem "automático"). Telas antes de
   entrar (slides, login, onboarding) são sempre pretas.
-- **Início:** visual **C** (velocímetro solto + 3 atalhos redondos:
-  Boleto do DAS, Fisco.ia, Emitir nota), escolhido pelo Fernando em
-  05/10. As variações Atual, A e B continuam no código; ver seção 3.
+- **Início:** o Fernando escolheu o **C** (atalhos redondos) em 05/10,
+  mas achou que ainda estava ruim. **Em teste de novo**, com o seletor
+  "C / D / E / F": D = 3 cartões quadrados; E = DAS em faixa com borda
+  verde fina + 2 botões em contorno; F = os 3 atalhos numa barra só.
+  Atual, A e B continuam no código; ver seção 3.
 - **Campos de digitar com 16px** (abaixo disso o iPhone dá zoom).
 
 ---
@@ -142,8 +144,8 @@ Início (`/dashboard`).
 | Chave | O que faz | Valor |
 |---|---|---|
 | `MODO_TESTE_LOGIN` | Números 37 00000-0001 a 9999 + qualquer código entram sem o painel; aviso no rodapé do login | `true` |
-| `MOSTRAR_SELETOR_VISUAL_INICIO` | Seletor "Atual / A / B / C" no topo do Início | `false` (desligado em 05/10) |
-| `VISUAL_INICIO_PADRAO` | Visual do Início (com o seletor desligado, é sempre este) | `"c"` |
+| `MOSTRAR_SELETOR_VISUAL_INICIO` | Seletor "C / D / E / F" no topo do Início | `true` (religado em 05/10) |
+| `VISUAL_INICIO_PADRAO` | Visual que abre por padrão (com o seletor desligado, é sempre este) | `"c"` |
 
 **Chaves dentro das próprias telas:** `MOSTRAR_NOME_NO_TOPO = false` e
 `MOSTRAR_BARRA_NO_PERFIL = false` (`Perfil.jsx`: sem o nome grande e sem a
@@ -170,8 +172,9 @@ ajuda.
 
 ## 4. Pendências antes do piloto
 
-- [x] ~~Escolher o visual do Início~~: **C** (05/10).
-      `VISUAL_INICIO_PADRAO = "c"` e `MOSTRAR_SELETOR_VISUAL_INICIO = false`.
+- [ ] **Escolher o visual do Início** entre C, D, E e F (o C foi
+      escolhido e depois achado ruim): depois, `VISUAL_INICIO_PADRAO` =
+      a escolhida e `MOSTRAR_SELETOR_VISUAL_INICIO = false`.
 - [ ] **Ligar o login pelo WhatsApp no painel do Supabase:** seguir
       `docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md`. Antes: publicar a função
       `enviar-otp-whatsapp` (ainda não publicada).

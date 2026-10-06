@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v23 — variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
+﻿/* DASHBOARD v24 — 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -1176,15 +1176,28 @@ function BotaoComoEmitirNota() {
      b      BLOCOS: fundos suaves sem borda
      c      ATALHOS: velocimetro solto + 3 atalhos redondos
    O seletor de teste so aparece com MOSTRAR_SELETOR_VISUAL_INICIO.
+
+   v24: o Fernando escolheu o C, mas achou que ainda estava ruim. Tres
+   variacoes novas, sem bolinhas (no C as 3 bolinhas disputavam com o
+   "+" redondo da barra de baixo):
+     d      CARTOES: 3 quadrados lado a lado, info curta dentro
+     e      DESTAQUE: DAS em faixa larga com borda verde fina + 2 botoes
+            em contorno (Fisco.ia, Emitir nota)
+     f      BARRA: os 3 atalhos numa barra so, em contorno, risca fina
+   O seletor mostra so as que estao em teste (VISUAIS_NO_SELETOR); as
+   outras continuam valendo pela chave VISUAL_INICIO_PADRAO.
    =================================================================== */
 const CHAVE_VISUAL_INICIO = "tacerto_visual_inicio";
-const VISUAIS_INICIO = [["atual", "Atual"], ["a", "A"], ["b", "B"], ["c", "C"]];
+const VISUAIS_INICIO = [
+  ["atual", "Atual"], ["a", "A"], ["b", "B"], ["c", "C"], ["d", "D"], ["e", "E"], ["f", "F"],
+];
+const VISUAIS_NO_SELETOR = VISUAIS_INICIO.filter(([id]) => ["c", "d", "e", "f"].includes(id));
 
 function lerVisualInicio() {
   if (!MOSTRAR_SELETOR_VISUAL_INICIO) return VISUAL_INICIO_PADRAO;
   try {
     const v = localStorage.getItem(CHAVE_VISUAL_INICIO);
-    return VISUAIS_INICIO.some(([id]) => id === v) ? v : VISUAL_INICIO_PADRAO;
+    return VISUAIS_NO_SELETOR.some(([id]) => id === v) ? v : VISUAL_INICIO_PADRAO;
   } catch {
     return VISUAL_INICIO_PADRAO;
   }
@@ -1194,7 +1207,7 @@ function SeletorVisualInicio({ visual, onEscolher }) {
   return (
     <div className="shrink-0 flex items-center justify-center" style={{ gap: 6, paddingTop: 8 }}>
       <span style={{ fontSize: 11.5, color: "var(--text-tertiary)" }}>Teste do visual:</span>
-      {VISUAIS_INICIO.map(([id, rotulo]) => {
+      {VISUAIS_NO_SELETOR.map(([id, rotulo]) => {
         const ativo = visual === id;
         return (
           <button
@@ -1317,6 +1330,117 @@ function InicioAtalhos({ das, onDas, onFisco, onNota }) {
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+/* v24: os 3 atalhos, na ordem de sempre (some o que a chave esconder) */
+function atalhosInicio({ onDas, onFisco, onNota }) {
+  return [
+    MOSTRAR_CARD_DAS && { id: "das", Icon: CalendarClock, onClick: onDas },
+    { id: "fisco", Icon: MessageCircle, onClick: onFisco },
+    MOSTRAR_TUTORIAL_NOTA && { id: "nota", Icon: FileText, onClick: onNota },
+  ].filter(Boolean);
+}
+
+/* Borda verde fina dos destaques (mesma cor do DESTAQUE_BORDA dos slides) */
+const BORDA_DESTAQUE_INICIO = "1px solid rgba(34,197,94,0.4)";
+
+/* D — CARTOES: 3 quadrados lado a lado, fundo suave, sem borda */
+function InicioCartoes(acoes) {
+  const textos = {
+    das: ["DAS", `Vence ${acoes.das.dia}/${acoes.das.mes}`],
+    fisco: ["Fisco.ia", "WhatsApp"],
+    nota: ["Nota fiscal", "Como emitir"],
+  };
+  const itens = atalhosInicio(acoes);
+  return (
+    <div className="shrink-0 grid" style={{ gridTemplateColumns: `repeat(${itens.length}, 1fr)`, gap: 10, marginTop: 14 }}>
+      {itens.map(({ id, Icon, onClick }) => (
+        <button
+          key={id}
+          type="button"
+          onClick={onClick}
+          className="toque text-left flex flex-col min-w-0"
+          style={{ backgroundColor: "var(--surface)", borderRadius: 18, border: "none", padding: "14px 13px 13px", minHeight: 100 }}
+        >
+          <Icon size={22} strokeWidth={1.9} style={{ color: "var(--primary)" }} className="shrink-0" />
+          <span className="font-semibold truncate" style={{ fontSize: 15, color: "var(--text)", marginTop: "auto", paddingTop: 14 }}>
+            {textos[id][0]}
+          </span>
+          <span className="truncate" style={{ fontSize: 12.5, color: "var(--text-tertiary)", marginTop: 2 }}>
+            {textos[id][1]}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* E — DESTAQUE: o DAS em faixa larga com borda verde fina; embaixo,
+   Fisco.ia e Emitir nota em botoes de contorno */
+function InicioDestaque({ das, onDas, onFisco, onNota }) {
+  const pilula = {
+    height: 48, borderRadius: 999, border: "1px solid var(--border)", background: "none", gap: 8,
+  };
+  return (
+    <div className="shrink-0" style={{ marginTop: 14 }}>
+      {MOSTRAR_CARD_DAS && (
+        <button
+          type="button"
+          onClick={onDas}
+          className="toque w-full flex items-center text-left"
+          style={{ border: BORDA_DESTAQUE_INICIO, borderRadius: 18, background: "none", padding: "12px 14px 12px 16px", gap: 12 }}
+        >
+          <CalendarClock size={22} strokeWidth={1.9} style={{ color: "var(--primary)" }} className="shrink-0" />
+          <span className="flex-1 min-w-0 flex flex-col">
+            <span className="font-semibold" style={{ fontSize: 15.5, color: "var(--text)" }}>Próximo DAS</span>
+            <span style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 1 }}>Vence {das.dia}/{das.mes}</span>
+          </span>
+          {das.valor != null && <Valor px={16} peso={700}>{das.valor}</Valor>}
+          <ChevronRight size={18} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
+        </button>
+      )}
+      <div className="grid" style={{ gridTemplateColumns: MOSTRAR_TUTORIAL_NOTA ? "1fr 1fr" : "1fr", gap: 10, marginTop: 10 }}>
+        <button type="button" onClick={onFisco} className="toque flex items-center justify-center" style={pilula}>
+          <MessageCircle size={19} strokeWidth={1.9} style={{ color: "var(--primary)" }} />
+          <span className="font-medium" style={{ fontSize: 15, color: "var(--text)" }}>Fisco.ia</span>
+        </button>
+        {MOSTRAR_TUTORIAL_NOTA && (
+          <button type="button" onClick={onNota} className="toque flex items-center justify-center" style={pilula}>
+            <FileText size={19} strokeWidth={1.9} style={{ color: "var(--primary)" }} />
+            <span className="font-medium" style={{ fontSize: 15, color: "var(--text)" }}>Emitir nota</span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* F — BARRA: os 3 atalhos numa barra so, em contorno, risca fina entre eles */
+function InicioBarra(acoes) {
+  const rotulos = {
+    das: `DAS ${acoes.das.dia}/${acoes.das.mes}`,
+    fisco: "Fisco.ia",
+    nota: "Emitir nota",
+  };
+  return (
+    <div
+      className="shrink-0 flex items-stretch overflow-hidden"
+      style={{ marginTop: 14, border: "1px solid var(--border)", borderRadius: 18 }}
+    >
+      {atalhosInicio(acoes).map(({ id, Icon, onClick }, i) => (
+        <button
+          key={id}
+          type="button"
+          onClick={onClick}
+          className="toque flex-1 flex flex-col items-center justify-center min-w-0"
+          style={{ padding: "12px 4px 11px", gap: 6, background: "none", borderLeft: i ? "1px solid var(--border)" : "none" }}
+        >
+          <Icon size={21} strokeWidth={1.9} style={{ color: "var(--primary)" }} />
+          <span className="font-medium truncate" style={{ fontSize: 13.5, color: "var(--text)" }}>{rotulos[id]}</span>
+        </button>
+      ))}
     </div>
   );
 }
@@ -1935,7 +2059,7 @@ export default function Dashboard() {
     onNota: () => navigate("/como-emitir-nota", DE_DASHBOARD),
   };
   const molduraVelocimetro = visual === "atual" ? "vidro" : visual === "b" ? "suave" : "nenhuma";
-  const visualBarra = { atual: "vidro", a: "linha", b: "solta", c: "lisa" }[visual] || "vidro";
+  const visualBarra = { atual: "vidro", a: "linha", b: "solta", c: "lisa", d: "lisa", e: "lisa", f: "lisa" }[visual] || "vidro";
 
   // Paineis dos baloes: null (fechado), "anual" (card A -> Tirar duvidas)
   // ou "media" (card B -> explicacao da media limite)
@@ -2033,6 +2157,10 @@ export default function Dashboard() {
           {visual === "a" && <InicioLista {...acoesInicio} />}
           {visual === "b" && <InicioBlocos {...acoesInicio} />}
           {visual === "c" && <InicioAtalhos {...acoesInicio} />}
+          {/* v24: variacoes novas D, E e F */}
+          {visual === "d" && <InicioCartoes {...acoesInicio} />}
+          {visual === "e" && <InicioDestaque {...acoesInicio} />}
+          {visual === "f" && <InicioBarra {...acoesInicio} />}
           {visual !== "atual" && <div aria-hidden className="shrink-0" style={{ height: 12 }} />}
 
           {caixaExpandida && (
