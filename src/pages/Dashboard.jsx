@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v24 — 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
+﻿/* DASHBOARD v25 — Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -292,6 +292,8 @@ function PaginaVelocimetro({
   onBalao, onValores,
   /* v18: false = balao so acima de 100% (+N%/alerta), chamando onExcedente */
   sempreMostrarBalao = true, onExcedente,
+  /* v25: true = sem balao nenhum (card B depois de ler a explicacao) */
+  semBalao = false,
 }) {
   const areaRef = useRef(null);
   const [larguraVel, setLarguraVel] = useState(LARGURA_MAX_VELOCIMETRO);
@@ -329,6 +331,7 @@ function PaginaVelocimetro({
           alertaDos20={alertaDos20}
           apenasInterrogacao={apenasInterrogacao}
           descricao={descricao}
+          semBalao={semBalao}
         />
       </div>
 
@@ -390,6 +393,8 @@ function CardVelocimetroCarrossel({
   /* v23: "vidro" (cartao de sempre) | "nenhuma" (solto no fundo) |
      "suave" (fundo levemente mais claro, sem borda) */
   moldura = "vidro",
+  /* v25: a pessoa ja leu a explicacao da media: o "?" do card B some */
+  mediaExplicada = false,
 }) {
   const [pagina, setPagina] = useState(0);
   const [dragPx, setDragPx] = useState(0);
@@ -572,6 +577,7 @@ function CardVelocimetroCarrossel({
             rotuloDireita="Limite"
             onBalao={seNaoArrastou(() => onDuvidas("media"))}
             onValores={seNaoArrastou(onResumo)}
+            semBalao={mediaExplicada}
           />
         </div>
       </div>
@@ -784,11 +790,37 @@ function PainelPerguntas({
 
    v14: tudo cabe no card sem rolar no iPhone — letras e espacos um
    pouco menores, textos mais curtos e altura maxima pela tela visivel.
-   =================================================================== */
-const PERGUNTA_NAO_ENTENDI_MEDIA =
-  "Me explica melhor a média limite, de um jeito mais fácil de entender? Pode usar um exemplo do dia a dia.";
 
-function PainelMediaLimite({ aberto, onFechar, onFalarComFisco, limiteAnual, mediaLimite, dadosWhats }) {
+   v25 (05/10/2026): so o texto e o "Entendi" no fim. Sairam o "Falar
+   com o Fisco.ia" e o "X". E a explicacao so aparece UMA vez: ao fechar
+   (Entendi ou toque fora), o "?" do card B some para sempre naquela
+   conta, naquele aparelho (useMediaExplicada).
+   =================================================================== */
+const CHAVE_MEDIA_EXPLICADA = "tacerto_media_explicada";
+
+/* Lembra, por conta e por aparelho, se a pessoa ja leu a explicacao da
+   media limite. Enquanto a conta carrega, conta como "nao leu". */
+function useMediaExplicada() {
+  const [chave, setChave] = useState(null);
+  const [lida, setLida] = useState(false);
+  useEffect(() => {
+    let ativo = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!ativo) return;
+      const c = `${CHAVE_MEDIA_EXPLICADA}_${data?.session?.user?.id || "visitante"}`;
+      setChave(c);
+      try { setLida(localStorage.getItem(c) === "1"); } catch { /* ignora */ }
+    });
+    return () => { ativo = false; };
+  }, []);
+  function marcarLida() {
+    setLida(true);
+    try { if (chave) localStorage.setItem(chave, "1"); } catch { /* ignora */ }
+  }
+  return [lida, marcarLida];
+}
+
+function PainelMediaLimite({ aberto, onFechar, limiteAnual, mediaLimite }) {
   const conteudoRef = useRef(null);
 
   /* Trava a rolagem do Dashboard enquanto aberto (mesma tecnica do
@@ -848,26 +880,7 @@ function PainelMediaLimite({ aberto, onFechar, onFalarComFisco, limiteAnual, med
           }
         `}</style>
 
-        <button
-          type="button"
-          onClick={onFechar}
-          aria-label="Fechar"
-          className="rounded-full flex items-center justify-center active:scale-95 transition"
-          style={{
-            position: "absolute",
-            top: 10,
-            right: 10,
-            zIndex: 20,
-            width: 30,
-            height: 30,
-            backgroundColor: "var(--vidro-bg-leve)",
-            border: "1px solid var(--vidro-borda)",
-          }}
-        >
-          <X size={15} style={{ color: "var(--text-secondary)" }} />
-        </button>
-
-        {/* Titulo no mesmo estilo do "Tirar duvidas" */}
+        {/* Titulo no mesmo estilo do "Tirar duvidas" (v25: sem o "X") */}
         <div className="shrink-0 text-center" style={{ padding: "15px 52px 8px" }}>
           <p
             className="font-bold uppercase"
@@ -945,51 +958,6 @@ function PainelMediaLimite({ aberto, onFechar, onFalarComFisco, limiteAnual, med
           >
             Entendi
           </button>
-
-          {/* Nao entendi: abre o chat do Fisco com a pergunta pronta.
-              Piloto (v18, MOSTRAR_CHAT_FISCO = false): abre o WhatsApp do
-              Fisco com a mesma pergunta ja escrita. */}
-          {MOSTRAR_CHAT_FISCO ? (
-            <button
-              type="button"
-              onClick={() => onFalarComFisco?.(PERGUNTA_NAO_ENTENDI_MEDIA)}
-              className="toque w-full rounded-2xl font-semibold transition active:scale-[0.98] flex items-center justify-center"
-              style={{
-                marginTop: 8,
-                gap: 10,
-                paddingTop: 8,
-                paddingBottom: 8,
-                fontSize: 15,
-                backgroundColor: "var(--vidro-superficie)",
-                border: "1px solid var(--vidro-borda)",
-                color: "var(--text)",
-              }}
-            >
-              <FotoFiscoMini />
-              Não entendi, falar com o Fisco.ia
-            </button>
-          ) : (
-            <a
-              href={linkWhatsAppFisco(MENSAGENS_WHATSAPP.mediaLimite(dadosWhats))}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="toque w-full rounded-2xl font-semibold transition active:scale-[0.98] flex items-center justify-center"
-              style={{
-                marginTop: 8,
-                gap: 10,
-                paddingTop: 8,
-                paddingBottom: 8,
-                fontSize: 15,
-                backgroundColor: "var(--vidro-superficie)",
-                border: "1px solid var(--vidro-borda)",
-                color: "var(--text)",
-                textDecoration: "none",
-              }}
-            >
-              <FotoFiscoMini />
-              Falar com o Fisco.ia no WhatsApp
-            </a>
-          )}
         </div>
       </div>
     </div>
@@ -2059,7 +2027,10 @@ export default function Dashboard() {
     onNota: () => navigate("/como-emitir-nota", DE_DASHBOARD),
   };
   const molduraVelocimetro = visual === "atual" ? "vidro" : visual === "b" ? "suave" : "nenhuma";
-  const visualBarra = { atual: "vidro", a: "linha", b: "solta", c: "lisa", d: "lisa", e: "lisa", f: "lisa" }[visual] || "vidro";
+  /* v25: no F, o "+" fica sem circulo (BottomNav "simples") */
+  const visualBarra = { atual: "vidro", a: "linha", b: "solta", c: "lisa", d: "lisa", e: "lisa", f: "simples" }[visual] || "vidro";
+  /* v25: explicacao da media limite so aparece uma vez */
+  const [mediaExplicada, marcarMediaExplicada] = useMediaExplicada();
 
   // Paineis dos baloes: null (fechado), "anual" (card A -> Tirar duvidas)
   // ou "media" (card B -> explicacao da media limite)
@@ -2143,6 +2114,7 @@ export default function Dashboard() {
             }
             onExcedente={() => navigate("/regra-vinte", DE_DASHBOARD)}
             moldura={molduraVelocimetro}
+            mediaExplicada={mediaExplicada}
           />
 
           {/* Piloto (v19): proximo DAS, logo abaixo do velocimetro */}
@@ -2274,9 +2246,10 @@ export default function Dashboard() {
 
       <PainelMediaLimite
         aberto={painelDuvidas === "media"}
-        onFechar={() => setPainelDuvidas(null)}
-        onFalarComFisco={perguntarAoFisco}
-        dadosWhats={dadosWhats}
+        onFechar={() => {
+          setPainelDuvidas(null);
+          marcarMediaExplicada();
+        }}
         limiteAnual={limiteCheio}
         mediaLimite={mediaLimite}
       />

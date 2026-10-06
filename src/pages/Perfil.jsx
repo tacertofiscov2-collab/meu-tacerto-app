@@ -1,4 +1,4 @@
-﻿/* PERFIL v12 — sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes) */
+﻿/* PERFIL v13 — "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
@@ -6,7 +6,7 @@ import {
   User, Settings, Info, Shield, Lock, LogOut,
   ChevronDown, UserPlus, X, Check, TrendingUp, BarChart3,
   Trash2, FileText, ArrowUpRight, ArrowDownLeft, CalendarCheck,
-  Briefcase, CalendarDays, Gauge, MessageCircle, Sun, Moon,
+  Briefcase, CalendarDays, Gauge, MessageCircle, Sun, Moon, History,
 } from "lucide-react";
 import { aplicarTema, temaEfetivo } from "./Preferencias.jsx";
 import TopoRolavel from "../components/TopoRolavel.jsx";
@@ -382,7 +382,7 @@ export default function Perfil() {
               {situacao.tipo === "faltam" ? (
                 <LinhaLista
                   Icon={TrendingUp}
-                  rotulo="Falta"
+                  rotulo="Limite restante"
                   valor={<Valor px={15} cor="var(--text-secondary)">{situacao.valor}</Valor>}
                 />
               ) : (
@@ -392,6 +392,8 @@ export default function Perfil() {
                   valor={<Valor px={15} cor="var(--danger)">{situacao.valor}</Valor>}
                 />
               )}
+              {/* v13: historico de lancamentos (entradas) */}
+              <LinhaLista Icon={History} rotulo="Histórico de lançamentos" onClick={() => navigate("/historico", DE_PERFIL)} />
               {/* Telas escondidas no piloto (chaves em src/config/piloto.js) */}
               {MOSTRAR_SAIDAS && (
                 <LinhaLista Icon={ArrowUpRight} rotulo="Histórico de saídas" onClick={() => navigate("/saidas", DE_PERFIL)} />

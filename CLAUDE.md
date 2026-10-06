@@ -172,7 +172,9 @@ O projeto **não tem backup automático**. Por isso:
 
 - **05/10 (fim do dia): ler primeiro `docs/HANDOFF.md`** (resumo de
   passagem: telas, chaves, o que falta no Supabase, pendências). Início
-  em teste de novo (seletor C/D/E/F, padrão C; o C não agradou); páginas internas
+  no **visual F** (barra única; "+" sem círculo; seletor desligado); explicação
+  da média só uma vez; Perfil com "Limite restante" e "Histórico de
+  lançamentos"; páginas internas
   no padrão do Perfil; botões em contorno; modo teste do login ligado.
 
 - **04/10: branch `piloto-simplificado`** (piloto com 30 MEI

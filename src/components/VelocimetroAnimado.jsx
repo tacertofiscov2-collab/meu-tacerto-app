@@ -1,4 +1,4 @@
-/* VELOCIMETROANIMADO v3 — modo "so interrogacao" (card B) + letra do "+N%" que cabe no balao */
+/* VELOCIMETROANIMADO v4 — prop semBalao: esconde o balao (card B depois de ler a explicacao da media) (v3: modo "so interrogacao" (card B) + letra do "+N%" que cabe no balao) */
 import { useEffect, useState, useId } from "react";
 import { AlertTriangle } from "lucide-react";
 import { FAIXA_INFO, faixaDoVelocimetro } from "@/lib/fiscal";
@@ -49,6 +49,8 @@ export default function VelocimetroAnimado({
   alertaDos20 = true,
   apenasInterrogacao = false,
   descricao,
+  /* v4: true = nunca mostra o balao */
+  semBalao = false,
 }) {
   const uid = useId().replace(/:/g, "");
   const gradId = `velGrad-${uid}`;
@@ -121,7 +123,7 @@ export default function VelocimetroAnimado({
   // `sempreMostrarBalao`. Dentro do limite, usa a cor da faixa atual.
   const faixa = faixaDoVelocimetro(percentual);
   const corFaixa = (FAIXA_INFO[faixa] || FAIXA_INFO.tranquilo).cor;
-  const mostrarBalao = excesso > 0 || sempreMostrarBalao;
+  const mostrarBalao = !semBalao && (excesso > 0 || sempreMostrarBalao);
   // No modo "so interrogacao" o balao nunca vira "+N%" nem alerta:
   // mostra "?" na cor da situacao (acima de 100% a faixa ja e vermelha).
   const mostrarInterrogacao = apenasInterrogacao || excesso <= 0;

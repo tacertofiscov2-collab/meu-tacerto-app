@@ -38,12 +38,12 @@
 
 | Tela | Endereço | Como está |
 |---|---|---|
-| **Início** | `/dashboard` | **Em teste de novo**: seletor "C / D / E / F" no topo; padrão = C. C = 3 atalhos redondos (escolhido, mas ainda achado ruim); D = 3 cartões quadrados; E = Próximo DAS em faixa com borda verde fina + botões "Fisco.ia" e "Emitir nota" em contorno; F = os 3 atalhos numa barra só, em contorno. Barra de baixo lisa com "+" em contorno em todas. A (lista), B (blocos) e Atual (vidro) continuam no código. Letras do Início **mantidas** no tamanho de antes. |
+| **Início** | `/dashboard` | **Visual F** (escolhido em 05/10): velocímetro solto + os 3 atalhos (DAS 20/10, Fisco.ia, Emitir nota) numa barra só, em contorno. Barra de baixo lisa com o **"+" sem círculo** (só o + verde, 40px). Seletor desligado; Atual, A, B, C, D e E continuam no código. A explicação da média limite (o "?" do 2º velocímetro) tem só texto + "Entendi" e aparece **uma vez só**. Letras do Início **mantidas** no tamanho de antes. |
 | **Painel do DAS** | (abre no Início) | "Como você quer pagar seu DAS?": boleto automático no WhatsApp, Fisco.ia me ajuda agora, fazer sozinho, site do governo. |
 | **Lançar (+)** | `/lancar` | Rótulos em cinza maiúsculo, campos com 16px (sem zoom), "Último lançamento" em linha simples, "Salvar lançamento" em contorno. |
 | **Histórico de entradas** | `/historico` | Busca, linha do mês, "Lançar entrada", total do mês, lista por mês com risca fina (editar/excluir em cada linha). |
 | **Passou do limite** | `/regra-vinte` | Lista simples: aviso, como estou hoje, como a lei enxerga, o que fazer agora. Vermelho só no ícone e no valor que passou. |
-| **Perfil** | `/perfil` | **Sem o nome grande e sem a barra de baixo.** Ordem: CONTA (Editar perfil, Tema Preto/Branco), MEU MEI (tipo, abertura, limite, já faturado, falta), AJUDA (Fisco.ia no WhatsApp, Como emitir nota, Como pagar o DAS), SOBRE (Termos, Privacidade), Sair da conta, versão. Setinha volta ao Início. |
+| **Perfil** | `/perfil` | **Sem o nome grande e sem a barra de baixo.** Ordem: CONTA (Editar perfil, Tema Preto/Branco), MEU MEI (tipo, abertura, limite, já faturado, **limite restante**, **Histórico de lançamentos** → `/historico`), AJUDA (Fisco.ia no WhatsApp, Como emitir nota, Como pagar o DAS), SOBRE (Termos, Privacidade), Sair da conta, versão. Setinha volta ao Início. |
 | **Editar perfil** | `/editar-perfil` | Nome editável, WhatsApp (toque = aviso "fale com a gente" + botão do WhatsApp), Tipo de MEI (folha "O que mudou?"), Data de abertura (só quem abriu este ano), "Excluir conta" em vermelho no fim. **Sem a linha do e-mail.** |
 | **Excluir conta** | `/excluir-conta` | Confirmações em linhas, campo "EXCLUIR" com 16px, botões em contorno vermelho. |
 | **Como emitir nota** | `/como-emitir-nota` | Aviso em linha; 3 formas em lista (Fisco.ia no WhatsApp, Fazer sozinho, Certificado A1 "Em breve" — custa a partir de R$ 99,90); os passos e o A1 abrem logo abaixo. |
@@ -96,8 +96,8 @@ volta para o Início.
 | `TELEFONES_TESTE` | 5537000000001 a …0005 (a faixa de teste hoje é 0001–9999, ver `ehTelefoneTeste`) |
 | `CODIGO_TESTE_LOGIN` | `"123456"` (usado na senha das contas de teste; qualquer código é aceito) |
 | `MOSTRAR_CARD_DAS` | `true` |
-| **`MOSTRAR_SELETOR_VISUAL_INICIO`** | **`true`** (seletor C / D / E / F no Início) |
-| `VISUAL_INICIO_PADRAO` | `"c"` |
+| `MOSTRAR_SELETOR_VISUAL_INICIO` | `false` (desligado em 05/10) |
+| `VISUAL_INICIO_PADRAO` | `"f"` (escolhido em 05/10) |
 | `MOSTRAR_TUTORIAL_DAS` | `true` |
 | `MOSTRAR_TUTORIAL_NOTA` | `true` |
 | `WHATSAPP_FISCO` | `"5537999999999"` ⚠️ provisório, trocar pelo real |
@@ -167,11 +167,10 @@ escondido).
 
 ## 4. Pendente ou pela metade
 
-1. **Escolher o visual do Início** entre C, D, E e F (o C foi escolhido
-   e depois achado ruim). Depois: `VISUAL_INICIO_PADRAO` = escolhida,
-   `MOSTRAR_SELETOR_VISUAL_INICIO = false`. Para misturar, ajustar em
-   `Dashboard.jsx` (`InicioAtalhos`, `InicioCartoes`, `InicioDestaque`,
-   `InicioBarra`, `visualBarra`) e `BottomNav.jsx`.
+1. ~~Escolher o visual do Início~~ — **feito em 05/10: visual F**,
+   seletor desligado, "+" sem círculo (`BottomNav` visual `"simples"`).
+   Para mexer: `Dashboard.jsx` (`InicioBarra`, `visualBarra`) e
+   `BottomNav.jsx`.
 2. **Login por telefone de verdade**: publicar `enviar-otp-whatsapp` e
    fazer o painel (seção 5). Até lá, só o modo teste funciona.
 3. **Desligar o modo teste** antes de gente real (`MODO_TESTE_LOGIN =

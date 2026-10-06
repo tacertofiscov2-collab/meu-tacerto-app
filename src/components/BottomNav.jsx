@@ -1,4 +1,4 @@
-/* BOTTOMNAV v2 — prop visual: "vidro" (padrao) | "linha" (lisa com risca fina, + em contorno) | "solta" (lisa sem risca, + verde cheio) | "lisa" (sem risca, + em contorno) — variacoes do Inicio */
+/* BOTTOMNAV v3 — visual "simples" (Inicio F): o "+" sem circulo, so o + verde e maior, alinhado com os icones (v2: prop visual: "vidro" (padrao) | "linha" (lisa com risca fina, + em contorno) | "solta" (lisa sem risca, + verde cheio) | "lisa" (sem risca, + em contorno) — variacoes do Inicio */
 import { useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TrilhoContext } from "./TrilhoContext.js";
@@ -36,6 +36,8 @@ export default function BottomNav({ ativo, visual = "vidro" }) {
      ícone vazado do mesmo tamanho. Por isso a foto ganha alguns px. */
   const FOTO_SIZE = 34;
   const LABEL_SIZE = 11;
+  /* v3: tamanho do "+" sem circulo (visual "simples") */
+  const PLUS_SIMPLES_SIZE = 40;
 
   const corTexto = (isAtivo) =>
     isAtivo ? "var(--primary)" : "var(--text-secondary)";
@@ -61,7 +63,7 @@ export default function BottomNav({ ativo, visual = "vidro" }) {
         /* v2: visuais lisos por cima do vidro */
         ...(visual !== "vidro" ? FUNDO_LISO : null),
         ...(visual === "linha" ? { borderTop: RISCA } : null),
-        ...(visual === "solta" || visual === "lisa" ? { borderTop: "none" } : null),
+        ...(visual === "solta" || visual === "lisa" || visual === "simples" ? { borderTop: "none" } : null),
         paddingTop: 10,
         paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 18px)",
         paddingLeft: 13,
@@ -90,6 +92,18 @@ export default function BottomNav({ ativo, visual = "vidro" }) {
         </span>
       </button>
 
+      {/* v3: "simples" = so o + verde, sem circulo, maior. O marginBottom
+          poe o centro do + na altura do centro da casinha e do boneco. */}
+      {visual === "simples" ? (
+      <button
+        onClick={() => navigate("/lancar")}
+        aria-label="Lançar"
+        className="flex items-center justify-center transition"
+        style={{ background: "none", border: "none", padding: 0, width: 56, height: 48, marginBottom: 4 }}
+      >
+        <Plus size={PLUS_SIMPLES_SIZE} strokeWidth={2.3} style={{ color: "var(--primary)" }} />
+      </button>
+      ) : (
       <button
         onClick={() => navigate("/lancar")}
         aria-label="Lançar"
@@ -117,6 +131,7 @@ export default function BottomNav({ ativo, visual = "vidro" }) {
           />
         </span>
       </button>
+      )}
 
       <button
         onClick={() => navigate("/perfil")}
