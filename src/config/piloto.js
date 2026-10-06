@@ -1,4 +1,4 @@
-/* PILOTO v14 — o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
+/* PILOTO v15 — chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 
 /* ===================================================================
@@ -260,6 +260,18 @@ export const LINK_PGMEI =
 export const MOSTRAR_TUTORIAL_NOTA = true;
 
 /* -------------------------------------------------------------------
+   SUPORTE E DECLARACAO ANUAL (v15 — 06/10/2026)
+   MOSTRAR_SUPORTE: "Falar com o suporte" no Perfil > Ajuda abre o chat
+   de suporte dentro do app (/suporte): perguntas prontas para afunilar
+   e, se nao resolver, o WhatsApp do suporte com tudo anotado.
+   MOSTRAR_DECLARACAO_ANUAL: "Declaracao anual" no Perfil > Ajuda
+   (/declaracao-anual) com a calculadora do Imposto de Renda
+   (/declaracao-anual/calcular). false esconde (rota volta ao Inicio).
+   ------------------------------------------------------------------- */
+export const MOSTRAR_SUPORTE = true;
+export const MOSTRAR_DECLARACAO_ANUAL = true;
+
+/* -------------------------------------------------------------------
    WHATSAPP DO FISCO
    So numeros: 55 + DDD + numero.
    ⚠️ TROCAR PELO NUMERO REAL (este e provisorio).
@@ -360,7 +372,7 @@ export const MENSAGENS_WHATSAPP = {
 
   /* /como-emitir-nota, botao "Tenho interesse no certificado" */
   certificadoA1: (d) =>
-    `Oi Fisco! Tenho interesse no Certificado Digital A1 pra emitir nota automatica. ${quemSou(d)}`,
+    `Oi Fisco! Quero agendar meu Certificado Digital A1 com a certificadora parceira, pra emitir nota automatica. ${quemSou(d)}`,
 
   /* Inicio, painel da media limite: "Falar com o Fisco no WhatsApp" */
   mediaLimite: (d) =>
@@ -373,6 +385,18 @@ export const MENSAGENS_WHATSAPP = {
 
   /* v14: notificacao "Atualize seu velocimetro", opcao "Mandar pro
      Fisco no WhatsApp". A pessoa manda os valores ou o extrato depois. */
+  /* v15: chat de suporte (/suporte), quando a pergunta pronta nao resolveu.
+     Vai com o assunto, a pergunta escolhida e o que a pessoa escreveu. */
+  suporte: (d, { assunto, pergunta, detalhe } = {}) =>
+    `Oi! Preciso do suporte do TaCerto. ${quemSou(d)}.` +
+    (assunto ? ` Assunto: ${assunto}.` : "") +
+    (pergunta ? ` Duvida: ${pergunta}${/[.!?]$/.test(pergunta) ? "" : "."}` : "") +
+    (detalhe ? ` O que aconteceu: ${detalhe}` : ""),
+
+  /* v15: Declaracao anual (pagina e resultado da calculadora) */
+  declaracaoAjuda: (d) =>
+    `Oi Fisco! Quero ajuda com a minha declaracao anual do MEI e o Imposto de Renda. ${quemSouComCnpj(d)}`,
+
   atualizarVelocimetro: (d) =>
     `Oi Fisco! Quero atualizar meu velocimetro. Vou te mandar os valores que recebi (ou o extrato do banco). ${quemSou(d)}`,
 };

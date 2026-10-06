@@ -1,10 +1,11 @@
-/* COMOEMITIRNOTA v7 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: padrao do Perfil: lista simples sem cartoes, selos nem botao verde cheio; aviso como linha; passos e Certificado A1 abrem em secoes abaixo; letras maiores (v5: A1: "Custa a partir de R$ 99,90" (vale 1 ano) no lugar de "valor a confirmar"; Fisco.ia (v4: selo so "Grátis"; v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1) */
+/* COMOEMITIRNOTA v8 — sem o "Em breve" no Certificado A1; explicacao do A1 nova (certificadora parceira credenciada, mais credibilidade e curta); secao "Como o TaCerto ajuda hoje"; icone do WhatsApp (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: padrao do Perfil: lista simples sem cartoes, selos nem botao verde cheio; aviso como linha; passos e Certificado A1 abrem em secoes abaixo; letras maiores (v5: A1: "Custa a partir de R$ 99,90" (vale 1 ano) no lugar de "valor a confirmar"; Fisco.ia (v4: selo so "Grátis"; v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1) */
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  AlertTriangle, ExternalLink, MessageCircle, ListChecks, BadgeCheck, ChevronDown,
-  Info, Sparkles, Video, ShieldCheck,
+  AlertTriangle, ExternalLink, ListChecks, BadgeCheck, ChevronDown,
+  Info, Sparkles, Video, ShieldCheck, Wallet, CheckCircle2,
 } from "lucide-react";
+import IconeWhatsApp from "../components/IconeWhatsApp.jsx";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { SecaoLista, LinhaLista, numeroDoPasso } from "../components/ListaSimples.jsx";
 import {
@@ -174,7 +175,7 @@ export default function ComoEmitirNota() {
         {/* v6: as 3 formas em lista (sem cartoes nem selos) */}
         <SecaoLista titulo="Escolha como emitir">
           <LinhaLista
-            Icon={MessageCircle}
+            Icon={IconeWhatsApp}
             rotulo="Com o Fisco no WhatsApp"
             detalhe={conteudo.explicacaoFisco}
             onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.notaAjuda(dados, caminhoneiro))}
@@ -190,10 +191,24 @@ export default function ComoEmitirNota() {
           <LinhaLista
             Icon={BadgeCheck}
             rotulo="Nota automática (Certificado A1)"
-            detalhe="Em breve"
+            detalhe="A nota sai sozinha. Você só confirma."
             semSeta
             valor={<SetaAbre aberto={a1Aberto} />}
             onClick={() => alternar(a1Aberto, setA1Aberto, a1Ref)}
+          />
+        </SecaoLista>
+
+        {/* v8: o que o TaCerto faz HOJE (piloto), claro e sem prometer a mais */}
+        <SecaoLista titulo="Como o TaCerto ajuda hoje">
+          <LinhaLista
+            Icon={CheckCircle2}
+            rotulo="No WhatsApp, a gente monta a nota com você"
+            detalhe="Você manda o valor e pra quem foi. Em poucos minutos ela está pronta."
+          />
+          <LinhaLista
+            Icon={CheckCircle2}
+            rotulo="Com o Certificado A1, ela sai automática"
+            detalhe="Você só confirma cada nota pelo app."
           />
         </SecaoLista>
 
@@ -217,42 +232,41 @@ export default function ComoEmitirNota() {
         <div ref={a1Ref} className="scroll-mt-16">
           {a1Aberto && (
             <SecaoLista titulo="Certificado Digital A1">
+              {/* v8: explicacao nova (pedido do Fernando: "agendado com uma
+                  certificadora parceira do TaCerto, que tem permissao...
+                  mais credibilidade, sem ficar longo") */}
               <LinhaLista
                 Icon={Info}
                 rotulo="O que é"
-                detalhe="A assinatura digital do seu CNPJ. É como uma CNH da sua empresa na internet."
+                detalhe="A identidade digital do seu CNPJ, no padrão oficial do governo (ICP-Brasil). A nota sai em seu nome, com a mesma validade de quando você emite no gov.br."
+              />
+              <LinhaLista
+                Icon={Video}
+                rotulo="Como tira"
+                detalhe="Você agenda com a certificadora parceira do TaCerto, credenciada pelo governo para emitir certificados. É por videochamada, com a CNH ou o RG, em poucos minutos."
               />
               <LinhaLista
                 Icon={Sparkles}
                 rotulo="Vantagens"
                 detalhe={<Itens lista={[
-                  "O Fisco emite a nota por você, e você só confirma.",
-                  "Não precisa entrar no gov.br toda vez.",
+                  "A nota sai sozinha: você só confirma.",
+                  "Sem entrar no gov.br toda vez.",
                   ...(conteudo.vantagemExtra ? [conteudo.vantagemExtra] : []),
-                  "Nada é emitido sem a sua confirmação.",
                 ]} />}
               />
               <LinhaLista
-                Icon={Video}
-                rotulo="Como tira"
-                detalhe={<Itens lista={[
-                  "Por videochamada no celular, com a CNH ou o RG na mão.",
-                  "Vale por 1 ano.",
-                  "Custa a partir de R$ 99,90.",
-                  "O TaCerto! te ajuda a agendar.",
-                ]} />}
+                Icon={Wallet}
+                rotulo="Valor"
+                detalhe="A partir de R$ 99,90. Vale 1 ano."
               />
               <LinhaLista
                 Icon={ShieldCheck}
                 rotulo="Segurança"
-                detalhe={<Itens lista={[
-                  "O certificado fica numa plataforma de emissão de notas com segurança de banco.",
-                  "Nunca pedimos a sua senha do gov.br.",
-                ]} />}
+                detalhe="Fica guardado com criptografia, numa plataforma de notas com segurança de banco, e só é usado nas notas que você confirmar. Nunca pedimos sua senha do gov.br."
               />
               <LinhaLista
-                Icon={MessageCircle}
-                rotulo="Tenho interesse no certificado"
+                Icon={IconeWhatsApp}
+                rotulo="Quero agendar meu certificado"
                 onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.certificadoA1(dados))}
               />
             </SecaoLista>

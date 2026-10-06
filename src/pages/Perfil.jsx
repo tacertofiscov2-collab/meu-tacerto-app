@@ -1,4 +1,4 @@
-﻿/* PERFIL v15 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes)) */
+﻿/* PERFIL v16 — Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes)) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
@@ -6,7 +6,7 @@ import {
   User, Settings, Info, Shield, Lock, LogOut,
   ChevronDown, UserPlus, X, Check, TrendingUp, BarChart3,
   Trash2, FileText, ArrowUpRight, ArrowDownLeft, CalendarCheck,
-  Briefcase, CalendarDays, Gauge, MessageCircle, Sun, Moon, History, Phone,
+  Briefcase, CalendarDays, Gauge, Sun, Moon, History, Phone, Headphones, Landmark,
 } from "lucide-react";
 import Calendario from "../components/Calendario.jsx";
 import { LinhaCampo, AvisoFaleConosco, FolhaTipoMei } from "../components/PerfilFolhas.jsx";
@@ -29,6 +29,7 @@ import {
   MOSTRAR_PREFERENCIAS, MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_NOTAS_FISCAIS,
   MOSTRAR_ADICIONAR_MOVIMENTACOES, MOSTRAR_RESUMO_ANO, MOSTRAR_SOBRE,
   MOSTRAR_AVATAR, MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS, MOSTRAR_LOGIN_EMAIL,
+  MOSTRAR_SUPORTE, MOSTRAR_DECLARACAO_ANUAL,
   MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
 } from "@/config/piloto";
 
@@ -437,6 +438,17 @@ export default function Perfil() {
               rotulo="Tema"
               valor={<SeletorTema tema={tema} onEscolher={escolherTema} />}
             />
+            {/* v16: Excluir conta logo abaixo do Tema (pedido do Fernando:
+                longe do "Sair da conta") */}
+            {!visitante && (
+              <LinhaLista
+                Icon={Trash2}
+                rotulo="Excluir conta"
+                cor="var(--danger)"
+                semSeta
+                onClick={() => navigate("/excluir-conta", DE_PERFIL)}
+              />
+            )}
             {/* v10: so com o login por e-mail ligado (MOSTRAR_LOGIN_EMAIL) */}
             {!visitante && MOSTRAR_LOGIN_EMAIL && (
               <LinhaLista Icon={Lock} rotulo="Alterar senha" onClick={() => navigate("/alterar-senha", DE_PERFIL)} />
@@ -544,17 +556,26 @@ export default function Perfil() {
           )}
 
           {/* ===== Ajuda ===== */}
+          {/* v16: o suporte (atendimento humano) e um chat dentro do app,
+              com perguntas prontas para afunilar (/suporte) */}
           <SecaoLista titulo="Ajuda">
-            <LinhaLista
-              Icon={MessageCircle}
-              rotulo="Falar com o Fisco no WhatsApp"
-              onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.falarComFisco(dadosParaWhatsApp(app)))}
-            />
+            {MOSTRAR_SUPORTE ? (
+              <LinhaLista Icon={Headphones} rotulo="Falar com o suporte" onClick={() => navigate("/suporte", DE_PERFIL)} />
+            ) : (
+              <LinhaLista
+                Icon={Headphones}
+                rotulo="Falar com o suporte"
+                onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.falarComFisco(dadosParaWhatsApp(app)))}
+              />
+            )}
             {MOSTRAR_TUTORIAL_NOTA && (
               <LinhaLista Icon={FileText} rotulo="Como emitir nota" onClick={() => navigate("/como-emitir-nota", DE_PERFIL)} />
             )}
             {MOSTRAR_TUTORIAL_DAS && (
               <LinhaLista Icon={CalendarCheck} rotulo="Como pagar o DAS" onClick={() => navigate("/como-pagar-das", DE_PERFIL)} />
+            )}
+            {MOSTRAR_DECLARACAO_ANUAL && (
+              <LinhaLista Icon={Landmark} rotulo="Declaração anual" onClick={() => navigate("/declaracao-anual", DE_PERFIL)} />
             )}
           </SecaoLista>
 
@@ -577,14 +598,6 @@ export default function Perfil() {
                 cor="var(--danger)"
                 semSeta
                 onClick={() => setConfirmarSair(true)}
-              />
-              {/* v14: Excluir conta voltou para o Perfil, tamanho normal */}
-              <LinhaLista
-                Icon={Trash2}
-                rotulo="Excluir conta"
-                cor="var(--danger)"
-                semSeta
-                onClick={() => navigate("/excluir-conta", DE_PERFIL)}
               />
             </SecaoLista>
           )}

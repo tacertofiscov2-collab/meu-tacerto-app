@@ -1,4 +1,4 @@
-﻿/* APP v13 — login so pelo WhatsApp: /login e /cadastro abrem EntrarWhatsApp; /entrar-email (plano B) abre o Login antigo; esqueci/alterar senha e alterar-whatsapp atras de MOSTRAR_LOGIN_EMAIL (v12: rota /como-pagar-das; v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard) */
+﻿/* APP v14 — rotas /suporte (chat de suporte), /declaracao-anual e /declaracao-anual/calcular, atras das chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL (v13: login so pelo WhatsApp: /login e /cadastro abrem EntrarWhatsApp; /entrar-email (plano B) abre o Login antigo; esqueci/alterar senha e alterar-whatsapp atras de MOSTRAR_LOGIN_EMAIL (v12: rota /como-pagar-das; v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard) */
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
@@ -49,11 +49,15 @@ import Privacidade from "./pages/Privacidade.jsx";
 import TermosDeUso from "./pages/TermosDeUso.jsx";
 import ComoEmitirNota from "./pages/ComoEmitirNota.jsx";
 import ComoPagarDas from "./pages/ComoPagarDas.jsx";
+import Suporte from "./pages/Suporte.jsx";
+import DeclaracaoAnual from "./pages/DeclaracaoAnual.jsx";
+import CalcularDeclaracao from "./pages/CalcularDeclaracao.jsx";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_NOTAS_FISCAIS,
   MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_ADICIONAR_MOVIMENTACOES,
   MOSTRAR_RESUMO_ANO, MOSTRAR_PREFERENCIAS, MOSTRAR_SOBRE, MOSTRAR_INACABADOS,
   MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS, MOSTRAR_LOGIN_EMAIL,
+  MOSTRAR_SUPORTE, MOSTRAR_DECLARACAO_ANUAL,
 } from "./config/piloto.js";
 
 /* ===================================================================
@@ -164,6 +168,10 @@ export default function App() {
           <Route path="/como-emitir-nota" element={<RotaComChave ligada={MOSTRAR_TUTORIAL_NOTA}><ComoEmitirNota /></RotaComChave>} />
           {/* Piloto (v12): passo a passo do boleto do DAS */}
           <Route path="/como-pagar-das" element={<RotaComChave ligada={MOSTRAR_TUTORIAL_DAS}><ComoPagarDas /></RotaComChave>} />
+          {/* v14: suporte (chat com perguntas prontas) e declaracao anual */}
+          <Route path="/suporte" element={<RotaComChave ligada={MOSTRAR_SUPORTE}><Suporte /></RotaComChave>} />
+          <Route path="/declaracao-anual" element={<RotaComChave ligada={MOSTRAR_DECLARACAO_ANUAL}><DeclaracaoAnual /></RotaComChave>} />
+          <Route path="/declaracao-anual/calcular" element={<RotaComChave ligada={MOSTRAR_DECLARACAO_ANUAL}><CalcularDeclaracao /></RotaComChave>} />
           <Route path="/excluir-conta" element={<ExcluirConta />} />
           <Route path="/perfil/informacoes-fiscais" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><InformacoesFiscais /></RotaComChave>} />
           <Route path="/historico" element={<Historico />} />

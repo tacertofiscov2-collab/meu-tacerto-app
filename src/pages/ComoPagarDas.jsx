@@ -1,6 +1,7 @@
-/* COMOPAGARDAS v4 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v3: padrao do Perfil (lista simples, sem cartoes nem caixa amarela, letras maiores; acoes como linhas) (v2: Fisco.ia; v1: passo a passo do PGMEI)) */
+/* COMOPAGARDAS v5 — secao "Como o TaCerto ajuda hoje" (boleto pronto no WhatsApp, boleto atrasado) e icone do WhatsApp (v4: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v3: padrao do Perfil (lista simples, sem cartoes nem caixa amarela, letras maiores; acoes como linhas) (v2: Fisco.ia; v1: passo a passo do PGMEI))) */
 import { useLocation, useNavigate } from "react-router-dom";
-import { CalendarClock, ExternalLink, MessageCircle } from "lucide-react";
+import { CalendarClock, ExternalLink, CheckCircle2 } from "lucide-react";
+import IconeWhatsApp from "../components/IconeWhatsApp.jsx";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { SecaoLista, LinhaLista, numeroDoPasso } from "../components/ListaSimples.jsx";
 import { useAppState } from "@/context/AppStateContext";
@@ -85,6 +86,20 @@ export default function ComoPagarDas() {
           />
         </SecaoLista>
 
+        {/* v5: o que o TaCerto faz HOJE (piloto), claro e sem prometer a mais */}
+        <SecaoLista titulo="Como o TaCerto ajuda hoje">
+          <LinhaLista
+            Icon={CheckCircle2}
+            rotulo="A gente te manda o boleto pronto"
+            detalhe="Todo mês, no WhatsApp, antes do dia 20. Só com o seu CNPJ: você só paga."
+          />
+          <LinhaLista
+            Icon={CheckCircle2}
+            rotulo="Atrasou? A gente gera o boleto novo"
+            detalhe="Já com a multa e os juros que o governo calcula."
+          />
+        </SecaoLista>
+
         {/* v3: passos em lista (numero no lugar do icone), sem cartoes */}
         <SecaoLista titulo="Passo a passo">
           {PASSOS.map((p, i) => (
@@ -102,7 +117,7 @@ export default function ComoPagarDas() {
           />
           {/* a mesma mensagem da opcao "Fisco.ia me ajuda agora" */}
           <LinhaLista
-            Icon={MessageCircle}
+            Icon={IconeWhatsApp}
             rotulo="Prefiro que o Fisco me ajude"
             onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.dasAjudaAgora(dadosParaWhatsApp(app)))}
           />
