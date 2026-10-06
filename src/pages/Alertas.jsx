@@ -1,7 +1,7 @@
-/* ALERTAS v1 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) */
+/* ALERTAS v2 — tira o import Bell sem uso (v1: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26)) */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Bell, BarChart3, AlertCircle, AlertTriangle } from "lucide-react";
+import { ArrowLeft, BarChart3, AlertCircle, AlertTriangle } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
