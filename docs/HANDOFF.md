@@ -38,13 +38,13 @@
 
 | Tela | Endereço | Como está |
 |---|---|---|
-| **Início** | `/dashboard` | **Visual F** (escolhido em 05/10): velocímetro solto + os 3 atalhos (DAS 20/10, Fisco.ia, Emitir nota) numa barra só, em contorno. Barra de baixo lisa com o **"+" sem círculo** (só o + verde, 56px, no centro da tela e no meio da barra). **Sininho** discreto no canto de cima (Notificações → "Apresentação do Fisco.ia", tutorial em slides). Seletor desligado; Atual, A, B, C, D e E continuam no código. A explicação da média limite (o "?" do 2º velocímetro) tem só texto + "Entendi" e aparece **uma vez só**. Letras do Início **mantidas** no tamanho de antes. |
+| **Início** | `/dashboard` | **Visual F** (escolhido em 05/10): velocímetro solto e mais alto (respiro antes da barra) + os 3 atalhos (**DAS**, **Fisco** com o símbolo do WhatsApp, **NF**) numa barra só, em contorno. Barra de baixo lisa com o **"+" sem círculo** (só o + verde, 56px, no centro) e a **casinha cinza** (sem o verde de página atual). **Sininho** discreto no canto de cima (Notificações → "Apresentação do Fisco.ia", tutorial em slides, e "Atualize seu velocímetro"). Seletor desligado; Atual, A, B, C, D e E continuam no código. A explicação da média limite (o "?" do 2º velocímetro) tem só texto + "Entendi" e aparece **uma vez só**. Letras do Início **mantidas** no tamanho de antes. |
 | **Painel do DAS** | (abre no Início) | "Como você quer pagar seu DAS?": boleto automático no WhatsApp, Fisco.ia me ajuda agora, fazer sozinho, site do governo. |
-| **Lançar (+)** | `/lancar` | Rótulos em cinza maiúsculo, campos com 16px (sem zoom), "Último lançamento" em linha simples, "Salvar lançamento" em contorno. |
+| **Lançar (+)** | `/lancar` | **"Recebimento / Total do ano"** no topo. Recebimento: como antes (rótulos em cinza maiúsculo, campos com 16px, "Último lançamento", "Salvar lançamento" em contorno). Total do ano (`/lancar?modo=total`): só o valor; o velocímetro fica igual a ele (um lançamento "Ajuste do total do ano", substituído a cada vez). |
 | **Histórico de entradas** | `/historico` | Busca, linha do mês, "Lançar entrada", total do mês, lista por mês com risca fina (editar/excluir em cada linha). |
 | **Passou do limite** | `/regra-vinte` | Lista simples: aviso, como estou hoje, como a lei enxerga, o que fazer agora. Vermelho só no ícone e no valor que passou. |
-| **Perfil** | `/perfil` | **Sem o nome grande e sem a barra de baixo.** Ordem: CONTA (Editar perfil, Tema Preto/Branco), MEU MEI (tipo, abertura, limite, já faturado, **limite restante**, **Histórico de lançamentos** → `/historico`), AJUDA (Fisco.ia no WhatsApp, Como emitir nota, Como pagar o DAS), SOBRE (Termos, Privacidade), Sair da conta, versão. Setinha volta ao Início. |
-| **Editar perfil** | `/editar-perfil` | Nome editável, WhatsApp (toque = aviso "fale com a gente" + botão do WhatsApp), Tipo de MEI (folha "O que mudou?"), Data de abertura (só quem abriu este ano), "Excluir conta" em vermelho no fim. **Sem a linha do e-mail.** |
+| **Perfil** | `/perfil` | **Sem o nome grande e sem a barra de baixo.** Ordem: CONTA (Nome editável na linha, WhatsApp, Tema Preto/Branco), MEU MEI (tipo, abertura, limite, já faturado, **limite restante**, **Histórico de lançamentos** → `/historico`), AJUDA (Fisco.ia no WhatsApp, Como emitir nota, Como pagar o DAS), SOBRE (Termos, Privacidade), Sair da conta, **Excluir conta** (tamanho normal), versão. Tipo de MEI e Abertura tocáveis (vieram do Editar perfil). Setinha volta ao Início. |
+| **Editar perfil** | `/editar-perfil` | **Sem link desde 05/10** (os itens foram para o Perfil). Nome editável, WhatsApp (toque = aviso "fale com a gente" + botão do WhatsApp), Tipo de MEI (folha "O que mudou?"), Data de abertura (só quem abriu este ano), "Excluir conta" em vermelho no fim. **Sem a linha do e-mail.** |
 | **Excluir conta** | `/excluir-conta` | Confirmações em linhas, campo "EXCLUIR" com 16px, botões em contorno vermelho. |
 | **Como emitir nota** | `/como-emitir-nota` | Aviso em linha; 3 formas em lista (Fisco.ia no WhatsApp, Fazer sozinho, Certificado A1 "Em breve" — custa a partir de R$ 99,90); os passos e o A1 abrem logo abaixo. |
 | **Como pagar o DAS** | `/como-pagar-das` | Lembrete "vence todo dia 20", 7 passos numerados, linhas "Abrir o PGMEI" e "Prefiro que o Fisco.ia me ajude". |
@@ -96,7 +96,7 @@ volta para o Início.
 | `TELEFONES_TESTE` | 5537000000001 a …0005 (a faixa de teste hoje é 0001–9999, ver `ehTelefoneTeste`) |
 | `CODIGO_TESTE_LOGIN` | `"123456"` (usado na senha das contas de teste; qualquer código é aceito) |
 | `MOSTRAR_CARD_DAS` | `true` |
-| **`MOSTRAR_SELETOR_VISUAL_INICIO`** | **`true`** (seletor "A / B": A = F, B = `g`, F invertido) |
+| `MOSTRAR_SELETOR_VISUAL_INICIO` | `false` (ficou a A = F; o `g`, "tela B", continua no código) |
 | `MOSTRAR_NOTIFICACOES` | `true` (sininho + Apresentação do Fisco.ia) |
 | `VISUAL_INICIO_PADRAO` | `"f"` (escolhido em 05/10) |
 | `MOSTRAR_TUTORIAL_DAS` | `true` |
@@ -168,12 +168,11 @@ escondido).
 
 ## 4. Pendente ou pela metade
 
-1. **Início: A ou B?** Visual F escolhido; agora o seletor compara
-   "A" (F) com "B" (`g`: os 3 atalhos em cima, velocímetro embaixo).
-   Depois: `VISUAL_INICIO_PADRAO` = escolhida e seletor desligado. Para
-   mexer: `Dashboard.jsx` (`InicioBarra`, `visualBarra`) e
-   `BottomNav.jsx`. **Círculo na casinha** (só no iPhone): não existe
-   no código; suspeita do botão redondo do Safari — pedir print.
+1. ~~Início~~ — **feito em 05/10: visual F** (DAS, Fisco, NF; casinha
+   cinza; velocímetro mais alto). Para mexer: `Dashboard.jsx`
+   (`InicioBarra`, `RESPIRO_ACIMA_DA_BARRA`, `visualBarra`) e
+   `BottomNav.jsx`. A notificação "Atualize seu velocímetro" some depois
+   de aberta: falta decidir se ela volta todo mês.
 2. **Login por telefone de verdade**: publicar `enviar-otp-whatsapp` e
    fazer o painel (seção 5). Até lá, só o modo teste funciona.
 3. **Desligar o modo teste** antes de gente real (`MODO_TESTE_LOGIN =

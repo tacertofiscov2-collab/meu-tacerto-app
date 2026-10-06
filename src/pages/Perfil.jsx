@@ -1,4 +1,4 @@
-﻿/* PERFIL v13 — "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes) */
+﻿/* PERFIL v14 — os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
@@ -6,13 +6,18 @@ import {
   User, Settings, Info, Shield, Lock, LogOut,
   ChevronDown, UserPlus, X, Check, TrendingUp, BarChart3,
   Trash2, FileText, ArrowUpRight, ArrowDownLeft, CalendarCheck,
-  Briefcase, CalendarDays, Gauge, MessageCircle, Sun, Moon, History,
+  Briefcase, CalendarDays, Gauge, MessageCircle, Sun, Moon, History, Phone,
 } from "lucide-react";
+import Calendario from "../components/Calendario.jsx";
+import { LinhaCampo, AvisoFaleConosco, FolhaTipoMei } from "../components/PerfilFolhas.jsx";
+import {
+  DIAS_PARA_CORRIGIR_TIPO, formatarTelefone, sincronizarPerfilNoBanco,
+} from "@/lib/perfil";
 import { aplicarTema, temaEfetivo } from "./Preferencias.jsx";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
 import Valor from "../components/Valor.jsx";
-import { LABEL_TIPO, calcularFaltamOuExcedeu } from "@/lib/fiscal";
+import { LABEL_TIPO, calcularFaltamOuExcedeu, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 
 import { useUserState, setUserState } from "@/lib/userState";
 import {
@@ -26,6 +31,22 @@ import {
   MOSTRAR_AVATAR, MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS, MOSTRAR_LOGIN_EMAIL,
   MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
 } from "@/config/piloto";
+
+/* ===================================================================
+   PERFIL v14 (05/10/2026) — pedido do Fernando: "o Editar perfil ta
+   vazio, com poucos itens: passe eles pra fora, clicaveis"
+   - CONTA: Nome (toca e ja digita na linha; "Salvar" aparece embaixo
+     quando muda), WhatsApp (toca: aviso "fale com a gente", o numero e
+     o login) e Tema.
+   - MEU MEI: Tipo de MEI abre a folha "Seu tipo de MEI" (O que
+     mudou?); Abertura abre o calendario, so para quem abriu este ano
+     (como no Editar perfil). Limite, ja faturado, limite restante e o
+     Historico de lancamentos continuam.
+   - No fim: Sair da conta e "Excluir conta" no tamanho normal.
+   - A tela /editar-perfil continua existindo, sem link.
+   As folhas e a gravacao no banco sao as mesmas do Editar perfil
+   (components/PerfilFolhas.jsx e lib/perfil.js).
+   =================================================================== */
 
 /* ===================================================================
    PERFIL v11 (05/10/2026) — pedido do Fernando
@@ -142,10 +163,70 @@ const MESES = [
 
 export default function Perfil() {
   const navigate = useNavigate();
-  const { nome, visitante } = useUserState();
+  const { nome, visitante, setNome: salvarNome, setTipo } = useUserState();
   const app = useAppState();
-  const { resetarConta, tipoMEI, mesAnoAbertura, limiteAtual, faturamentoAtual, email } = app;
+  const { resetarConta, tipoMEI, mesAnoAbertura, setMesAnoAbertura, limiteAtual, faturamentoAtual, email } = app;
   const [saindo, setSaindo] = useState(false);
+
+  /* v14: dados que vieram do Editar perfil (ver o topo do arquivo) */
+  const [nomeCampo, setNomeCampo] = useState(nome || "");
+  const [nomeSalvo, setNomeSalvo] = useState(false);
+  const [whatsSalvo, setWhatsSalvo] = useState("");
+  const [criadoEm, setCriadoEm] = useState(null);
+  const [folhaTipoAberta, setFolhaTipoAberta] = useState(false);
+  const [calendarioAberto, setCalendarioAberto] = useState(false);
+  const [avisoWhats, setAvisoWhats] = useState(false);
+  useEffect(() => { setNomeCampo(nome || ""); }, [nome]);
+  const mudouNome = nomeCampo.trim() !== "" && nomeCampo.trim() !== (nome || "").trim();
+
+  /* Numero do WhatsApp (perfis.whatsapp ou o telefone do login) e a
+     data do cadastro (prazo para corrigir o tipo de MEI). */
+  useEffect(() => {
+    let ativo = true;
+    (async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        const user = userData?.user;
+        if (!user) return;
+        if (ativo) setCriadoEm(user.created_at || null);
+        const { data } = await supabase.from("perfis").select("whatsapp").eq("id", user.id).single();
+        const numero = data?.whatsapp || user.phone || "";
+        if (ativo && numero) setWhatsSalvo(formatarTelefone(String(numero).replace(/^\+?55/, "")));
+      } catch { /* sem rede: a linha mostra "Não informado" */ }
+    })();
+    return () => { ativo = false; };
+  }, []);
+
+  function salvarNomeNovo() {
+    const limpo = nomeCampo.trim();
+    if (!limpo) return;
+    salvarNome(limpo);
+    sincronizarPerfilNoBanco({ nome: limpo });
+    setNomeSalvo(true);
+    setTimeout(() => setNomeSalvo(false), 1800);
+  }
+
+  const podeCorrigirTipo =
+    !!criadoEm && Date.now() - new Date(criadoEm).getTime() <= DIAS_PARA_CORRIGIR_TIPO * 86400000;
+  function corrigirTipo(novo) {
+    setTipo(novo);
+    sincronizarPerfilNoBanco({ tipo: novo });
+    setFolhaTipoAberta(false);
+  }
+
+  /* Abertura: ano corrente grava; ano anterior apaga (so importa no 1o ano) */
+  function escolherAbertura(m, a) {
+    if (Number(a) === new Date().getFullYear()) {
+      setMesAnoAbertura(m, a);
+      sincronizarPerfilNoBanco({ mesAbertura: m, anoAbertura: a });
+    } else {
+      setMesAnoAbertura(null, null);
+      sincronizarPerfilNoBanco({ mesAbertura: null, anoAbertura: null });
+    }
+    setCalendarioAberto(false);
+  }
+
+  const cardFolha = { backgroundColor: "var(--surface)", border: "1px solid var(--border)" };
 
   /* v12: sem a barra de baixo, a setinha e o caminho de volta. Se o
      Perfil foi aberto de dentro do app, volta uma tela; se foi aberto
@@ -327,8 +408,29 @@ export default function Perfil() {
           {/* ===== v11: Conta PRIMEIRO (Editar perfil + Tema) ===== */}
           <SecaoLista titulo="Conta" style={{ marginTop: 8 }}>
             {contaItem && <LinhaLista Icon={contaItem.Icon} rotulo={contaItem.label} onClick={contaItem.onClick} />}
+            {/* v14: Nome e WhatsApp vieram do Editar perfil */}
             {!visitante && (
-              <LinhaLista Icon={User} rotulo="Editar perfil" onClick={() => navigate("/editar-perfil", DE_PERFIL)} />
+              <LinhaCampo Icon={User} rotulo="Nome">
+                <input
+                  value={nomeCampo}
+                  maxLength={LIMITE_NOME_INPUT}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  onChange={(e) => setNomeCampo(e.target.value)}
+                  placeholder="Seu nome"
+                  className="flex-1 min-w-0 bg-transparent text-right outline-none"
+                  style={{ color: "var(--text-secondary)", fontSize: 16, border: "none", boxShadow: "none" }}
+                />
+              </LinhaCampo>
+            )}
+            {!visitante && (
+              <LinhaLista
+                Icon={Phone}
+                rotulo="WhatsApp"
+                valor={whatsSalvo ? `+55 ${whatsSalvo}` : "Não informado"}
+                onClick={() => setAvisoWhats(true)}
+              />
             )}
             <LinhaLista
               Icon={tema === "claro" ? Sun : Moon}
@@ -343,6 +445,25 @@ export default function Perfil() {
               <LinhaLista Icon={Settings} rotulo="Preferências" onClick={() => navigate("/preferencias", DE_PERFIL)} />
             )}
           </SecaoLista>
+
+          {/* v14: "Salvar" do nome, so quando o nome mudou */}
+          {(mudouNome || nomeSalvo) && (
+            <button
+              type="button"
+              onClick={salvarNomeNovo}
+              disabled={nomeSalvo}
+              className={`${nomeSalvo ? "" : "botao-confirmar "}toque w-full rounded-2xl font-semibold`}
+              style={{
+                marginTop: 10,
+                padding: "13px 0",
+                fontSize: 15.5,
+                color: "var(--primary)",
+                backgroundColor: nomeSalvo ? "var(--field)" : "transparent",
+              }}
+            >
+              {nomeSalvo ? "Nome salvo" : "Salvar nome"}
+            </button>
+          )}
 
           {/* ===== Topo: SO o nome (v10). v11: escondido (MOSTRAR_NOME_NO_TOPO) ===== */}
           {MOSTRAR_NOME_NO_TOPO && (
@@ -366,8 +487,17 @@ export default function Perfil() {
           {/* ===== Meu MEI: so informacao, sem setinha ===== */}
           {!visitante && (
             <SecaoLista titulo="Meu MEI">
-              <LinhaLista Icon={Briefcase} rotulo="Tipo de MEI" valor={rotuloTipo} />
-              {abertura && <LinhaLista Icon={CalendarDays} rotulo="Abertura" valor={abertura} />}
+              {/* v14: tocaveis (vieram do Editar perfil). A abertura so
+                  muda para quem abriu este ano (limite proporcional). */}
+              <LinhaLista Icon={Briefcase} rotulo="Tipo de MEI" valor={rotuloTipo} onClick={() => setFolhaTipoAberta(true)} />
+              {abertura && (
+                <LinhaLista
+                  Icon={CalendarDays}
+                  rotulo="Abertura"
+                  valor={abertura}
+                  onClick={Number(mesAnoAbertura?.ano) === anoAtual ? () => setCalendarioAberto(true) : undefined}
+                />
+              )}
               <LinhaLista
                 Icon={Gauge}
                 rotulo="Limite do ano"
@@ -437,8 +567,8 @@ export default function Perfil() {
             )}
           </SecaoLista>
 
-          {/* ===== Sair (por ultimo, linha simples). O "Excluir conta"
-               mudou para o fim do Editar perfil (v10). ===== */}
+          {/* ===== Sair e Excluir conta (por ultimo, linhas simples).
+               v14: o "Excluir conta" voltou do Editar perfil. ===== */}
           {!visitante && (
             <SecaoLista>
               <LinhaLista
@@ -447,6 +577,14 @@ export default function Perfil() {
                 cor="var(--danger)"
                 semSeta
                 onClick={() => setConfirmarSair(true)}
+              />
+              {/* v14: Excluir conta voltou para o Perfil, tamanho normal */}
+              <LinhaLista
+                Icon={Trash2}
+                rotulo="Excluir conta"
+                cor="var(--danger)"
+                semSeta
+                onClick={() => navigate("/excluir-conta", DE_PERFIL)}
               />
             </SecaoLista>
           )}
@@ -632,6 +770,36 @@ export default function Perfil() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* v14: folhas que vieram do Editar perfil */}
+      <Calendario
+        aberto={calendarioAberto}
+        modo="mesAno"
+        mes={mesAnoAbertura?.mes || null}
+        ano={mesAnoAbertura?.ano || null}
+        onFechar={() => setCalendarioAberto(false)}
+        onSelecionarMesAno={escolherAbertura}
+      />
+      {folhaTipoAberta && (
+        <FolhaTipoMei
+          tipo={tipoMEI}
+          podeCorrigir={podeCorrigirTipo}
+          onFechar={() => setFolhaTipoAberta(false)}
+          onCorrigir={corrigirTipo}
+          cardStyle={cardFolha}
+        />
+      )}
+      {avisoWhats && (
+        <AvisoFaleConosco
+          texto="Seu número é usado para entrar no app. Para trocar, fale com a gente."
+          onWhatsApp={() => {
+            abrirWhatsAppFisco(MENSAGENS_WHATSAPP.trocarNumero(dadosParaWhatsApp({ ...app, nome: nomeCampo.trim() || nome })));
+            setAvisoWhats(false);
+          }}
+          onFechar={() => setAvisoWhats(false)}
+          cardStyle={cardFolha}
+        />
       )}
 
       {/* v12: sem a barra de baixo no Perfil (MOSTRAR_BARRA_NO_PERFIL) */}

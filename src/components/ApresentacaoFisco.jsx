@@ -1,11 +1,11 @@
-/* APRESENTACAOFISCO v1 — tutorial "Apresentação do Fisco.ia": celular de exemplo do Inicio (visual F) com um circulo verde passando por cada funcao e o Fisco.ia explicando, em slides */
+/* APRESENTACAOFISCO v2 — celular de exemplo igual ao Inicio novo (DAS, Fisco com o simbolo do WhatsApp, NF; casinha cinza; velocimetro mais alto); textos do + e do Perfil (v1: tutorial "Apresentação do Fisco.ia": celular de exemplo do Inicio (visual F) com um circulo verde passando por cada funcao e o Fisco.ia explicando, em slides */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
-  ArrowLeft, Gauge, Bell, CalendarClock, MessageCircle, FileText, Home, Plus, User,
+  ArrowLeft, Gauge, Bell, CalendarClock, FileText, Home, Plus, User,
 } from "lucide-react";
 import VelocimetroAnimado from "./VelocimetroAnimado.jsx";
-import { DAS_VENCIMENTO_DIA } from "@/lib/fiscal";
+import IconeWhatsApp from "./IconeWhatsApp.jsx";
 import { MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA } from "@/config/piloto";
 
 /* ===================================================================
@@ -36,7 +36,11 @@ const PASSOS = [
     titulo: "Seu limite do ano",
     texto: "Quanto você já faturou e quanto ainda pode. Arraste para o lado e veja a média do mês.",
   },
-  { alvo: "mais", titulo: "Recebeu? Lance aqui", texto: "Toque no + e o velocímetro soma na hora." },
+  {
+    alvo: "mais",
+    titulo: "Recebeu? Lance aqui",
+    texto: "Toque no + para lançar o que recebeu, ou para atualizar o total do ano.",
+  },
   {
     alvo: "das",
     mostrar: MOSTRAR_CARD_DAS,
@@ -50,7 +54,7 @@ const PASSOS = [
     titulo: "Nota fiscal",
     texto: "Eu te ajudo a emitir, por áudio ou por mensagem.",
   },
-  { alvo: "perfil", titulo: "Seu Perfil", texto: "Limite restante, histórico de lançamentos e ajuda." },
+  { alvo: "perfil", titulo: "Seu Perfil", texto: "Seus dados, limite restante e histórico de lançamentos." },
   {
     alvo: "sino",
     titulo: "Notificações",
@@ -67,12 +71,6 @@ const ALTURA_DESENHO = 744;
 const LARGURA_MAX_CELULAR = 260;
 /* Folga do circulo em volta da funcao (px do desenho) */
 const FOLGA_CIRCULO = 9;
-
-function dataDoDas(hoje = new Date()) {
-  const mes = hoje.getDate() <= DAS_VENCIMENTO_DIA ? hoje.getMonth() : hoje.getMonth() + 1;
-  const d = new Date(hoje.getFullYear(), mes, DAS_VENCIMENTO_DIA);
-  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
 
 /* Foto redonda do Fisco.ia (borda verde fina) */
 function FotoFisco({ tamanho = 40 }) {
@@ -93,9 +91,9 @@ function FotoFisco({ tamanho = 40 }) {
 /* O Inicio (visual F) desenhado no tamanho real, sem nome e sem valores */
 function InicioDeExemplo() {
   const segmentos = [
-    MOSTRAR_CARD_DAS && { id: "das", Icon: CalendarClock, rotulo: `DAS ${dataDoDas()}` },
-    { id: "fisco", Icon: MessageCircle, rotulo: "Fisco.ia" },
-    MOSTRAR_TUTORIAL_NOTA && { id: "nota", Icon: FileText, rotulo: "Emitir nota" },
+    MOSTRAR_CARD_DAS && { id: "das", Icon: CalendarClock, rotulo: "DAS" },
+    { id: "fisco", Icon: IconeWhatsApp, rotulo: "Fisco" },
+    MOSTRAR_TUTORIAL_NOTA && { id: "nota", Icon: FileText, rotulo: "NF" },
   ].filter(Boolean);
 
   return (
@@ -139,10 +137,13 @@ function InicioDeExemplo() {
         </div>
       </div>
 
+      {/* respiro antes da barra (como no Inicio: velocimetro mais alto) */}
+      <div aria-hidden style={{ flex: "0.15 1 0%", minHeight: 24 }} />
+
       {/* barra unica (visual F) */}
       <div
         className="shrink-0 flex items-stretch"
-        style={{ margin: "14px 20px 0", border: "1px solid var(--border)", borderRadius: 18 }}
+        style={{ margin: "0 20px", border: "1px solid var(--border)", borderRadius: 18 }}
       >
         {segmentos.map(({ id, Icon, rotulo }, i) => (
           <div
@@ -160,8 +161,8 @@ function InicioDeExemplo() {
       {/* barra de baixo (Inicio, +, Perfil) */}
       <div className="shrink-0 flex items-end" style={{ padding: "22px 13px 24px" }}>
         <div className="flex-1 flex flex-col items-center gap-1">
-          <Home size={26} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
-          <span className="font-medium leading-none" style={{ fontSize: 11, color: "var(--primary)" }}>Início</span>
+          <Home size={26} strokeWidth={2} style={{ color: "var(--text-secondary)" }} />
+          <span className="font-medium leading-none" style={{ fontSize: 11, color: "var(--text-secondary)" }}>Início</span>
         </div>
         <div className="flex-1 flex items-center justify-center" style={{ height: 41 }}>
           <span data-alvo="mais" className="flex items-center justify-center" style={{ width: 44, height: 44 }}>

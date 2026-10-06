@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v27 — "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
+﻿/* DASHBOARD v28 — tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -14,6 +14,8 @@ import SimboloPluggy from "../components/SimboloPluggy.jsx";
 import FolhaPagarDas from "../components/FolhaPagarDas.jsx";
 import BotaoNotificacoes from "../components/Notificacoes.jsx";
 import ApresentacaoFisco from "../components/ApresentacaoFisco.jsx";
+import FolhaAtualizarVelocimetro from "../components/FolhaAtualizarVelocimetro.jsx";
+import IconeWhatsApp from "../components/IconeWhatsApp.jsx";
 import { useMarcaDaConta } from "@/lib/marcasDaConta";
 import { useAppState } from "@/context/AppStateContext";
 import {
@@ -1382,38 +1384,48 @@ function InicioDestaque({ das, onDas, onFisco, onNota }) {
 }
 
 /* F — BARRA: os 3 atalhos numa barra so, em contorno, risca fina entre eles.
-   v27: `emCima` = a barra vem antes do velocimetro (visual G, "tela B") */
+   v27: `emCima` = a barra vem antes do velocimetro (visual G, "tela B")
+   v28: rotulos curtos (DAS, Fisco, NF) e o Fisco com o simbolo do
+   WhatsApp em contorno. Embaixo do velocimetro (F) a barra nao tem
+   margem propria: quem separa e o respiro (ver RESPIRO_ACIMA_DA_BARRA). */
 function InicioBarra({ emCima = false, ...acoes }) {
-  const rotulos = {
-    das: `DAS ${acoes.das.dia}/${acoes.das.mes}`,
-    fisco: "Fisco.ia",
-    nota: "Emitir nota",
-  };
+  const rotulos = { das: "DAS", fisco: "Fisco", nota: "NF" };
+  const icones = { fisco: IconeWhatsApp };
   return (
     <div
       className="shrink-0 flex items-stretch overflow-hidden"
       style={{
-        marginTop: emCima ? 6 : 14,
+        marginTop: emCima ? 6 : 0,
         marginBottom: emCima ? 10 : 0,
         border: "1px solid var(--border)",
         borderRadius: 18,
       }}
     >
-      {atalhosInicio(acoes).map(({ id, Icon, onClick }, i) => (
-        <button
-          key={id}
-          type="button"
-          onClick={onClick}
-          className="toque flex-1 flex flex-col items-center justify-center min-w-0"
-          style={{ padding: "12px 4px 11px", gap: 6, background: "none", borderLeft: i ? "1px solid var(--border)" : "none" }}
-        >
-          <Icon size={21} strokeWidth={1.9} style={{ color: "var(--primary)" }} />
-          <span className="font-medium truncate" style={{ fontSize: 13.5, color: "var(--text)" }}>{rotulos[id]}</span>
-        </button>
-      ))}
+      {atalhosInicio(acoes).map(({ id, Icon: IconePadrao, onClick }, i) => {
+        const Icon = icones[id] || IconePadrao;
+        return (
+          <button
+            key={id}
+            type="button"
+            onClick={onClick}
+            className="toque flex-1 flex flex-col items-center justify-center min-w-0"
+            style={{ padding: "12px 4px 11px", gap: 6, background: "none", borderLeft: i ? "1px solid var(--border)" : "none" }}
+          >
+            <Icon size={21} strokeWidth={1.9} style={{ color: "var(--primary)" }} />
+            <span className="font-medium truncate" style={{ fontSize: 13.5, color: "var(--text)" }}>{rotulos[id]}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
+
+/* v28: RESPIRO entre as bolinhas do velocimetro e a barra dos 3 atalhos
+   (visual F). Pedido do Fernando: "levantar tudo a partir das 2 bolinhas,
+   separando dos 3 itens". E uma parte do espaco livre da tela (cresce em
+   tela alta, encolhe em tela baixa), nunca menor que o minimo. O resto
+   do espaco fica com o velocimetro, que continua centrado no dele. */
+const RESPIRO_ACIMA_DA_BARRA = { flex: "0.15 1 0%", minHeight: 24 };
 
 /** Borda pulsando — acende e apaga suavemente, com halo em volta.
     Usada em verde no chat do Fisco e em vermelho no card do
@@ -2016,6 +2028,12 @@ export default function Dashboard() {
   const [folhaDas, setFolhaDas] = useState(false);
   // v26: Apresentacao do Fisco.ia (abre pela notificacao do sininho)
   const [apresentacao, setApresentacao] = useState(false);
+  // v28: folha "Atualize seu velocimetro" (outra notificacao do sininho)
+  const [folhaAtualizar, setFolhaAtualizar] = useState(false);
+  function abrirNotificacao(id) {
+    if (id === "apresentacao") setApresentacao(true);
+    else if (id === "atualizar") setFolhaAtualizar(true);
+  }
 
   /* v23: variacao do visual (ver "VARIACOES DO INICIO") */
   const [visual, setVisual] = useState(lerVisualInicio);
@@ -2102,7 +2120,7 @@ export default function Dashboard() {
             {MOSTRAR_OPEN_FINANCE && <BotaoBanco onSincronizou={verificarEntradas} />}
             {/* v26: sininho discreto das notificacoes */}
             {MOSTRAR_NOTIFICACOES && (
-              <BotaoNotificacoes onAbrir={(id) => id === "apresentacao" && setApresentacao(true)} />
+              <BotaoNotificacoes onAbrir={abrirNotificacao} />
             )}
           </div>
         </header>
@@ -2143,6 +2161,8 @@ export default function Dashboard() {
           {/* v24: variacoes novas D, E e F */}
           {visual === "d" && <InicioCartoes {...acoesInicio} />}
           {visual === "e" && <InicioDestaque {...acoesInicio} />}
+          {/* v28: respiro entre as bolinhas e a barra (sobe o velocimetro) */}
+          {visual === "f" && <div aria-hidden style={RESPIRO_ACIMA_DA_BARRA} />}
           {visual === "f" && <InicioBarra {...acoesInicio} />}
           {visual !== "atual" && <div aria-hidden className="shrink-0" style={{ height: 12 }} />}
 
@@ -2257,6 +2277,9 @@ export default function Dashboard() {
 
       {MOSTRAR_NOTIFICACOES && (
         <ApresentacaoFisco aberto={apresentacao} onFechar={() => setApresentacao(false)} />
+      )}
+      {MOSTRAR_NOTIFICACOES && (
+        <FolhaAtualizarVelocimetro aberto={folhaAtualizar} onFechar={() => setFolhaAtualizar(false)} />
       )}
 
       <PainelMediaLimite

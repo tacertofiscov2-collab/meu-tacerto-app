@@ -1,6 +1,6 @@
-/* NOTIFICACOES v1 — sininho discreto no topo do Inicio + folha "Notificacoes"; a primeira e a Apresentacao do Fisco.ia (tutorial) */
+/* NOTIFICACOES v2 — segunda notificacao: "Atualize seu velocimetro" (abre a FolhaAtualizarVelocimetro) (v1: sininho discreto no topo do Inicio + folha "Notificacoes"; a primeira e a Apresentacao do Fisco.ia (tutorial)) */
 import { useState } from "react";
-import { Bell, PlayCircle } from "lucide-react";
+import { Bell, PlayCircle, Gauge } from "lucide-react";
 import FolhaDeBaixo from "./FolhaDeBaixo.jsx";
 import { SecaoLista, LinhaLista } from "./ListaSimples.jsx";
 import { useMarcaDaConta } from "@/lib/marcasDaConta";
@@ -18,6 +18,9 @@ import { useMarcaDaConta } from "@/lib/marcasDaConta";
      lista depois de vista, para rever quando quiser.
    - "Lida" = a pessoa tocou nela. Fica guardado por conta e aparelho
      (useMarcaDaConta). Por enquanto a lista e fixa aqui no codigo.
+   - v2: "Atualize seu velocimetro" (tambem desde o primeiro login):
+     abre a folha com os 2 jeitos faceis (digitar o total do ano no "+"
+     ou mandar valores/extrato pro Fisco no WhatsApp).
    =================================================================== */
 export const NOTIFICACOES = [
   {
@@ -25,6 +28,12 @@ export const NOTIFICACOES = [
     Icon: PlayCircle,
     titulo: "Apresentação do Fisco.ia",
     detalhe: "Veja como o app funciona",
+  },
+  {
+    id: "atualizar",
+    Icon: Gauge,
+    titulo: "Atualize seu velocímetro",
+    detalhe: "Leva menos de 1 minuto",
   },
 ];
 

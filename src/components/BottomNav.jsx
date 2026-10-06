@@ -1,4 +1,4 @@
-/* BOTTOMNAV v4 — "simples": + maior (56), no meio da altura da barra e no centro exato da tela (3 colunas iguais); botoes sem contorno de foco (o Safari podia desenhar um anel em volta da casinha) (v3: visual "simples" (Inicio F): o "+" sem circulo, so o + verde e maior, alinhado com os icones (v2: prop visual: "vidro" (padrao) | "linha" (lisa com risca fina, + em contorno) | "solta" (lisa sem risca, + verde cheio) | "lisa" (sem risca, + em contorno) — variacoes do Inicio */
+/* BOTTOMNAV v5 — "simples": a casinha (e o Perfil) nao ficam verdes na pagina atual; cinza sempre, so o + e verde (v4: "simples": + maior (56), no meio da altura da barra e no centro exato da tela (3 colunas iguais); botoes sem contorno de foco (o Safari podia desenhar um anel em volta da casinha) (v3: visual "simples" (Inicio F): o "+" sem circulo, so o + verde e maior, alinhado com os icones (v2: prop visual: "vidro" (padrao) | "linha" (lisa com risca fina, + em contorno) | "solta" (lisa sem risca, + verde cheio) | "lisa" (sem risca, + em contorno) — variacoes do Inicio */
 import { useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TrilhoContext } from "./TrilhoContext.js";
@@ -48,8 +48,12 @@ export default function BottomNav({ ativo, visual = "vidro" }) {
   /* v4: no "simples", 3 colunas iguais: o "+" fica no centro exato */
   const COLUNA = visual === "simples" ? { flex: "1 1 0" } : null;
 
+  /* v5: no "simples" nada fica destacado na pagina atual (pedido do
+     Fernando: a casinha verde no Inicio era o "contorno verde") */
+  const semDestaque = visual === "simples";
   const corTexto = (isAtivo) =>
-    isAtivo ? "var(--primary)" : "var(--text-secondary)";
+    isAtivo && !semDestaque ? "var(--primary)" : "var(--text-secondary)";
+  const espessura = (isAtivo) => (isAtivo && !semDestaque ? 2.5 : 2);
 
   return (
     <nav
@@ -90,7 +94,7 @@ export default function BottomNav({ ativo, visual = "vidro" }) {
       >
         <Home
           size={ICON_SIZE}
-          strokeWidth={ativo === "inicio" ? 2.5 : 2}
+          strokeWidth={espessura(ativo === "inicio")}
           style={{ color: corTexto(ativo === "inicio") }}
         />
         <span
@@ -186,7 +190,7 @@ export default function BottomNav({ ativo, visual = "vidro" }) {
              sem círculo em volta (antes aqui aparecia a inicial do nome). */
           <User
             size={ICON_SIZE}
-            strokeWidth={ativo === "perfil" ? 2.5 : 2}
+            strokeWidth={espessura(ativo === "perfil")}
             style={{ color: corTexto(ativo === "perfil") }}
           />
         )}

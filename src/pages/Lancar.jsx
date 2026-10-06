@@ -1,12 +1,39 @@
-/* LANCAR v6 — padrao do Perfil: rotulos em cinza maiusculo, campos com 16px (sem zoom no iPhone), "Ultimo lancamento" em linha simples, letras maiores, botao em contorno (botao-confirmar) */
+/* LANCAR v7 — modo "Total do ano": digitar so o faturamento do ano e o velocimetro fica igual a ele (um lancamento de ajuste, sem contar em dobro); /lancar?modo=total abre direto nele (v6: padrao do Perfil: rotulos em cinza maiusculo, campos com 16px (sem zoom no iPhone), "Ultimo lancamento" em linha simples, letras maiores, botao em contorno (botao-confirmar)) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useMemo, useEffect } from "react";
 import { ArrowLeft, Calendar as CalendarIcon, TrendingUp } from "lucide-react";
+import { toast } from "sonner";
 import { useAppState } from "@/context/AppStateContext";
 import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
 import PendenciasEntradas from "../components/PendenciasEntradas.jsx";
 import { dataMinimaLancamento, LIMITE_VALOR_LANCAMENTO } from "@/lib/fiscal";
+
+/* ===================================================================
+   LANCAR v7 (05/10/2026) — MODO "TOTAL DO ANO" (pedido do Fernando)
+
+   No topo, duas opcoes: "Recebimento" (o lancamento de sempre) e
+   "Total do ano". No total do ano a pessoa digita SO o quanto ja
+   faturou no ano e o velocimetro fica igual a esse valor.
+
+   Como funciona, sem mudar o banco e sem contar em dobro:
+   - Os lancamentos de AJUSTE sao os que tem a descricao
+     DESCRICAO_AJUSTE_ANO ou a do Onboarding (DESCRICAO_ESTIMADO,
+     "Faturamento estimado ate hoje").
+   - Soma dos recebimentos do ano (todos os outros) = S.
+   - Ajuste = total digitado - S. Fica UM lancamento de ajuste so, com a
+     data de hoje (os outros ajustes do ano sao apagados). Ajuste zero =
+     nenhum lancamento de ajuste.
+   - Total menor que S nao da: a tela avisa quanto ja foi lancado em
+     recebimentos (para diminuir, editar no Historico).
+   A pessoa digitou o valor, entao e ela confirmando (regra do app).
+   /lancar?modo=total abre direto neste modo (notificacao "Atualize seu
+   velocimetro").
+   =================================================================== */
+const DESCRICAO_AJUSTE_ANO = "Ajuste do total do ano";
+/* Mesma descricao do Onboarding (DESCRICAO_ESTIMADO em Onboarding.jsx) */
+const DESCRICAO_ESTIMADO = "Faturamento estimado até hoje";
+const DESCRICOES_DE_AJUSTE = [DESCRICAO_AJUSTE_ANO, DESCRICAO_ESTIMADO];
 
 /* LANCAR v5 — faixa de pendencias do Open Finance no topo
 
@@ -103,10 +130,27 @@ export default function Lancar() {
     lancamentos,
     adicionarLancamento,
     atualizarLancamento,
+    removerLancamento,
     setModoSimulacao,
     mesAnoAbertura,
     visitante,
+    faturamentoAtual,
   } = useAppState();
+
+  /* v7: "recebimento" (de sempre) ou "total" (total do ano) */
+  const [modo, setModo] = useState(params.get("modo") === "total" && !editId ? "total" : "recebimento");
+  const modoTotal = modo === "total";
+  const anoAtual = new Date().getFullYear();
+
+  /* v7: lancamentos do ano separados em ajustes e recebimentos (ver topo) */
+  const { ajustesDoAno, recebimentosCentavos } = useMemo(() => {
+    const doAno = (lancamentos || []).filter((l) => new Date(l.data).getFullYear() === anoAtual);
+    const ajustes = doAno.filter((l) => DESCRICOES_DE_AJUSTE.includes(l.descricao));
+    const soma = doAno
+      .filter((l) => !DESCRICOES_DE_AJUSTE.includes(l.descricao))
+      .reduce((s, l) => s + Math.round((Number(l.valor) || 0) * 100), 0);
+    return { ajustesDoAno: ajustes, recebimentosCentavos: soma };
+  }, [lancamentos, anoAtual]);
 
   const dataMin = dataMinimaLancamento(
     mesAnoAbertura?.mes,
@@ -193,7 +237,40 @@ export default function Lancar() {
     setCentavos(limitado);
   }
 
+  /* v7: total do ano menor que os recebimentos ja lancados nao da */
+  const totalAbaixoDosRecebimentos = modoTotal && centavos > 0 && centavos < recebimentosCentavos;
+  const podeSalvar = modoTotal
+    ? centavos > 0 && !totalAbaixoDosRecebimentos
+    : centavos > 0 && dataValida;
+
+  /* v7: salva o total do ano como UM lancamento de ajuste (ver topo) */
+  async function salvarTotalDoAno() {
+    if (!podeSalvar || salvando) return;
+    const ajusteCentavos = centavos - recebimentosCentavos;
+    const [primeiro, ...sobrando] = ajustesDoAno;
+    if (!primeiro && ajusteCentavos > 0 && visitante && lancamentos.length >= LIMITE_VISITANTE) {
+      navigate("/lancar/limite-atingido", { replace: true });
+      return;
+    }
+    setSalvando(true);
+    setModoSimulacao(false);
+    const hoje = new Date().toISOString();
+    if (ajusteCentavos <= 0) {
+      ajustesDoAno.forEach((l) => removerLancamento(l.id));
+    } else if (primeiro) {
+      atualizarLancamento(primeiro.id, { descricao: DESCRICAO_AJUSTE_ANO, valor: ajusteCentavos / 100, data: hoje });
+      sobrando.forEach((l) => removerLancamento(l.id));
+    } else {
+      adicionarLancamento({ descricao: DESCRICAO_AJUSTE_ANO, valor: ajusteCentavos / 100, data: hoje });
+    }
+    await new Promise((r) => setTimeout(r, 200));
+    setSalvando(false);
+    toast.success("Velocímetro atualizado");
+    navigate("/dashboard");
+  }
+
   async function handleSalvar() {
+    if (modoTotal) return salvarTotalDoAno();
     if (centavos <= 0 || !dataValida || salvando) return;
 
     if (!modoEdicao && visitante && lancamentos.length >= LIMITE_VISITANTE) {
@@ -234,9 +311,42 @@ export default function Lancar() {
           <ArrowLeft size={20} style={{ color: "var(--text)" }} />
         </button>
         <h1 className="font-bold" style={{ color: "var(--text)", fontSize: 20 }}>
-          {modoEdicao ? "Editar lançamento" : "Novo lançamento"}
+          {modoEdicao ? "Editar lançamento" : modoTotal ? "Atualizar velocímetro" : "Novo lançamento"}
         </h1>
       </header>
+
+      {/* v7: Recebimento | Total do ano (so para lancamento novo) */}
+      {!modoEdicao && (
+        <div className="shrink-0 px-5" style={{ paddingTop: 6, paddingBottom: 10 }}>
+          <div className="max-w-md mx-auto flex rounded-full" style={{ padding: 3, border: "1px solid var(--border)" }}>
+            {[["recebimento", "Recebimento"], ["total", "Total do ano"]].map(([valor, rotulo]) => {
+              const ativo = modo === valor;
+              return (
+                <button
+                  key={valor}
+                  type="button"
+                  aria-pressed={ativo}
+                  onClick={() => {
+                    if (ativo) return;
+                    setModo(valor);
+                    setCentavos(0);
+                    setAtingiuTeto(false);
+                  }}
+                  className="flex-1 rounded-full font-medium transition-colors"
+                  style={{
+                    fontSize: 15,
+                    padding: "8px 0",
+                    backgroundColor: ativo ? "var(--field)" : "transparent",
+                    color: ativo ? "var(--text)" : "var(--text-tertiary)",
+                  }}
+                >
+                  {rotulo}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Conteúdo: rola só se precisar, mas cabe tudo em tela normal */}
       <div
@@ -251,14 +361,14 @@ export default function Lancar() {
               Só aparece quando há entrada esperando classificação. Sem
               nada pendente, o componente não renderiza e os campos
               ficam no lugar de sempre. */}
-          {!modoEdicao && <PendenciasEntradas />}
+          {!modoEdicao && !modoTotal && <PendenciasEntradas />}
 
           <div>
             <label
               className="block"
               style={ROTULO_CAMPO}
             >
-              Valor
+              {modoTotal ? `Total faturado em ${anoAtual}` : "Valor"}
             </label>
             <div
               className="card-tacerto flex items-center rounded-xl overflow-hidden"
@@ -293,17 +403,24 @@ export default function Lancar() {
             </div>
             <p
               style={{
-                color: atingiuTeto ? "#ef4444" : "var(--text-secondary)",
+                color: atingiuTeto || totalAbaixoDosRecebimentos ? "#ef4444" : "var(--text-secondary)",
                 fontSize: 13.5,
                 marginTop: 7,
               }}
             >
               {atingiuTeto
                 ? `Valor máximo por lançamento: R$ ${formatBRLFromCentavos(MAX_CENTAVOS)}`
+                : totalAbaixoDosRecebimentos
+                ? `Você já lançou R$ ${formatBRLFromCentavos(recebimentosCentavos)} em recebimentos este ano. Digite pelo menos esse valor.`
+                : modoTotal
+                ? `Hoje o velocímetro marca R$ ${formatBRLFromCentavos(Math.round((Number(faturamentoAtual) || 0) * 100))}`
                 : "Digite o valor recebido"}
             </p>
           </div>
 
+          {/* v7: no "Total do ano" fica so o valor */}
+          {!modoTotal && (
+          <>
           <div>
             <label
               className="block"
@@ -414,6 +531,8 @@ export default function Lancar() {
               </div>
             )}
           </div>
+          </>
+          )}
         </div>
       </div>
 
@@ -441,7 +560,7 @@ export default function Lancar() {
         <div className="max-w-md mx-auto">
           <button
             onClick={handleSalvar}
-            disabled={salvando || centavos <= 0 || !dataValida}
+            disabled={salvando || !podeSalvar}
             className="botao-confirmar toque toque-escala w-full rounded-2xl font-bold disabled:opacity-40"
             style={{
               paddingTop: 16,
@@ -453,7 +572,7 @@ export default function Lancar() {
               transition: "opacity 200ms ease",
             }}
           >
-            {salvando ? "Salvando..." : "Salvar lançamento"}
+            {salvando ? "Salvando..." : modoTotal ? "Atualizar velocímetro" : "Salvar lançamento"}
           </button>
         </div>
       </div>
