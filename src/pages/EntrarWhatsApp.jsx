@@ -1,4 +1,4 @@
-/* ENTRARWHATSAPP v4 — testes sem limite: qualquer 37 00000-0001 a 9999 e qualquer codigo de 6 numeros (ehTelefoneTeste) (v3: ponte do modo teste: numeros de teste entram sem o login por telefone do painel (contaDoNumeroTeste) (v2: aceita TELEFONES_TESTE e aviso no rodape; v1: login so pelo WhatsApp) */
+/* ENTRARWHATSAPP v5 — igual ao onboarding novo: quadradinhos do codigo sem verde (so mais claros), botoes maiores, letras maiores, links dos Termos sem verde (v4: testes sem limite: qualquer 37 00000-0001 a 9999 e qualquer codigo de 6 numeros (ehTelefoneTeste) (v3: ponte do modo teste: numeros de teste entram sem o login por telefone do painel (contaDoNumeroTeste) (v2: aceita TELEFONES_TESTE e aviso no rodape; v1: login so pelo WhatsApp)) */
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { Gauge } from "lucide-react";
@@ -362,8 +362,8 @@ export default function EntrarWhatsApp() {
                 <button
                   onClick={receberCodigo}
                   disabled={enviando || !podeEnviar}
-                  className="w-full py-3 rounded-xl font-medium text-sm hover:opacity-90 disabled:opacity-40"
-                  style={botaoPrincipal}
+                  className="w-full rounded-2xl font-semibold hover:opacity-90 disabled:opacity-40"
+                  style={{ ...botaoPrincipal, padding: "15px 0", fontSize: 16 }}
                 >
                   {enviando ? "Enviando..." : "Receber código"}
                 </button>
@@ -377,7 +377,7 @@ export default function EntrarWhatsApp() {
               <h1 className="text-2xl font-bold text-center" style={{ color: "var(--text)" }}>
                 Digite o código
               </h1>
-              <p className="text-sm text-center mt-2" style={{ color: "var(--text-secondary)" }}>
+              <p className="text-[15px] text-center mt-2" style={{ color: "var(--text-secondary)" }}>
                 Enviado para{" "}
                 <span style={{ color: "var(--text)", fontWeight: 600 }}>+55 {telefone}</span>
               </p>
@@ -416,7 +416,7 @@ export default function EntrarWhatsApp() {
                             color: "var(--text)",
                             backgroundColor: "transparent",
                             border: `1px solid ${
-                              atual || preenchido ? "var(--primary)" : "rgba(255,255,255,0.22)"
+                              atual || preenchido ? "rgba(255,255,255,0.62)" : "rgba(255,255,255,0.18)"
                             }`,
                           }}
                         >
@@ -430,7 +430,7 @@ export default function EntrarWhatsApp() {
                 <div ref={acoesCodigoRef} className="mt-5 space-y-3 scroll-mt-24">
                   {erro && <AuthError>{erro}</AuthError>}
                   {aviso && !erro && (
-                    <p className="text-xs text-center" style={{ color: "var(--text-secondary)" }}>
+                    <p className="text-[13.5px] text-center" style={{ color: "var(--text-secondary)" }}>
                       {aviso}
                     </p>
                   )}
@@ -438,8 +438,8 @@ export default function EntrarWhatsApp() {
                   <button
                     onClick={() => conferirCodigo()}
                     disabled={conferindo || codigo.length < 6}
-                    className="w-full py-3 rounded-xl font-medium text-sm hover:opacity-90 disabled:opacity-40"
-                    style={botaoPrincipal}
+                    className="w-full rounded-2xl font-semibold hover:opacity-90 disabled:opacity-40"
+                    style={{ ...botaoPrincipal, padding: "15px 0", fontSize: 16 }}
                   >
                     {conferindo ? "Entrando..." : "Entrar"}
                   </button>
@@ -447,7 +447,7 @@ export default function EntrarWhatsApp() {
                   <button
                     onClick={reenviarCodigo}
                     disabled={enviando || segundos > 0}
-                    className="w-full text-center text-sm pt-1 disabled:opacity-40"
+                    className="w-full text-center text-[15px] pt-1 disabled:opacity-40"
                     style={{ color: "var(--text-secondary)" }}
                   >
                     {enviando
@@ -459,7 +459,7 @@ export default function EntrarWhatsApp() {
 
                   <button
                     onClick={trocarNumero}
-                    className="w-full text-center text-sm"
+                    className="w-full text-center text-[15px]"
                     style={{ color: "var(--text-secondary)" }}
                   >
                     Trocar número
@@ -481,13 +481,14 @@ export default function EntrarWhatsApp() {
       {/* Termos so na etapa do numero (igual ao Cadastro) */}
       {etapa === "numero" && (
         <div className="px-6 pb-2 shrink-0">
-          <p className="text-center text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+          {/* v5: links sem verde (menos cor): texto claro sublinhado */}
+          <p className="text-center text-[13px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
             Ao continuar, você concorda com nossos{" "}
-            <button onClick={() => navigate("/termos-de-uso")} className="font-medium" style={{ color: "var(--primary)" }}>
+            <button onClick={() => navigate("/termos-de-uso")} className="font-medium underline underline-offset-2" style={{ color: "var(--text)" }}>
               Termos de Uso
             </button>
             {" "}e{" "}
-            <button onClick={() => navigate("/privacidade")} className="font-medium" style={{ color: "var(--primary)" }}>
+            <button onClick={() => navigate("/privacidade")} className="font-medium underline underline-offset-2" style={{ color: "var(--text)" }}>
               Política de Privacidade
             </button>
           </p>

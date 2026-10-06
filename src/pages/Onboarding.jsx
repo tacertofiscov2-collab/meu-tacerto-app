@@ -1,4 +1,4 @@
-/* ONBOARDING v12 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v11: botao "Começar a usar" em contorno verde (botao-confirmar) (v10: gesto de voltar do iPhone volta UMA ETAPA (nao sai mais do onboarding para o Inicio); onboarding ja feito volta para o Inicio (v9: nome ja preenchido; v8: "Digitar valor" em folha acima do teclado)) */
+/* ONBOARDING v13 — cara do app: opcao escolhida sem verde e sem fundo cinza (so mais acesa), fundo preto em tudo, verde so no botao de continuar; letras maiores; campos com 16px (o iPhone dava zoom) (v12: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v11: botao "Começar a usar" em contorno verde (botao-confirmar) (v10: gesto de voltar do iPhone volta UMA ETAPA (nao sai mais do onboarding para o Inicio); onboarding ja feito volta para o Inicio (v9: nome ja preenchido; v8: "Digitar valor" em folha acima do teclado))) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -157,7 +157,8 @@ function Progress({ step }) {
           className="h-1.5 rounded-full transition-all"
           style={{
             width: s === step ? 28 : 8,
-            backgroundColor: s <= step ? "var(--primary)" : "var(--border)",
+            /* v13: sem verde (so o botao de continuar e verde) */
+            backgroundColor: s <= step ? "var(--text)" : "var(--border)",
           }}
         />
       ))}
@@ -280,7 +281,7 @@ function FolhaDigitarValor({ ano, valor, onMudar, finalizando, onFechar, onConfi
               }}
               className="campo-tacerto w-full rounded-2xl font-bold focus:outline-none placeholder:opacity-50"
               style={{
-                backgroundColor: "var(--surface)",
+                backgroundColor: "transparent",
                 border: "1px solid var(--border)",
                 color: "var(--text)",
                 fontSize: 22,
@@ -439,14 +440,17 @@ export default function Onboarding() {
   const btnPrincipalClasse =
     "btn-pill-tacerto mx-auto flex items-center justify-center gap-2 rounded-full font-semibold text-[15px] disabled:opacity-35";
 
+  /* v13 (pedido do Fernando): opcao escolhida SEM verde e sem fundo
+     cinza — so fica mais "acesa" (borda e texto mais claros). Fundo
+     preto em todas. Verde so no botao de continuar. */
   function estiloCard(selecionado, algoSelecionado) {
     const claro = !algoSelecionado || selecionado;
     return {
-      backgroundColor: selecionado ? "rgba(34,197,94,0.07)" : "var(--field)",
+      backgroundColor: "transparent",
       border: selecionado
-        ? "1px solid var(--primary)"
-        : "1px solid rgba(255,255,255,0.22)",
-      opacity: claro ? 1 : 0.42,
+        ? "1px solid rgba(255,255,255,0.62)"
+        : "1px solid rgba(255,255,255,0.18)",
+      opacity: claro ? 1 : 0.5,
       transition:
         "background-color 180ms ease, border-color 180ms ease, opacity 180ms ease",
     };
@@ -660,7 +664,7 @@ export default function Onboarding() {
 
               <div className="flex items-stretch gap-2">
                 <div
-                  className="flex items-center justify-center gap-1.5 px-3.5 rounded-xl text-sm shrink-0"
+                  className="flex items-center justify-center gap-1.5 px-3.5 rounded-xl text-[16px] shrink-0"
                   style={fieldStyle}
                 >
                   <span aria-hidden style={{ fontSize: 16 }}>🇧🇷</span>
@@ -678,7 +682,7 @@ export default function Onboarding() {
                       setStep("verificar");
                     }
                   }}
-                  className="campo-tacerto flex-1 min-w-0 px-4 py-3.5 rounded-xl text-sm focus:outline-none placeholder:opacity-70"
+                  className="campo-tacerto flex-1 min-w-0 px-4 py-3.5 rounded-xl text-[16px] focus:outline-none placeholder:opacity-70"
                   style={fieldStyle}
                   autoFocus
                 />
@@ -724,7 +728,7 @@ export default function Onboarding() {
                 Confirme seu WhatsApp
               </h1>
               <p
-                className="text-sm text-center mb-6 leading-relaxed"
+                className="text-[15px] text-center mb-6 leading-relaxed"
                 style={{ color: "var(--text-secondary)" }}
               >
                 Enviamos um código para{" "}
@@ -751,8 +755,8 @@ export default function Onboarding() {
                         backgroundColor: "transparent",
                         border: `1px solid ${
                           atual || preenchido
-                            ? "var(--primary)"
-                            : "rgba(255,255,255,0.22)"
+                            ? "rgba(255,255,255,0.62)"
+                            : "rgba(255,255,255,0.18)"
                         }`,
                       }}
                     >
@@ -781,7 +785,7 @@ export default function Onboarding() {
 
                 <button
                   onClick={() => setErro("Reenvio disponível quando o envio de código for ativado.")}
-                  className="w-full text-center text-sm pt-1"
+                  className="w-full text-center text-[15px] pt-1"
                   style={{ color: "var(--text-secondary)" }}
                 >
                   Reenviar código
@@ -818,7 +822,7 @@ export default function Onboarding() {
                     else { setErro(""); setStep(2); }
                   }
                 }}
-                className="campo-tacerto w-full px-4 py-3.5 rounded-xl text-sm placeholder:opacity-70"
+                className="campo-tacerto w-full px-4 py-3.5 rounded-xl text-[16px] placeholder:opacity-70"
                 style={fieldStyle}
               />
 
@@ -868,24 +872,24 @@ export default function Onboarding() {
                     <button
                       key={o.v}
                       onClick={() => setTipoMei(o.v)}
-                      className="w-full flex items-center gap-3.5 p-3.5 rounded-xl text-left"
-                      style={estiloCard(sel, !!tipoMei)}
+                      className="w-full flex items-center gap-3.5 rounded-2xl text-left"
+                      style={{ ...estiloCard(sel, !!tipoMei), padding: "16px 16px" }}
                     >
                       <Ico
                         size={24}
                         strokeWidth={1.75}
                         className="shrink-0"
-                        style={{ color: sel ? "var(--primary)" : "var(--text-secondary)" }}
+                        style={{ color: sel ? "var(--text)" : "var(--text-secondary)" }}
                       />
                       <div className="flex-1 min-w-0">
                         <div
-                          className="text-sm font-semibold"
-                          style={{ color: "var(--text)" }}
+                          className="font-semibold"
+                          style={{ color: "var(--text)", fontSize: 16.5 }}
                         >
                           {o.titulo}
                         </div>
                         <div
-                          className="text-[12px] mt-0.5 flex items-center gap-1"
+                          className="text-[13.5px] mt-0.5 flex items-center gap-1"
                           style={{ color: "var(--text-secondary)" }}
                         >
                           Limite: <Valor tamanho="sm">{o.limite}</Valor>
@@ -932,16 +936,17 @@ export default function Onboarding() {
                     <button
                       key={String(o.v)}
                       onClick={() => { setMeiEsseAno(o.v); if (!o.v) setMesMei(""); }}
-                      className="py-3 rounded-xl text-xs font-medium inline-flex items-center justify-center gap-1.5"
+                      className="rounded-2xl text-[15px] font-medium inline-flex items-center justify-center gap-2"
                       style={{
                         ...estiloCard(sel, meiEsseAno !== null),
                         color: "var(--text)",
+                        padding: "14px 6px",
                       }}
                     >
                       <Ico
-                        size={14}
+                        size={17}
                         strokeWidth={1.75}
-                        style={{ color: sel ? "var(--primary)" : "var(--text-secondary)" }}
+                        style={{ color: sel ? "var(--text)" : "var(--text-secondary)" }}
                       />
                       {o.l}
                     </button>
@@ -953,19 +958,19 @@ export default function Onboarding() {
                 {meiEsseAno === true && (
                   <>
                     <p
-                      className="text-xs font-medium mb-1.5"
+                      className="text-[13.5px] font-medium mb-2"
                       style={{ color: "var(--text-secondary)" }}
                     >
                       Qual mês você abriu?
                     </p>
                     <button
                       onClick={() => setSeletorMes(true)}
-                      className="w-full px-4 py-3 flex items-center justify-between gap-3 rounded-xl"
+                      className="w-full px-4 py-3.5 flex items-center justify-between gap-3 rounded-2xl"
                       style={fieldStyle}
                     >
                       <div className="flex-1 min-w-0 text-left flex items-center gap-2">
                         <span
-                          className="text-sm shrink-0"
+                          className="text-[16px] shrink-0"
                           style={{
                             fontWeight: mesMei ? 600 : 400,
                             color: mesMei ? "var(--text)" : "var(--text-secondary)",
@@ -1004,7 +1009,7 @@ export default function Onboarding() {
                     }}
                   >
                     <p
-                      className="text-xs font-medium inline-flex items-center gap-1.5"
+                      className="text-[14px] font-medium inline-flex items-center gap-1.5"
                       style={{ color: "var(--text)" }}
                     >
                       <CheckCircle2
@@ -1064,11 +1069,11 @@ export default function Onboarding() {
                         setFaixaFat(f.id);
                         if (f.id === FAIXA_DIGITAR) setFolhaValor(true);
                       }}
-                      className="py-3 px-2 rounded-xl text-sm font-medium inline-flex items-center justify-center text-center"
+                      className="py-3 px-2 rounded-2xl text-[15px] font-medium inline-flex items-center justify-center text-center"
                       style={{
                         ...estiloCard(sel, faixaFat !== null),
                         color: "var(--text)",
-                        minHeight: 48,
+                        minHeight: 52,
                       }}
                     >
                       {f.rotulo}
@@ -1091,7 +1096,7 @@ export default function Onboarding() {
                 <button
                   onClick={() => handleFinalizar(0)}
                   disabled={finalizando}
-                  className="w-full text-center text-sm pt-4 disabled:opacity-40"
+                  className="w-full text-center text-[15px] pt-4 disabled:opacity-40"
                   style={{ color: "var(--text-secondary)" }}
                 >
                   Não sei agora
