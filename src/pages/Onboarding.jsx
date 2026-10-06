@@ -1,4 +1,4 @@
-/* ONBOARDING v11 — botao "Começar a usar" em contorno verde (botao-confirmar) (v10: gesto de voltar do iPhone volta UMA ETAPA (nao sai mais do onboarding para o Inicio); onboarding ja feito volta para o Inicio (v9: nome ja preenchido; v8: "Digitar valor" em folha acima do teclado) */
+/* ONBOARDING v12 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v11: botao "Começar a usar" em contorno verde (botao-confirmar) (v10: gesto de voltar do iPhone volta UMA ETAPA (nao sai mais do onboarding para o Inicio); onboarding ja feito volta para o Inicio (v9: nome ja preenchido; v8: "Digitar valor" em folha acima do teclado)) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -618,10 +618,10 @@ export default function Onboarding() {
         <button
           onClick={handleBack}
           aria-label="Voltar"
-          className="w-10 h-10 flex items-center justify-center rounded-lg hover:opacity-80"
+          className="w-[46px] h-[46px] flex items-center justify-center rounded-lg hover:opacity-80"
           style={{ color: "var(--text)" }}
         >
-          <ArrowLeft size={22} strokeWidth={2} />
+          <ArrowLeft size={26} strokeWidth={2} />
         </button>
       </div>
 

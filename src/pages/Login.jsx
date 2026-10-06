@@ -1,4 +1,4 @@
-/* LOGIN v4 — vira o plano B em /entrar-email: "Esqueceu sua senha?" e "Nao tem conta?" so com MOSTRAR_LOGIN_EMAIL; "ou" + Google so com MOSTRAR_LOGIN_GOOGLE */
+/* LOGIN v5 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v4: vira o plano B em /entrar-email: "Esqueceu sua senha?" e "Nao tem conta?" so com MOSTRAR_LOGIN_EMAIL; "ou" + Google so com MOSTRAR_LOGIN_GOOGLE) */
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { ArrowLeft, Eye, EyeOff, Gauge } from "lucide-react";
@@ -125,10 +125,10 @@ export default function Login() {
         <button
           onClick={() => navigate("/", { replace: true })}
           aria-label="Voltar"
-          className="w-10 h-10 flex items-center justify-center rounded-lg transition-opacity hover:opacity-80"
+          className="w-[46px] h-[46px] flex items-center justify-center rounded-lg transition-opacity hover:opacity-80"
           style={{ color: "var(--text)" }}
         >
-          <ArrowLeft size={22} strokeWidth={2} />
+          <ArrowLeft size={26} strokeWidth={2} />
         </button>
       </div>
 

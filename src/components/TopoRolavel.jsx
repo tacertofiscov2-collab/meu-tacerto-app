@@ -1,4 +1,4 @@
-/* TOPOROLAVEL v2 — prop "simples": setinha sem circulo (telas de entrada: Cadastro) */
+/* TOPOROLAVEL v3 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v2: prop "simples": setinha sem circulo (telas de entrada: Cadastro)) */
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
@@ -68,15 +68,15 @@ export default function TopoRolavel({ titulo, onVoltar, direita = null, recuo = 
             position: "absolute",
             top: 20,
             left: recuo,
-            width: 40,
-            height: 40,
+            width: 46,
+            height: 46,
             border: simples ? "none" : "1px solid var(--border)",
             backgroundColor: rolou ? "var(--bg)" : "transparent",
             opacity: rolou ? 0.55 : 1,
             transition: "opacity 200ms ease, background-color 200ms ease",
           }}
         >
-          <ArrowLeft size={simples ? 22 : 20} strokeWidth={2} style={{ color: "var(--text)" }} />
+          <ArrowLeft size={simples ? 26 : 24} strokeWidth={2} style={{ color: "var(--text)" }} />
         </button>
       </div>
 
@@ -85,7 +85,7 @@ export default function TopoRolavel({ titulo, onVoltar, direita = null, recuo = 
         style={{ gap: 12, paddingTop: 20, paddingBottom: 8, paddingLeft: recuo, paddingRight: recuo }}
       >
         {/* lugar reservado para a setinha, ao lado do titulo */}
-        <span aria-hidden style={{ width: 40, height: 40, flexShrink: 0 }} />
+        <span aria-hidden style={{ width: 46, height: 46, flexShrink: 0 }} />
         <h1 className="text-xl font-bold flex-1 min-w-0" style={{ color: "var(--text)" }}>
           {titulo}
         </h1>

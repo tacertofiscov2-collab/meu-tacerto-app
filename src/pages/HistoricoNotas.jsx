@@ -1,4 +1,4 @@
-/* HISTORICONOTAS v2 — "Lançar nota" manual; meses com nota acesos; anos so desde o inicio do uso */
+/* HISTORICONOTAS v3 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v2: "Lançar nota" manual; meses com nota acesos; anos so desde o inicio do uso) */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
@@ -210,10 +210,10 @@ export default function HistoricoNotas() {
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+          className="w-[46px] h-[46px] rounded-full flex items-center justify-center hover:opacity-80"
           style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
         >
-          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
+          <ArrowLeft size={24} style={{ color: "var(--text)" }} />
         </button>
         <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
           Histórico de notas

@@ -1,3 +1,4 @@
+/* AUTHLAYOUT v1 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) */
 import { ArrowLeft, Gauge } from "lucide-react";
 
 export function AuthHeader() {
@@ -22,7 +23,7 @@ export function BackArrow({ onClick }) {
       aria-label="Voltar"
       className="fixed top-4 left-4 z-20 p-2 text-green-600 hover:text-green-700 transition-colors"
     >
-      <ArrowLeft size={24} strokeWidth={2} />
+      <ArrowLeft size={26} strokeWidth={2} />
     </button>
   );
 }

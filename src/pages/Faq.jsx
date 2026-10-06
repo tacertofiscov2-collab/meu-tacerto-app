@@ -1,3 +1,4 @@
+/* FAQ v1 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) */
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Search, ChevronDown } from "lucide-react";
@@ -160,7 +161,7 @@ export default function Faq() {
             className="p-2 -ml-2 rounded-full hover:opacity-80"
             aria-label="Voltar"
           >
-            <ArrowLeft size={24} style={{ color: "var(--text)" }} />
+            <ArrowLeft size={26} style={{ color: "var(--text)" }} />
           </button>
           <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
             Dúvidas frequentes

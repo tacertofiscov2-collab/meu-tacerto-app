@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v28 — tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
+﻿/* DASHBOARD v29 — velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -227,9 +227,11 @@ function hexToRgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-function BolinhasIndicadoras({ pagina, irPara }) {
+function BolinhasIndicadoras({ pagina, irPara, grande = false }) {
+  /* v29: um pouco maiores no velocimetro grande (visual F) */
+  const [tamAtiva, tamOutra] = grande ? [12, 10] : [11, 9];
   return (
-    <div className="flex items-center justify-center gap-2 shrink-0" style={{ marginTop: 10 }}>
+    <div className="flex items-center justify-center gap-2 shrink-0" style={{ marginTop: grande ? 12 : 10 }}>
       {[0, 1].map((i) => {
         const ativa = pagina === i;
         return (
@@ -239,8 +241,8 @@ function BolinhasIndicadoras({ pagina, irPara }) {
             aria-label={`Ir para tela ${i + 1}`}
             className="rounded-full transition-all"
             style={{
-              width: ativa ? 11 : 9,
-              height: ativa ? 11 : 9,
+              width: ativa ? tamAtiva : tamOutra,
+              height: ativa ? tamAtiva : tamOutra,
               backgroundColor: "var(--primary)",
               opacity: ativa ? 1 : 0.22,
               boxShadow: ativa ? "0 0 9px rgba(34, 197, 94, 0.65)" : "none",
@@ -291,6 +293,18 @@ const LARGURA_MAX_VELOCIMETRO = 205;
 const LARGURA_MIN_VELOCIMETRO = 120;
 const ALTURA_NUMERO_E_BALAO = 64;
 
+/* v29: VELOCIMETRO GRANDE (visual F) — pedido do Fernando: "cresca tudo
+   do velocimetro (letras, numeros, o arco), mantendo o espaco; so o
+   'MEI · anual' fica do mesmo tamanho". O arco continua encolhendo
+   sozinho se a tela for baixa (conta acima), entao nada sai do lugar. */
+const VELOCIMETRO_GRANDE = {
+  larguraMax: 250,
+  alturaNumero: 86,
+  numeroClasse: "text-5xl font-bold",
+  valorPx: 19,
+  rotuloValorPx: 14,
+};
+
 function PaginaVelocimetro({
   rotulo, percentual, alertaDos20 = true, apenasInterrogacao = false, descricao,
   valorEsquerda, rotuloEsquerda, valorDireita, rotuloDireita,
@@ -299,9 +313,13 @@ function PaginaVelocimetro({
   sempreMostrarBalao = true, onExcedente,
   /* v25: true = sem balao nenhum (card B depois de ler a explicacao) */
   semBalao = false,
+  /* v29: tamanho maior (visual F), ver VELOCIMETRO_GRANDE */
+  grande = false,
 }) {
   const areaRef = useRef(null);
-  const [larguraVel, setLarguraVel] = useState(LARGURA_MAX_VELOCIMETRO);
+  const larguraMax = grande ? VELOCIMETRO_GRANDE.larguraMax : LARGURA_MAX_VELOCIMETRO;
+  const alturaNumero = grande ? VELOCIMETRO_GRANDE.alturaNumero : ALTURA_NUMERO_E_BALAO;
+  const [larguraVel, setLarguraVel] = useState(larguraMax);
 
   useEffect(() => {
     const el = areaRef.current;
@@ -309,16 +327,16 @@ function PaginaVelocimetro({
     const medir = () => {
       const altura = el.clientHeight;
       if (!altura) return;
-      const cabe = Math.floor((altura - ALTURA_NUMERO_E_BALAO) / 0.6);
+      const cabe = Math.floor((altura - alturaNumero) / 0.6);
       setLarguraVel(
-        Math.max(LARGURA_MIN_VELOCIMETRO, Math.min(LARGURA_MAX_VELOCIMETRO, cabe)),
+        Math.max(LARGURA_MIN_VELOCIMETRO, Math.min(larguraMax, cabe)),
       );
     };
     medir();
     const ro = new ResizeObserver(medir);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [larguraMax, alturaNumero]);
 
   return (
     <div
@@ -329,7 +347,7 @@ function PaginaVelocimetro({
         <VelocimetroAnimado
           percentual={percentual}
           maxWidth={larguraVel}
-          numeroClasse="text-4xl font-bold"
+          numeroClasse={grande ? VELOCIMETRO_GRANDE.numeroClasse : "text-4xl font-bold"}
           sempreMostrarBalao={sempreMostrarBalao}
           onClickBalao={onBalao}
           onClickExcedente={onExcedente}
@@ -358,10 +376,10 @@ function PaginaVelocimetro({
           className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0"
           style={{ paddingLeft: 12, paddingRight: 12 }}
         >
-          <Valor tamanho="md" autoAjustar>{valorEsquerda}</Valor>
+          <Valor {...(grande ? { px: VELOCIMETRO_GRANDE.valorPx } : { tamanho: "md" })} autoAjustar>{valorEsquerda}</Valor>
           <span
             className="text-xs mt-1"
-            style={{ color: "var(--text-secondary)" }}
+            style={{ color: "var(--text-secondary)", ...(grande ? { fontSize: VELOCIMETRO_GRANDE.rotuloValorPx } : null) }}
           >
             {rotuloEsquerda}
           </span>
@@ -378,10 +396,10 @@ function PaginaVelocimetro({
           className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0"
           style={{ paddingLeft: 12, paddingRight: 12 }}
         >
-          <Valor tamanho="md" autoAjustar>{valorDireita}</Valor>
+          <Valor {...(grande ? { px: VELOCIMETRO_GRANDE.valorPx } : { tamanho: "md" })} autoAjustar>{valorDireita}</Valor>
           <span
             className="text-xs mt-1"
-            style={{ color: "var(--text-secondary)" }}
+            style={{ color: "var(--text-secondary)", ...(grande ? { fontSize: VELOCIMETRO_GRANDE.rotuloValorPx } : null) }}
           >
             {rotuloDireita}
           </span>
@@ -400,6 +418,8 @@ function CardVelocimetroCarrossel({
   moldura = "vidro",
   /* v25: a pessoa ja leu a explicacao da media: o "?" do card B some */
   mediaExplicada = false,
+  /* v29: velocimetro grande (visual F) */
+  grande = false,
 }) {
   const [pagina, setPagina] = useState(0);
   const [dragPx, setDragPx] = useState(0);
@@ -568,6 +588,7 @@ function CardVelocimetroCarrossel({
                some; o balao so aparece acima do limite. */
             sempreMostrarBalao={MOSTRAR_CHAT_FISCO}
             onExcedente={seNaoArrastou(onExcedente)}
+            grande={grande}
           />
 
           <PaginaVelocimetro
@@ -583,12 +604,13 @@ function CardVelocimetroCarrossel({
             onBalao={seNaoArrastou(() => onDuvidas("media"))}
             onValores={seNaoArrastou(onResumo)}
             semBalao={mediaExplicada}
+            grande={grande}
           />
         </div>
       </div>
     </div>
 
-      <BolinhasIndicadoras pagina={pagina} irPara={irPara} />
+      <BolinhasIndicadoras pagina={pagina} irPara={irPara} grande={grande} />
     </div>
   );
 }
@@ -1424,8 +1446,13 @@ function InicioBarra({ emCima = false, ...acoes }) {
    (visual F). Pedido do Fernando: "levantar tudo a partir das 2 bolinhas,
    separando dos 3 itens". E uma parte do espaco livre da tela (cresce em
    tela alta, encolhe em tela baixa), nunca menor que o minimo. O resto
-   do espaco fica com o velocimetro, que continua centrado no dele. */
-const RESPIRO_ACIMA_DA_BARRA = { flex: "0.15 1 0%", minHeight: 24 };
+   do espaco fica com o velocimetro, que continua centrado no dele.
+   v29: a barra fica CENTRADA entre as bolinhas e o rodape: um respiro
+   igual embaixo dela. O de cima comeca com 17px a mais porque, embaixo,
+   entre o fim desta area e os icones do rodape ja existem ~17px (folga
+   da area + respiro do proprio rodape). */
+const RESPIRO_ACIMA_DA_BARRA = { flex: "0.09 1 17px", minHeight: 30 };
+const RESPIRO_ABAIXO_DA_BARRA = { flex: "0.09 1 0%", minHeight: 13 };
 
 /** Borda pulsando — acende e apaga suavemente, com halo em volta.
     Usada em verde no chat do Fisco e em vermelho no card do
@@ -2144,6 +2171,7 @@ export default function Dashboard() {
             onExcedente={() => navigate("/regra-vinte", DE_DASHBOARD)}
             moldura={molduraVelocimetro}
             mediaExplicada={mediaExplicada}
+            grande={visual === "f"}
           />
 
           {/* Piloto (v19): proximo DAS, logo abaixo do velocimetro */}
@@ -2164,7 +2192,8 @@ export default function Dashboard() {
           {/* v28: respiro entre as bolinhas e a barra (sobe o velocimetro) */}
           {visual === "f" && <div aria-hidden style={RESPIRO_ACIMA_DA_BARRA} />}
           {visual === "f" && <InicioBarra {...acoesInicio} />}
-          {visual !== "atual" && <div aria-hidden className="shrink-0" style={{ height: 12 }} />}
+          {visual === "f" && <div aria-hidden style={RESPIRO_ABAIXO_DA_BARRA} />}
+          {visual !== "atual" && visual !== "f" && <div aria-hidden className="shrink-0" style={{ height: 12 }} />}
 
           {caixaExpandida && (
             <CaixaFiscoFlutuante

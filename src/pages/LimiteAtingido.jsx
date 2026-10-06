@@ -1,4 +1,4 @@
-/* LIMITEATINGIDO v2 — botao "Cadastrar agora" em contorno verde (botao-confirmar), sem verde cheio */
+/* LIMITEATINGIDO v3 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v2: botao "Cadastrar agora" em contorno verde (botao-confirmar), sem verde cheio) */
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Sparkles, CheckCircle2 } from "lucide-react";
 
@@ -21,10 +21,10 @@ export default function LimiteAtingido() {
         <button
           onClick={() => navigate("/dashboard")}
           aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+          className="w-[46px] h-[46px] rounded-full flex items-center justify-center hover:opacity-80"
           style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
         >
-          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
+          <ArrowLeft size={24} style={{ color: "var(--text)" }} />
         </button>
       </header>
 

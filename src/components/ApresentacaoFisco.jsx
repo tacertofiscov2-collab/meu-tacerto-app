@@ -1,4 +1,4 @@
-/* APRESENTACAOFISCO v2 — celular de exemplo igual ao Inicio novo (DAS, Fisco com o simbolo do WhatsApp, NF; casinha cinza; velocimetro mais alto); textos do + e do Perfil (v1: tutorial "Apresentação do Fisco.ia": celular de exemplo do Inicio (visual F) com um circulo verde passando por cada funcao e o Fisco.ia explicando, em slides */
+/* APRESENTACAOFISCO v3 — celular de exemplo com proporcao de celular de verdade (390 x 820) e igual ao Inicio novo: saudacao, velocimetro grande e a barra dos 3 atalhos centrada entre as bolinhas e o rodape (v2: celular de exemplo igual ao Inicio novo (DAS, Fisco com o simbolo do WhatsApp, NF; casinha cinza; velocimetro mais alto); textos do + e do Perfil (v1: tutorial "Apresentação do Fisco.ia": celular de exemplo do Inicio (visual F) com um circulo verde passando por cada funcao e o Fisco.ia explicando, em slides */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -66,9 +66,19 @@ const PASSOS = [
 const ALVOS_REDONDOS = ["mais", "perfil", "sino"];
 
 /* Tamanho do desenho (o Inicio de verdade) e o maximo na tela */
+/* v3: 390 x 820 (proporcao de um iPhone; antes 744 deixava o celular
+   "achatado", pedido do Fernando: estava desproporcional) */
 const LARGURA_DESENHO = 390;
-const ALTURA_DESENHO = 744;
-const LARGURA_MAX_CELULAR = 260;
+const ALTURA_DESENHO = 820;
+const LARGURA_MAX_CELULAR = 270;
+
+/* Saudacao do topo, como no Inicio (sem o nome: e um exemplo) */
+function saudacaoDoMomento(agora = new Date()) {
+  const h = agora.getHours();
+  if (h < 12) return "Bom dia";
+  if (h < 18) return "Boa tarde";
+  return "Boa noite";
+}
 /* Folga do circulo em volta da funcao (px do desenho) */
 const FOLGA_CIRCULO = 9;
 
@@ -98,12 +108,17 @@ function InicioDeExemplo() {
 
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
-      {/* topo: logo + sininho */}
-      <div className="flex items-center justify-between shrink-0" style={{ padding: "22px 20px 0" }}>
-        <div className="flex items-center gap-2.5">
-          <Gauge size={34} strokeWidth={2.2} style={{ color: "var(--primary)" }} />
-          <span className="font-bold leading-none" style={{ fontSize: 24 }}>
-            Ta<span style={{ color: "var(--primary)" }}>Certo!</span>
+      {/* topo: logo, saudacao e sininho (igual ao Inicio, sem o nome) */}
+      <div className="flex items-start justify-between shrink-0" style={{ padding: "16px 20px 0" }}>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2.5">
+            <Gauge size={34} strokeWidth={2.2} style={{ color: "var(--primary)" }} />
+            <span className="font-bold leading-none" style={{ fontSize: 24 }}>
+              Ta<span style={{ color: "var(--primary)" }}>Certo!</span>
+            </span>
+          </div>
+          <span className="font-semibold" style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 6 }}>
+            {saudacaoDoMomento()}
           </span>
         </div>
         <span data-alvo="sino" className="relative flex items-center justify-center" style={{ width: 34, height: 34 }}>
@@ -111,11 +126,11 @@ function InicioDeExemplo() {
         </span>
       </div>
 
-      {/* velocimetro do ano */}
-      <div className="flex-1 min-h-0 flex flex-col justify-center" style={{ padding: "0 20px" }}>
+      {/* velocimetro do ano (grande, como no Inicio v29) */}
+      <div className="flex-1 min-h-0 flex flex-col justify-center" style={{ padding: "8px 20px 0" }}>
         <div data-alvo="velocimetro" className="flex flex-col" style={{ padding: "0 20px" }}>
-          <VelocimetroAnimado percentual={58} maxWidth={205} numeroClasse="text-4xl font-bold" />
-          <p className="text-center" style={{ color: "var(--text-tertiary)", fontSize: 14, marginTop: 34 }}>
+          <VelocimetroAnimado percentual={58} maxWidth={250} numeroClasse="text-5xl font-bold" />
+          <p className="text-center" style={{ color: "var(--text-tertiary)", fontSize: 14, marginTop: 22 }}>
             MEI · anual
           </p>
           <div className="flex items-stretch" style={{ borderTop: "1px solid var(--border)", marginTop: 4, paddingTop: 12 }}>
@@ -125,20 +140,20 @@ function InicioDeExemplo() {
                 className="flex-1 flex flex-col items-center"
                 style={{ borderLeft: i ? "1px solid var(--border)" : "none" }}
               >
-                <span className="font-semibold" style={{ fontSize: 17 }}>R$ •••</span>
-                <span style={{ color: "var(--text-secondary)", fontSize: 12, marginTop: 4 }}>{rotulo}</span>
+                <span className="font-semibold" style={{ fontSize: 19 }}>R$ •••</span>
+                <span style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 4 }}>{rotulo}</span>
               </div>
             ))}
           </div>
           <div className="flex items-center justify-center gap-2" style={{ marginTop: 12 }}>
-            <span className="rounded-full" style={{ width: 11, height: 11, backgroundColor: "var(--primary)" }} />
-            <span className="rounded-full" style={{ width: 9, height: 9, backgroundColor: "var(--primary)", opacity: 0.22 }} />
+            <span className="rounded-full" style={{ width: 12, height: 12, backgroundColor: "var(--primary)" }} />
+            <span className="rounded-full" style={{ width: 10, height: 10, backgroundColor: "var(--primary)", opacity: 0.22 }} />
           </div>
         </div>
       </div>
 
-      {/* respiro antes da barra (como no Inicio: velocimetro mais alto) */}
-      <div aria-hidden style={{ flex: "0.15 1 0%", minHeight: 24 }} />
+      {/* respiros iguais em cima e embaixo da barra (como no Inicio v29) */}
+      <div aria-hidden style={{ flex: "0.09 1 17px", minHeight: 30 }} />
 
       {/* barra unica (visual F) */}
       <div
@@ -158,8 +173,10 @@ function InicioDeExemplo() {
         ))}
       </div>
 
+      <div aria-hidden style={{ flex: "0.09 1 0%", minHeight: 13 }} />
+
       {/* barra de baixo (Inicio, +, Perfil) */}
-      <div className="shrink-0 flex items-end" style={{ padding: "22px 13px 24px" }}>
+      <div className="shrink-0 flex items-end" style={{ padding: "17px 13px 22px" }}>
         <div className="flex-1 flex flex-col items-center gap-1">
           <Home size={26} strokeWidth={2} style={{ color: "var(--text-secondary)" }} />
           <span className="font-medium leading-none" style={{ fontSize: 11, color: "var(--text-secondary)" }}>Início</span>
@@ -352,9 +369,9 @@ export default function ApresentacaoFisco({ aberto, onFechar }) {
           onClick={onFechar}
           aria-label="Fechar"
           className="rounded-full flex items-center justify-center active:scale-95 shrink-0"
-          style={{ width: 40, height: 40, border: "1px solid var(--border)", background: "none" }}
+          style={{ width: 46, height: 46, border: "1px solid var(--border)", background: "none" }}
         >
-          <ArrowLeft size={20} strokeWidth={2.2} style={{ color: "var(--text)" }} />
+          <ArrowLeft size={24} strokeWidth={2} style={{ color: "var(--text)" }} />
         </button>
         <span className="font-bold truncate" style={{ fontSize: 20 }}>Apresentação do Fisco.ia</span>
       </div>

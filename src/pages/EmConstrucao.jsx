@@ -1,3 +1,4 @@
+/* EMCONSTRUCAO v1 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) */
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Construction } from "lucide-react";
 
@@ -12,10 +13,10 @@ export default function EmConstrucao({ titulo = "Em construção" }) {
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
-          className="w-10 h-10 flex items-center justify-center rounded-lg hover:opacity-80"
+          className="w-[46px] h-[46px] flex items-center justify-center rounded-lg hover:opacity-80"
           style={{ color: "var(--text)" }}
         >
-          <ArrowLeft size={22} strokeWidth={2} />
+          <ArrowLeft size={26} strokeWidth={2} />
         </button>
       </div>
       <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
