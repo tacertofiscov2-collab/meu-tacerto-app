@@ -1,4 +1,4 @@
-/* PRIVACIDADE v7 — letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v6: secao "Fale com a gente" inteira escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v5: so o botao; v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta) */
+/* PRIVACIDADE v8 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v7: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v6: secao "Fale com a gente" inteira escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v5: so o botao; v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta)) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp, MOSTRAR_WHATSAPP_DOCUMENTOS } from "@/config/piloto";
@@ -30,7 +30,7 @@ const SECOES = [
     paragrafos: [
       "Seu nome (ou apelido), seu WhatsApp e seu e-mail.",
       "O tipo do seu MEI (MEI ou MEI Caminhoneiro) e, se você abriu o MEI este ano, o mês de abertura.",
-      "Os lançamentos do seu faturamento: valor, data e descrição. Isso inclui o que você lança no app, o faturamento aproximado que você informa no cadastro e o que você conta ao Fisco.ia no WhatsApp.",
+      "Os lançamentos do seu faturamento: valor, data e descrição. Isso inclui o que você lança no app, o faturamento aproximado que você informa no cadastro e o que você conta ao Fisco no WhatsApp.",
     ],
   },
   {
@@ -56,9 +56,9 @@ const SECOES = [
     ],
   },
   {
-    titulo: "O Fisco.ia usa inteligência artificial",
+    titulo: "O Fisco usa inteligência artificial",
     paragrafos: [
-      "O Fisco.ia é um assistente baseado em inteligência artificial. Ele pode errar e não substitui um contador. Para decisões importantes, confirme com um contador.",
+      "O Fisco é um assistente baseado em inteligência artificial. Ele pode errar e não substitui um contador. Para decisões importantes, confirme com um contador.",
     ],
   },
   {
@@ -129,7 +129,7 @@ export default function Privacidade() {
             Fale com a gente
           </h2>
           <p className="text-[14.5px] leading-relaxed mt-2" style={{ color: "var(--text-secondary)" }}>
-            Dúvida sobre seus dados? Chame o Fisco.ia no WhatsApp.
+            Dúvida sobre seus dados? Chame o Fisco no WhatsApp.
           </p>
           <a
             href={linkWhatsAppFisco(MENSAGENS_WHATSAPP.falarComFisco(dadosParaWhatsApp(app)))}
@@ -146,7 +146,7 @@ export default function Privacidade() {
               textDecoration: "none",
             }}
           >
-            Falar com o Fisco.ia no WhatsApp
+            Falar com o Fisco no WhatsApp
           </a>
         </section>
         )}

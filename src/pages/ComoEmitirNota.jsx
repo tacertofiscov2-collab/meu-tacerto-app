@@ -1,4 +1,4 @@
-/* COMOEMITIRNOTA v6 — padrao do Perfil: lista simples sem cartoes, selos nem botao verde cheio; aviso como linha; passos e Certificado A1 abrem em secoes abaixo; letras maiores (v5: A1: "Custa a partir de R$ 99,90" (vale 1 ano) no lugar de "valor a confirmar"; Fisco.ia (v4: selo so "Grátis"; v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1 */
+/* COMOEMITIRNOTA v7 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: padrao do Perfil: lista simples sem cartoes, selos nem botao verde cheio; aviso como linha; passos e Certificado A1 abrem em secoes abaixo; letras maiores (v5: A1: "Custa a partir de R$ 99,90" (vale 1 ano) no lugar de "valor a confirmar"; Fisco.ia (v4: selo so "Grátis"; v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1) */
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -175,7 +175,7 @@ export default function ComoEmitirNota() {
         <SecaoLista titulo="Escolha como emitir">
           <LinhaLista
             Icon={MessageCircle}
-            rotulo="Com o Fisco.ia no WhatsApp"
+            rotulo="Com o Fisco no WhatsApp"
             detalhe={conteudo.explicacaoFisco}
             onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.notaAjuda(dados, caminhoneiro))}
           />
@@ -226,7 +226,7 @@ export default function ComoEmitirNota() {
                 Icon={Sparkles}
                 rotulo="Vantagens"
                 detalhe={<Itens lista={[
-                  "O Fisco.ia emite a nota por você, e você só confirma.",
+                  "O Fisco emite a nota por você, e você só confirma.",
                   "Não precisa entrar no gov.br toda vez.",
                   ...(conteudo.vantagemExtra ? [conteudo.vantagemExtra] : []),
                   "Nada é emitido sem a sua confirmação.",

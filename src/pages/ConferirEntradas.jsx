@@ -1,4 +1,4 @@
-/* CONFERIRENTRADAS v11 — "Fisco" vira "Fisco.ia" nos textos da tela (v10: explicacao enquadrada: icone no topo, passos centralizados, botao no pe da tela) */
+/* CONFERIRENTRADAS v12 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v11: "Fisco" vira "Fisco.ia" nos textos da tela (v10: explicacao enquadrada: icone no topo, passos centralizados, botao no pe da tela)) */
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -426,7 +426,7 @@ export default function ConferirEntradas() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                     <Passo numero={1} titulo="Veja quem te pagou" detalhe="Nome, valor e datas" />
                     <Passo numero={2} titulo="Responda: é faturamento?" detalhe="Sim ou Não" />
-                    <Passo numero={3} titulo="O Fisco.ia aprende" detalhe="Da próxima vez, entra sozinho" />
+                    <Passo numero={3} titulo="O Fisco aprende" detalhe="Da próxima vez, entra sozinho" />
                   </div>
                 </div>
 

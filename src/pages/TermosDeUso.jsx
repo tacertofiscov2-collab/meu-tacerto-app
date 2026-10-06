@@ -1,4 +1,4 @@
-/* TERMOSDEUSO v6 — letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v5: secao "Fale com a gente" (botao do WhatsApp) escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("fase de testes"); v2: botao do WhatsApp com mensagem pronta) */
+/* TERMOSDEUSO v7 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v5: secao "Fale com a gente" (botao do WhatsApp) escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("fase de testes"); v2: botao do WhatsApp com mensagem pronta)) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp, MOSTRAR_WHATSAPP_DOCUMENTOS } from "@/config/piloto";
@@ -33,9 +33,9 @@ const SECOES = [
     ],
   },
   {
-    titulo: "O Fisco.ia é uma inteligência artificial",
+    titulo: "O Fisco é uma inteligência artificial",
     paragrafos: [
-      "O Fisco.ia é um assistente baseado em inteligência artificial. Ele pode errar.",
+      "O Fisco é um assistente baseado em inteligência artificial. Ele pode errar.",
       "Ele não substitui um contador. Para decisões importantes, confirme com um contador.",
     ],
   },
@@ -43,7 +43,7 @@ const SECOES = [
     titulo: "Quem cuida das obrigações é você",
     paragrafos: [
       "O TaCerto! calcula e explica. Quem confirma e transmite as obrigações fiscais do MEI é você: pagar o DAS, emitir as notas fiscais e entregar a declaração anual (DASN-SIMEI).",
-      "Os números do app vêm do que você lança, confirma ou conta ao Fisco.ia. Valores aproximados, como o faturamento que você informa no cadastro, são só uma estimativa. Confira sempre.",
+      "Os números do app vêm do que você lança, confirma ou conta ao Fisco. Valores aproximados, como o faturamento que você informa no cadastro, são só uma estimativa. Confira sempre.",
     ],
   },
   {
@@ -148,7 +148,7 @@ export default function TermosDeUso() {
               textDecoration: "none",
             }}
           >
-            Falar com o Fisco.ia no WhatsApp
+            Falar com o Fisco no WhatsApp
           </a>
         </section>
         )}

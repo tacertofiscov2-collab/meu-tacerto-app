@@ -1033,7 +1033,7 @@ function BotaoFiscoWhatsApp({ dadosWhats }) {
     >
       <BordaCorrendo raio={16} />
       <FotoFiscoMini tamanho={30} />
-      Falar com o Fisco.ia no WhatsApp
+      Falar com o Fisco no WhatsApp
     </a>
   );
 }
@@ -1243,7 +1243,7 @@ function InicioLista({ das, onDas, onFisco, onNota }) {
           onClick={onDas}
         />
       )}
-      <LinhaLista Icon={MessageCircle} rotulo="Falar com o Fisco.ia" detalhe="No WhatsApp" onClick={onFisco} />
+      <LinhaLista Icon={MessageCircle} rotulo="Falar com o Fisco" detalhe="No WhatsApp" onClick={onFisco} />
       {MOSTRAR_TUTORIAL_NOTA && <LinhaLista Icon={FileText} rotulo="Como emitir nota" onClick={onNota} />}
     </SecaoLista>
   );
@@ -1269,7 +1269,7 @@ function InicioBlocos({ das, onDas, onFisco, onNota }) {
         <button type="button" onClick={onFisco} className="toque text-left flex flex-col" style={{ ...bloco, padding: "14px 15px" }}>
           <span className="flex items-center" style={{ gap: 8 }}>
             <FotoFiscoMini tamanho={24} />
-            <span className="font-semibold" style={{ fontSize: 15, color: "var(--text)" }}>Fisco.ia</span>
+            <span className="font-semibold" style={{ fontSize: 15, color: "var(--text)" }}>Fisco</span>
           </span>
           <span style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 4 }}>Dúvidas e ajuda</span>
           <span className="font-semibold" style={{ fontSize: 13.5, color: "var(--primary)", marginTop: "auto", paddingTop: 10 }}>
@@ -1297,7 +1297,7 @@ function InicioBlocos({ das, onDas, onFisco, onNota }) {
 function InicioAtalhos({ das, onDas, onFisco, onNota }) {
   const itens = [
     MOSTRAR_CARD_DAS && { Icon: CalendarClock, rotulo: "Boleto do DAS", onClick: onDas },
-    { Icon: MessageCircle, rotulo: "Fisco.ia", onClick: onFisco },
+    { Icon: MessageCircle, rotulo: "Fisco", onClick: onFisco },
     MOSTRAR_TUTORIAL_NOTA && { Icon: FileText, rotulo: "Emitir nota", onClick: onNota },
   ].filter(Boolean);
   return (
@@ -1338,7 +1338,7 @@ const BORDA_DESTAQUE_INICIO = "1px solid rgba(34,197,94,0.4)";
 function InicioCartoes(acoes) {
   const textos = {
     das: ["DAS", `Vence ${acoes.das.dia}/${acoes.das.mes}`],
-    fisco: ["Fisco.ia", "WhatsApp"],
+    fisco: ["Fisco", "WhatsApp"],
     nota: ["Nota fiscal", "Como emitir"],
   };
   const itens = atalhosInicio(acoes);
@@ -1392,7 +1392,7 @@ function InicioDestaque({ das, onDas, onFisco, onNota }) {
       <div className="grid" style={{ gridTemplateColumns: MOSTRAR_TUTORIAL_NOTA ? "1fr 1fr" : "1fr", gap: 10, marginTop: 10 }}>
         <button type="button" onClick={onFisco} className="toque flex items-center justify-center" style={pilula}>
           <MessageCircle size={19} strokeWidth={1.9} style={{ color: "var(--primary)" }} />
-          <span className="font-medium" style={{ fontSize: 15, color: "var(--text)" }}>Fisco.ia</span>
+          <span className="font-medium" style={{ fontSize: 15, color: "var(--text)" }}>Fisco</span>
         </button>
         {MOSTRAR_TUTORIAL_NOTA && (
           <button type="button" onClick={onNota} className="toque flex items-center justify-center" style={pilula}>
@@ -2226,7 +2226,7 @@ export default function Dashboard() {
                 <span className="rounded-full overflow-hidden flex items-center justify-center" style={{ width: "100%", height: "100%" }}>
                   <img
                     src="/fisco-perfil.png"
-                    alt="Fisco.ia"
+                    alt="Fisco"
                     style={{
                       width: "108%",
                       height: "108%",
@@ -2272,7 +2272,7 @@ export default function Dashboard() {
                     fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive',
                   }}
                 >
-                  Pergunte ao Fisco.ia...
+                  Pergunte ao Fisco...
                 </span>
 
                 <Send

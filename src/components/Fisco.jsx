@@ -1,4 +1,4 @@
-/* FISCO v1 — "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026) */
+/* FISCO v2 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026)) */
 /**
  * Fisco — mascote robô do TaCerto!
  *
@@ -96,7 +96,7 @@ export default function Fisco({
           height={size}
           viewBox="112 26 156 156"
           role="img"
-          aria-label="Fisco.ia"
+          aria-label="Fisco"
           className={className}
           style={style}
           xmlns="http://www.w3.org/2000/svg"
@@ -143,7 +143,7 @@ export default function Fisco({
         height={alturaProp}
         viewBox={`${vbX} ${vbY} ${vbW} ${vbH}`}
         role="img"
-        aria-label={fala ? `Fisco.ia diz: ${fala}` : "Fisco.ia, seu amigo fiscal"}
+        aria-label={fala ? `Fisco diz: ${fala}` : "Fisco, seu amigo fiscal"}
         className={className}
         style={{ display: "block", overflow: "visible", ...style }}
         xmlns="http://www.w3.org/2000/svg"

@@ -1,4 +1,4 @@
-/* PREFERENCIAS v2 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026)) */
+/* PREFERENCIAS v3 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v2: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026))) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -294,7 +294,7 @@ export default function Preferencias() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[15px]" style={{ color: "var(--text)" }}>
-                Alertas do Fisco.ia
+                Alertas do Fisco
               </p>
               <p
                 className="text-xs mt-0.5"

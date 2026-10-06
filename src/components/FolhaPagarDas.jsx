@@ -1,4 +1,4 @@
-/* FOLHAPAGARDAS v2 — "Fisco" vira "Fisco.ia" nos textos da tela (v1: "Como voce quer pagar seu DAS?": boleto todo mes no WhatsApp, Fisco ajuda agora, fazer sozinho, site do governo) */
+/* FOLHAPAGARDAS v3 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v2: "Fisco" vira "Fisco.ia" nos textos da tela (v1: "Como voce quer pagar seu DAS?": boleto todo mes no WhatsApp, Fisco ajuda agora, fazer sozinho, site do governo)) */
 import { useNavigate } from "react-router-dom";
 import { MessageCircle, Headphones, ListChecks, Globe, ChevronRight } from "lucide-react";
 import FolhaDeBaixo from "./FolhaDeBaixo.jsx";
@@ -95,13 +95,13 @@ export default function FolhaPagarDas({ aberto, onFechar }) {
           Icon={MessageCircle}
           titulo="Receber meu boleto todo mês no WhatsApp"
           selo="Automático"
-          explicacao="O Fisco.ia te manda o boleto pronto todo mês, antes do vencimento."
+          explicacao="O Fisco te manda o boleto pronto todo mês, antes do vencimento."
           destaque
           onClick={() => noWhatsApp(MENSAGENS_WHATSAPP.dasAutomatico(dados))}
         />
         <Opcao
           Icon={Headphones}
-          titulo="Fisco.ia me ajuda agora"
+          titulo="Fisco me ajuda agora"
           explicacao="Te mando o boleto deste mês e tiro suas dúvidas."
           onClick={() => noWhatsApp(MENSAGENS_WHATSAPP.dasAjudaAgora(dados))}
         />

@@ -1,4 +1,4 @@
-/* FOLHAATUALIZARVELOCIMETRO v1 — notificacao "Atualize seu velocimetro": 2 jeitos faceis (digitar o total do ano no "+" ou mandar valores/extrato pro Fisco.ia no WhatsApp) */
+/* FOLHAATUALIZARVELOCIMETRO v2 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v1: notificacao "Atualize seu velocimetro": 2 jeitos faceis (digitar o total do ano no "+" ou mandar valores/extrato pro Fisco.ia no WhatsApp)) */
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, Hash } from "lucide-react";
 import FolhaDeBaixo from "./FolhaDeBaixo.jsx";
@@ -69,7 +69,7 @@ export default function FolhaAtualizarVelocimetro({ aberto, onFechar }) {
         />
         <Opcao
           Icon={IconeWhatsApp}
-          titulo="Mandar pro Fisco.ia"
+          titulo="Mandar pro Fisco"
           frase="Mande os valores ou a foto do extrato. Ele atualiza pra você."
           onClick={() => {
             abrirWhatsAppFisco(MENSAGENS_WHATSAPP.atualizarVelocimetro(dadosParaWhatsApp(app)));
