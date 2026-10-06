@@ -1,4 +1,4 @@
-/* CALENDARIO v2 — dia/mes/ano escolhido so com contorno verde (sem verde cheio); hoje em verde; botao Salvar em contorno (botao-confirmar) */
+/* CALENDARIO v3 — menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v2: dia/mes/ano escolhido so com contorno verde (sem verde cheio); hoje em verde; botao Salvar em contorno (botao-confirmar)) */
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Gauge, X } from "lucide-react";
 
@@ -105,7 +105,7 @@ export default function Calendario({
       <div
         className="w-full max-w-sm overflow-hidden"
         style={{
-          backgroundColor: "var(--surface)",
+          backgroundColor: "var(--bg)",
           border: "1px solid var(--border)",
           borderRadius: 24,
           boxShadow: "0 20px 50px rgba(0,0,0,0.45)",
@@ -123,7 +123,7 @@ export default function Calendario({
             onClick={onFechar}
             aria-label="Fechar"
             className="w-8 h-8 rounded-full flex items-center justify-center active:opacity-70"
-            style={{ backgroundColor: "var(--field)" }}
+            style={{ border: "1px solid var(--border)" }}
           >
             <X size={15} style={{ color: "var(--text-secondary)" }} />
           </button>
@@ -137,7 +137,7 @@ export default function Calendario({
                 disabled={!podeVoltarMes}
                 aria-label="Mês anterior"
                 className="w-9 h-9 rounded-full flex items-center justify-center active:scale-95 transition disabled:opacity-30"
-                style={{ backgroundColor: "var(--field)" }}
+                style={{ border: "1px solid var(--border)" }}
               >
                 <ChevronLeft size={18} style={{ color: "var(--text)" }} />
               </button>
@@ -149,7 +149,7 @@ export default function Calendario({
                 disabled={!podeAvancarMes}
                 aria-label="Próximo mês"
                 className="w-9 h-9 rounded-full flex items-center justify-center active:scale-95 transition disabled:opacity-30"
-                style={{ backgroundColor: "var(--field)" }}
+                style={{ border: "1px solid var(--border)" }}
               >
                 <ChevronRight size={18} style={{ color: "var(--text)" }} />
               </button>
@@ -185,10 +185,10 @@ export default function Calendario({
                     className="aspect-square rounded-xl flex items-center justify-center text-sm transition active:scale-95 disabled:opacity-25"
                     style={{
                       backgroundColor: "transparent",
-                      color: selecionado || ehHoje ? "var(--primary)" : "var(--text)",
+                      color: "var(--text)",
                       fontWeight: selecionado || ehHoje ? 700 : 400,
                       border: selecionado
-                        ? "1.5px solid var(--primary)"
+                        ? "1.5px solid var(--text-secondary)"
                         : "1.5px solid transparent",
                     }}
                   >
@@ -202,7 +202,7 @@ export default function Calendario({
               <button
                 onClick={() => onSelecionar?.(hoje)}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold active:opacity-80"
-                style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
+                style={{ border: "1px solid var(--border)", color: "var(--text)" }}
               >
                 Hoje
               </button>
@@ -226,9 +226,9 @@ export default function Calendario({
                       onClick={() => setMesSel(num)}
                       className="py-2.5 rounded-xl text-[13px] transition active:scale-95 disabled:opacity-25"
                       style={{
-                        backgroundColor: "var(--field)",
-                    boxShadow: ativo ? "inset 0 0 0 1.5px var(--primary)" : "none",
-                        color: ativo ? "var(--primary)" : "var(--text)",
+                        backgroundColor: "transparent",
+                    boxShadow: ativo ? "inset 0 0 0 1.5px var(--text-secondary)" : "inset 0 0 0 1px var(--border)",
+                        color: ativo ? "var(--text)" : "var(--text-secondary)",
                         fontWeight: ativo ? 700 : 400,
                       }}
                     >
@@ -255,9 +255,9 @@ export default function Calendario({
                       }}
                       className="px-4 py-2.5 rounded-xl text-[13px] shrink-0 transition active:scale-95"
                       style={{
-                        backgroundColor: "var(--field)",
-                    boxShadow: ativo ? "inset 0 0 0 1.5px var(--primary)" : "none",
-                        color: ativo ? "var(--primary)" : "var(--text)",
+                        backgroundColor: "transparent",
+                    boxShadow: ativo ? "inset 0 0 0 1.5px var(--text-secondary)" : "inset 0 0 0 1px var(--border)",
+                        color: ativo ? "var(--text)" : "var(--text-secondary)",
                         fontWeight: ativo ? 700 : 400,
                       }}
                     >
@@ -272,7 +272,7 @@ export default function Calendario({
               <button
                 onClick={onFechar}
                 className="flex-1 py-3 rounded-xl font-semibold text-sm"
-                style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
+                style={{ border: "1px solid var(--border)", color: "var(--text)" }}
               >
                 Cancelar
               </button>

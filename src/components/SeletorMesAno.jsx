@@ -1,4 +1,4 @@
-/* SELETORMESANO v3 — mes/ano escolhido so com contorno verde (sem verde cheio); botao Confirmar em contorno (botao-confirmar) (v2: prop anoMinimo: a faixa de anos comeca no ano em que a pessoa comecou a usar o app */
+/* SELETORMESANO v4 — menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v3: mes/ano escolhido so com contorno verde (sem verde cheio); botao Confirmar em contorno (botao-confirmar) (v2: prop anoMinimo: a faixa de anos comeca no ano em que a pessoa comecou a usar o app) */
 import { useState, useEffect } from "react";
 import { Gauge, X } from "lucide-react";
 
@@ -62,7 +62,7 @@ export default function SeletorMesAno({
       <div
         className="w-full max-w-sm overflow-hidden"
         style={{
-          backgroundColor: "var(--surface)",
+          backgroundColor: "var(--bg)",
           border: "1px solid var(--border)",
           borderRadius: 24,
           boxShadow: "0 20px 50px rgba(0,0,0,0.45)",
@@ -80,7 +80,7 @@ export default function SeletorMesAno({
             onClick={onFechar}
             aria-label="Fechar"
             className="w-8 h-8 rounded-full flex items-center justify-center active:opacity-70"
-            style={{ backgroundColor: "var(--field)" }}
+            style={{ border: "1px solid var(--border)" }}
           >
             <X size={15} style={{ color: "var(--text-secondary)" }} />
           </button>
@@ -102,9 +102,9 @@ export default function SeletorMesAno({
                   onClick={() => setMesSel(num)}
                   className="py-2.5 rounded-xl text-[13px] transition active:scale-95 disabled:opacity-25"
                   style={{
-                    backgroundColor: "var(--field)",
-                    boxShadow: ativo ? "inset 0 0 0 1.5px var(--primary)" : "none",
-                    color: ativo ? "var(--primary)" : "var(--text)",
+                    backgroundColor: "transparent",
+                    boxShadow: ativo ? "inset 0 0 0 1.5px var(--text-secondary)" : "inset 0 0 0 1px var(--border)",
+                    color: ativo ? "var(--text)" : "var(--text-secondary)",
                     fontWeight: ativo ? 700 : 400,
                   }}
                 >
@@ -134,9 +134,9 @@ export default function SeletorMesAno({
                     }}
                     className="px-4 py-2.5 rounded-xl text-[13px] shrink-0 transition active:scale-95"
                     style={{
-                      backgroundColor: "var(--field)",
-                    boxShadow: ativo ? "inset 0 0 0 1.5px var(--primary)" : "none",
-                      color: ativo ? "var(--primary)" : "var(--text)",
+                      backgroundColor: "transparent",
+                    boxShadow: ativo ? "inset 0 0 0 1.5px var(--text-secondary)" : "inset 0 0 0 1px var(--border)",
+                      color: ativo ? "var(--text)" : "var(--text-secondary)",
                       fontWeight: ativo ? 700 : 400,
                     }}
                   >
@@ -152,7 +152,7 @@ export default function SeletorMesAno({
           <button
             onClick={onFechar}
             className="flex-1 py-3 rounded-xl font-semibold text-sm"
-            style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
+            style={{ border: "1px solid var(--border)", color: "var(--text)" }}
           >
             Cancelar
           </button>

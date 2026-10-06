@@ -1,4 +1,4 @@
-/* HISTORICO v6 — descricao quebra em ate 2 linhas (antes cortava "Transportes Al..." no iPhone) (v5:padrao do Perfil: mes, total e Lancar entrada sem cartoes; entradas em lista com risca fina e titulo por mes; letras maiores (v4: piloto: cartao "Comece com o velocimetro certo" escondido (MOSTRAR_INACABADOS); o resto igual a v3 */
+/* HISTORICO v7 — menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v6: descricao quebra em ate 2 linhas (antes cortava "Transportes Al..." no iPhone) (v5:padrao do Perfil: mes, total e Lancar entrada sem cartoes; entradas em lista com risca fina e titulo por mes; letras maiores (v4: piloto: cartao "Comece com o velocimetro certo" escondido (MOSTRAR_INACABADOS); o resto igual a v3) */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -282,7 +282,7 @@ export default function Historico() {
         >
           <div
             className="w-full max-w-sm rounded-2xl p-5 space-y-4"
-            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
+            style={{ backgroundColor: "var(--bg)", border: "1px solid var(--border)" }}
           >
             <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
               Excluir esta entrada?
@@ -294,7 +294,7 @@ export default function Historico() {
               <button
                 onClick={() => setExcluirId(null)}
                 className="flex-1 py-3 rounded-xl font-semibold"
-                style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
+                style={{ border: "1px solid var(--border)", color: "var(--text)" }}
               >
                 Cancelar
               </button>

@@ -1,4 +1,4 @@
-﻿/* PERFIL v16 — Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes)) */
+﻿/* PERFIL v17 — menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes))) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
@@ -85,7 +85,8 @@ function SeletorTema({ tema, onEscolher }) {
             style={{
               fontSize: 14,
               padding: "5px 13px",
-              backgroundColor: ativo ? "var(--field)" : "transparent",
+              backgroundColor: "transparent",
+              boxShadow: ativo ? "inset 0 0 0 1px var(--text-secondary)" : "none",
               color: ativo ? "var(--text)" : "var(--text-tertiary)",
             }}
           >
@@ -227,7 +228,7 @@ export default function Perfil() {
     setCalendarioAberto(false);
   }
 
-  const cardFolha = { backgroundColor: "var(--surface)", border: "1px solid var(--border)" };
+  const cardFolha = { backgroundColor: "var(--bg)", border: "1px solid var(--border)" };
 
   /* v12: sem a barra de baixo, a setinha e o caminho de volta. Se o
      Perfil foi aberto de dentro do app, volta uma tela; se foi aberto
@@ -470,7 +471,7 @@ export default function Perfil() {
                 padding: "13px 0",
                 fontSize: 15.5,
                 color: "var(--primary)",
-                backgroundColor: nomeSalvo ? "var(--field)" : "transparent",
+                backgroundColor: "transparent",
               }}
             >
               {nomeSalvo ? "Nome salvo" : "Salvar nome"}
@@ -716,7 +717,7 @@ export default function Perfil() {
           <div
             onClick={(e) => e.stopPropagation()}
             className="w-full max-w-sm rounded-2xl p-5 space-y-3"
-            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
+            style={{ backgroundColor: "var(--bg)", border: "1px solid var(--border)" }}
           >
             <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
               Remover acesso?
@@ -736,7 +737,7 @@ export default function Perfil() {
               <button
                 onClick={() => setContaARemover(null)}
                 className="toque flex-1 py-3 rounded-xl font-semibold"
-                style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
+                style={{ border: "1px solid var(--border)", color: "var(--text)" }}
               >
                 Cancelar
               </button>
@@ -759,7 +760,7 @@ export default function Perfil() {
         >
           <div
             className="w-full max-w-sm rounded-2xl p-5 space-y-4"
-            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
+            style={{ backgroundColor: "var(--bg)", border: "1px solid var(--border)" }}
           >
             <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
               Quer sair da conta?
@@ -768,7 +769,7 @@ export default function Perfil() {
               <button
                 onClick={() => setConfirmarSair(false)}
                 className="toque flex-1 py-3 rounded-xl font-semibold"
-                style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
+                style={{ border: "1px solid var(--border)", color: "var(--text)" }}
               >
                 Cancelar
               </button>

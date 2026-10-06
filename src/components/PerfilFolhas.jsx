@@ -1,4 +1,4 @@
-/* PERFILFOLHAS v1 — linha com campo (Nome), aviso "fale com a gente" e a folha "Seu tipo de MEI", agora usados pelo Perfil e pelo Editar perfil (vieram do EditarPerfil.jsx, sem mudar o visual) */
+/* PERFILFOLHAS v2 — menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v1: linha com campo (Nome), aviso "fale com a gente" e a folha "Seu tipo de MEI", agora usados pelo Perfil e pelo Editar perfil (vieram do EditarPerfil.jsx, sem mudar o visual)) */
 import { useState } from "react";
 import { ChevronRight, ChevronLeft, X } from "lucide-react";
 import Valor from "./Valor.jsx";
@@ -106,7 +106,7 @@ export function FolhaTipoMei({ tipo, podeCorrigir, onFechar, onCorrigir, cardSty
       key={destino}
       onClick={() => setPasso(destino)}
       className="w-full rounded-xl px-4 py-3.5 flex items-center gap-3 text-left active:opacity-75 transition"
-      style={{ backgroundColor: "var(--field)" }}
+      style={{ border: "1px solid var(--border)" }}
     >
       <span className="flex-1 text-[14.5px] font-semibold" style={{ color: "var(--text)" }}>
         {rotulo}
@@ -120,7 +120,7 @@ export function FolhaTipoMei({ tipo, podeCorrigir, onFechar, onCorrigir, cardSty
   if (passo === "inicio") {
     conteudo = (
       <>
-        <div className="rounded-xl px-4 py-3" style={{ backgroundColor: "var(--field)" }}>
+        <div className="rounded-xl px-4 py-3" style={{ border: "1px solid var(--border)" }}>
           <p className="text-[15.5px] font-bold" style={{ color: "var(--text)" }}>
             {LABEL_PERFIL[tipo] || "MEI"}
           </p>
@@ -222,7 +222,7 @@ export function FolhaTipoMei({ tipo, podeCorrigir, onFechar, onCorrigir, cardSty
           <button
             onClick={() => setPasso("errado")}
             className="flex-1 py-3 rounded-xl font-semibold"
-            style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
+            style={{ border: "1px solid var(--border)", color: "var(--text)" }}
           >
             Cancelar
           </button>
@@ -257,7 +257,7 @@ export function FolhaTipoMei({ tipo, podeCorrigir, onFechar, onCorrigir, cardSty
             onClick={onFechar}
             aria-label="Fechar"
             className="rounded-full flex items-center justify-center shrink-0 active:scale-95 transition"
-            style={{ width: 30, height: 30, backgroundColor: "var(--field)" }}
+            style={{ width: 30, height: 30, border: "1px solid var(--border)" }}
           >
             <X size={15} style={{ color: "var(--text-secondary)" }} />
           </button>

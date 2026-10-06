@@ -1,4 +1,4 @@
-﻿/* EXCLUIRCONTA v6 — padrao do Perfil: confirmacoes em linhas (sem cartoes), letras maiores, campos com 16px (sem zoom no iPhone), botoes em contorno vermelho (v5: piloto: aviso "Excluir todos os lançamentos" (opcao que nao existe) escondido */
+﻿/* EXCLUIRCONTA v7 — menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v6: padrao do Perfil: confirmacoes em linhas (sem cartoes), letras maiores, campos com 16px (sem zoom no iPhone), botoes em contorno vermelho (v5: piloto: aviso "Excluir todos os lançamentos" (opcao que nao existe) escondido) */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -86,7 +86,7 @@ export default function ExcluirConta() {
   const podeExcluir = palavra.trim().toUpperCase() === "EXCLUIR";
 
   const fieldStyle = {
-    backgroundColor: "var(--field)",
+    backgroundColor: "transparent",
     border: "1px solid var(--border)",
     color: "var(--text)",
   };

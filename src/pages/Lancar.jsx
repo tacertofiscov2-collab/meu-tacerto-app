@@ -1,4 +1,4 @@
-/* LANCAR v8 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v7: modo "Total do ano": digitar so o faturamento do ano e o velocimetro fica igual a ele (um lancamento de ajuste, sem contar em dobro); /lancar?modo=total abre direto nele (v6: padrao do Perfil: rotulos em cinza maiusculo, campos com 16px (sem zoom no iPhone), "Ultimo lancamento" em linha simples, letras maiores, botao em contorno (botao-confirmar))) */
+/* LANCAR v9 — menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v8: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v7: modo "Total do ano": digitar so o faturamento do ano e o velocimetro fica igual a ele (um lancamento de ajuste, sem contar em dobro); /lancar?modo=total abre direto nele (v6: padrao do Perfil: rotulos em cinza maiusculo, campos com 16px (sem zoom no iPhone), "Ultimo lancamento" em linha simples, letras maiores, botao em contorno (botao-confirmar)))) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useMemo, useEffect } from "react";
 import { ArrowLeft, Calendar as CalendarIcon, TrendingUp } from "lucide-react";
@@ -336,7 +336,8 @@ export default function Lancar() {
                   style={{
                     fontSize: 15,
                     padding: "8px 0",
-                    backgroundColor: ativo ? "var(--field)" : "transparent",
+                    backgroundColor: "transparent",
+                    boxShadow: ativo ? "inset 0 0 0 1px var(--text-secondary)" : "none",
                     color: ativo ? "var(--text)" : "var(--text-tertiary)",
                   }}
                 >
