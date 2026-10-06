@@ -1,4 +1,4 @@
-/* HISTORICO v5 — padrao do Perfil: mes, total e Lancar entrada sem cartoes; entradas em lista com risca fina e titulo por mes; letras maiores (v4: piloto: cartao "Comece com o velocimetro certo" escondido (MOSTRAR_INACABADOS); o resto igual a v3 */
+/* HISTORICO v6 — descricao quebra em ate 2 linhas (antes cortava "Transportes Al..." no iPhone) (v5:padrao do Perfil: mes, total e Lancar entrada sem cartoes; entradas em lista com risca fina e titulo por mes; letras maiores (v4: piloto: cartao "Comece com o velocimetro certo" escondido (MOSTRAR_INACABADOS); o resto igual a v3 */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -231,7 +231,7 @@ export default function Historico() {
                     key={l.id}
                     Icon={TrendingUp}
                     rotulo={l.descricao}
-                    umaLinha
+                    maxLinhas={2}
                     detalhe={labelData(l.data)}
                     valor={
                       <span className="flex items-center" style={{ gap: 2 }}>

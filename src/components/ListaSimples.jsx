@@ -1,4 +1,4 @@
-/* LISTASIMPLES v4 — prop umaLinha (rotulo em uma linha so) (v3: numeroDoPasso (passo numerado no lugar do icone) (v2: letras maiores (rotulo 16.5, valor 15, titulo de secao 12.5, icone 20), pedido do Fernando (v1: lista clean do Perfil e Editar perfil) */
+/* LISTASIMPLES v5 — prop maxLinhas (rotulo quebra em ate N linhas e so entao corta com "...") (v4: prop umaLinha (rotulo em uma linha so) (v3: numeroDoPasso (passo numerado no lugar do icone) (v2: letras maiores (rotulo 16.5, valor 15, titulo de secao 12.5, icone 20), pedido do Fernando (v1: lista clean do Perfil e Editar perfil) */
 import { Children } from "react";
 import { ChevronRight } from "lucide-react";
 
@@ -86,8 +86,13 @@ export function numeroDoPasso(n) {
 /* Uma linha. Sem onClick = so informacao (sem setinha, nao reage ao
    toque). `cor` pinta o texto (ex.: vermelho do "Sair da conta").
    `semSeta` tira a setinha de uma linha que da para tocar.
-   v4: `umaLinha` corta o rotulo com "..." (ex.: descricao no Historico). */
-export function LinhaLista({ Icon, rotulo, detalhe, valor, onClick, cor, semSeta = false, umaLinha = false }) {
+   v4: `umaLinha` corta o rotulo com "..." (ex.: descricao no Historico).
+   v5: `maxLinhas={2}` deixa o rotulo quebrar em ate 2 linhas antes de
+   cortar (o Historico cortava "Transportes Al..." no iPhone). */
+export function LinhaLista({ Icon, rotulo, detalhe, valor, onClick, cor, semSeta = false, umaLinha = false, maxLinhas }) {
+  const limiteDeLinhas = maxLinhas
+    ? { display: "-webkit-box", WebkitLineClamp: maxLinhas, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere" }
+    : null;
   const conteudo = (
     <>
       {Icon && (
@@ -99,7 +104,7 @@ export function LinhaLista({ Icon, rotulo, detalhe, valor, onClick, cor, semSeta
         />
       )}
       <span className="flex-1 min-w-0">
-        <span className={`block font-medium leading-snug${umaLinha ? " truncate" : ""}`} style={{ color: cor || "var(--text)", fontSize: 16.5 }}>
+        <span className={`block font-medium leading-snug${umaLinha ? " truncate" : ""}`} style={{ color: cor || "var(--text)", fontSize: 16.5, ...limiteDeLinhas }}>
           {rotulo}
         </span>
         {detalhe && (

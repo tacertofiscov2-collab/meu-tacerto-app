@@ -213,6 +213,12 @@ ajuda.
       a casinha agora fica cinza (05/10).
 - [ ] **Notificação "Atualize seu velocímetro" voltar todo mês?** Hoje
       ela some depois de aberta uma vez (decidir com o Fernando).
+- [ ] **Slide 1 das boas-vindas** ainda mostra o Início antigo (cartão de
+      vidro e a barra "Fisco.ia no WhatsApp"). Atualizar para o visual F
+      com cuidado: os slides usam UMA escala comum (`useEscalaComum`).
+- [ ] `/regra-vinte` aberto direto pelo endereço, sem ter passado do
+      limite, diz "Passei do limite" com "Passei R$ 0,00". No app ela só
+      abre pelo velocímetro acima de 100%, então ninguém chega lá assim.
 - [ ] **Ligar o login pelo WhatsApp no painel do Supabase:** seguir
       `docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md`. Antes: publicar a função
       `enviar-otp-whatsapp` (ainda não publicada).
