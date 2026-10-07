@@ -1,4 +1,4 @@
-/* APRESENTACAOFISCO v3 — celular de exemplo com proporcao de celular de verdade (390 x 820) e igual ao Inicio novo: saudacao, velocimetro grande e a barra dos 3 atalhos centrada entre as bolinhas e o rodape (v2: celular de exemplo igual ao Inicio novo (DAS, Fisco com o simbolo do WhatsApp, NF; casinha cinza; velocimetro mais alto); textos do + e do Perfil (v1: tutorial "Apresentação do Fisco.ia": celular de exemplo do Inicio (visual F) com um circulo verde passando por cada funcao e o Fisco.ia explicando, em slides */
+/* APRESENTACAOFISCO v4 — celular MENOR, menos espaco vazio dentro dele (desenho mais justo: 340 x 715, mesma proporcao) e icones MAIORES (barra DAS/Fisco/NF, rodape e sininho); celular e texto do Fisco juntos, centrados na tela (pedido do Fernando) (v3: celular de exemplo com proporcao de celular de verdade (390 x 820) e igual ao Inicio novo: saudacao, velocimetro grande e a barra dos 3 atalhos centrada entre as bolinhas e o rodape (v2: celular de exemplo igual ao Inicio novo (DAS, Fisco com o simbolo do WhatsApp, NF; casinha cinza; velocimetro mais alto); textos do + e do Perfil (v1: tutorial "Apresentação do Fisco.ia": celular de exemplo do Inicio (visual F) com um circulo verde passando por cada funcao e o Fisco.ia explicando, em slides */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -67,10 +67,15 @@ const ALVOS_REDONDOS = ["mais", "perfil", "sino"];
 
 /* Tamanho do desenho (o Inicio de verdade) e o maximo na tela */
 /* v3: 390 x 820 (proporcao de um iPhone; antes 744 deixava o celular
-   "achatado", pedido do Fernando: estava desproporcional) */
-const LARGURA_DESENHO = 390;
-const ALTURA_DESENHO = 820;
-const LARGURA_MAX_CELULAR = 270;
+   "achatado", pedido do Fernando: estava desproporcional)
+   v4: 340 x 715 — a MESMA proporcao, mas o desenho mais justo: o
+   conteudo ocupa mais o celular e sobra menos espaco vazio dentro dele
+   ("espacamento muito grande"). Celular menor na tela (270 -> 225). */
+const LARGURA_DESENHO = 340;
+const ALTURA_DESENHO = 715;
+const LARGURA_MAX_CELULAR = 225;
+/* v4: espaco entre o celular e o texto do Fisco */
+const ESPACO_CELULAR_TEXTO = 20;
 
 /* Saudacao do topo, como no Inicio (sem o nome: e um exemplo) */
 function saudacaoDoMomento(agora = new Date()) {
@@ -121,8 +126,8 @@ function InicioDeExemplo() {
             {saudacaoDoMomento()}
           </span>
         </div>
-        <span data-alvo="sino" className="relative flex items-center justify-center" style={{ width: 34, height: 34 }}>
-          <Bell size={22} strokeWidth={1.9} style={{ color: "var(--text-secondary)" }} />
+        <span data-alvo="sino" className="relative flex items-center justify-center" style={{ width: 36, height: 36 }}>
+          <Bell size={26} strokeWidth={1.9} style={{ color: "var(--text-secondary)" }} />
         </span>
       </div>
 
@@ -155,7 +160,7 @@ function InicioDeExemplo() {
       {/* respiros iguais em cima e embaixo da barra (como no Inicio v29) */}
       <div aria-hidden style={{ flex: "0.09 1 17px", minHeight: 30 }} />
 
-      {/* barra unica (visual F) */}
+      {/* barra unica (visual F). v4: icones e nomes maiores */}
       <div
         className="shrink-0 flex items-stretch"
         style={{ margin: "0 20px", border: "1px solid var(--border)", borderRadius: 18 }}
@@ -165,32 +170,32 @@ function InicioDeExemplo() {
             key={id}
             data-alvo={id}
             className="flex-1 flex flex-col items-center justify-center"
-            style={{ padding: "12px 4px 11px", gap: 6, borderLeft: i ? "1px solid var(--border)" : "none" }}
+            style={{ padding: "13px 4px 12px", gap: 7, borderLeft: i ? "1px solid var(--border)" : "none" }}
           >
-            <Icon size={21} strokeWidth={1.9} style={{ color: "var(--primary)" }} />
-            <span className="font-medium" style={{ fontSize: 13.5 }}>{rotulo}</span>
+            <Icon size={27} strokeWidth={1.9} style={{ color: "var(--primary)" }} />
+            <span className="font-medium" style={{ fontSize: 15.5 }}>{rotulo}</span>
           </div>
         ))}
       </div>
 
       <div aria-hidden style={{ flex: "0.09 1 0%", minHeight: 13 }} />
 
-      {/* barra de baixo (Inicio, +, Perfil) */}
+      {/* barra de baixo (Inicio, +, Perfil). v4: icones e nomes maiores */}
       <div className="shrink-0 flex items-end" style={{ padding: "17px 13px 22px" }}>
         <div className="flex-1 flex flex-col items-center gap-1">
-          <Home size={26} strokeWidth={2} style={{ color: "var(--text-secondary)" }} />
-          <span className="font-medium leading-none" style={{ fontSize: 11, color: "var(--text-secondary)" }}>Início</span>
+          <Home size={30} strokeWidth={2} style={{ color: "var(--text-secondary)" }} />
+          <span className="font-medium leading-none" style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>Início</span>
         </div>
-        <div className="flex-1 flex items-center justify-center" style={{ height: 41 }}>
-          <span data-alvo="mais" className="flex items-center justify-center" style={{ width: 44, height: 44 }}>
-            <Plus size={56} strokeWidth={1.9} style={{ color: "var(--primary)", flexShrink: 0 }} />
+        <div className="flex-1 flex items-center justify-center" style={{ height: 47 }}>
+          <span data-alvo="mais" className="flex items-center justify-center" style={{ width: 48, height: 48 }}>
+            <Plus size={62} strokeWidth={1.9} style={{ color: "var(--primary)", flexShrink: 0 }} />
           </span>
         </div>
         {/* o alvo e so o icone + rotulo (nao a coluna inteira): circulo justo */}
         <div className="flex-1 flex justify-center">
           <div data-alvo="perfil" className="flex flex-col items-center gap-1">
-            <User size={26} strokeWidth={2} style={{ color: "var(--text-secondary)" }} />
-            <span className="font-medium leading-none" style={{ fontSize: 11, color: "var(--text-secondary)" }}>Perfil</span>
+            <User size={30} strokeWidth={2} style={{ color: "var(--text-secondary)" }} />
+            <span className="font-medium leading-none" style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>Perfil</span>
           </div>
         </div>
       </div>
@@ -198,30 +203,12 @@ function InicioDeExemplo() {
   );
 }
 
-/* O celular de exemplo, encolhido para caber, com o circulo verde */
-function CelularDeExemplo({ alvo }) {
-  const caixaRef = useRef(null);
+/* O celular de exemplo, encolhido para caber, com o circulo verde.
+   v4: a escala vem de fora (ApresentacaoFisco mede o espaco que sobra
+   para o celular e o texto juntos) */
+function CelularDeExemplo({ alvo, escala }) {
   const desenhoRef = useRef(null);
-  const [escala, setEscala] = useState(0.5);
   const [circulo, setCirculo] = useState(null);
-
-  /* Escala: cabe na largura e na altura que sobram (ate o maximo) */
-  useLayoutEffect(() => {
-    const caixa = caixaRef.current;
-    if (!caixa) return undefined;
-    const medir = () => {
-      const e = Math.min(
-        caixa.clientWidth / LARGURA_DESENHO,
-        caixa.clientHeight / ALTURA_DESENHO,
-        LARGURA_MAX_CELULAR / LARGURA_DESENHO,
-      );
-      if (e > 0) setEscala(e);
-    };
-    medir();
-    const ro = new ResizeObserver(medir);
-    ro.observe(caixa);
-    return () => ro.disconnect();
-  }, []);
 
   /* Posicao do circulo (em px do desenho), medida na funcao da vez */
   useLayoutEffect(() => {
@@ -250,7 +237,7 @@ function CelularDeExemplo({ alvo }) {
   }, [alvo, escala]);
 
   return (
-    <div ref={caixaRef} className="flex-1 min-h-0 w-full flex items-center justify-center">
+    <div className="shrink-0 w-full flex justify-center">
       <div
         aria-hidden
         className="relative overflow-hidden"
@@ -302,6 +289,37 @@ export default function ApresentacaoFisco({ aberto, onFechar }) {
   const toqueX = useRef(null);
   const fecharRef = useRef(onFechar);
   fecharRef.current = onFechar;
+  const areaRef = useRef(null);
+  const textoRef = useRef(null);
+  const [escala, setEscala] = useState(0.5);
+
+  /* v4: escala do celular. Celular + texto do Fisco ficam JUNTOS e
+     centrados no espaco entre o cabecalho e as bolinhas; o celular
+     usa a altura que sobra depois do texto (ate o maximo) */
+  useLayoutEffect(() => {
+    if (!aberto) return undefined;
+    const area = areaRef.current;
+    const texto = textoRef.current;
+    if (!area || !texto) return undefined;
+    const medir = () => {
+      const cs = getComputedStyle(area);
+      const largura = area.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const altura =
+        area.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
+        - texto.offsetHeight - ESPACO_CELULAR_TEXTO;
+      const e = Math.min(
+        largura / LARGURA_DESENHO,
+        altura / ALTURA_DESENHO,
+        LARGURA_MAX_CELULAR / LARGURA_DESENHO,
+      );
+      if (e > 0) setEscala(e);
+    };
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(area);
+    ro.observe(texto);
+    return () => ro.disconnect();
+  }, [aberto]);
 
   /* Sempre comeca do primeiro slide */
   useEffect(() => {
@@ -376,19 +394,19 @@ export default function ApresentacaoFisco({ aberto, onFechar }) {
         <span className="font-bold truncate" style={{ fontSize: 20 }}>Apresentação do Fisco.ia</span>
       </div>
 
-      {/* Celular + texto: da para arrastar para os lados */}
+      {/* Celular + texto: da para arrastar para os lados.
+          v4: os dois juntos, centrados na altura que sobra */}
       <div
-        className="flex-1 min-h-0 flex flex-col"
-        style={{ touchAction: "pan-y" }}
+        ref={areaRef}
+        className="flex-1 min-h-0 flex flex-col justify-center"
+        style={{ touchAction: "pan-y", padding: "12px 24px 0" }}
         onTouchStart={inicioToque}
         onTouchEnd={fimToque}
       >
-        <div className="flex-1 min-h-0 flex flex-col" style={{ padding: "12px 24px 0" }}>
-          <CelularDeExemplo alvo={PASSOS[atual].alvo} />
-        </div>
+        <CelularDeExemplo alvo={PASSOS[atual].alvo} escala={escala} />
 
         {/* Todos os textos no mesmo lugar: a altura nao muda */}
-        <div className="shrink-0 grid" style={{ padding: "20px 24px 0" }}>
+        <div ref={textoRef} className="shrink-0 grid" style={{ marginTop: ESPACO_CELULAR_TEXTO }}>
           {PASSOS.map((p, i) => (
             <div
               key={p.titulo}
