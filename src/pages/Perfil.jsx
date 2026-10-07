@@ -1,4 +1,4 @@
-﻿/* PERFIL v17 — menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes))) */
+﻿/* PERFIL v18 — "Excluir conta" em branco (como as outras linhas); vermelho so no "Sair da conta" (pedido do Fernando) (v17: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes))) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
@@ -440,12 +440,12 @@ export default function Perfil() {
               valor={<SeletorTema tema={tema} onEscolher={escolherTema} />}
             />
             {/* v16: Excluir conta logo abaixo do Tema (pedido do Fernando:
-                longe do "Sair da conta") */}
+                longe do "Sair da conta"). v18: branco como as outras
+                linhas; vermelho so no "Sair da conta" */}
             {!visitante && (
               <LinhaLista
                 Icon={Trash2}
                 rotulo="Excluir conta"
-                cor="var(--danger)"
                 semSeta
                 onClick={() => navigate("/excluir-conta", DE_PERFIL)}
               />

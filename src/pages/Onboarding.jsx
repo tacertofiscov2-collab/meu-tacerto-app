@@ -1,4 +1,4 @@
-/* ONBOARDING v13 — cara do app: opcao escolhida sem verde e sem fundo cinza (so mais acesa), fundo preto em tudo, verde so no botao de continuar; letras maiores; campos com 16px (o iPhone dava zoom) (v12: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v11: botao "Começar a usar" em contorno verde (botao-confirmar) (v10: gesto de voltar do iPhone volta UMA ETAPA (nao sai mais do onboarding para o Inicio); onboarding ja feito volta para o Inicio (v9: nome ja preenchido; v8: "Digitar valor" em folha acima do teclado))) */
+/* ONBOARDING v14 — bolinhas de progresso (abaixo do logo) VERDES de novo, como eram antes da v13 (pedido do Fernando) (v13: cara do app: opcao escolhida sem verde e sem fundo cinza (so mais acesa), fundo preto em tudo, verde so no botao de continuar; letras maiores; campos com 16px (o iPhone dava zoom) (v12: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v11: botao "Começar a usar" em contorno verde (botao-confirmar) (v10: gesto de voltar do iPhone volta UMA ETAPA (nao sai mais do onboarding para o Inicio); onboarding ja feito volta para o Inicio (v9: nome ja preenchido; v8: "Digitar valor" em folha acima do teclado))) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -157,8 +157,9 @@ function Progress({ step }) {
           className="h-1.5 rounded-full transition-all"
           style={{
             width: s === step ? 28 : 8,
-            /* v13: sem verde (so o botao de continuar e verde) */
-            backgroundColor: s <= step ? "var(--text)" : "var(--border)",
+            /* v14: verdes de novo (pedido do Fernando; na v13 tinham
+               ficado brancas) */
+            backgroundColor: s <= step ? "var(--primary)" : "var(--border)",
           }}
         />
       ))}
