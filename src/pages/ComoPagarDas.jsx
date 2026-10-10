@@ -1,4 +1,4 @@
-/* COMOPAGARDAS v5 — secao "Como o TaCerto ajuda hoje" (boleto pronto no WhatsApp, boleto atrasado) e icone do WhatsApp (v4: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v3: padrao do Perfil (lista simples, sem cartoes nem caixa amarela, letras maiores; acoes como linhas) (v2: Fisco.ia; v1: passo a passo do PGMEI))) */
+/* COMOPAGARDAS v6 — vencimento certo: "Vence dia 20. Se cair em fim de semana ou feriado, vence no próximo dia útil" (v5: secao "Como o TaCerto ajuda hoje" (boleto pronto no WhatsApp, boleto atrasado) e icone do WhatsApp (v4: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v3: padrao do Perfil (lista simples, sem cartoes nem caixa amarela, letras maiores; acoes como linhas) (v2: Fisco.ia; v1: passo a passo do PGMEI))) */
 import { useLocation, useNavigate } from "react-router-dom";
 import { CalendarClock, ExternalLink, CheckCircle2 } from "lucide-react";
 import IconeWhatsApp from "../components/IconeWhatsApp.jsx";
@@ -81,8 +81,8 @@ export default function ComoPagarDas() {
         <SecaoLista style={{ marginTop: 4 }}>
           <LinhaLista
             Icon={CalendarClock}
-            rotulo="Vence todo dia 20"
-            detalhe="Atrasou, vem multa e juros. Pagando em dia, você mantém seus direitos no INSS."
+            rotulo="Vence dia 20"
+            detalhe="Se cair em fim de semana ou feriado, vence no próximo dia útil. Atrasou, vem multa e juros."
           />
         </SecaoLista>
 

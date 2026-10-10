@@ -1,4 +1,4 @@
-/* INFORMACOESFISCAIS v1 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) */
+/* INFORMACOESFISCAIS v2 — vencimento do DAS certo (prorroga para o proximo dia util) (v1: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) */
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
@@ -63,7 +63,7 @@ export default function InformacoesFiscais() {
 
           <SectionTitle>Vencimento do DAS</SectionTitle>
           <p className="text-[15px] leading-relaxed" style={{ color: "var(--text)" }}>
-            Todo dia 20 (antecipa se cair em fim de semana ou feriado).
+            Dia 20. Se cair em fim de semana ou feriado, vence no próximo dia útil.
           </p>
 
           <SectionTitle>Valor do DAS mensal (2026)</SectionTitle>

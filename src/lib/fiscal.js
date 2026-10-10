@@ -1,4 +1,4 @@
-/* FISCAL v4 — preco do Certificado A1 (R$ 100,34, preco de custo) num lugar so (v3: palavraDaSituacao: velocimetro zerado diz "Falta informar" (nunca "Tá tranquilo") (v2: valor do DAS pelo CNAE (caminhoneiro: municipal / intermunicipal / os dois; MEI comum: comercio / servicos / os dois) (v1: fonte unica das regras fiscais) */
+/* FISCAL v5 — DAS_VENCIMENTO_LABEL certo (prorroga para o proximo dia util) (v4: preco do Certificado A1 (R$ 100,34, preco de custo) num lugar so (v3: palavraDaSituacao: velocimetro zerado diz "Falta informar" (nunca "Tá tranquilo") (v2: valor do DAS pelo CNAE (caminhoneiro: municipal / intermunicipal / os dois; MEI comum: comercio / servicos / os dois) (v1: fonte unica das regras fiscais) */
 // Fonte ÚNICA da verdade para regras fiscais do TaCerto!
 
 export const LIMITES_ANUAIS = {
@@ -231,8 +231,10 @@ export function valorDasMensal(tipo, cnaes = []) {
 export const PRECO_CERTIFICADO_A1 = 100.34;
 
 export const DAS_VENCIMENTO_DIA = 20;
+/* v5: o DAS PRORROGA para o proximo dia util (antes dizia "antecipa",
+   errado). Mesmo texto de src/lib/vencimentoDas.js (TEXTO_VENCIMENTO_DAS). */
 export const DAS_VENCIMENTO_LABEL =
-  "Dia 20 (antecipa se cair em fim de semana ou feriado)";
+  "Dia 20. Se cair em fim de semana ou feriado, vence no próximo dia útil.";
 export const DASN_PRAZO = { dia: 31, mes: 5 };
 
 export function calcularPercentual(faturado, limite) {

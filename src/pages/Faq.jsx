@@ -1,4 +1,4 @@
-/* FAQ v1 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) */
+/* FAQ v2 — vencimento do DAS: "vence no proximo dia util" (v1: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) */
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Search, ChevronDown } from "lucide-react";
@@ -27,7 +27,7 @@ const PERGUNTAS = [
     id: 3,
     pergunta: "Quando vence o DAS?",
     resposta:
-      "O DAS (Documento de Arrecadação do Simples Nacional) vence todo dia 20 de cada mês. Se cair em final de semana ou feriado, o vencimento pode ser prorrogado para o próximo dia útil.",
+      "O DAS (Documento de Arrecadação do Simples Nacional) vence dia 20 de cada mês. Se cair em fim de semana ou feriado, vence no próximo dia útil.",
   },
   {
     id: 4,

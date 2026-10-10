@@ -1,3 +1,4 @@
+/* FAQFISCO v2 — vencimento do DAS certo: dia 20, prorroga para o proximo dia util (antes dizia "antecipa") */
 import { LIMITES_ANUAIS, limiteAte20Percent } from "./fiscal.js";
 
 const fmt = (v) =>
@@ -275,8 +276,8 @@ const GERAIS = [
     pergunta: "Quanto é o DAS e quando vence?",
     resposta: (c) =>
       ehCaminhoneiro(c)
-        ? `O DAS do MEI Caminhoneiro é um valor fixo mensal, que muda um pouco conforme o tipo de transporte (municipal, intermunicipal ou cargas especiais). Ele já vem com INSS, ICMS e ISS num boleto só.\n\nVence todo dia 20. Se cair em fim de semana ou feriado, antecipa. O valor exato do seu caso aparece no app do MEI ou no Portal do Empreendedor.`
-        : `O DAS do MEI é um valor fixo mensal, que muda um pouco conforme a atividade (comércio, serviços ou os dois). Ele já inclui INSS e o imposto estadual ou municipal.\n\nVence todo dia 20. Se cair em fim de semana ou feriado, antecipa. O valor exato aparece no app do MEI ou no Portal do Empreendedor.`,
+        ? `O DAS do MEI Caminhoneiro é um valor fixo mensal, que muda um pouco conforme o tipo de transporte (municipal, intermunicipal ou cargas especiais). Ele já vem com INSS, ICMS e ISS num boleto só.\n\nVence dia 20. Se cair em fim de semana ou feriado, vence no próximo dia útil. O valor exato do seu caso aparece no app do MEI ou no Portal do Empreendedor.`
+        : `O DAS do MEI é um valor fixo mensal, que muda um pouco conforme a atividade (comércio, serviços ou os dois). Ele já inclui INSS e o imposto estadual ou municipal.\n\nVence dia 20. Se cair em fim de semana ou feriado, vence no próximo dia útil. O valor exato aparece no app do MEI ou no Portal do Empreendedor.`,
   },
   {
     id: "g2",

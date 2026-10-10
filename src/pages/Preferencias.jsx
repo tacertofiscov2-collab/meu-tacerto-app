@@ -1,26 +1,32 @@
-/* PREFERENCIAS v3 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v2: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026))) */
-import { useEffect, useState } from "react";
+/* PREFERENCIAS v4 — so o que funciona: "Lembrete do DAS" (dias antes: 7, 5, 3, 2, 1 e no dia, varios; horario; "Não quero lembretes"), gravado no perfil (lembrete_das_dias e lembrete_das_hora); sairam Tema (fica no Perfil), Tamanho da fonte e "Alertas do Fisco" (nao faziam nada) (v3: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v2: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026)))) */
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Check, BellOff } from "lucide-react";
+import TopoRolavel from "../components/TopoRolavel.jsx";
+import { useAppState } from "@/context/AppStateContext";
 import {
-  ArrowLeft, Sun, Moon, Wand2, Type, Bell, CalendarClock, Check,
-} from "lucide-react";
+  TEXTO_VENCIMENTO_DAS, proximoVencimentoDas, formatarDiaMes,
+} from "@/lib/vencimentoDas";
 
-import BottomNav from "../components/BottomNav.jsx";
+/* ===================================================================
+   PREFERENCIAS v4 (10/10/2026 — tarefa de 08-10, Etapa 6)
 
-/* PREFERENCIAS v2 — cards no padrao .card-tacerto (index.css).
-   Setinha de voltar mantida com vidro. Botoes de selecao internos
-   (tamanho de fonte, dias do lembrete) nao foram alterados: o fundo
-   deles e o que mostra qual esta escolhido. */
+   So o LEMBRETE DO DAS (o resto da tela antiga nao fazia nada; o Tema
+   Preto/Branco esta no Perfil).
+   - Dias antes do vencimento: 7, 5, 3, 2, 1 e "No dia" (pode marcar
+     varios). Padrao: 7, 2 e no dia (o mesmo do banco).
+   - Horario do lembrete (padrao 9:00 — pergunta para o Fernando no
+     HANDOFF).
+   - "Não quero lembretes": nenhum dia marcado (lembrete_das_dias = {}).
+   Grava sozinho a cada toque (perfis.lembrete_das_dias e
+   perfis.lembrete_das_hora — AppStateContext.salvarLembreteDas).
+   O ENVIO automatico ainda NAO existe (plano em
+   docs/PLANO-AUTOMACAO-DAS.md); no piloto, o Fernando usa estas
+   escolhas para mandar os lembretes.
 
-const KEY_TEMA = "tacerto_tema";
-const KEY_FONTE = "tacerto_fonte";
-const KEY_PUSH = "tacerto_push";
-const KEY_LEMBRETE = "tacerto_lembrete_das";
-
-/* O tema oficial do TaCerto! é o ESCURO. O claro e o automático só
-   entram se o usuário escolher — por isso o padrão em todo lugar é
-   "escuro", nunca "auto". */
-const TEMA_PADRAO = "escuro";
+   As funcoes de tema continuam aqui porque o Perfil usa (aplicarTema e
+   temaEfetivo).
+   =================================================================== */
 
 export function temaEfetivo(escolha) {
   if (escolha === "claro") return "claro";
@@ -46,320 +52,131 @@ export function aplicarFonte(valor) {
   else root.classList.add("font-medium");
 }
 
-function CardOpcao({ Icon, label, sub, ativo, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="card-tacerto flex-1 rounded-2xl px-3 py-3 flex flex-col items-center gap-1.5 transition"
-      style={{
-        borderColor: ativo ? "var(--primary)" : undefined,
-        opacity: ativo ? 1 : 0.55,
-      }}
-    >
-      <Icon
-        size={22}
-        strokeWidth={ativo ? 2.3 : 1.9}
-        style={{ color: ativo ? "var(--primary)" : "var(--text-secondary)" }}
-      />
-      <span
-        className="text-[13px] leading-none"
-        style={{ color: "var(--text)", fontWeight: ativo ? 700 : 500 }}
-      >
-        {label}
-      </span>
-      {sub && (
-        <span
-          className="text-[10px] leading-tight text-center"
-          style={{ color: "var(--text-secondary)" }}
-        >
-          {sub}
-        </span>
-      )}
-    </button>
-  );
-}
-
-function Switch({ ativo, onChange, label }) {
-  return (
-    <button
-      onClick={() => onChange(!ativo)}
-      role="switch"
-      aria-checked={ativo}
-      aria-label={label}
-      className="relative w-12 h-7 rounded-full transition-colors shrink-0"
-      style={{ backgroundColor: ativo ? "var(--primary)" : "var(--field)" }}
-    >
-      <span
-        className="absolute top-1 left-1 w-5 h-5 rounded-full transition-transform"
-        style={{
-          backgroundColor: "#fff",
-          transform: ativo ? "translateX(20px)" : "translateX(0)",
-        }}
-      />
-    </button>
-  );
-}
-
-const OPCOES_LEMBRETE = [
-  { valor: "5", label: "5 dias antes" },
-  { valor: "3", label: "3 dias antes" },
-  { valor: "1", label: "1 dia antes" },
-  { valor: "0", label: "No dia" },
+const DIAS = [
+  { valor: 7, rotulo: "7 dias antes" },
+  { valor: 5, rotulo: "5 dias antes" },
+  { valor: 3, rotulo: "3 dias antes" },
+  { valor: 2, rotulo: "2 dias antes" },
+  { valor: 1, rotulo: "1 dia antes" },
+  { valor: 0, rotulo: "No dia" },
 ];
+const HORA_PADRAO = "09:00";
+
+const ROTULO_SECAO = {
+  color: "var(--text-tertiary)",
+  fontSize: 12.5,
+  fontWeight: 600,
+  letterSpacing: "0.08em",
+  textTransform: "uppercase",
+};
 
 export default function Preferencias() {
   const navigate = useNavigate();
+  const { lembreteDasDias, lembreteDasHora, salvarLembreteDas } = useAppState();
+  const dias = Array.isArray(lembreteDasDias) ? lembreteDasDias : [7, 2, 0];
+  const hora = lembreteDasHora || HORA_PADRAO;
+  const semLembrete = dias.length === 0;
 
-  const [tema, setTema] = useState(() => {
-    if (typeof window === "undefined") return TEMA_PADRAO;
-    return localStorage.getItem(KEY_TEMA) || TEMA_PADRAO;
-  });
-  const [fonte, setFonte] = useState(() => {
-    if (typeof window === "undefined") return "medium";
-    return localStorage.getItem(KEY_FONTE) || "medium";
-  });
-  const [push, setPush] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return localStorage.getItem(KEY_PUSH) !== "0";
-  });
-  const [lembrete, setLembrete] = useState(() => {
-    if (typeof window === "undefined") return "3";
-    return localStorage.getItem(KEY_LEMBRETE) || "3";
-  });
+  const [guardado, setGuardado] = useState(false);
+  const timer = useRef(null);
+  useEffect(() => () => clearTimeout(timer.current), []);
 
-  useEffect(() => {
-    aplicarTema(tema);
-    try {
-      localStorage.setItem(KEY_TEMA, tema);
-    } catch {}
-  }, [tema]);
+  async function salvar(patch) {
+    await salvarLembreteDas(patch);
+    setGuardado(true);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setGuardado(false), 1600);
+  }
 
-  useEffect(() => {
-    if (tema !== "auto") return;
-    const id = setInterval(() => aplicarTema("auto"), 60000);
-    return () => clearInterval(id);
-  }, [tema]);
+  function alternarDia(valor) {
+    const novo = dias.includes(valor) ? dias.filter((d) => d !== valor) : [...dias, valor];
+    salvar({ dias: novo.sort((a, b) => b - a) });
+  }
 
-  useEffect(() => {
-    aplicarFonte(fonte);
-    try {
-      localStorage.setItem(KEY_FONTE, fonte);
-    } catch {}
-  }, [fonte]);
+  function voltar() {
+    if ((window.history.state?.idx ?? 0) > 0) navigate(-1);
+    else navigate("/perfil", { replace: true });
+  }
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(KEY_PUSH, push ? "1" : "0");
-    } catch {}
-  }, [push]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(KEY_LEMBRETE, lembrete);
-    } catch {}
-  }, [lembrete]);
-
-  const subAuto =
-    tema === "auto"
-      ? temaEfetivo("auto") === "claro"
-        ? "Claro agora"
-        : "Escuro agora"
-      : "6h às 18h claro";
+  const proximo = proximoVencimentoDas();
 
   return (
-    <div
-      className="w-full flex flex-col"
+    <div className="tela-rolavel w-full flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
+      <div className="conteudo-rolavel hide-scrollbar px-5" style={{ paddingBottom: "calc(40px + env(safe-area-inset-bottom))" }}>
+        <TopoRolavel titulo="Preferências" onVoltar={voltar} />
+
+        <p style={{ ...ROTULO_SECAO, marginTop: 10 }}>Lembrete do DAS</p>
+        <p style={{ fontSize: 15, lineHeight: 1.45, color: "var(--text-secondary)", marginTop: 8 }}>
+          O Fisco te avisa no WhatsApp, antes de vencer.
+        </p>
+        <p style={{ fontSize: 13.5, lineHeight: 1.45, color: "var(--text-tertiary)", marginTop: 4 }}>
+          {TEXTO_VENCIMENTO_DAS} Próximo: {formatarDiaMes(proximo)}.
+        </p>
+
+        <div className="grid grid-cols-2" style={{ gap: 8, marginTop: 16, opacity: semLembrete ? 0.45 : 1 }}>
+          {DIAS.map((d) => (
+            <Escolha key={d.valor} rotulo={d.rotulo} marcada={dias.includes(d.valor)} onClick={() => alternarDia(d.valor)} />
+          ))}
+        </div>
+
+        <label className="flex items-center justify-between" style={{ marginTop: 18, gap: 12, opacity: semLembrete ? 0.45 : 1 }}>
+          <span className="font-medium" style={{ fontSize: 16.5 }}>Horário</span>
+          <input
+            type="time"
+            value={hora}
+            disabled={semLembrete}
+            onChange={(e) => e.target.value && salvar({ hora: e.target.value })}
+            className="rounded-xl bg-transparent"
+            style={{ fontSize: 16, padding: "8px 12px", border: "1px solid var(--border)", color: "var(--text)", colorScheme: "inherit" }}
+          />
+        </label>
+
+        <button
+          type="button"
+          onClick={() => salvar({ dias: semLembrete ? [7, 2, 0] : [] })}
+          aria-pressed={semLembrete}
+          className="toque w-full rounded-2xl flex items-center justify-center font-medium"
+          style={{
+            marginTop: 22,
+            gap: 8,
+            padding: "13px 0",
+            fontSize: 15,
+            background: "none",
+            border: `1px solid ${semLembrete ? "var(--text-secondary)" : "var(--border)"}`,
+            color: semLembrete ? "var(--text)" : "var(--text-secondary)",
+          }}
+        >
+          <BellOff size={17} strokeWidth={2} />
+          {semLembrete ? "Quero lembretes de novo" : "Não quero lembretes"}
+        </button>
+
+        <p className="text-center" style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 12, minHeight: 18 }}>
+          {guardado ? "Guardado" : ""}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* Opcao marcada: so mais acesa (borda e texto mais claros) + um ✓, sem verde */
+function Escolha({ rotulo, marcada, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={marcada}
+      className="toque rounded-2xl flex items-center justify-between font-medium"
       style={{
-        backgroundColor: "var(--bg)",
-        color: "var(--text)",
-        height: "100dvh",
-        maxHeight: "100dvh",
-        overflow: "hidden",
+        minHeight: 50,
+        padding: "0 12px 0 14px",
+        fontSize: 15,
+        background: "none",
+        border: `1px solid ${marcada ? "var(--text-secondary)" : "var(--border)"}`,
+        color: marcada ? "var(--text)" : "var(--text-tertiary)",
       }}
     >
-      <header className="px-5 pt-6 pb-2 flex items-center gap-3 shrink-0">
-        <button
-          onClick={() => navigate(-1)}
-          aria-label="Voltar"
-          className="w-[46px] h-[46px] rounded-full flex items-center justify-center hover:opacity-80"
-          style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
-        >
-          <ArrowLeft size={24} style={{ color: "var(--text)" }} />
-        </button>
-        <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-          Preferências
-        </h1>
-      </header>
-
-      <div
-        className="px-5 flex-1 min-h-0 flex flex-col gap-4"
-        style={{ paddingBottom: "calc(12px + env(safe-area-inset-bottom))" }}
-      >
-        <section>
-          <p
-            className="text-[13px] mb-2"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Tema do app
-          </p>
-          {/* Escuro primeiro: é o tema oficial e o padrão do app. */}
-          <div className="flex gap-2">
-            <CardOpcao
-              Icon={Moon}
-              label="Escuro"
-              sub="Padrão"
-              ativo={tema === "escuro"}
-              onClick={() => setTema("escuro")}
-            />
-            <CardOpcao
-              Icon={Sun}
-              label="Claro"
-              ativo={tema === "claro"}
-              onClick={() => setTema("claro")}
-            />
-            <CardOpcao
-              Icon={Wand2}
-              label="Automático"
-              sub={subAuto}
-              ativo={tema === "auto"}
-              onClick={() => setTema("auto")}
-            />
-          </div>
-        </section>
-
-        <section>
-          <p
-            className="text-[13px] mb-2"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Tamanho da fonte
-          </p>
-          <div className="card-tacerto rounded-2xl px-4 py-3">
-            <div className="flex items-end justify-between gap-2">
-              {[
-                { v: "small", label: "Pequena", tam: 13 },
-                { v: "medium", label: "Médio", tam: 16 },
-                { v: "large", label: "Grande", tam: 20 },
-              ].map((op) => {
-                const ativo = fonte === op.v;
-                return (
-                  <button
-                    key={op.v}
-                    onClick={() => setFonte(op.v)}
-                    className="flex-1 flex flex-col items-center gap-2 py-2 rounded-xl transition"
-                    style={{
-                      backgroundColor: ativo
-                        ? "var(--surface-selected)"
-                        : "transparent",
-                      opacity: ativo ? 1 : 0.5,
-                    }}
-                  >
-                    <Type
-                      size={op.tam}
-                      strokeWidth={ativo ? 2.3 : 1.9}
-                      style={{
-                        color: ativo ? "var(--primary)" : "var(--text-secondary)",
-                      }}
-                    />
-                    <span
-                      className="text-[12px] leading-none"
-                      style={{
-                        color: "var(--text)",
-                        fontWeight: ativo ? 700 : 500,
-                      }}
-                    >
-                      {op.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <p
-            className="text-[13px] mb-2"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Notificações
-          </p>
-
-          <div className="card-tacerto rounded-2xl px-4 py-3 flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-              style={{ backgroundColor: "var(--surface)" }}
-            >
-              <Bell size={19} style={{ color: "var(--primary)" }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[15px]" style={{ color: "var(--text)" }}>
-                Alertas do Fisco
-              </p>
-              <p
-                className="text-xs mt-0.5"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                Avisos sobre seu MEI
-              </p>
-            </div>
-            <Switch ativo={push} onChange={setPush} label="Notificações push" />
-          </div>
-
-          <div
-            className="card-tacerto rounded-2xl px-4 pt-3 pb-3 mt-2"
-            style={{
-              opacity: push ? 1 : 0.45,
-              pointerEvents: push ? "auto" : "none",
-            }}
-          >
-            <div className="flex items-center gap-3 mb-2.5">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                style={{ backgroundColor: "var(--surface)" }}
-              >
-                <CalendarClock size={19} style={{ color: "var(--primary)" }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[15px]" style={{ color: "var(--text)" }}>
-                  Lembrete do DAS
-                </p>
-                <p
-                  className="text-xs mt-0.5"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Vence todo dia 20
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {OPCOES_LEMBRETE.map((op) => {
-                const ativo = lembrete === op.valor;
-                return (
-                  <button
-                    key={op.valor}
-                    onClick={() => setLembrete(op.valor)}
-                    className="py-2 rounded-xl text-[13px] flex items-center justify-center gap-1.5 transition"
-                    style={{
-                      backgroundColor: ativo
-                        ? "var(--surface-selected)"
-                        : "var(--surface)",
-                      color: "var(--text)",
-                      fontWeight: ativo ? 700 : 500,
-                      opacity: ativo ? 1 : 0.6,
-                    }}
-                  >
-                    {ativo && <Check size={14} style={{ color: "var(--primary)" }} />}
-                    {op.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <BottomNav />
-    </div>
+      {rotulo}
+      {marcada && <Check size={16} strokeWidth={2.4} />}
+    </button>
   );
 }

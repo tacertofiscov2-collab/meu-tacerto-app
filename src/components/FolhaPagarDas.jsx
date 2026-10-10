@@ -1,8 +1,10 @@
-/* FOLHAPAGARDAS v3 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v2: "Fisco" vira "Fisco.ia" nos textos da tela (v1: "Como voce quer pagar seu DAS?": boleto todo mes no WhatsApp, Fisco ajuda agora, fazer sozinho, site do governo)) */
+/* FOLHAPAGARDAS v4 — linha discreta no topo com o proximo vencimento REAL (feriados nacionais, prorroga para o proximo dia util) e o valor pelo CNAE do perfil (v3: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v2: "Fisco" vira "Fisco.ia" nos textos da tela (v1: "Como voce quer pagar seu DAS?": boleto todo mes no WhatsApp, Fisco ajuda agora, fazer sozinho, site do governo)) */
 import { useNavigate } from "react-router-dom";
 import { MessageCircle, Headphones, ListChecks, Globe, ChevronRight } from "lucide-react";
 import FolhaDeBaixo from "./FolhaDeBaixo.jsx";
 import { useAppState } from "@/context/AppStateContext";
+import { proximoVencimentoDas, formatarDiaMes } from "@/lib/vencimentoDas";
+import { valorDasMensal } from "@/lib/fiscal";
 import {
   MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco, LINK_PGMEI, MOSTRAR_TUTORIAL_DAS,
 } from "@/config/piloto";
@@ -82,6 +84,10 @@ export default function FolhaPagarDas({ aberto, onFechar }) {
   const navigate = useNavigate();
   const app = useAppState();
   const dados = dadosParaWhatsApp(app);
+  /* v4: no visual F do Inicio a data nao aparece em outro lugar: o
+     painel mostra o proximo vencimento real e o valor pelo CNAE */
+  const vencimento = formatarDiaMes(proximoVencimentoDas());
+  const valor = valorDasMensal(app.tipoMEI, [app.cnae, ...(app.cnaesSecundarios || [])].filter(Boolean));
 
   function noWhatsApp(texto) {
     abrirWhatsAppFisco(texto);
@@ -90,6 +96,9 @@ export default function FolhaPagarDas({ aberto, onFechar }) {
 
   return (
     <FolhaDeBaixo aberto={aberto} onFechar={onFechar} titulo="Como você quer pagar seu DAS?">
+      <p className="text-center" style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: -6, marginBottom: 14 }}>
+        Vence {vencimento} · R$ {Number(valor || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+      </p>
       <div className="flex flex-col" style={{ gap: 8 }}>
         <Opcao
           Icon={MessageCircle}
