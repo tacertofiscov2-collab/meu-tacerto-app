@@ -1,5 +1,19 @@
 /* CNPJ v1 — CNPJ do MEI: mascara enquanto digita, CNPJ escondido, conferencia dos digitos e busca dos dados publicos na BrasilAPI (nome, CNAE, data do MEI) */
 
+/* Conferido em 10/10/2026 (verificacao independente), ainda v1 porque nao
+   foi publicado. Corrigido:
+   - buscarCnpj(cnpj, null) dava erro (TypeError); agora usa as opcoes padrao.
+     A busca tem de "nunca lancar".
+   - timeoutMs = Infinity ou enorme desistia NA HORA (o setTimeout do
+     navegador estoura acima de ~24 dias e vira 1 ms). Agora so vale de 1 ms
+     ate 2 minutos; fora disso, os 8 segundos padrao.
+   - CNPJ da resposta chegando como NUMERO (191 em vez de "00000000000191")
+     dava "falha" por parecer outro CNPJ. Agora completa os zeros antes de
+     comparar.
+   - soDigitosCnae(49302) virava "0049302" (CNAE que nao existe). O zero na
+     frente so e posto em numero de 6 digitos (o caso real: 0111-3/01 que
+     chega como 111301); com 5 digitos ou menos devolve "". */
+
 /* ===================================================================
    CNPJ DO MEI — REGRAS (escrito em 10/10/2026)
 
@@ -53,7 +67,8 @@
      (o tipo e travado no app; so muda pela folha "O que mudou?").
    - A BrasilAPI manda o CNAE como numero (4930202). CNAE que comeca com
      0 (agricultura, ex.: 0111-3/01) chega como 111301: por isso numero
-     com menos de 7 digitos ganha zero na frente.
+     de 6 digitos ganha zero na frente. Numero menor (5 digitos ou menos)
+     daria divisao "00", que nao existe: e recusado.
    - Sem CNAE secundario, a BrasilAPI manda [{ codigo: 0, descricao: "" }]:
      esse codigo 0 e ignorado.
 
@@ -75,6 +90,7 @@
 
 const URL_BRASILAPI_CNPJ = "https://brasilapi.com.br/api/cnpj/v1/";
 const TEMPO_LIMITE_PADRAO = 8000; // 8 segundos
+const TEMPO_LIMITE_MAXIMO = 120000; // 2 minutos (acima disso, usa o padrao)
 
 const PESOS_DV1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
 const PESOS_DV2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
@@ -150,7 +166,7 @@ export function cnpjValido(valor) {
    manda o CNAE como numero e o zero da frente se perde. */
 export function soDigitosCnae(codigo) {
   if (typeof codigo === "number") {
-    if (!Number.isInteger(codigo) || codigo <= 0 || codigo > 9999999) return "";
+    if (!Number.isInteger(codigo) || codigo < 100000 || codigo > 9999999) return "";
     return String(codigo).padStart(7, "0");
   }
   const d = todosOsDigitos(codigo);
@@ -308,8 +324,9 @@ async function lerResposta(resp, digitos) {
   if (!corpo || typeof corpo !== "object" || Array.isArray(corpo)) return falha();
   /* Tem de parecer um cadastro de CNPJ, e do CNPJ que foi pedido */
   if (corpo.razao_social == null && corpo.cnpj == null) return falha();
+  /* padStart: se o CNPJ vier como numero, os zeros da frente somem (191) */
   const cnpjDaResposta = todosOsDigitos(corpo.cnpj);
-  if (cnpjDaResposta && cnpjDaResposta !== digitos) return falha();
+  if (cnpjDaResposta && cnpjDaResposta.padStart(14, "0") !== digitos) return falha();
 
   return { ok: true, dados: montarDados(corpo, digitos) };
 }
@@ -320,9 +337,14 @@ async function lerResposta(resp, digitos) {
  *   { ok: false, motivo: "nao_encontrado" }  a Receita ainda nao tem esse CNPJ
  *   { ok: false, motivo: "falha" }           sem internet, demorou, servidor fora...
  *   { ok: true, dados }                      deu certo
- * fetchImpl: so para teste (troca o fetch de verdade por um falso).
+ * opcoes = { timeoutMs = 8000, fetchImpl }:
+ *   timeoutMs: tempo maximo em ms (fora de 1 ms a 2 min, usa 8000).
+ *   fetchImpl: so para teste (troca o fetch de verdade por um falso).
  */
-export async function buscarCnpj(cnpj, { timeoutMs = TEMPO_LIMITE_PADRAO, fetchImpl } = {}) {
+export async function buscarCnpj(cnpj, opcoes = {}) {
+  /* opcoes null ou nao-objeto nao pode fazer a busca dar erro */
+  const { timeoutMs = TEMPO_LIMITE_PADRAO, fetchImpl } =
+    opcoes && typeof opcoes === "object" ? opcoes : {};
   if (!cnpjValido(cnpj)) return { ok: false, motivo: "invalido" };
   const digitos = todosOsDigitos(cnpj);
 
@@ -334,7 +356,10 @@ export async function buscarCnpj(cnpj, { timeoutMs = TEMPO_LIMITE_PADRAO, fetchI
         : null;
   if (!buscar) return falha();
 
-  const limite = Number(timeoutMs) > 0 ? Number(timeoutMs) : TEMPO_LIMITE_PADRAO;
+  /* De 1 ms a 2 minutos. Acima de ~24 dias (ou Infinity) o setTimeout
+     estoura e dispara na hora; por isso fora da faixa vale o padrao. */
+  const pedidoMs = Number(timeoutMs);
+  const limite = pedidoMs > 0 && pedidoMs <= TEMPO_LIMITE_MAXIMO ? pedidoMs : TEMPO_LIMITE_PADRAO;
   const controle = typeof AbortController === "function" ? new AbortController() : null;
 
   /* O relogio desiste sozinho, mesmo que o fetch nao respeite o "abort" */
