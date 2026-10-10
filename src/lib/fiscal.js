@@ -1,4 +1,4 @@
-/* FISCAL v2 — valor do DAS pelo CNAE (caminhoneiro: municipal / intermunicipal / os dois; MEI comum: comercio / servicos / os dois) (v1: fonte unica das regras fiscais) */
+/* FISCAL v3 — palavraDaSituacao: velocimetro zerado diz "Falta informar" (nunca "Tá tranquilo") (v2: valor do DAS pelo CNAE (caminhoneiro: municipal / intermunicipal / os dois; MEI comum: comercio / servicos / os dois) (v1: fonte unica das regras fiscais) */
 // Fonte ÚNICA da verdade para regras fiscais do TaCerto!
 
 export const LIMITES_ANUAIS = {
@@ -134,6 +134,15 @@ for (const chave of Object.keys(FAIXA_INFO)) {
   f.label = f.mensagem;
   f.principal = f.mensagem;
   f.apoio = f.mensagem;
+}
+
+/* v3 (10/10/2026): velocimetro ZERADO no ano nao e "Tá tranquilo" —
+   e falta de informacao. Use esta funcao no lugar de
+   FAIXA_INFO[faixa].palavra sempre que mostrar a palavra da faixa. */
+export const PALAVRA_SEM_FATURAMENTO = "Falta informar";
+export function palavraDaSituacao(percentual, faturado) {
+  if (!(Number(faturado) > 0)) return PALAVRA_SEM_FATURAMENTO;
+  return (FAIXA_INFO[faixaDoVelocimetro(percentual)] || FAIXA_INFO.tranquilo).palavra;
 }
 
 export const DAS_2026 = {

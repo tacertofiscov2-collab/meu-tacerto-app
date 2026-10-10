@@ -1,11 +1,11 @@
-/* CHAT v3 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v2: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026))) */
+/* CHAT v4 — velocimetro zerado: a fala diz "Falta informar" (palavraDaSituacao), nunca "Tá tranquilo" (v3: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v2: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026))) */
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Paperclip, Sparkles } from "lucide-react";
 import Fisco from "../components/Fisco.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
-  faixaDoVelocimetro, FAIXA_INFO, LIMITE_PERGUNTA_CHAT, corBalaoDaFaixa,
+  faixaDoVelocimetro, LIMITE_PERGUNTA_CHAT, corBalaoDaFaixa, palavraDaSituacao,
 } from "@/lib/fiscal";
 import {
   perguntasDaFaixa, perguntasGerais, contextoFaq, textoPergunta,
@@ -170,7 +170,7 @@ export default function Chat() {
                 <Fisco
                   size={200}
                   pose={pose}
-                  fala={FAIXA_INFO[faixa].palavra}
+                  fala={palavraDaSituacao(percentualAtual, faturamentoAtual)}
                   corBalao={corBalao}
                 />
               </div>

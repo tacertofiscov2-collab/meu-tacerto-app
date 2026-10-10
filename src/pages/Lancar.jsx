@@ -1,4 +1,4 @@
-/* LANCAR v9 — menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v8: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v7: modo "Total do ano": digitar so o faturamento do ano e o velocimetro fica igual a ele (um lancamento de ajuste, sem contar em dobro); /lancar?modo=total abre direto nele (v6: padrao do Perfil: rotulos em cinza maiusculo, campos com 16px (sem zoom no iPhone), "Ultimo lancamento" em linha simples, letras maiores, botao em contorno (botao-confirmar)))) */
+/* LANCAR v10 — as descricoes dos lancamentos de ajuste (Total do ano) vem de src/lib/conciliacao.js, a mesma fonte do selo Estimado/Conferido e da conferencia do extrato (v9: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v8: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v7: modo "Total do ano": digitar so o faturamento do ano e o velocimetro fica igual a ele (um lancamento de ajuste, sem contar em dobro); /lancar?modo=total abre direto nele (v6: padrao do Perfil: rotulos em cinza maiusculo, campos com 16px (sem zoom no iPhone), "Ultimo lancamento" em linha simples, letras maiores, botao em contorno (botao-confirmar)))) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useMemo, useEffect } from "react";
 import { ArrowLeft, Calendar as CalendarIcon, TrendingUp } from "lucide-react";
@@ -8,6 +8,7 @@ import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
 import PendenciasEntradas from "../components/PendenciasEntradas.jsx";
 import { dataMinimaLancamento, LIMITE_VALOR_LANCAMENTO } from "@/lib/fiscal";
+import { DESCRICAO_AJUSTE_ANO, DESCRICOES_DE_AJUSTE } from "@/lib/conciliacao";
 
 /* ===================================================================
    LANCAR v7 (05/10/2026) — MODO "TOTAL DO ANO" (pedido do Fernando)
@@ -30,10 +31,9 @@ import { dataMinimaLancamento, LIMITE_VALOR_LANCAMENTO } from "@/lib/fiscal";
    /lancar?modo=total abre direto neste modo (notificacao "Atualize seu
    velocimetro").
    =================================================================== */
-const DESCRICAO_AJUSTE_ANO = "Ajuste do total do ano";
-/* Mesma descricao do Onboarding (DESCRICAO_ESTIMADO em Onboarding.jsx) */
-const DESCRICAO_ESTIMADO = "Faturamento estimado até hoje";
-const DESCRICOES_DE_AJUSTE = [DESCRICAO_AJUSTE_ANO, DESCRICAO_ESTIMADO];
+/* v10: DESCRICAO_AJUSTE_ANO e DESCRICOES_DE_AJUSTE moram em
+   src/lib/conciliacao.js (o "Faturamento estimado até hoje" do cadastro
+   antigo continua contando como ajuste). */
 
 /* LANCAR v5 — faixa de pendencias do Open Finance no topo
 

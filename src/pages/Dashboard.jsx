@@ -1,10 +1,10 @@
-﻿/* DASHBOARD v30 — valor do DAS pelo CNAE do perfil (fiscal.js) e o CNPJ nas mensagens do WhatsApp (v29: velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
+﻿/* DASHBOARD v31 — visual F: "Atualizado em 08/10 às 14:32" + botao "Atualizar velocimetro" abaixo do velocimetro (zerado: "Falta informar" e o botao em destaque) e selo Estimado/Conferido no velocimetro do ano; a folha de atualizar abre sempre (v30: valor do DAS pelo CNAE do perfil (fiscal.js) e o CNPJ nas mensagens do WhatsApp (v29: velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import {
   Gauge, ChevronRight, Send, X, Mic, Image as ImageIcon, Camera, FileText, Sparkles, BookOpen,
-  CalendarClock, MessageCircle,
+  CalendarClock, MessageCircle, RefreshCw, Check,
 } from "lucide-react";
 import BottomNav from "../components/BottomNav.jsx";
 import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
@@ -24,6 +24,7 @@ import {
 } from "@/lib/fiscal";
 import { supabase } from "@/lib/supabase";
 import { listarConexoes, sincronizar, organizarPelasRegras } from "@/lib/openfinance";
+import { seloDoVelocimetro, PREFIXO_EXTRATO } from "@/lib/conciliacao";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_RESUMO_ANO, linkWhatsAppFisco,
   MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
@@ -315,6 +316,8 @@ function PaginaVelocimetro({
   semBalao = false,
   /* v29: tamanho maior (visual F), ver VELOCIMETRO_GRANDE */
   grande = false,
+  /* v31: selo "Estimado" | "Conferido" ao lado do rotulo (so o ano, visual F) */
+  selo = null,
 }) {
   const areaRef = useRef(null);
   const larguraMax = grande ? VELOCIMETRO_GRANDE.larguraMax : LARGURA_MAX_VELOCIMETRO;
@@ -360,10 +363,11 @@ function PaginaVelocimetro({
 
       {rotulo && (
         <p
-          className="text-center shrink-0"
-          style={{ color: "var(--text-tertiary)", fontSize: TAMANHO_ROTULO_CARD, marginBottom: 2 }}
+          className="text-center shrink-0 flex items-center justify-center"
+          style={{ color: "var(--text-tertiary)", fontSize: TAMANHO_ROTULO_CARD, marginBottom: 2, gap: 7 }}
         >
           {rotulo}
+          {selo && <SeloVelocimetro tipo={selo} />}
         </p>
       )}
 
@@ -420,6 +424,8 @@ function CardVelocimetroCarrossel({
   mediaExplicada = false,
   /* v29: velocimetro grande (visual F) */
   grande = false,
+  /* v31: selo do velocimetro do ano */
+  selo = null,
 }) {
   const [pagina, setPagina] = useState(0);
   const [dragPx, setDragPx] = useState(0);
@@ -589,6 +595,7 @@ function CardVelocimetroCarrossel({
             sempreMostrarBalao={MOSTRAR_CHAT_FISCO}
             onExcedente={seNaoArrastou(onExcedente)}
             grande={grande}
+            selo={selo}
           />
 
           <PaginaVelocimetro
@@ -1437,6 +1444,107 @@ function InicioBarra({ emCima = false, ...acoes }) {
   );
 }
 
+/* ===================================================================
+   v31 (10/10/2026) — ATUALIZAR O VELOCIMETRO (tarefa de 08-10, Etapa 2)
+
+   Visual F, logo abaixo das bolinhas do velocimetro:
+   - linha discreta "Atualizado em 08/10 às 14:32" (ultima mudanca nos
+     lancamentos: perfis.velocimetro_atualizado_em, ou o lancamento
+     criado por ultimo — ver AppStateContext v3);
+   - botao pequeno, em contorno, "Atualizar velocímetro": abre a folha
+     com os 3 jeitos (FolhaAtualizarVelocimetro).
+   Faturamento ZERO no ano: no lugar da data vem "Falta informar" (nunca
+   "Tá tranquilo") e o botao fica em DESTAQUE (contorno verde).
+
+   SELO no velocimetro do ano, ao lado de "MEI Caminhoneiro · anual":
+   "Estimado" (tem total do ano digitado) ou "Conferido" (veio de
+   extrato e a pessoa confirmou). Sem nenhum dos dois, sem selo.
+   Regra em src/lib/conciliacao.js (seloDoVelocimetro).
+   =================================================================== */
+function SeloVelocimetro({ tipo }) {
+  const conferido = tipo === "conferido";
+  return (
+    <span
+      className="inline-flex items-center rounded-full font-medium"
+      style={{
+        gap: 3,
+        fontSize: 11.5,
+        lineHeight: "16px",
+        padding: "1px 8px",
+        border: "1px solid var(--border)",
+        color: "var(--text-tertiary)",
+      }}
+    >
+      {conferido && <Check size={11} strokeWidth={2.6} />}
+      {conferido ? "Conferido" : "Estimado"}
+    </span>
+  );
+}
+
+const pad2 = (n) => String(n).padStart(2, "0");
+function textoAtualizadoEm(iso) {
+  const d = iso ? new Date(iso) : null;
+  if (!d || isNaN(d.getTime())) return "";
+  return `Atualizado em ${pad2(d.getDate())}/${pad2(d.getMonth() + 1)} às ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+
+function LinhaAtualizacao({ quando, faltaInformar, onAtualizar }) {
+  const texto = faltaInformar ? "Falta informar" : textoAtualizadoEm(quando);
+  return (
+    <div className="shrink-0 flex flex-col items-center" style={{ marginTop: 12, gap: 8 }}>
+      {texto && (
+        <p style={{ fontSize: 13, color: faltaInformar ? "var(--text-secondary)" : "var(--text-tertiary)" }}>
+          {texto}
+        </p>
+      )}
+      <button
+        type="button"
+        onClick={onAtualizar}
+        className={`${faltaInformar ? "botao-confirmar " : ""}toque rounded-full font-medium flex items-center`}
+        style={{
+          gap: 6,
+          height: 34,
+          padding: "0 14px",
+          fontSize: 13.5,
+          background: "none",
+          border: "1px solid var(--border)",
+          color: "var(--text-secondary)",
+        }}
+      >
+        <RefreshCw size={14} strokeWidth={2.1} />
+        Atualizar velocímetro
+      </button>
+    </div>
+  );
+}
+
+/* Quantos recebimentos do ano vieram de extrato e foram confirmados
+   (para o selo "Conferido"). Sem login ou sem rede: 0. */
+function useConferidosDoExtrato() {
+  const [quantos, setQuantos] = useState(0);
+  useEffect(() => {
+    let ativo = true;
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        const user = data?.user;
+        if (!user) return;
+        const ano = new Date().getFullYear();
+        const { count } = await supabase
+          .from("entradas")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("status", "faturamento")
+          .like("pluggy_transaction_id", `${PREFIXO_EXTRATO}%`)
+          .gte("data", `${ano}-01-01T00:00:00-03:00`);
+        if (ativo) setQuantos(count || 0);
+      } catch { /* sem rede: sem selo */ }
+    })();
+    return () => { ativo = false; };
+  }, []);
+  return quantos;
+}
+
 /* v28: RESPIRO entre as bolinhas do velocimetro e a barra dos 3 atalhos
    (visual F). Pedido do Fernando: "levantar tudo a partir das 2 bolinhas,
    separando dos 3 itens". E uma parte do espaco livre da tela (cresce em
@@ -1998,6 +2106,7 @@ export default function Dashboard() {
   const {
     nome, tipoMEI, faturamentoAtual, limiteAtual, limiteCheio, percentualAtual,
     mediaMensal, mediaLimite, adicionarLancamento, cnpj, cnae, cnaesSecundarios,
+    lancamentos, ultimaAtualizacaoVelocimetro,
   } = useAppState();
   // v20: nome e tipo de MEI que vao nas mensagens prontas do WhatsApp
   // v30: e o CNPJ do perfil
@@ -2036,6 +2145,11 @@ export default function Dashboard() {
   useEffect(() => {
     verificarEntradas();
   }, [verificarEntradas]);
+
+  /* v31: selo e "Atualizado em" do velocimetro (visual F) */
+  const conferidosDoExtrato = useConferidosDoExtrato();
+  const seloVelocimetro = seloDoVelocimetro({ lancamentos, conferidosDoExtrato });
+  const faltaInformar = !(Number(faturamentoAtual) > 0);
 
   // Card B: quanto a media por mes representa da media limite
   const percentualMedia = mediaLimite > 0 ? (mediaMensal / mediaLimite) * 100 : 0;
@@ -2170,7 +2284,17 @@ export default function Dashboard() {
             moldura={molduraVelocimetro}
             mediaExplicada={mediaExplicada}
             grande={visual === "f"}
+            selo={visual === "f" ? seloVelocimetro : null}
           />
+
+          {/* v31: "Atualizado em..." + "Atualizar velocímetro" (so no F) */}
+          {visual === "f" && (
+            <LinhaAtualizacao
+              quando={ultimaAtualizacaoVelocimetro}
+              faltaInformar={faltaInformar}
+              onAtualizar={() => setFolhaAtualizar(true)}
+            />
+          )}
 
           {/* Piloto (v19): proximo DAS, logo abaixo do velocimetro */}
           {MOSTRAR_CARD_DAS && visual === "atual" && (
@@ -2305,9 +2429,8 @@ export default function Dashboard() {
       {MOSTRAR_NOTIFICACOES && (
         <ApresentacaoFisco aberto={apresentacao} onFechar={() => setApresentacao(false)} />
       )}
-      {MOSTRAR_NOTIFICACOES && (
-        <FolhaAtualizarVelocimetro aberto={folhaAtualizar} onFechar={() => setFolhaAtualizar(false)} />
-      )}
+      {/* v31: abre pelo sininho E pelo botao "Atualizar velocímetro" */}
+      <FolhaAtualizarVelocimetro aberto={folhaAtualizar} onFechar={() => setFolhaAtualizar(false)} />
 
       <PainelMediaLimite
         aberto={painelDuvidas === "media"}

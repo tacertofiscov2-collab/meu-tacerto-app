@@ -1,22 +1,23 @@
-/* FOLHAATUALIZARVELOCIMETRO v2 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v1: notificacao "Atualize seu velocimetro": 2 jeitos faceis (digitar o total do ano no "+" ou mandar valores/extrato pro Fisco.ia no WhatsApp)) */
+/* FOLHAATUALIZARVELOCIMETRO v3 — 3 jeitos de atualizar, uma frase cada: Enviar extrato (recomendado, borda verde fina), Digitar (o "+", Recebimento ou Total do ano) e Mandar pro Fisco no WhatsApp; abre pelo sininho e pelo botao "Atualizar velocímetro" do Inicio (v2: "Fisco.ia" vira "Fisco" nos textos da tela (v1: notificacao "Atualize seu velocimetro": 2 jeitos faceis (digitar o total do ano no "+" ou mandar valores/extrato pro Fisco.ia no WhatsApp)) */
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Hash } from "lucide-react";
+import { ChevronRight, FileUp, Hash } from "lucide-react";
 import FolhaDeBaixo from "./FolhaDeBaixo.jsx";
 import IconeWhatsApp from "./IconeWhatsApp.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import { MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco } from "@/config/piloto";
 
 /* ===================================================================
-   ATUALIZE SEU VELOCIMETRO (05/10/2026 — pedido do Fernando)
+   ATUALIZE SEU VELOCIMETRO (v3 — 10/10/2026, tarefa de 08-10)
 
-   Abre pela notificacao do sininho. O foco e mostrar como e FACIL:
-   "Leva menos de 1 minuto" e duas opcoes, cada uma com uma frase curta:
-     1) Digitar o total do ano  -> "+" ja no modo "Total do ano"
-        (/lancar?modo=total): um numero so e o velocimetro fica igual
-        a ele (ver Lancar.jsx).                     [destaque: borda verde fina]
-     2) Mandar pro Fisco.ia no WhatsApp -> mensagem pronta
-        (MENSAGENS_WHATSAPP.atualizarVelocimetro); a pessoa manda os
-        valores ou uma foto do extrato e a equipe atualiza.
+   Abre pelo botao "Atualizar velocímetro" do Inicio e pela notificacao
+   do sininho. Tres jeitos, cada um com UMA frase:
+     1) Enviar extrato (RECOMENDADO: so a borda verde fina, sem selo) ->
+        /enviar-extrato, dentro do app ("quem esta no app resolve no
+        app"). E o unico que separa por mes e guarda os gastos.
+     2) Digitar -> o "+" (/lancar?modo=total; la da para trocar para
+        Recebimento). A frase avisa o que se perde digitando a mao.
+     3) Mandar pro Fisco no WhatsApp -> mensagem pronta
+        (MENSAGENS_WHATSAPP.atualizarVelocimetro).
    =================================================================== */
 
 function Opcao({ Icon, titulo, frase, destaque, onClick }) {
@@ -49,19 +50,24 @@ function Opcao({ Icon, titulo, frase, destaque, onClick }) {
 export default function FolhaAtualizarVelocimetro({ aberto, onFechar }) {
   const navigate = useNavigate();
   const app = useAppState();
-  const ano = new Date().getFullYear();
 
   return (
     <FolhaDeBaixo aberto={aberto} onFechar={onFechar} titulo="Atualize seu velocímetro">
-      <p className="text-center" style={{ color: "var(--text-secondary)", fontSize: 15, marginTop: -4, marginBottom: 18 }}>
-        Leva menos de 1 minuto.
-      </p>
       <div className="flex flex-col" style={{ gap: 10, paddingBottom: 8 }}>
         <Opcao
-          Icon={Hash}
-          titulo="Digitar o total do ano"
-          frase={`Só um número: quanto você já faturou em ${ano}.`}
+          Icon={FileUp}
+          titulo="Enviar extrato"
+          frase="Eu separo tudo por mês e guardo seus gastos."
           destaque
+          onClick={() => {
+            onFechar();
+            navigate("/enviar-extrato", { state: { de: "dashboard" } });
+          }}
+        />
+        <Opcao
+          Icon={Hash}
+          titulo="Digitar"
+          frase="Rápido, mas sem histórico nem gastos."
           onClick={() => {
             onFechar();
             navigate("/lancar?modo=total", { state: { de: "dashboard" } });
@@ -69,8 +75,8 @@ export default function FolhaAtualizarVelocimetro({ aberto, onFechar }) {
         />
         <Opcao
           Icon={IconeWhatsApp}
-          titulo="Mandar pro Fisco"
-          frase="Mande os valores ou a foto do extrato. Ele atualiza pra você."
+          titulo="Mandar pro Fisco no WhatsApp"
+          frase="Mande os valores ou a foto do extrato."
           onClick={() => {
             abrirWhatsAppFisco(MENSAGENS_WHATSAPP.atualizarVelocimetro(dadosParaWhatsApp(app)));
             onFechar();
