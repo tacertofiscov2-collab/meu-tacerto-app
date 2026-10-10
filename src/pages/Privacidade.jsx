@@ -1,4 +1,4 @@
-/* PRIVACIDADE v8 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v7: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v6: secao "Fale com a gente" inteira escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v5: so o botao; v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta)) */
+/* PRIVACIDADE v9 — textos de 08-10: CNPJ e dados publicos, extrato (so o ano atual; PDF numa pasta so da pessoa ate ser lido), gastos, notas e comprovantes, lembrete do DAS; caminho certo do Excluir conta (Perfil > Excluir conta) (v8: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v7: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v6: secao "Fale com a gente" inteira escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v5: so o botao; v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta))) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp, MOSTRAR_WHATSAPP_DOCUMENTOS } from "@/config/piloto";
@@ -6,6 +6,10 @@ import { useAppState } from "@/context/AppStateContext";
 
 /* ===================================================================
    VERSAO PROVISORIA - REVISAR COM ADVOGADO
+
+   v9 (10/10/2026, tarefa de 08-10): CNPJ (BrasilAPI), extrato enviado
+   pelo app (o que fica e o que e descartado), gastos/notas/comprovantes
+   e o lembrete do DAS. Nunca chamar o TaCerto de contabilidade/contador.
 
    POLITICA DE PRIVACIDADE (04/10/2026, piloto com MEI Caminhoneiros)
 
@@ -28,44 +32,47 @@ const SECOES = [
   {
     titulo: "Quais dados guardamos",
     paragrafos: [
-      "Seu nome (ou apelido), seu WhatsApp e seu e-mail.",
-      "O tipo do seu MEI (MEI ou MEI Caminhoneiro) e, se você abriu o MEI este ano, o mês de abertura.",
-      "Os lançamentos do seu faturamento: valor, data e descrição. Isso inclui o que você lança no app, o faturamento aproximado que você informa no cadastro e o que você conta ao Fisco no WhatsApp.",
+      "Seu nome (ou apelido) e seu WhatsApp.",
+      "O seu MEI: CNPJ, tipo (MEI ou MEI Caminhoneiro), atividade, desde quando é MEI e, se você abriu o MEI este ano, o mês de abertura.",
+      "Os lançamentos do seu faturamento: valor, data e descrição. Isso inclui o que você lança no app, o total do ano que você digita e o que você conta ao Fisco no WhatsApp.",
+      "Do extrato que você envia: só as movimentações deste ano (data, valor, descrição e, quando o banco informa, o nome e o CPF ou CNPJ de quem pagou ou recebeu). O resto do arquivo é descartado. Extrato em PDF fica guardado numa pasta só sua até ser lido.",
+      "Seus gastos, e as notas e comprovantes que você anexar, para a sua gestão: lucro e Imposto de Renda.",
+      "Suas escolhas no app, como os dias do lembrete do DAS.",
     ],
   },
   {
     titulo: "Para que usamos",
     paragrafos: [
-      "Para mostrar no velocímetro quanto do limite do seu MEI você já usou e organizar seus lançamentos.",
-      "Para falar com você pelo WhatsApp: a pergunta de todo dia sobre o que você recebeu, avisos sobre o seu MEI e as respostas às suas dúvidas.",
+      "Para mostrar no velocímetro quanto do limite do seu MEI você já usou, e quanto sobrou do que você recebeu.",
+      "O CNPJ, para buscar os dados públicos do seu MEI e, no futuro, gerar o boleto do DAS para você.",
+      "Para falar com você pelo WhatsApp: lembrete do DAS, avisos sobre o seu MEI e as respostas às suas dúvidas.",
       "Para você entrar na sua conta com segurança.",
-      "Por enquanto, a equipe do TaCerto! confere o que você responde no WhatsApp antes de lançar no app.",
     ],
   },
   {
     titulo: "O que não fazemos",
     paragrafos: [
       "Não vendemos seus dados. Não passamos seus dados para propaganda de outras empresas.",
-      "Não pedimos senha de banco nem de cartão.",
+      "Não pedimos senha de banco, de cartão, do gov.br nem do certificado digital.",
     ],
   },
   {
     titulo: "Quem mais tem acesso",
     paragrafos: [
-      "Só as empresas que fazem o app funcionar, como o servidor que guarda os dados, o login (inclusive o do Google, se você entrar por ele) e o WhatsApp. Elas usam seus dados só para isso.",
+      "Só as empresas que fazem o app funcionar, como o servidor que guarda os dados, o login, o WhatsApp e a consulta pública de CNPJ (BrasilAPI). Elas usam seus dados só para isso.",
     ],
   },
   {
     titulo: "O Fisco usa inteligência artificial",
     paragrafos: [
-      "O Fisco é um assistente baseado em inteligência artificial. Ele pode errar e não substitui um contador. Para decisões importantes, confirme com um contador.",
+      "O Fisco é um assistente baseado em inteligência artificial. Ele pode errar. Para decisões importantes, confirme com um contador.",
     ],
   },
   {
     titulo: "Você manda nos seus dados",
     paragrafos: [
       "Você pode ver e corrigir seus dados no app, em Perfil.",
-      "Você pode excluir sua conta e todos os seus dados pelo próprio app, quando quiser: Perfil → Editar perfil → Excluir conta. Depois de excluídos, os dados não voltam.",
+      "Você pode excluir sua conta e todos os seus dados pelo próprio app, quando quiser: Perfil → Excluir conta. Depois de excluídos, os dados não voltam.",
       "Guardamos seus dados enquanto sua conta existir.",
     ],
   },
@@ -95,7 +102,7 @@ export default function Privacidade() {
         <TopoRolavel titulo="Política de privacidade" onVoltar={voltar} />
 
         <p className="mt-1" style={{ color: "var(--text-tertiary)", fontSize: 13 }}>
-          Atualizada em 4 de outubro de 2026
+          Atualizada em 10 de outubro de 2026
         </p>
 
         <p className="leading-relaxed mt-3" style={{ color: "var(--text)", fontSize: 16.5 }}>

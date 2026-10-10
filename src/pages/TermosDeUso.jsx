@@ -1,4 +1,4 @@
-/* TERMOSDEUSO v7 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v5: secao "Fale com a gente" (botao do WhatsApp) escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("fase de testes"); v2: botao do WhatsApp com mensagem pronta)) */
+/* TERMOSDEUSO v8 — textos de 08-10: app de gestao do MEI, o CNPJ (dados publicos e, no futuro, o DAS), o extrato (so o ano atual fica, o resto e descartado) e a pessoa confirma o que e faturamento; sem chamar o TaCerto de contabilidade/contador (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v5: secao "Fale com a gente" (botao do WhatsApp) escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("fase de testes"); v2: botao do WhatsApp com mensagem pronta))) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp, MOSTRAR_WHATSAPP_DOCUMENTOS } from "@/config/piloto";
@@ -6,6 +6,11 @@ import { useAppState } from "@/context/AppStateContext";
 
 /* ===================================================================
    VERSAO PROVISORIA - REVISAR COM ADVOGADO
+
+   v8 (10/10/2026, tarefa de 08-10): CNPJ, extrato (corte do periodo),
+   gastos e notas, e quem confirma o faturamento e a pessoa. Regras:
+   nunca descrever o TaCerto como contabilidade/contador (DL 9.295/46,
+   art. 20) e nada de "nao nos responsabilizamos por nada".
 
    TERMOS DE USO (04/10/2026, piloto com MEI Caminhoneiros)
 
@@ -28,7 +33,7 @@ const SECOES = [
   {
     titulo: "O que é o TaCerto!",
     paragrafos: [
-      "Um app que ajuda o MEI a acompanhar o faturamento e o limite do ano.",
+      "Um app de gestão para o MEI: acompanha o faturamento, o limite do ano, os gastos e o DAS.",
       "O app está em fase de testes: pode mudar, ter falhas, e algumas funções podem ficar fora do ar por um tempo.",
     ],
   },
@@ -36,14 +41,28 @@ const SECOES = [
     titulo: "O Fisco é uma inteligência artificial",
     paragrafos: [
       "O Fisco é um assistente baseado em inteligência artificial. Ele pode errar.",
-      "Ele não substitui um contador. Para decisões importantes, confirme com um contador.",
+      "Para decisões importantes, confirme com um contador.",
+    ],
+  },
+  {
+    titulo: "Seu CNPJ",
+    paragrafos: [
+      "Com o seu CNPJ, o app busca os dados públicos do seu MEI (nome, atividade e desde quando é MEI) para preencher o cadastro por você.",
+      "No futuro, ele também vai servir para gerar o boleto do DAS para você.",
+    ],
+  },
+  {
+    titulo: "O extrato e o que é faturamento",
+    paragrafos: [
+      "Quando você envia o extrato do banco, o app lê o arquivo e guarda só o que é deste ano (ou da abertura do MEI em diante). O resto é descartado.",
+      "Quem diz o que é faturamento é você: nada entra no velocímetro sem você confirmar.",
     ],
   },
   {
     titulo: "Quem cuida das obrigações é você",
     paragrafos: [
-      "O TaCerto! calcula e explica. Quem confirma e transmite as obrigações fiscais do MEI é você: pagar o DAS, emitir as notas fiscais e entregar a declaração anual (DASN-SIMEI).",
-      "Os números do app vêm do que você lança, confirma ou conta ao Fisco. Valores aproximados, como o faturamento que você informa no cadastro, são só uma estimativa. Confira sempre.",
+      "O TaCerto! organiza, calcula e explica. Quem confirma e transmite as obrigações fiscais do MEI é você: pagar o DAS, emitir as notas fiscais e entregar a declaração anual (DASN-SIMEI).",
+      "Os números do app vêm do que você lança, envia, confirma ou conta ao Fisco. O total do ano que você digita é uma estimativa. Confira sempre.",
     ],
   },
   {
@@ -92,7 +111,7 @@ export default function TermosDeUso() {
         <TopoRolavel titulo="Termos de uso" onVoltar={voltar} />
 
         <p className="mt-1" style={{ color: "var(--text-tertiary)", fontSize: 13 }}>
-          Atualizados em 4 de outubro de 2026
+          Atualizados em 10 de outubro de 2026
         </p>
 
         <p className="leading-relaxed mt-3" style={{ color: "var(--text)", fontSize: 16.5 }}>

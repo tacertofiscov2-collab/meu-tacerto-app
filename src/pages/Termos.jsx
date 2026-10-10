@@ -1,4 +1,4 @@
-/* TERMOS v4 — piloto: "Ver Politica de Privacidade" e "Ver Termos de Uso" abrem os documentos (antes: "em breve"); texto do resumo nao mudou */
+/* TERMOS v5 — o resumo diz o que o app guarda hoje (CNPJ, extrato do ano, gastos) e que nao pede senha de banco, cartao, gov.br nem do certificado (v4: piloto: "Ver Politica de Privacidade" e "Ver Termos de Uso" abrem os documentos (antes: "em breve"); texto do resumo nao mudou */
 import { useNavigate } from "react-router-dom";
 import {
   Gauge, Database, EyeOff, Lock, ShieldCheck,
@@ -40,8 +40,8 @@ const SECOES = [
   {
     titulo: "O que coletamos",
     itens: [
-      { Icon: Database, t: "Só o essencial: nome, e-mail ou telefone, e os lançamentos que você registra." },
-      { Icon: EyeOff, t: "Não pedimos CPF, endereço nem dados bancários nesta fase." },
+      { Icon: Database, t: "Só o necessário: nome, WhatsApp, CNPJ, os lançamentos e, se você enviar, o extrato deste ano e os seus gastos." },
+      { Icon: EyeOff, t: "Não pedimos senha de banco, de cartão, do gov.br nem do certificado." },
     ],
   },
   {
