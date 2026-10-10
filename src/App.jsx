@@ -1,4 +1,4 @@
-﻿/* APP v15 — rota /perfil/cnpj (CNPJ pelo Perfil: buscar e confirmar) (v14: rotas /suporte (chat de suporte), /declaracao-anual e /declaracao-anual/calcular, atras das chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL (v13: login so pelo WhatsApp: /login e /cadastro abrem EntrarWhatsApp; /entrar-email (plano B) abre o Login antigo; esqueci/alterar senha e alterar-whatsapp atras de MOSTRAR_LOGIN_EMAIL (v12: rota /como-pagar-das; v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard) */
+﻿/* APP v16 — rotas /enviar-extrato (OFX/CSV/PDF dentro do app) e /conferir-saidas (gastos em duvida), atras de MOSTRAR_ENVIAR_EXTRATO (v15: rota /perfil/cnpj (CNPJ pelo Perfil: buscar e confirmar) (v14: rotas /suporte (chat de suporte), /declaracao-anual e /declaracao-anual/calcular, atras das chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL (v13: login so pelo WhatsApp: /login e /cadastro abrem EntrarWhatsApp; /entrar-email (plano B) abre o Login antigo; esqueci/alterar senha e alterar-whatsapp atras de MOSTRAR_LOGIN_EMAIL (v12: rota /como-pagar-das; v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard) */
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
@@ -53,12 +53,13 @@ import Suporte from "./pages/Suporte.jsx";
 import DeclaracaoAnual from "./pages/DeclaracaoAnual.jsx";
 import CalcularDeclaracao from "./pages/CalcularDeclaracao.jsx";
 import PerfilCnpj from "./pages/PerfilCnpj.jsx";
+import ConferirSaidas from "./pages/ConferirSaidas.jsx";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_NOTAS_FISCAIS,
   MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_ADICIONAR_MOVIMENTACOES,
   MOSTRAR_RESUMO_ANO, MOSTRAR_PREFERENCIAS, MOSTRAR_SOBRE, MOSTRAR_INACABADOS,
   MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS, MOSTRAR_LOGIN_EMAIL,
-  MOSTRAR_SUPORTE, MOSTRAR_DECLARACAO_ANUAL,
+  MOSTRAR_SUPORTE, MOSTRAR_DECLARACAO_ANUAL, MOSTRAR_ENVIAR_EXTRATO,
 } from "./config/piloto.js";
 
 /* ===================================================================
@@ -160,6 +161,9 @@ export default function App() {
           <Route path="/conectar-banco/escolher" element={<RotaComChave ligada={MOSTRAR_OPEN_FINANCE}><EscolherBanco /></RotaComChave>} />
           <Route path="/conectar-banco/retorno" element={<RotaComChave ligada={MOSTRAR_OPEN_FINANCE}><RetornoBanco /></RotaComChave>} />
           <Route path="/conferir-entradas" element={<ConferirEntradas />} />
+          {/* v16: extrato dentro do app + conferencia dos gastos em duvida */}
+          <Route path="/enviar-extrato" element={<RotaComChave ligada={MOSTRAR_ENVIAR_EXTRATO}><AdicionarFaturamentoEnviar /></RotaComChave>} />
+          <Route path="/conferir-saidas" element={<RotaComChave ligada={MOSTRAR_ENVIAR_EXTRATO}><ConferirSaidas /></RotaComChave>} />
           <Route path="/saidas" element={<RotaComChave ligada={MOSTRAR_SAIDAS}><Saidas /></RotaComChave>} />
           <Route path="/das" element={<RotaComChave ligada={MOSTRAR_HISTORICO_DAS}><HistoricoDas /></RotaComChave>} />
           <Route path="/faq" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><Faq /></RotaComChave>} />

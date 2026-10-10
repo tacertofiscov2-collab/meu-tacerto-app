@@ -272,8 +272,9 @@ async function guardarPdf(userId, file) {
    - cria o lancamento das outras.
    `app` = funcao que devolve o estado ATUAL do app (useAppState), para
    nao usar uma lista de lancamentos velha.
-   Devolve { criados, casados, total } (total = soma das que entraram,
-   incluindo as casadas).
+   Devolve { criados, casados, total, absorvido } (total = soma das que
+   entraram, incluindo as casadas; absorvido = quanto do ajuste do total
+   do ano essas entradas "pagaram": ja estavam no total digitado).
    =================================================================== */
 export async function lancarEntradasConfirmadas(userId, efetivas, app) {
   const lista = Array.isArray(efetivas) ? efetivas : [];
@@ -302,7 +303,10 @@ export async function lancarEntradasConfirmadas(userId, efetivas, app) {
 
   const novas = lista.filter((e) => !casados.has(e.id));
   const { ajustes } = separarAjustes(estado.lancamentos || [], new Date().getFullYear());
+  let absorvido = 0;
   for (const p of planoDeAbsorcao(ajustes, novas)) {
+    const antes = Number(ajustes.find((a) => a.id === p.id)?.valor) || 0;
+    absorvido += Math.max(0, antes - p.novoValor);
     if (p.novoValor > 0) estado.atualizarLancamento(p.id, { valor: p.novoValor });
     else estado.removerLancamento(p.id);
   }
@@ -316,7 +320,7 @@ export async function lancarEntradasConfirmadas(userId, efetivas, app) {
   }
 
   const total = lista.reduce((s, e) => s + (Number(e.valor) || 0), 0);
-  return { criados: novas.length, casados: casados.size, total };
+  return { criados: novas.length, casados: casados.size, total, absorvido: Math.round(absorvido * 100) / 100 };
 }
 
 /* "TRANSPORTES ALMEIDA LTDA" -> "Transportes Almeida" (igual ao

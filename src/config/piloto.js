@@ -1,4 +1,4 @@
-/* PILOTO v17 — o CNPJ do perfil entra nas mensagens prontas (formatado 12.345.678/0001-90); sem CNPJ, "Meu CNPJ: " continua em branco para a pessoa completar (v16: numero REAL do WhatsApp do Fisco (37 99199-9373), o mesmo do suporte; mensagem do suporte comeca com "Oi Fisco!" e pede suporte (v15: chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
+/* PILOTO v18 — chave MOSTRAR_ENVIAR_EXTRATO (/enviar-extrato e /conferir-saidas) (v17: o CNPJ do perfil entra nas mensagens prontas (formatado 12.345.678/0001-90); sem CNPJ, "Meu CNPJ: " continua em branco para a pessoa completar (v16: numero REAL do WhatsApp do Fisco (37 99199-9373), o mesmo do suporte; mensagem do suporte comeca com "Oi Fisco!" e pede suporte (v15: chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 import { formatarCnpj, soDigitosCnpj } from "@/lib/cnpj";
 
@@ -72,6 +72,15 @@ export const MOSTRAR_HISTORICO_DAS = false;
    pelo botao "+" da barra de baixo.
    ------------------------------------------------------------------- */
 export const MOSTRAR_ADICIONAR_MOVIMENTACOES = false;
+
+/* -------------------------------------------------------------------
+   ENVIAR EXTRATO (v18 — 10/10/2026, tarefa de 08-10)
+   true libera /enviar-extrato (OFX e CSV lidos no app, PDF guardado
+   "em analise") e a conferencia dos gastos (/conferir-saidas). Abre
+   pela folha "Atualize seu velocímetro" (Enviar extrato). false: a
+   opcao continua na folha, mas a rota volta para o Inicio.
+   ------------------------------------------------------------------- */
+export const MOSTRAR_ENVIAR_EXTRATO = true;
 
 /* -------------------------------------------------------------------
    RESUMO DO ANO (com saidas e Imposto de Renda)

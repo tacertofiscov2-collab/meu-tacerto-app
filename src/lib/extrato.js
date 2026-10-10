@@ -1,4 +1,4 @@
-/* EXTRATO v1 — leitura do extrato do banco (OFX e CSV) no proprio aparelho, corte do periodo e impressao digital de cada transacao para nunca contar duas vezes */
+/* EXTRATO v2 — comentario do fuso do OFX reescrito (o fuso escrito entre colchetes no comentario virava uma classe CSS quebrada no build) (v1: leitura do extrato do banco (OFX e CSV) no proprio aparelho, corte do periodo e impressao digital de cada transacao para nunca contar duas vezes */
 
 /* ===================================================================
    EXTRATO DO BANCO — REGRAS (escrito em 10/10/2026)
@@ -35,7 +35,7 @@
      Por isso o valor de cada campo e "tudo ate o proximo <": funciona
      nos dois e tambem quando o arquivo vem todo numa linha so.
    - Data: so os 8 primeiros digitos (AAAAMMDD); hora e fuso
-     ("120000[-3:BRT]") sao jogados fora, para o fuso do celular nao
+     ("120000" e o fuso entre colchetes, -3 BRT) sao jogados fora, para o fuso do celular nao
      mudar o dia.
    - Valor: ponto OU virgula como decimal ("-1.234,56" de alguns
      bancos, "1234.56", "-50,00").

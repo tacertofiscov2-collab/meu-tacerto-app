@@ -1,299 +1,239 @@
-/* ADICIONARFATURAMENTOENVIAR v1 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) */
-import { useEffect, useRef, useState } from "react";
+/* ADICIONARFATURAMENTOENVIAR v2 — vira a tela "Enviar extrato" (/enviar-extrato): OFX e CSV lidos no proprio app (so o que e deste ano fica guardado; entradas para a conferencia e saidas com categoria), mandar o mesmo arquivo 2x nao conta 2x; PDF vai para o Storage "em analise"; no fim "Encontrei X entradas e Y saídas de jan a out. Vamos conferir?" (v1: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26)) */
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  Upload,
-  Camera,
-  FileText,
-  Image as ImageIcon,
-  FileSpreadsheet,
-  X,
-} from "lucide-react";
-import { toast } from "sonner";
+import { FileUp, Loader2, Check, AlertCircle } from "lucide-react";
+import TopoRolavel from "../components/TopoRolavel.jsx";
+import { useAppState } from "@/context/AppStateContext";
+import { importarExtrato } from "@/lib/importarExtrato";
 
-const KEY = "tacerto_extratos_pendentes";
-const LIMITE = 30;
+/* ===================================================================
+   ENVIAR EXTRATO (v2 — 10/10/2026, tarefa de 08-10, Etapa 3)
 
-function ler() {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return [];
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr : [];
-  } catch {
-    return [];
-  }
-}
+   "Quem esta no app resolve no app": a pessoa manda o extrato aqui
+   mesmo (antes este arquivo so guardava no aparelho e dizia "IA em
+   breve"). Abre pela folha "Atualize seu velocímetro" (Enviar extrato).
 
-function salvar(arr) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(arr));
-  } catch {}
-}
+   - OFX ou CSV: lido no celular (src/lib/extrato.js), sem IA. So o que
+     e de 1º/jan a 31/dez deste ano (ou da abertura do MEI em diante)
+     vai para o banco; o resto e descartado ANTES (importarExtrato).
+     Repetido nao entra (impressao digital de cada transacao).
+   - No fim: "Encontrei 37 entradas e 52 saídas de jan a out. Vamos
+     conferir?" -> Conferir abre a conferencia "É faturamento?" e depois
+     a dos gastos. "Depois": o portao do Inicio leva para a conferencia
+     na proxima vez (nada entra no faturamento sem a pessoa confirmar).
+   - PDF: guardado no balde privado (pasta da pessoa) como "em analise".
+     "Recebi! Vou ler e te aviso quando estiver pronto."
+   - Um arquivo por vez. Pouco texto: uma frase so explica.
+   =================================================================== */
 
-function iconePara(tipo) {
-  if (!tipo) return FileText;
-  if (tipo.startsWith("image/")) return ImageIcon;
-  if (tipo === "application/pdf") return FileText;
-  return FileSpreadsheet;
-}
+const ACEITA = ".ofx,.qfx,.csv,.txt,.pdf,application/pdf,text/csv,application/x-ofx";
 
-function toBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+function plural(n, um, varios) {
+  return n === 1 ? `1 ${um}` : `${n} ${varios}`;
 }
 
 export default function AdicionarFaturamentoEnviar() {
   const navigate = useNavigate();
-  const [arquivos, setArquivos] = useState(ler);
-  const [processado, setProcessado] = useState(false);
-  const fileRef = useRef(null);
-  const camRef = useRef(null);
+  const { tipoMEI, mesAnoAbertura } = useAppState();
+  const arquivoRef = useRef(null);
+  const ano = new Date().getFullYear();
 
-  useEffect(() => {
-    salvar(arquivos);
-  }, [arquivos]);
+  // escolher | lendo | pronto | erro
+  const [fase, setFase] = useState("escolher");
+  const [resultado, setResultado] = useState(null);
+  const [erro, setErro] = useState("");
 
-  const desabilitado = arquivos.length >= LIMITE;
+  function voltar() {
+    if ((window.history.state?.idx ?? 0) > 0) navigate(-1);
+    else navigate("/dashboard", { replace: true });
+  }
 
-  async function handleFiles(list) {
-    if (!list || list.length === 0) return;
-    if (arquivos.length >= LIMITE) {
-      toast("Limite atingido", { duration: 3000 });
-      return;
-    }
-    const restante = LIMITE - arquivos.length;
-    const selecionados = Array.from(list).slice(0, restante);
-    const novos = [];
-    for (const f of selecionados) {
-      try {
-        const base64 = await toBase64(f);
-        novos.push({
-          id:
-            (typeof crypto !== "undefined" && crypto.randomUUID?.()) ||
-            "id-" + Math.random().toString(36).slice(2),
-          nome: f.name,
-          tipo: f.type || "",
-          base64,
-          criadoEm: new Date().toISOString(),
-        });
-      } catch {}
-    }
-    setArquivos((s) => [...s, ...novos]);
-    if (arquivos.length + selecionados.length >= LIMITE) {
-      toast("Limite atingido", { duration: 3000 });
+  async function enviar(file) {
+    if (!file) return;
+    setFase("lendo");
+    setErro("");
+    try {
+      const r = await importarExtrato(file, {
+        tipoMEI,
+        mesAbertura: mesAnoAbertura?.mes,
+        anoAbertura: mesAnoAbertura?.ano,
+      });
+      setResultado(r);
+      setFase("pronto");
+    } catch (e) {
+      setErro(e?.message || "Não consegui ler esse arquivo.");
+      setFase("erro");
     }
   }
 
-  function removerArquivo(id) {
-    setArquivos((s) => s.filter((a) => a.id !== id));
-  }
+  const escolher = () => arquivoRef.current?.click();
 
-  function processar() {
-    setProcessado(true);
+  let conteudo = null;
+  if (fase === "escolher") {
+    conteudo = (
+      <div className="flex flex-col items-center text-center">
+        <p style={{ fontSize: 15.5, lineHeight: 1.5, color: "var(--text-secondary)" }}>
+          Baixe o extrato no app do seu banco (OFX, CSV ou PDF) e mande aqui.
+        </p>
+        <button
+          type="button"
+          onClick={escolher}
+          className="botao-confirmar toque w-full rounded-2xl font-semibold flex items-center justify-center"
+          style={{ marginTop: 22, padding: "16px 0", fontSize: 16.5, gap: 8 }}
+        >
+          <FileUp size={20} strokeWidth={2.1} />
+          Escolher arquivo
+        </button>
+        <p style={{ fontSize: 13.5, color: "var(--text-tertiary)", marginTop: 12 }}>
+          Só fica guardado o que é de {ano}.
+        </p>
+      </div>
+    );
+  } else if (fase === "lendo") {
+    conteudo = (
+      <div className="flex flex-col items-center text-center" style={{ gap: 12 }}>
+        <Loader2 size={26} className="animate-spin" style={{ color: "var(--primary)" }} />
+        <p style={{ fontSize: 15, color: "var(--text-secondary)" }}>Lendo o extrato...</p>
+      </div>
+    );
+  } else if (fase === "erro") {
+    conteudo = (
+      <div className="flex flex-col items-center text-center">
+        <Circulo erro>
+          <AlertCircle size={34} strokeWidth={2.2} style={{ color: "var(--danger)" }} />
+        </Circulo>
+        <p style={{ fontSize: 15, lineHeight: 1.5, color: "var(--text-secondary)", marginTop: 18 }}>{erro}</p>
+        <button
+          type="button"
+          onClick={escolher}
+          className="botao-confirmar w-full rounded-2xl font-semibold"
+          style={{ marginTop: 24, padding: "15px 0", fontSize: 16 }}
+        >
+          Tentar outro arquivo
+        </button>
+      </div>
+    );
+  } else if (resultado?.tipo === "pdf") {
+    conteudo = (
+      <div className="flex flex-col items-center text-center">
+        <Circulo>
+          <Check size={38} strokeWidth={2.6} style={{ color: "var(--primary)" }} />
+        </Circulo>
+        <h2 className="font-bold" style={{ fontSize: 22, marginTop: 20 }}>Recebi!</h2>
+        <p style={{ fontSize: 15.5, lineHeight: 1.5, color: "var(--text-secondary)", marginTop: 8 }}>
+          Vou ler e te aviso quando estiver pronto.
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate("/dashboard", { replace: true })}
+          className="botao-confirmar w-full rounded-2xl font-semibold"
+          style={{ marginTop: 26, padding: "15px 0", fontSize: 16 }}
+        >
+          Voltar ao início
+        </button>
+      </div>
+    );
+  } else if (resultado) {
+    const { entradasNovas, saidasNovas, lidas, descartadas, periodo } = resultado;
+    const temNovidade = entradasNovas + saidasNovas > 0;
+    const partes = [
+      entradasNovas > 0 && plural(entradasNovas, "entrada", "entradas"),
+      saidasNovas > 0 && plural(saidasNovas, "saída", "saídas"),
+    ].filter(Boolean);
+    const titulo = temNovidade
+      ? `Encontrei ${partes.join(" e ")}${periodo ? ` ${periodo}` : ""}.`
+      : lidas > 0
+      ? "Esse extrato já estava aqui. Nada novo."
+      : `Não achei nada de ${ano} nesse extrato.`;
+    conteudo = (
+      <div className="flex flex-col items-center text-center">
+        <Circulo>
+          {temNovidade ? (
+            <Check size={38} strokeWidth={2.6} style={{ color: "var(--primary)" }} />
+          ) : (
+            <AlertCircle size={34} strokeWidth={2.2} style={{ color: "var(--text-secondary)" }} />
+          )}
+        </Circulo>
+        <p className="font-bold" style={{ fontSize: 20, lineHeight: 1.35, marginTop: 20 }}>{titulo}</p>
+        {temNovidade && (
+          <p style={{ fontSize: 16, color: "var(--text-secondary)", marginTop: 6 }}>Vamos conferir?</p>
+        )}
+        {descartadas > 0 && (
+          <p style={{ fontSize: 13.5, color: "var(--text-tertiary)", marginTop: 10 }}>
+            {descartadas === 1 ? "1 era de outro período e ficou de fora." : `${descartadas} eram de outro período e ficaram de fora.`}
+          </p>
+        )}
+        {temNovidade ? (
+          <>
+            <button
+              type="button"
+              onClick={() =>
+                navigate(entradasNovas > 0 ? "/conferir-entradas" : "/conferir-saidas", {
+                  replace: true,
+                  state: { de: "extrato" },
+                })
+              }
+              className="botao-confirmar w-full rounded-2xl font-semibold"
+              style={{ marginTop: 26, padding: "15px 0", fontSize: 16 }}
+            >
+              Conferir
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard", { replace: true })}
+              className="w-full font-semibold"
+              style={{ marginTop: 10, padding: "10px 0", fontSize: 15, color: "var(--text-secondary)" }}
+            >
+              Depois
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={escolher}
+            className="botao-confirmar w-full rounded-2xl font-semibold"
+            style={{ marginTop: 26, padding: "15px 0", fontSize: 16 }}
+          >
+            Mandar outro extrato
+          </button>
+        )}
+      </div>
+    );
   }
 
   return (
-    <div
-      className="min-h-screen min-h-[100dvh] w-full flex flex-col"
-      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
-    >
-      <header className="px-5 pt-6 pb-4 flex items-center gap-3 shrink-0">
-        <button
-          onClick={() => navigate(-1)}
-          aria-label="Voltar"
-          className="w-[46px] h-[46px] rounded-full flex items-center justify-center hover:opacity-80"
-          style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
-        >
-          <ArrowLeft size={24} style={{ color: "var(--text)" }} />
-        </button>
-        <h1
-          className="text-lg font-bold flex-1 text-center pr-10"
-          style={{ color: "var(--text)" }}
-        >
-          Enviar extrato
-        </h1>
-      </header>
-
-      <div className="flex-1 overflow-y-auto px-5 pb-32">
-        <p
-          className="text-sm leading-relaxed mt-2"
-          style={{ color: "var(--text-secondary)" }}
-        >
-          Envie PDFs, fotos (JPG, PNG, HEIC) ou arquivos OFX/CSV. Nossa IA lê
-          e soma automaticamente as entradas do seu extrato bancário.
-        </p>
-
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <button
-            onClick={() => !desabilitado && fileRef.current?.click()}
-            disabled={desabilitado}
-            className="flex flex-col items-center justify-center gap-2 py-5 rounded-xl disabled:opacity-40"
-            style={{
-              backgroundColor: "var(--field)",
-              border: "1px solid var(--border)",
-            }}
-          >
-            <Upload size={22} style={{ color: "var(--primary)" }} />
-            <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-              Enviar arquivo
-            </span>
-          </button>
-          <button
-            onClick={() => !desabilitado && camRef.current?.click()}
-            disabled={desabilitado}
-            className="flex flex-col items-center justify-center gap-2 py-5 rounded-xl disabled:opacity-40"
-            style={{
-              backgroundColor: "var(--field)",
-              border: "1px solid var(--border)",
-            }}
-          >
-            <Camera size={22} style={{ color: "var(--primary)" }} />
-            <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-              Tirar foto
-            </span>
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            multiple
-            accept="application/pdf,image/*,.ofx,.csv"
-            onChange={(e) => {
-              handleFiles(e.target.files);
-              e.target.value = "";
-            }}
-            className="hidden"
-          />
-          <input
-            ref={camRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={(e) => {
-              handleFiles(e.target.files);
-              e.target.value = "";
-            }}
-            className="hidden"
-          />
-        </div>
-
-        {arquivos.length > 0 && (
-          <div className="mt-6 space-y-2">
-            {arquivos.map((a) => {
-              const Icone = iconePara(a.tipo);
-              return (
-                <div
-                  key={a.id}
-                  className="flex items-center gap-3 rounded-xl px-3 py-3"
-                  style={{
-                    backgroundColor: "var(--field)",
-                    border: "1px solid var(--border)",
-                  }}
-                >
-                  <Icone
-                    size={20}
-                    style={{ color: "var(--primary)" }}
-                    className="shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className="text-sm truncate"
-                      style={{ color: "var(--text)" }}
-                    >
-                      {a.nome}
-                    </p>
-                    <p
-                      className="text-[11px] mt-0.5"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      Aguardando processamento
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => removerArquivo(a.id)}
-                    aria-label="Remover"
-                    className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: "var(--surface)" }}
-                  >
-                    <X size={14} style={{ color: "var(--text)" }} />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
+    <div className="tela-rolavel w-full flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <div
-        className="fixed bottom-0 left-0 right-0 px-5 pt-3 pb-5 z-10"
-        style={{
-          backgroundColor: "var(--bg)",
-          borderTop: "1px solid var(--border)",
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)",
-        }}
+        className="conteudo-rolavel hide-scrollbar px-5"
+        style={{ paddingBottom: "calc(32px + env(safe-area-inset-bottom))" }}
       >
-        <div className="max-w-md mx-auto">
-          <button
-            onClick={processar}
-            disabled={arquivos.length === 0}
-            className="w-full py-3.5 rounded-xl font-semibold text-sm disabled:opacity-40"
-            style={{
-              backgroundColor: "var(--primary)",
-              color: "var(--primary-contrast)",
-            }}
-          >
-            Processar arquivos
-          </button>
+        <TopoRolavel titulo="Enviar extrato" onVoltar={voltar} />
+        <div className="max-w-sm w-full mx-auto" style={{ paddingTop: 18 }}>
+          {conteudo}
         </div>
       </div>
-
-      {processado && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
-        >
-          <div
-            className="w-full max-w-sm rounded-2xl p-5 space-y-4"
-            style={{
-              backgroundColor: "var(--surface)",
-              border: "1px solid var(--border)",
-            }}
-          >
-            <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
-              IA em breve
-            </h3>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-              Nossa IA está sendo integrada. Em breve você poderá processar seus
-              extratos automaticamente. Seus arquivos ficaram salvos e serão
-              processados quando a IA estiver disponível.
-            </p>
-            <button
-              onClick={() => {
-                setProcessado(false);
-                navigate("/adicionar-faturamento");
-              }}
-              className="w-full py-3 rounded-xl font-semibold text-sm"
-              style={{
-                backgroundColor: "var(--primary)",
-                color: "var(--primary-contrast)",
-              }}
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
+      <input
+        ref={arquivoRef}
+        type="file"
+        accept={ACEITA}
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = "";
+          enviar(f);
+        }}
+      />
     </div>
   );
 }
 
-
-
-
-
-
+function Circulo({ children, erro = false }) {
+  return (
+    <span
+      className="flex items-center justify-center rounded-full shrink-0"
+      style={{ width: 76, height: 76, backgroundColor: erro ? "rgba(239,68,68,0.12)" : "rgba(34,197,94,0.14)" }}
+    >
+      {children}
+    </span>
+  );
+}
