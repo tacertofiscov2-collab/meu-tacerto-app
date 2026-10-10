@@ -92,7 +92,12 @@ export function planoDeAbsorcao(ajustes = [], entradasConfirmadas = []) {
  */
 export function lancamentosAMao(lancamentos = [], entradasConferidas = []) {
   const chaves = new Set(entradasConferidas.map((e) => `${centavos(e.valor)}|${new Date(e.data).getTime()}`));
-  return lancamentos.filter((l) => !ehAjuste(l) && !chaves.has(`${centavos(l.valor)}|${new Date(l.data).getTime()}`));
+  // Lancamento a mao que ja "casou" com uma entrada antes (lancamento_id
+  // gravado na entrada) nao casa de novo
+  const jaCasados = new Set(entradasConferidas.map((e) => e.lancamento_id).filter(Boolean));
+  return lancamentos.filter(
+    (l) => !ehAjuste(l) && !jaCasados.has(l.id) && !chaves.has(`${centavos(l.valor)}|${new Date(l.data).getTime()}`),
+  );
 }
 
 /* Para cada entrada, o lancamento a mao igual (mesmo valor, ate 3 dias),
