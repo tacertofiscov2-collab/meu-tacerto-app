@@ -1,4 +1,4 @@
-/* HISTORICONOTAS v3 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v2: "Lançar nota" manual; meses com nota acesos; anos so desde o inicio do uso) */
+/* HISTORICONOTAS v4 — prop titulo (a janela Notas fiscais usa "Minhas notas" quando o certificado esta ativo) (v3: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v2: "Lançar nota" manual; meses com nota acesos; anos so desde o inicio do uso) */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
@@ -90,7 +90,7 @@ function ehImagem(n) {
 
 /* ============================== TELA ============================== */
 
-export default function HistoricoNotas() {
+export default function HistoricoNotas({ titulo = "Histórico de notas" } = {}) {
   const navigate = useNavigate();
   const anoInicio = useAnoInicio();
   const hoje = new Date();
@@ -216,7 +216,7 @@ export default function HistoricoNotas() {
           <ArrowLeft size={24} style={{ color: "var(--text)" }} />
         </button>
         <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-          Histórico de notas
+          {titulo}
         </h1>
       </header>
 

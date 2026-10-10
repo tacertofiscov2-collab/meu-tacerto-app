@@ -1,4 +1,4 @@
-/* SUPORTE v1 — chat de suporte dentro do app (Perfil > Ajuda): perguntas prontas por assunto para afunilar; se nao resolver, a pessoa escreve e vai pro WhatsApp do suporte com tudo anotado */
+/* SUPORTE v2 — correcoes de 08-10: DAS vence dia 20 e, se nao for dia util, no proximo dia util; NFS-e so para frete na mesma cidade (agregado sem IE em MG hoje nao emite); A1 a preco de custo (R$ 100,34) (v1: chat de suporte dentro do app (Perfil > Ajuda): perguntas prontas por assunto para afunilar; se nao resolver, a pessoa escreve e vai pro WhatsApp do suporte com tudo anotado */
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
@@ -52,7 +52,7 @@ const ASSUNTOS = [
     perguntas: [
       {
         p: "Quando vence o DAS?",
-        r: "Todo dia 20. Pagando em dia, você mantém seus direitos no INSS, como aposentadoria e auxílio-doença.",
+        r: "Dia 20. Se cair em fim de semana ou feriado, vence no próximo dia útil. Pagando em dia, você mantém seus direitos no INSS.",
       },
       {
         p: "Como recebo o boleto?",
@@ -78,15 +78,15 @@ const ASSUNTOS = [
       },
       {
         p: "Como emito?",
-        r: "No Início, toque em NF. Você escolhe: com o Fisco no WhatsApp, sozinho (passo a passo) ou automática, com o Certificado A1.",
+        r: "No Início, toque em NF. Lá diz quando você precisa emitir e como: com o Fisco no WhatsApp, sozinho ou automática, com o Certificado A1.",
       },
       {
         p: "O que é o Certificado A1?",
-        r: "A identidade digital do seu CNPJ. Com ele, a nota sai automática e você só confirma. A gente agenda com a certificadora parceira.",
+        r: "A identidade digital do seu CNPJ. Com ele, a nota sai automática e você só confirma. Custa R$ 100,34 por 1 ano, preço de custo: o TaCerto não ganha nada.",
       },
       {
         p: "NFS-e ou CT-e?",
-        r: "Agregado de transportadora geralmente emite NFS-e. Quem pega frete direto pode precisar de CT-e. Na dúvida, chame a gente.",
+        r: "NFS-e só para frete na mesma cidade. Frete entre cidades, contratado direto, é CT-e. Agregado de transportadora em MG, sem Inscrição Estadual, hoje não emite: quem emite é a transportadora.",
       },
     ],
   },

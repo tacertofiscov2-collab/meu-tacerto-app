@@ -1,4 +1,4 @@
-/* COMOEMITIRNOTA v8 — sem o "Em breve" no Certificado A1; explicacao do A1 nova (certificadora parceira credenciada, mais credibilidade e curta); secao "Como o TaCerto ajuda hoje"; icone do WhatsApp (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: padrao do Perfil: lista simples sem cartoes, selos nem botao verde cheio; aviso como linha; passos e Certificado A1 abrem em secoes abaixo; letras maiores (v5: A1: "Custa a partir de R$ 99,90" (vale 1 ano) no lugar de "valor a confirmar"; Fisco.ia (v4: selo so "Grátis"; v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1) */
+/* COMOEMITIRNOTA v9 — correcoes de 08-10: aviso certo (este passo a passo e para frete na MESMA cidade; entre cidades e CT-e; agregado sem IE em MG hoje nao emite), A1 R$ 100,34 a preco de custo, videochamada (parado, internet, luz, CNH original) e "Tenho interesse no certificado" (v8: sem o "Em breve" no Certificado A1; explicacao do A1 nova (certificadora parceira credenciada, mais credibilidade e curta); secao "Como o TaCerto ajuda hoje"; icone do WhatsApp (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: padrao do Perfil: lista simples sem cartoes, selos nem botao verde cheio; aviso como linha; passos e Certificado A1 abrem em secoes abaixo; letras maiores (v5: A1: "Custa a partir de R$ 99,90" (vale 1 ano) no lugar de "valor a confirmar"; Fisco.ia (v4: selo so "Grátis"; v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1) */
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -12,6 +12,7 @@ import {
   MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
 } from "@/config/piloto";
 import { useAppState } from "@/context/AppStateContext";
+import { PRECO_CERTIFICADO_A1 } from "@/lib/fiscal";
 
 /* ===================================================================
    CONTEUDO PROVISORIO - CONFERIR
@@ -58,8 +59,11 @@ const PASSO_EMITIR = {
 const CONTEUDO_POR_TIPO = {
   MEI_CAMINHONEIRO: {
     /* Texto do aviso pedido pelo Fernando (conferir com o contador) */
-    avisoTitulo: "NFS-e ou CT-e?",
-    aviso: "Agregado de transportadora geralmente emite NFS-e. Se você pega frete direto, pode precisar de CT-e.",
+    /* v9: correcao (HANDOFF-08-10): NFS-e SO para frete na mesma cidade.
+       O MEI nunca emite NFS-e de frete entre cidades (Res. CGSN 140,
+       art. 106-A); agregado sem IE em MG hoje nao emite. */
+    avisoTitulo: "Este passo a passo é para frete na mesma cidade",
+    aviso: "Frete entre cidades, contratado direto, é CT-e. Agregado de transportadora em MG, sem Inscrição Estadual, hoje não emite.",
     explicacaoFisco: "Você me manda o valor e pra quem foi o frete, eu monto tudo e te guio no gov.br.",
     passos: [
       PASSO_ENTRAR,
@@ -243,7 +247,7 @@ export default function ComoEmitirNota() {
               <LinhaLista
                 Icon={Video}
                 rotulo="Como tira"
-                detalhe="Você agenda com a certificadora parceira do TaCerto, credenciada pelo governo para emitir certificados. É por videochamada, com a CNH ou o RG, em poucos minutos."
+                detalhe="Você agenda com a certificadora parceira, credenciada pelo governo. É por videochamada: parado, com boa internet e luz, e a CNH original na mão."
               />
               <LinhaLista
                 Icon={Sparkles}
@@ -257,7 +261,7 @@ export default function ComoEmitirNota() {
               <LinhaLista
                 Icon={Wallet}
                 rotulo="Valor"
-                detalhe="A partir de R$ 99,90. Vale 1 ano."
+                detalhe={`R$ ${PRECO_CERTIFICADO_A1.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} por 1 ano. Preço de custo da certificadora: o TaCerto não ganha nada.`}
               />
               <LinhaLista
                 Icon={ShieldCheck}
@@ -266,7 +270,7 @@ export default function ComoEmitirNota() {
               />
               <LinhaLista
                 Icon={IconeWhatsApp}
-                rotulo="Quero agendar meu certificado"
+                rotulo="Tenho interesse no certificado"
                 onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.certificadoA1(dados))}
               />
             </SecaoLista>

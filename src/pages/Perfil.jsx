@@ -1,4 +1,4 @@
-﻿/* PERFIL v20 — Meu MEI: linha "Meu lucro" (/meu-lucro) (v19: Meu MEI: linha "CNPJ" (mascarado 12.345.•••/••01-90; sem CNPJ, "Não preenchido" com pontinho de aviso) que abre a busca/confirmacao (/perfil/cnpj) (v18: "Excluir conta" em branco (como as outras linhas); vermelho so no "Sair da conta" (pedido do Fernando) (v17: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes))) */
+﻿/* PERFIL v21 — Ajuda: "Notas fiscais" abre a janela nova (/notas-fiscais) (v20: Meu MEI: linha "Meu lucro" (/meu-lucro) (v19: Meu MEI: linha "CNPJ" (mascarado 12.345.•••/••01-90; sem CNPJ, "Não preenchido" com pontinho de aviso) que abre a busca/confirmacao (/perfil/cnpj) (v18: "Excluir conta" em branco (como as outras linhas); vermelho so no "Sair da conta" (pedido do Fernando) (v17: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes))) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
@@ -30,7 +30,7 @@ import {
   MOSTRAR_PREFERENCIAS, MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_NOTAS_FISCAIS,
   MOSTRAR_ADICIONAR_MOVIMENTACOES, MOSTRAR_RESUMO_ANO, MOSTRAR_SOBRE,
   MOSTRAR_AVATAR, MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS, MOSTRAR_LOGIN_EMAIL,
-  MOSTRAR_SUPORTE, MOSTRAR_DECLARACAO_ANUAL, MOSTRAR_MEU_LUCRO,
+  MOSTRAR_SUPORTE, MOSTRAR_DECLARACAO_ANUAL, MOSTRAR_MEU_LUCRO, MOSTRAR_JANELA_NOTAS,
   MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
 } from "@/config/piloto";
 
@@ -593,7 +593,12 @@ export default function Perfil() {
               />
             )}
             {MOSTRAR_TUTORIAL_NOTA && (
-              <LinhaLista Icon={FileText} rotulo="Como emitir nota" onClick={() => navigate("/como-emitir-nota", DE_PERFIL)} />
+              /* v21: janela "Notas fiscais" (explicacao + A1, ou Minhas notas) */
+              <LinhaLista
+                Icon={FileText}
+                rotulo={MOSTRAR_JANELA_NOTAS ? "Notas fiscais" : "Como emitir nota"}
+                onClick={() => navigate(MOSTRAR_JANELA_NOTAS ? "/notas-fiscais" : "/como-emitir-nota", DE_PERFIL)}
+              />
             )}
             {MOSTRAR_TUTORIAL_DAS && (
               <LinhaLista Icon={CalendarCheck} rotulo="Como pagar o DAS" onClick={() => navigate("/como-pagar-das", DE_PERFIL)} />

@@ -1,4 +1,4 @@
-/* FISCAL v3 — palavraDaSituacao: velocimetro zerado diz "Falta informar" (nunca "Tá tranquilo") (v2: valor do DAS pelo CNAE (caminhoneiro: municipal / intermunicipal / os dois; MEI comum: comercio / servicos / os dois) (v1: fonte unica das regras fiscais) */
+/* FISCAL v4 — preco do Certificado A1 (R$ 100,34, preco de custo) num lugar so (v3: palavraDaSituacao: velocimetro zerado diz "Falta informar" (nunca "Tá tranquilo") (v2: valor do DAS pelo CNAE (caminhoneiro: municipal / intermunicipal / os dois; MEI comum: comercio / servicos / os dois) (v1: fonte unica das regras fiscais) */
 // Fonte ÚNICA da verdade para regras fiscais do TaCerto!
 
 export const LIMITES_ANUAIS = {
@@ -224,6 +224,11 @@ export function valorDasMensal(tipo, cnaes = []) {
   const tabela = DAS_2026[tipo] || DAS_2026.MEI;
   return tabela[atividadeDasPeloCnae(tipo, cnaes)] ?? tabela[DAS_ATIVIDADE_PADRAO[tipo] || DAS_ATIVIDADE_PADRAO.MEI];
 }
+
+/* v4: Certificado Digital A1 (e-CNPJ) pela Tecnosign (certificadora
+   Soluti), pelo link de venda, a PRECO DE CUSTO: o TaCerto nao ganha
+   nada (decisao do Fernando, HANDOFF-08-10). Antes o app dizia R$ 99,90. */
+export const PRECO_CERTIFICADO_A1 = 100.34;
 
 export const DAS_VENCIMENTO_DIA = 20;
 export const DAS_VENCIMENTO_LABEL =
