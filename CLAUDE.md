@@ -165,11 +165,31 @@ O projeto **não tem backup automático**. Por isso:
 - `piloto4@gmail.com` / `teste12345` — criada em 03/10 (teste do
   cadastro depois do conserto de segurança); onboarding feito, MEI.
 - Comandos de criar/resetar as entradas de teste: HANDOFF, Parte 7.
+- O Claude **não faz login** no Supabase (serviço de fora). Para conferir
+  telas que pedem login no navegador embutido, usa um "banco de mentira"
+  só no navegador de teste (ver `docs/HANDOFF.md`, seção 7). Nada vai
+  para o banco real.
 
 ---
 
 ## Onde estamos (atualizar ao fim de cada sessão)
 
+- **10/10 (fim da tarefa de 08-10): CHAT NOVO, LER PRIMEIRO
+  `docs/HANDOFF.md`** (telas, chaves, o que testar no iPhone e as
+  **"Perguntas para o Fernando"** no fim) e `docs/HANDOFF-08-10-PESQUISAS.md`.
+  Branch `piloto-simplificado` com **mais de 30 commits sem push** (a
+  prévia da Vercel ainda está no `353c036`). **SQL de 08-10 RODADO** em
+  10/10 (CNPJ e lembrete do DAS no perfil; categoria e chave_unica em
+  entradas/saídas; tabela `extratos_enviados`) — `migrations.sql`
+  PARTE 4D. Feito: CNPJ no cadastro (BrasilAPI, "Achei você") e no
+  Perfil; sai o "Quanto você já faturou"; velocímetro com "Atualizado
+  em", "Atualizar velocímetro", "Falta informar" e selo
+  Estimado/Conferido; **Enviar extrato** (OFX/CSV no celular, PDF "em
+  análise"), conferência com 6 respostas, gastos em dúvida, nada
+  contado duas vezes; **Meu lucro**; janela **Notas fiscais** (A1 R$
+  100,34); DAS com feriados (prorroga) e **Preferências** só com o
+  Lembrete do DAS; **Simulador**; Termos e Privacidade novos;
+  `docs/PLANO-AUTOMACAO-DAS.md`. O `npm run dev` foi desligado no fim.
 - **06/10 (fim da sessão): CHAT NOVO, LER PRIMEIRO `docs/HANDOFF.md`**
   (resumo de passagem atualizado: telas, chaves, pendências, cuidados
   técnicos). Branch `piloto-simplificado` com **16 commits sem push**

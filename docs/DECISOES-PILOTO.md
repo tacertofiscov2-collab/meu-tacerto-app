@@ -5,7 +5,9 @@
 > ajudas pelo WhatsApp (boleto do DAS, nota fiscal, dúvidas) são feitas
 > **à mão pelo Fernando**.
 >
-> Branch: `piloto-simplificado`. Atualizado em 05/10/2026 (fim do dia).
+> Branch: `piloto-simplificado`. Atualizado em 05/10/2026 (fim do dia);
+> pendências de CNPJ, DAS de novembro e NFS-e/A1 marcadas como feitas em
+> 10/10/2026 (tarefa de 08-10, ver `docs/HANDOFF.md`).
 > Resumo de passagem da sessão: **`docs/HANDOFF.md`**.
 
 ---
@@ -301,17 +303,18 @@ ajuda.
       anon atual (legada) não é mais "rotacionável": o caminho é migrar para
       a chave nova (`sb_publishable_...`) e trocar no `.env` e na Vercel.
       Não clicar em "Rotate" na `VITE_SUPABASE_KEY`.
-- [ ] **CNPJ no perfil:** o perfil não guarda CNPJ (não existe a coluna).
-      Por isso as mensagens do DAS terminam em "Meu CNPJ: " para a pessoa
-      completar. Guardar o CNPJ exige mudar o banco (tarefa separada).
+- [x] ~~**CNPJ no perfil**~~: feito em 10/10 (cadastro e Perfil; coluna
+      `perfis.cnpj` criada pelo SQL de 08-10). As mensagens do WhatsApp já
+      levam o CNPJ formatado; sem CNPJ, "Meu CNPJ: " continua em branco.
 - [ ] Conferir no site real os nomes dos botões do **PGMEI** e do
       **Emissor Nacional** usados nos passo a passo (escritos de memória).
-- [ ] Conferir com o contador: o aviso NFS-e x CT-e do agregado, e o texto
-      do Certificado A1 (agora "a partir de R$ 99,90", vale 1 ano).
+- [x] ~~Aviso NFS-e x CT-e e preço do A1~~: corrigidos em 10/10 pela
+      pesquisa de 07-08/10 (NFS-e só frete na mesma cidade; agregado sem IE
+      em MG hoje não emite; A1 R$ 100,34 a preço de custo).
 - [ ] Revisar com advogado os **Termos de uso** e a **Política de
       privacidade** (versão provisória; falta a razão social e o CNPJ do
       TaCerto!).
-- [ ] **DAS de novembro:** 20/11 é feriado (Consciência Negra). O card
-      mostra "20/11"; o app não calcula feriado.
+- [x] ~~**DAS de novembro**~~: feito em 10/10 — o app calcula os feriados
+      nacionais (`src/lib/vencimentoDas.js`): 20/11/2026 → vence 23/11.
 - [ ] Religar o **"Require Log In"** da prévia na Vercel antes de mandar o
       link para fora.

@@ -1,12 +1,13 @@
-# TaCerto! — Resumo de passagem (sessão de 05 a 06/10/2026)
+# TaCerto! — Resumo de passagem (sessões de 05 a 10/10/2026)
 
 > **Para o Claude do chat novo:** leia este arquivo primeiro. Depois:
 > **`CLAUDE.md`** (regras de trabalho e quem é o Fernando),
+> **`docs/HANDOFF-08-10-PESQUISAS.md`** (decisões de 07–08/10, com fontes),
 > **`docs/DECISOES-PILOTO.md`** (decisões e pendências do piloto),
-> **`docs/AUTOMACAO-PILOTO.md`** (até onde dá para automatizar DAS, nota
-> e declaração) e, se precisar, o **`HANDOFF.md` da raiz** (referência
-> completa: Partes 0, 1, 3, 6 e 12). Login no painel do Supabase, clique
-> por clique: **`docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md`**.
+> **`docs/PLANO-AUTOMACAO-DAS.md`** (como o DAS vai ficar automático),
+> **`docs/AUTOMACAO-PILOTO.md`** e, se precisar, o **`HANDOFF.md` da raiz**
+> (referência completa). As pesquisas estão em `docs/pesquisas/`. Login no
+> painel do Supabase, clique por clique: **`docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md`**.
 
 ---
 
@@ -17,29 +18,35 @@
 - Telas **minimalistas**: pouco texto, **menos cor**, fundo preto, verde
   só no botão de confirmar/continuar (contorno). Quando um visual não
   agradar: mostrar **2-3 variações**.
+- **"Aparece só quando precisa"** (08/10): cada pedido de dado vem com UMA
+  frase dizendo o benefício; tudo opcional; dado que falta mostra um aviso
+  discreto ("Não preenchido").
 - Antes de mexer: dizer em poucas linhas o que muda. Marca de versão na
   1ª linha de cada arquivo alterado (`/* ARQUIVO vN — o que mudou (vN-1: ...) */`).
   Commit a cada etapa. **`git push` só quando ele pedir.**
-- Na madrugada de 06/10 ele pediu "trabalhe direto, não peça permissão";
-  isso **não** vale para o Supabase (SQL/funções continuam pedindo "pode").
+- SQL e funções do Supabase: **só com o "pode"** dele (e a rotina de
+  cópia/conferência do CLAUDE.md).
 
 ---
 
 ## 1. Onde está o código
 
-- Branch **`piloto-simplificado`**. **16 commits SEM PUSH** (de `0ca66d1`
-  até o deste resumo): a prévia da Vercel ainda mostra o `353c036` (05/10).
-  Quando o Fernando pedir: `git push` (nunca `--force`).
-- A **`main` não foi mexida**; produção continua em `f1832bb`.
+- Branch **`piloto-simplificado`**. **Mais de 30 commits SEM PUSH**: a
+  prévia da Vercel ainda mostra o `353c036` (05/10). Quando o Fernando
+  pedir: `git push` (nunca `--force`). A **`main` não foi mexida**;
+  produção continua em `f1832bb`.
+- Commits da tarefa de 08-10 (antigo → novo): `b459798` (SQL pendente e
+  pesquisas), `dc957cd` (CNPJ), `df0cd74` (velocímetro), `e4cd3e0`
+  (bibliotecas do extrato), `d19cfdf` (CNPJ conferido), `dc8b181` (SQL
+  rodado), `f03bff8` (enviar extrato), `2a2b458` (Meu lucro), `750deb2`
+  (Notas fiscais), `a9abf2b` (DAS e lembretes), `391165f` (Simulador),
+  `eb47665` (Termos e Privacidade) e os de fechamento (revisão e este
+  resumo).
 - Servidor local: o `npm run dev` costuma rodar no terminal do Cursor
-  (`localhost:8080`; iPhone em `192.168.1.224:8080`). Em 06/10 de manhã
-  ele estava **desligado**: o Claude ligou pelo app (configuração
-  `tacerto-dev` em `.claude/launch.json`), testou e **desligou** de novo.
-  Para o iPhone, o Fernando precisa ligar o `npm run dev` no Cursor.
-- Commits da sessão (antigo → novo): `0ca66d1`, `c74f0dc`, `1505643`,
-  `abcadd3`, `bedf4f7`, `092d098`, `2b5169f`, `73cdd09`, `f85ab92`,
-  `8669660`, `b09a99c`, `a066198`, `b0ba45e`, `0e4c80b`, `b69c4c2` e o
-  deste resumo.
+  (`localhost:8080`; iPhone em `192.168.1.224:8080`). Nas sessões de
+  08-10 o Claude ligou pelo app (configuração `tacerto-dev` em
+  `.claude/launch.json`) e **desligou** no fim. Para o iPhone, o Fernando
+  liga o `npm run dev` no Cursor.
 
 ---
 
@@ -49,40 +56,33 @@
 
 | Tela | Endereço | Como está |
 |---|---|---|
-| **Boas-vindas** (slides) | `/` | 5 slides (limite 24h, DAS no automático, nota do seu jeito, grátis, tudo pelo WhatsApp). Escala comum (`useEscalaComum`). Textos com "Fisco" (não mais "Fisco.ia"). ⚠️ O **slide 1 ainda mostra o Início antigo** (cartão de vidro). Fernando pediu para **manter os slides** como estão. |
-| **Entrar pelo WhatsApp** | `/login`, `/cadastro` | Número com DDD (+55) → "Receber código" → 6 quadradinhos. Botões maiores, quadradinhos sem verde (só mais claros), links dos Termos sublinhados sem verde, aviso do modo teste no rodapé. |
-| **Plano B** | `/entrar-email` | Login antigo por e-mail e senha, sem link em lugar nenhum. |
-| **Onboarding** | `/onboarding` | Nome → tipo de MEI → abriu este ano? → quanto já faturou. **Opção escolhida sem verde e sem fundo cinza (só mais clara)**, barra de progresso branca, verde só no "Continuar", letras maiores, campos com 16px. Gesto de voltar do iPhone volta uma etapa. Conta já feita → vai para o Início. |
+| **Boas-vindas** (slides) | `/` | 5 slides, sem mudança (pedido). ⚠️ O slide 1 ainda mostra o Início antigo. |
+| **Entrar pelo WhatsApp** | `/login`, `/cadastro` | Número + código de 6 números. **Modo teste ligado** (37 00000-0001 a 9999, qualquer código). |
+| **Cadastro (Onboarding)** | `/onboarding` | **Novo (08-10):** 1 Nome → **2 "Qual o CNPJ do seu MEI?"** (opcional; "Com ele eu preencho o resto pra você."; máscara, confere os dígitos; "Buscar" na BrasilAPI; "Preencher depois") → **"Achei você"** (nome, "Parece MEI Caminhoneiro", 1 toque troca, "MEI desde MM/AAAA"; aviso amarelo se a Receita diz que não é MEI) → "Está certo" grava tudo e vai pro Início. Sem CNPJ (ou busca falhou: "Não consegui buscar agora"): 3 Tipo de MEI → 4 "Abriu este ano?" → "Começar a usar". **Saiu** a etapa "Quanto você já faturou". |
 
 ### Dentro do app
 
 | Tela | Endereço | Como está |
 |---|---|---|
-| **Início** | `/dashboard` | **Visual F.** Logo + saudação; **sininho** discreto à direita. **Velocímetro grande** (arco até 250, número 48, valores 19; o "MEI · anual" ficou igual), encolhe sozinho em tela baixa; arrastar mostra a média do mês (o "?" da média abre a explicação **uma vez só**). Barra **DAS \| Fisco \| NF** (Fisco com o símbolo do WhatsApp em contorno) **centrada** entre as bolinhas e o rodapé. Rodapé: casinha e Perfil cinza (sem destaque de página atual), **"+" verde grande sem círculo** no centro. |
-| **Notificações** | (sininho) | Folha com 2 itens: **"Apresentação do Fisco.ia"** (tutorial em 8 slides com um celular de exemplo e um círculo verde passando por cada função) e **"Atualize seu velocímetro"** (folha com "Digitar o total do ano" ou "Mandar pro Fisco"). Pontinho verde = não lida (guardado no aparelho, por conta). |
-| **Painel do DAS** | (DAS no Início) | "Como você quer pagar seu DAS?": boleto todo mês no WhatsApp, Fisco me ajuda agora, fazer sozinho, site do governo. |
-| **Lançar (+)** | `/lancar` | **"Recebimento \| Total do ano"** (alternador sem cinza: o escolhido só tem borda clara). Total do ano (`/lancar?modo=total`): digita só o faturamento do ano e o velocímetro fica igual — vira UM lançamento "Ajuste do total do ano" (substituído a cada vez; não deixa total menor que os recebimentos). |
-| **Histórico de entradas** | `/historico` | Busca, mês, "Lançar entrada", total, lista por mês; descrição em até 2 linhas. |
-| **Passou do limite** | `/regra-vinte` | Lista simples. ⚠️ Aberta direto pelo endereço sem ter passado do limite, mostra "Passei R$ 0,00" (pelo app só abre acima de 100%). |
-| **Perfil** | `/perfil` | CONTA: Nome (digita na linha + "Salvar nome"), WhatsApp (aviso "fale com a gente"), Tema Preto/Branco, **Excluir conta** (logo abaixo do Tema). MEU MEI: Tipo de MEI (folha "O que mudou?"), Abertura (calendário, só quem abriu este ano), limite, já faturado, **limite restante**, **Histórico de lançamentos**. AJUDA: **Falar com o suporte**, Como emitir nota, Como pagar o DAS, **Declaração anual**. SOBRE: Termos, Privacidade. Sair da conta. |
-| **Suporte** | `/suporte` | Chat do **suporte humano** dentro do app: assuntos → perguntas prontas → resposta + "Isso resolveu?" → se não, a pessoa escreve e toca em "Abrir o WhatsApp do suporte" (mensagem pronta "Oi Fisco! Preciso de suporte no app TaCerto..." com nome, tipo, assunto, dúvida e o que escreveu). |
-| **Declaração anual** | `/declaracao-anual` | Prazo 31/05 (sobre o ano anterior), "Calcular meu Imposto de Renda", "Como o TaCerto ajuda hoje", Entenda (2 declarações, parte isenta, declarar ≠ pagar, atraso), faturamento do ano, passo a passo da DASN-SIMEI (abre e fecha). |
-| **Calcular IR** | `/declaracao-anual/calcular?passo=1..6` | Uma pergunta por tela: atividade, faturamento (já vem do app), gastos, outras rendas, funcionário → resultado (parte isenta, se precisa declarar, imposto provável, o que vai na DASN). |
-| **Como emitir nota** | `/como-emitir-nota` | Aviso NFS-e x CT-e; Fisco no WhatsApp, Fazer sozinho, **Nota automática (A1) — sem "Em breve"**; "Como o TaCerto ajuda hoje"; A1 explicado: ICP-Brasil, certificadora parceira credenciada, videochamada, R$ 99,90/ano, segurança, "Quero agendar meu certificado". |
-| **Como pagar o DAS** | `/como-pagar-das` | Vence dia 20; "Como o TaCerto ajuda hoje"; 7 passos; PGMEI; "Prefiro que o Fisco me ajude". |
-| **Excluir conta**, **Termos**, **Privacidade**, **Editar perfil** (sem link) | | Lista simples; fundo preto. |
-
-**Em todas as telas:** setinha de voltar maior (bolinha 46, seta 24;
-sem bolinha: seta 26). **"Fisco.ia" virou "Fisco"** em todo texto; o
-nome "Fisco.ia" ficou só na Apresentação. Janelas (calendário, mês,
-Tipo de MEI, confirmações) com fundo preto, sem cinza, escolhido só
-mais claro, verde só no "Confirmar".
+| **Início** | `/dashboard` | Visual F. **Novo:** embaixo do velocímetro, "Atualizado em 08/10 às 14:32" + botão "Atualizar velocímetro" (contorno). Zerado no ano: "Falta informar" e o botão em verde. **Selo** pequeno ao lado de "MEI Caminhoneiro · anual": "Estimado" (tem total do ano digitado) ou "Conferido" (veio de extrato e foi confirmado). A barra DAS \| Fisco \| NF não mudou de cara; o **NF** agora abre a janela "Notas fiscais". |
+| **Folha "Atualize seu velocímetro"** | (botão do Início e sininho) | 3 jeitos, uma frase cada: **Enviar extrato** (recomendado, borda verde fina) · **Digitar** (o "+") · **Mandar pro Fisco no WhatsApp**. |
+| **Enviar extrato** | `/enviar-extrato` | **Novo.** "Escolher arquivo" (OFX, CSV ou PDF). OFX/CSV lidos no celular, sem IA; só fica o que é do ano (ou da abertura em diante); repetido não entra. Fim: "Encontrei 37 entradas e 52 saídas de jan a out. Vamos conferir?" → Conferir / Depois. Mesmo arquivo de novo: "Esse extrato já estava aqui. Nada novo." PDF: guardado (pasta privada) "em análise": "Recebi! Vou ler e te aviso quando estiver pronto." |
+| **Conferência "É faturamento?"** | `/conferir-entradas` | **Novo:** 6 respostas curtas: É frete/serviço ✓ · Reembolso de despesa ✓ · Vale-pedágio ✕ · Empréstimo ✕ · Estorno/devolução ✕ · Dinheiro meu/família ✕ (MEI comum: "É venda/serviço" e sem vale-pedágio). Quando o extrato já diz o que é (vale-pedágio, estorno, resgate...), vem num grupo próprio com a resposta sugerida (borda verde fina). O que conta vira regra do pagador. **Nada contado duas vezes**: recebimento já lançado à mão (mesmo valor, até 3 dias) não é lançado de novo; o que já estava no "total do ano" digitado diminui o ajuste. A tela final avisa os dois casos. Vindo do extrato, segue para os gastos. |
+| **Seus gastos** | `/conferir-saidas` | **Novo.** Só os gastos do extrato em dúvida: "É gasto do caminhão?" com a categoria, ou "Não, é pessoal"; "O resto é pessoal" encerra. Grava na hora e lembra pelo fornecedor. |
+| **Meu lucro** | `/meu-lucro` | **Novo** (o Resumo do ano evoluído). Mês \| Ano. Recebido · Gastos · Sobrou (%). Ano com gráfico por mês. Gastos → por categoria → cada gasto com "com nota"/"sem nota"; tocar: anexar nota (foto/PDF), trocar categoria, "Não é do negócio". Sem extrato: só Recebido + "Envie o extrato para ver quanto sobrou." |
+| **Simulador** | `/simulador` | **Novo.** Quanto recebe por mês (já vem a média) e gasta (opcional) → previsto no ano, % do limite, mês em que passa, quanto ainda pode por mês, DAS do ano, Imposto de Renda estimado. |
+| **Notas fiscais** | `/notas-fiscais` | **Novo.** Sem certificado: quando emitir (NFS-e só frete na mesma cidade; CT-e entre cidades contratado direto; agregado sem IE em MG hoje não emite; 2027 em todo serviço), como o TaCerto ajuda, Certificado A1 (**R$ 100,34**, preço de custo; videochamada) e "Tenho interesse no certificado" (WhatsApp). Com `perfis.nota_automatica_ativa = true` (o Fernando liga à mão): vira **"Minhas notas"**. |
+| **Preferências** | `/preferencias` | **Religada, só com o Lembrete do DAS:** dias antes (7, 5, 3, 2, 1, no dia; padrão 7, 2 e no dia), horário (padrão 9:00), "Não quero lembretes". Grava no perfil. |
+| **Painel do DAS** | (DAS no Início) | Agora mostra no topo "Vence 20/10 · R$ 195,52" (data real com feriados; valor pelo CNAE). |
+| **Perfil** | `/perfil` | Meu MEI: **CNPJ** (12.345.•••/••01-90 ou "Não preenchido" + pontinho amarelo; abre `/perfil/cnpj`), Tipo, Abertura, Limite, Já faturado, Limite restante, **Meu lucro**, **Simulador**, Histórico. Conta: **Preferências** (Lembrete do DAS). Ajuda: Suporte, **Notas fiscais**, Como pagar o DAS, Declaração anual. |
+| **CNPJ pelo Perfil** | `/perfil/cnpj` | O mesmo fluxo do cadastro. Não muda o tipo de MEI (travado; só avisa se o CNPJ sugere outro). Se virou MEI este ano, acerta a abertura. |
+| **Calcular IR** | `/declaracao-anual/calcular` | Os gastos já vêm com a soma dos **gastos com nota** guardados no app (dá para ajustar). |
+| **Como emitir nota / Como pagar o DAS / Suporte / Termos / Privacidade** | | Textos corrigidos (ver seção 4). |
 
 ### Escondido por chave (nada foi apagado)
 
-Ver `docs/DECISOES-PILOTO.md`, seção 3. Endereço escondido aberto
-direto volta para o Início. Visuais antigos do Início (Atual, A–E e
-`g` = "tela B" invertida) continuam no `Dashboard.jsx`.
+Ver `docs/DECISOES-PILOTO.md`, seção 3. Endereço escondido aberto direto
+volta para o Início.
 
 ---
 
@@ -90,138 +90,183 @@ direto volta para o Início. Visuais antigos do Início (Atual, A–E e
 
 | Chave | Valor |
 |---|---|
-| `MOSTRAR_OPEN_FINANCE`, `MOSTRAR_CHAT_FISCO`, `MOSTRAR_NOTAS_FISCAIS`, `MOSTRAR_SAIDAS`, `MOSTRAR_HISTORICO_DAS`, `MOSTRAR_ADICIONAR_MOVIMENTACOES`, `MOSTRAR_RESUMO_ANO`, `MOSTRAR_PREFERENCIAS`, `MOSTRAR_SOBRE`, `MOSTRAR_INACABADOS`, `MOSTRAR_AVATAR`, `MOSTRAR_LOGIN_EMAIL`, `MOSTRAR_LOGIN_GOOGLE`, `MOSTRAR_WHATSAPP_DOCUMENTOS` | `false` |
+| `MOSTRAR_OPEN_FINANCE`, `MOSTRAR_CHAT_FISCO`, `MOSTRAR_NOTAS_FISCAIS` (histórico antigo), `MOSTRAR_SAIDAS`, `MOSTRAR_HISTORICO_DAS`, `MOSTRAR_ADICIONAR_MOVIMENTACOES`, `MOSTRAR_RESUMO_ANO` (endereço antigo), `MOSTRAR_SOBRE`, `MOSTRAR_INACABADOS`, `MOSTRAR_AVATAR`, `MOSTRAR_LOGIN_EMAIL`, `MOSTRAR_LOGIN_GOOGLE`, `MOSTRAR_WHATSAPP_DOCUMENTOS` | `false` |
 | **`MODO_TESTE_LOGIN`** | **`true`** ⚠️ desligar antes de gente real |
-| `MOSTRAR_CARD_DAS`, `MOSTRAR_TUTORIAL_DAS`, `MOSTRAR_TUTORIAL_NOTA` | `true` |
-| `MOSTRAR_NOTIFICACOES` | `true` (sininho, Apresentação, Atualize seu velocímetro) |
-| `MOSTRAR_SUPORTE` | `true` (`/suporte`) |
-| `MOSTRAR_DECLARACAO_ANUAL` | `true` (`/declaracao-anual` + calculadora) |
-| `MOSTRAR_SELETOR_VISUAL_INICIO` | `false` |
-| `VISUAL_INICIO_PADRAO` | `"f"` |
-| **`WHATSAPP_FISCO`** | **`"5537991999373"`** — número real **(37) 99199-9373**, o mesmo do Fisco e do suporte (cada botão manda a sua mensagem pronta de `MENSAGENS_WHATSAPP`) |
+| `MOSTRAR_CARD_DAS`, `MOSTRAR_TUTORIAL_DAS`, `MOSTRAR_TUTORIAL_NOTA`, `MOSTRAR_NOTIFICACOES`, `MOSTRAR_SUPORTE`, `MOSTRAR_DECLARACAO_ANUAL` | `true` |
+| **Novas de 08-10:** `MOSTRAR_ENVIAR_EXTRATO` (`/enviar-extrato`, `/conferir-saidas`), `MOSTRAR_MEU_LUCRO` (`/meu-lucro`), `MOSTRAR_JANELA_NOTAS` (`/notas-fiscais` nova), `MOSTRAR_SIMULADOR` (`/simulador`), `MOSTRAR_PREFERENCIAS` (religada) | `true` |
+| `MOSTRAR_SELETOR_VISUAL_INICIO` / `VISUAL_INICIO_PADRAO` | `false` / `"f"` |
+| `WHATSAPP_FISCO` | `"5537991999373"` — (37) 99199-9373 |
 
 Fora do `piloto.js`: `PLUGGY_ATIVO = false` (`src/lib/openfinance.js`).
-Regras e números da declaração: `src/lib/declaracao.js`
-(`LIMITE_DECLARAR_IR = 35584`, do ano de 2025 — **atualizar quando sair o de 2027**).
+Regras fiscais num lugar só: `src/lib/fiscal.js` (limites, DAS pelo CNAE,
+preço do A1 `PRECO_CERTIFICADO_A1 = 100.34`), `src/lib/vencimentoDas.js`
+(dia 20 + feriados nacionais, prorroga), `src/lib/declaracao.js` (IR e
+Simulador), `src/lib/categorias.js` (o que conta como faturamento e as
+categorias de gasto).
 
 ---
 
-## 4. O que foi feito nesta sessão (05–06/10)
+## 4. O que foi feito em 08-10 (tarefa de `docs/PROMPT-CODE-08-10.md`)
 
-- **Início:** escolhido o visual F depois de C, D, E e a "tela B"; DAS /
-  Fisco / NF; casinha cinza; "+" grande sem círculo; velocímetro maior e
-  barra centrada; sininho de notificações.
-- **Apresentação do Fisco.ia** (tutorial) e **Atualize seu velocímetro**
-  (+ modo "Total do ano" no "+").
-- **Explicação da média limite:** só texto + "Entendi", uma vez só.
-- **Perfil:** itens do Editar perfil vieram para fora (tocáveis); Limite
-  restante; Histórico de lançamentos; Excluir conta abaixo do Tema;
-  Suporte e Declaração anual na Ajuda.
-- **Suporte** (chat com perguntas prontas → WhatsApp) e **Declaração
-  anual** (página + calculadora do IR), com pesquisa das regras de 2026
-  (DASN até 31/05, multa mínima R$ 50; IR: 8% isento no transporte de
-  cargas, limite R$ 35.584; Lei 15.270/2025: isento até R$ 5 mil/mês
-  desde 2026).
-- **"Como o TaCerto ajuda hoje"** nas páginas de DAS, nota e declaração
-  (só o que dá para cumprir à mão no piloto) + **`docs/AUTOMACAO-PILOTO.md`**.
-- **Menos cor:** onboarding, entrada, calendário, seletor de mês,
-  janelas e alternadores sem verde nem cinza.
-- **Setinha de voltar maior** em todas as telas; "Fisco.ia" → "Fisco".
-- **Número real do WhatsApp** (37) 99199-9373.
-- Revisão completa do app 2 vezes (temas Preto e Branco, alturas 664 e
-  844): achados corrigidos (Histórico cortava nomes; calculadora perdia as
-  respostas; import sem uso); nenhum erro no Console; build OK.
-
----
-
-## 5. Pendente / para o Fernando decidir
-
-1. **Enviar para o GitHub** (`git push`) quando ele quiser que a prévia
-   da Vercel mostre tudo isto (16 commits).
-2. **Testar no iPhone:** Início (tamanho do velocímetro, barra no meio),
-   sininho (Apresentação e Atualize seu velocímetro), "+" Total do ano,
-   Perfil (Suporte, Declaração anual, calculadora, Tipo de MEI, Excluir
-   conta), Como emitir nota (A1) e o onboarding com uma conta de teste.
-3. **Conferir com o contador** os textos de Imposto de Renda (página,
-   calculadora e respostas do suporte) e os passos da DASN-SIMEI (escritos
-   de memória).
-4. **Perguntas sem resposta:** atualizar o slide 1 das boas-vindas para o
-   Início novo? (ele disse para manter os slides) · A notificação
-   "Atualize seu velocímetro" volta todo mês? · Ajustar `/regra-vinte`
-   aberto direto?
-5. **Login de verdade** (seção 6) e **desligar o modo teste** antes de
-   gente real; apagar as contas `tacerto.teste.55...@gmail.com`.
-6. Pendências antigas: `docs/DECISOES-PILOTO.md`, seção 4 (CNPJ no
-   perfil, mensagem das 21h, chave anon, Termos com advogado, feriado de
-   20/11, "Require Log In" da Vercel etc.).
+- **Etapa 0 — SQL:** rodado em 10/10 com o "pode" (migration
+  `tacerto_08_10_cnpj_extrato_lucro_lembrete`), conferido e registrado em
+  `src/supabase/migrations.sql` (PARTE 4D). Cópia antes:
+  `backups/2026-10-10_antes_sql_08-10.json`.
+- **Etapa 1 — CNPJ:** cadastro e Perfil (BrasilAPI), valor do DAS pelo
+  CNAE (4930-2/01 = R$ 199,52; outros 4930-2/0x = R$ 195,52; os dois =
+  R$ 200,52; MEI comum: comércio R$ 82,05 / serviço R$ 86,05 / os dois
+  R$ 87,05), CNPJ formatado nas mensagens do WhatsApp.
+- **Etapa 2 — Velocímetro:** "Atualizado em", botão, "Falta informar",
+  selo Estimado/Conferido, folha com 3 jeitos.
+- **Etapa 3 — Extrato:** leitura de OFX/CSV no celular (Nubank, Inter,
+  Itaú, BB, C/D, crédito/débito, latin1...), corte do período, impressão
+  digital por transação, PDF no Storage, conferência com 6 respostas,
+  gastos em dúvida, nada contado duas vezes.
+- **Etapa 4 — Meu lucro** (+ calculadora do IR puxando os gastos com nota).
+- **Etapa 5 — Notas fiscais** (janela com 2 estados).
+- **Etapa 6 — DAS:** vencimento real (20/11/2026 feriado → 23/11), textos
+  "antecipa" corrigidos para "vence no próximo dia útil" em todo o app,
+  Preferências com o Lembrete do DAS, **`docs/PLANO-AUTOMACAO-DAS.md`**.
+- **Etapa 7 — Simulador do MEI.**
+- **Etapa 8 — Termos de uso e Privacidade** reescritos (CNPJ, extrato,
+  gastos, quem confirma o faturamento; sem "contabilidade/contador" para
+  descrever o TaCerto).
+- **Correções de texto em todo o app:** A1 R$ 99,90 → **R$ 100,34**;
+  "agregado emite NFS-e" → **NFS-e só frete na mesma cidade**; DAS
+  "antecipa" → **prorroga**; reembolso de despesa **conta** como
+  faturamento (a explicação antiga dizia que não).
+- **Revisão:** bibliotecas com testes (scratchpad), revisão de código por
+  agentes independentes (3 focos + verificação), revisão visual Preto e
+  Branco, 390×844 e 390×664, Console limpo, build OK.
 
 ---
 
-## 6. Supabase — o que falta no painel (sem mudança desde 05/10)
+## 5. O que testar no iPhone (com uma conta de teste nova, 37 00000-xxxx)
+
+1. Cadastro: CNPJ (com e sem), "Achei você", "Trocar", "Não sou eu",
+   "Preencher depois".
+2. Perfil > CNPJ (mascarado / "Não preenchido").
+3. Início: "Falta informar", botão "Atualizar velocímetro", folha com 3
+   jeitos; depois de lançar algo, "Atualizado em..." e o selo.
+4. Enviar extrato com um **OFX ou CSV de verdade** do seu banco: a
+   contagem, a conferência das 6 respostas, os gastos em dúvida; mandar
+   o mesmo arquivo de novo (não pode duplicar); um PDF.
+5. Meu lucro (Mês/Ano, gráfico, gastos por categoria, anexar nota).
+6. Simulador, Notas fiscais, Preferências (lembrete), painel do DAS
+   ("Vence ..."), Termos e Privacidade.
+
+---
+
+## 6. Supabase — situação
 
 | Item | Situação |
 |---|---|
-| Provider **Phone** | **Desligado** — falta ligar |
-| Função **`enviar-otp-whatsapp`** | **Não publicada** (publicadas: `excluir-conta`, `enviar-codigo`, `verificar-codigo`, `pluggy`) |
-| **Send SMS Hook** + secret `SEND_SMS_HOOK_SECRET` | **Não feito** |
-| Rate limit de SMS (sugestão 100/h) | **Não feito** |
-| Provider **Email** | Ligado (a ponte do modo teste usa) |
-| Gatilho `handle_new_user` com conta de telefone | **Não conferido** |
-| **Z-API** | Pausada |
-
-Nada novo nesta sessão foi gravado no banco: notificações lidas e
-"explicação da média lida" ficam no **aparelho** (localStorage, por
-conta — `src/lib/marcasDaConta.js`); o "Total do ano" usa a tabela
-`lancamentos` que já existe.
+| **SQL de 08-10** | **Rodado e conferido em 10/10** (perfis: cnpj, cnae, cnaes_secundarios, data_opcao_mei, cnpj_confirmado, velocimetro_atualizado_em, lembrete_das_dias, lembrete_das_hora, nota_automatica_ativa; entradas/saidas: categoria, chave_unica (+ com_nota, do_negocio nas saídas); tabela extratos_enviados com RLS e GRANT) |
+| PDF do extrato | Balde `comprovantes` (já existia), pasta `<user_id>/extratos/`. Os pendentes: tabela `extratos_enviados`, `status = 'em_analise'` |
+| Nota automática | Ligar à mão: `update perfis set nota_automatica_ativa = true where id = '...'` (com o "pode", na rotina) |
+| Provider **Phone** / função `enviar-otp-whatsapp` / Send SMS Hook | **Não feito** (ver `docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md`) |
+| Advisors de segurança | Só os 2 avisos antigos já aceitos (codigos_wpp sem política; senha vazada desligada) |
 
 ---
 
 ## 7. Cuidados técnicos aprendidos (não repetir os erros)
 
 - **A tela inteira remonta quando muda o endereço, inclusive o `?`**
-  (`TransicaoTela` usa `pathname + search` como chave — é o que faz a
-  tela nova deslizar). Estado que precisa passar de uma etapa para a
-  outra com `?passo=` vai para o `sessionStorage` (ver
-  `CalcularDeclaracao.jsx`).
-- **Gesto de voltar do iPhone = voltar do navegador.** Telas por cima
-  (Apresentação) põem uma "marca" no histórico; etapas usam o endereço
-  (`?passo=`) para o voltar funcionar sozinho.
-- **Marcas por pessoa sem banco:** `useMarcaDaConta(nome, inicial)`
-  (localStorage com o id do usuário).
-- **Navegador embutido do Claude congela animações** enquanto não
-  desenha: print pode sair "atrasado" (meio da animação) e medidas podem
-  pegar a posição antiga. Medir pelo estilo final ou tirar o print de novo.
-- **HMR** (atualização ao salvar) às vezes remonta a tela e fecha
-  janelas/reinicia etapas durante o teste — não é bug do app.
-- **ESLint não está instalado** no projeto (falta `@eslint/js`): para
-  conferir sintaxe usar `npx esbuild arquivo.jsx --loader:.jsx=jsx`; o
-  build completo: `npx vite build --outDir <pasta temporária>`.
+  (`TransicaoTela`). Estado entre etapas com `?passo=` vai para o
+  `sessionStorage` (ver `CalcularDeclaracao.jsx`).
+- **Gesto de voltar do iPhone = voltar do navegador.**
+- **Campos novos do perfil** (CNPJ etc.): lidos numa consulta SEPARADA
+  (`COLUNAS_PERFIL_NOVAS` em `src/lib/perfil.js`), gravados de forma
+  tolerante (`gravarPerfilNovo`). O AppState guarda no aparelho com o id
+  da conta (`donoExtras`) e sobe para o banco o que faltar.
+- **Extrato:** a trava contra repetido é o `pluggy_transaction_id =
+  "extrato-<chave>"` (restrição única do banco). Datas do extrato vão como
+  `AAAA-MM-DDT12:00:00-03:00` (o dia nunca muda com o fuso).
+- **Conferência:** o que conta é lançado por `lancarEntradasConfirmadas`
+  (`src/lib/importarExtrato.js`) — nunca por `criarLancamento` direto —
+  para não contar duas vezes. O "portão" do Início usa a mesma função.
+- **Tailwind lê os comentários do código:** escrever "[-3:BRT]" num
+  comentário virou uma classe CSS quebrada no build. Evitar colchetes com
+  dois-pontos em comentários.
+- **Testar telas com login sem entrar em conta:** o Claude não faz login
+  no Supabase. Usa um "banco de mentira" só no navegador de teste
+  (`node_modules/.tacerto-teste/mock.js`, fora do Git; recriado a partir
+  do scratchpad): troca o `supabase` do app por dados na memória e simula
+  o "SIGNED_IN". Nada vai para o banco real.
+- **HMR** (atualização ao salvar) às vezes carrega duas cópias do
+  AppStateContext e a tela fica branca com "useAppState precisa estar
+  dentro de <AppStateProvider>": não é bug do app; recarregar a página.
 - **Arquivos com fim de linha do Windows (CRLF):** scripts de troca de
-  texto precisam normalizar `\r\n` antes de procurar e devolver depois.
-  No PC não há Python; usar Node.
-- **Tema:** para testar o Branco use o alternador do Perfil (a classe
-  `theme-light` posta à mão some na navegação). Volte para Preto depois.
-- O Claude **não cria contas nem faz login** no Supabase (serviço de
-  fora). Para ver o onboarding sem conta nova, segurou-se a busca do
-  perfil no navegador de teste (sem salvar nada).
-- Simulação no PC ≠ altura do iPhone: sobra/falta de espaço vertical
-  quem decide é o print do iPhone.
+  texto normalizam `\r\n`. Script em node com aspas simples dentro do
+  `node -e '...'` quebra no Bash: usar arquivo de trocas (JSON).
+- **ESLint não está instalado:** sintaxe com `npx esbuild arquivo.jsx
+  --loader:.jsx=jsx`; build: `npx vite build --outDir <pasta temporária>`.
+- **Tema:** testar o Branco pelo alternador do Perfil; voltar para Preto.
+- Simulação no PC ≠ altura do iPhone: sobra/falta de espaço vertical quem
+  decide é o print do iPhone.
 
 ---
 
-## 8. Arquivos novos desta sessão
+## 8. Arquivos novos de 08-10
 
 | Arquivo | Para quê |
 |---|---|
-| `src/components/Notificacoes.jsx` | Sininho + folha "Notificações" |
-| `src/components/ApresentacaoFisco.jsx` | Tutorial "Apresentação do Fisco.ia" |
-| `src/components/FolhaAtualizarVelocimetro.jsx` | Folha "Atualize seu velocímetro" |
-| `src/components/IconeWhatsApp.jsx` | Símbolo do WhatsApp em contorno |
-| `src/components/PerfilFolhas.jsx` | Linha do Nome, aviso "fale com a gente", folha "Seu tipo de MEI" (Perfil e Editar perfil) |
-| `src/lib/perfil.js` | Nomes do tipo de MEI, telefone formatado, gravar perfil |
-| `src/lib/marcasDaConta.js` | Marcas por conta no aparelho |
-| `src/lib/declaracao.js` | Regras e contas da declaração anual / IR |
-| `src/pages/Suporte.jsx` | Chat do suporte |
-| `src/pages/DeclaracaoAnual.jsx` | Página da declaração anual |
-| `src/pages/CalcularDeclaracao.jsx` | Calculadora do IR |
-| `docs/AUTOMACAO-PILOTO.md` | Até onde dá para automatizar, com fontes |
+| `src/lib/cnpj.js` | Máscara, dígitos do CNPJ, busca na BrasilAPI |
+| `src/lib/extrato.js` | Ler OFX/CSV, corte do período, impressão digital |
+| `src/lib/categorias.js` | O que conta como faturamento; categorias de gasto |
+| `src/lib/vencimentoDas.js` | Vencimento do DAS com feriados nacionais |
+| `src/lib/conciliacao.js` | Total do ano x extrato x lançamento à mão; selo |
+| `src/lib/importarExtrato.js` | Leva o extrato para o banco; lança o que foi confirmado |
+| `src/lib/lucro.js` | Contas do Meu lucro; anexar nota de gasto |
+| `src/components/FluxoCnpj.jsx` | "Qual o CNPJ" e "Achei você" |
+| `src/pages/PerfilCnpj.jsx`, `ConferirSaidas.jsx`, `GastosDoLucro.jsx`, `NotasFiscais.jsx`, `Simulador.jsx` | Telas novas |
+| `docs/SQL-PENDENTE-08-10.sql` | O SQL de 08-10 (rodado) explicado |
+| `docs/PLANO-AUTOMACAO-DAS.md` | Plano do DAS no automático (estados, mensagens, Serpro, 3 fases) |
+
+---
+
+## 9. Pendente / para o Fernando decidir
+
+1. **`git push`** quando quiser a prévia da Vercel com tudo isto.
+2. **Testar no iPhone** (seção 5), principalmente com um extrato real.
+3. Antes de gente real: **desligar o modo teste** (`MODO_TESTE_LOGIN`),
+   ligar o login por WhatsApp no painel, religar o "Require Log In" da
+   Vercel, conferir textos de IR e da DASN com o contador, revisar Termos
+   e Privacidade com advogado (falta razão social e CNPJ do TaCerto).
+4. Antigos: slide 1 das boas-vindas com o Início antigo; `/regra-vinte`
+   aberto direto; trocar a chave anon do Supabase; `excluir-conta` deve
+   apagar os arquivos dos baldes (agora também extratos e notas de gasto).
+5. Leitura do **PDF do extrato** (por IA) e o aviso "está pronto": não
+   construído (pedido). Os pendentes estão em `extratos_enviados`.
+6. DAS no automático: seguir `docs/PLANO-AUTOMACAO-DAS.md` (falta CNPJ do
+   TaCerto, e-CNPJ A1, contrato Serpro e WhatsApp oficial da Meta).
+
+---
+
+## Perguntas para o Fernando
+
+1. **Extrato mostra MENOS do que o total do ano que você digitou:** hoje
+   o app mantém o total digitado (pode ter outra conta ou dinheiro vivo)
+   e o selo fica "Estimado". Quer que o extrato substitua o total?
+2. **CNPJ pelo Perfil sugerindo outro tipo de MEI:** o app só avisa ("Para
+   trocar, use Tipo de MEI"), não troca sozinho (tipo é travado). Ok?
+3. **Horário padrão do lembrete do DAS:** deixei **9:00**. Ok?
+4. **Portão das entradas:** se a pessoa manda o extrato e toca em
+   "Depois", na próxima vez que abrir o Início o app leva direto para a
+   conferência (regra de 27/09). Manter, ou deixar conferir quando quiser?
+5. **Gastos reconhecidos** (posto, Sem Parar, pneu, oficina, DAS, seguro,
+   financiamento) entram direto como "gasto do caminhão" para o
+   caminhoneiro, sem perguntar (dá para mudar no Meu lucro). Para o MEI
+   comum, pergunta sempre. Ok? (Posto pode ser do carro pessoal.)
+6. **DAS com CNAE municipal E intermunicipal:** usei **R$ 200,52** (ICMS +
+   ISS, da pesquisa). O pedido falava só em 199,52 e 195,52. Ok?
+7. **"Meu lucro" no ano:** o total digitado (sem mês) entra no Recebido
+   do ano e uma linha avisa. Ok, ou deixar de fora?
+8. A notificação do sininho "Atualize seu velocímetro" ainda diz **"Leva
+   menos de 1 minuto"** (com extrato pode levar mais). Trocar o texto?
+9. **Lançar gasto à mão** (dinheiro vivo) no Meu lucro? Hoje os gastos só
+   vêm do extrato.
+10. **No painel do DAS** coloquei uma linha "Vence 20/10 · R$ 195,52" (no
+    Início F a data não aparece em outro lugar). Ok?
+11. Antigas: atualizar o slide 1 das boas-vindas? A notificação "Atualize
+    seu velocímetro" volta todo mês? Ajustar `/regra-vinte` aberto direto?
