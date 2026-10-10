@@ -1,4 +1,4 @@
-/* FAQFISCO v2 — vencimento do DAS certo: dia 20, prorroga para o proximo dia util (antes dizia "antecipa") */
+/* FAQFISCO v3 — chat da Isa no app: responderPergunta (pergunta pronta exata ou palavra-chave; sem resposta = achou false, o chat mostra o botao do WhatsApp) e FRASE_NAO_SEI; respostas alinhadas as regras de 08-10 e 10-10 (nota fiscal do caminhoneiro, prazo da DASN desde o comeco do ano ate 31 de maio, Calcular no Perfil) (v2: vencimento do DAS certo: dia 20, prorroga para o proximo dia util (antes dizia "antecipa") */
 import { LIMITES_ANUAIS, limiteAte20Percent } from "./fiscal.js";
 
 const fmt = (v) =>
@@ -62,7 +62,7 @@ const POR_FAIXA = {
       id: "t3",
       pergunta: "O que acontece se eu esquecer de pagar o DAS?",
       resposta: () =>
-        `O DAS vence todo dia 20. Se atrasar, ele continua disponível pra pagamento com multa e juros — não some.\n\nO problema maior é acumular: ficar muito tempo sem pagar pode complicar seus benefícios do INSS e até levar à baixa do CNPJ. Dá pra emitir tudo pelo app do MEI ou pelo Portal do Empreendedor.`,
+        `O DAS vence todo dia 20 (se cair em fim de semana ou feriado, no próximo dia útil). Se atrasar, ele continua disponível pra pagamento com multa e juros — não some.\n\nO problema maior é acumular: ficar muito tempo sem pagar pode complicar seus benefícios do INSS e até levar à baixa do CNPJ. Dá pra emitir tudo pelo app do MEI ou pelo Portal do Empreendedor.`,
     },
     {
       id: "t4",
@@ -89,7 +89,7 @@ const POR_FAIXA = {
       id: "f2",
       pergunta: "Como saber se vou estourar até dezembro?",
       resposta: () =>
-        `O app calcula isso pra você: na tela de detalhes tem a média por mês e a projeção de quanto você fecha o ano se mantiver o ritmo atual.\n\nSe a projeção passar do seu limite, dá tempo de se planejar com calma.`,
+        `O app calcula isso pra você: em Perfil > Calcular > "Quanto ainda posso faturar" tem a projeção de quanto você fecha o ano se mantiver o ritmo, e o mês em que passaria do limite.\n\nSe a projeção passar do seu limite, dá tempo de se planejar com calma.`,
     },
     {
       id: "f3",
@@ -141,7 +141,7 @@ const POR_FAIXA = {
       id: "a4",
       pergunta: "O que é o DAS complementar?",
       resposta: () =>
-        `É uma guia extra, paga uma vez só, sobre o valor que passou do limite.\n\nEla é gerada quando você faz a declaração anual (DASN-SIMEI), que vence em 31 de maio. Não é um valor alto quando o excesso é pequeno.`,
+        `É uma guia extra, paga uma vez só, sobre o valor que passou do limite.\n\nEla é gerada quando você faz a declaração anual (DASN-SIMEI), que pode ser feita desde o começo do ano até 31 de maio. Não é um valor alto quando o excesso é pequeno.`,
     },
     {
       id: "a5",
@@ -226,7 +226,7 @@ const POR_FAIXA = {
       id: "e5",
       pergunta: "O que eu faço na declaração anual?",
       resposta: () =>
-        `Você declara o valor total que faturou no ano, incluindo o que passou do limite. O sistema calcula a guia complementar sozinho.\n\nO prazo é 31 de maio. Entregar em atraso gera multa, então essa data vale anotar.`,
+        `Você declara o valor total que faturou no ano, incluindo o que passou do limite. O sistema calcula a guia complementar sozinho.\n\nPode ser feita desde o começo do ano até 31 de maio. Entregar em atraso gera multa, então essa data vale anotar.`,
     },
   ],
 
@@ -268,7 +268,7 @@ const POR_FAIXA = {
   ],
 };
 
-// ---- Perguntas GERAIS (chat do Fisco) ----
+// ---- Perguntas GERAIS (chat da Isa) ----
 
 const GERAIS = [
   {
@@ -296,8 +296,8 @@ const GERAIS = [
       ehCaminhoneiro(c) ? "Preciso emitir CT-e em todo frete?" : "Preciso emitir nota fiscal?",
     resposta: (c) =>
       ehCaminhoneiro(c)
-        ? `Pra transportar carga de terceiros, o CT-e (Conhecimento de Transporte Eletrônico) é obrigatório. É ele que documenta o frete.\n\nPra emitir, você precisa estar com o RNTRC ativo na ANTT. E atenção: emitir ou não documento não muda o seu limite — o que conta é o valor que você recebeu.`
-        : `Pra pessoa física (cliente comum), não é obrigatório — só se ele pedir.\n\nPra empresa (pessoa jurídica), sim, é obrigatório emitir.\n\nMas atenção: emitir ou não nota não muda o seu limite. O que conta é o valor que você recebeu.`,
+        ? `Depende do frete. Na mesma cidade: nota de serviço (NFS-e). Entre cidades, contratado direto por você: CT-e (precisa de Inscrição Estadual e certificado digital). Agregado de transportadora em MG, sem Inscrição Estadual: hoje quem emite é a transportadora. A partir de 2027, o MEI vai ter que emitir nota em todo serviço.\n\nE atenção: emitir ou não documento não muda o seu limite — o que conta é o valor que você recebeu.`
+        : `Pra empresa (pessoa jurídica), sim, é obrigatório emitir. Pra pessoa física (cliente comum), hoje não é obrigatório — só se ele pedir. A partir de 2027, o MEI vai ter que emitir nota em toda venda e serviço.\n\nMas atenção: emitir ou não nota não muda o seu limite. O que conta é o valor que você recebeu.`,
   },
   {
     id: "g4",
@@ -309,7 +309,7 @@ const GERAIS = [
     id: "g5",
     pergunta: "O que é a declaração anual (DASN)?",
     resposta: () =>
-      `É uma declaração simples que todo MEI entrega uma vez por ano, informando quanto faturou no ano anterior.\n\nO prazo é 31 de maio. É gratuita, feita pelo Portal do Simples Nacional, e leva poucos minutos. Entregar em atraso gera multa.`,
+      `É uma declaração simples que todo MEI entrega uma vez por ano, informando quanto faturou no ano anterior.\n\nPode ser feita desde o começo do ano até 31 de maio. É gratuita, feita pelo Portal do Simples Nacional, e leva poucos minutos. Entregar em atraso gera multa.`,
   },
   {
     id: "g6",
@@ -422,4 +422,33 @@ export function buscarRespostaPorTexto(texto) {
 
   if (!melhorId) return null;
   return GERAIS.find((g) => g.id === melhorId) || null;
+}
+/* ===================================================================
+   v3 (10/10/2026) — RESPOSTA DO CHAT DA ISA NO APP
+
+   O chat do app (pagina /fisco) usa ESTE motor de respostas prontas
+   (sem IA nova, pedido do Fernando). Ordem:
+     1) a pessoa tocou numa pergunta pronta (Tirar duvidas do Inicio ou
+        os atalhos do chat): o texto e IGUAL ao de uma pergunta daqui ->
+        a resposta dela;
+     2) texto livre: a palavra-chave mais longa (buscarRespostaPorTexto);
+     3) nada bateu: { achou: false } e o chat mostra FRASE_NAO_SEI com o
+        botao "Falar com a Isa no WhatsApp".
+   =================================================================== */
+export const FRASE_NAO_SEI =
+  "Essa eu ainda não sei responder por aqui. Me chama no WhatsApp que eu te ajudo.";
+
+function todasAsPerguntas() {
+  return [...Object.values(POR_FAIXA).flat(), ...GERAIS];
+}
+
+export function responderPergunta(texto, ctx) {
+  const t = normalizar(texto).replace(/[?!.]+$/, "");
+  if (!t) return { texto: FRASE_NAO_SEI, achou: false };
+  const exata = todasAsPerguntas().find(
+    (item) => normalizar(textoPergunta(item, ctx)).replace(/[?!.]+$/, "") === t,
+  );
+  const item = exata || buscarRespostaPorTexto(texto);
+  if (!item) return { texto: FRASE_NAO_SEI, achou: false };
+  return { texto: item.resposta(ctx), achou: true };
 }

@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v36 — Fisco vira Isa: foto da Isa (FotoIsa, webp) na barra DAS | Isa | NF, no botao do WhatsApp e no chat; textos "Isa" e "Pergunte à Isa..." (v35: o portao, quando as regras do pagador resolvem tudo sozinhas, tambem confere se o extrato ja pode substituir o total do ano digitado (substituirTotalPeloExtrato) (v34: proximo DAS com feriados nacionais (vencimentoDas.js: dia 20 ou o proximo dia util) (v33: o atalho NF abre a janela "Notas fiscais" (/notas-fiscais) (v32: o portao das entradas confirma pelas regras do pagador SEM contar duas vezes (lancarEntradasConfirmadas: casa com lancamento a mao e diminui o ajuste do total do ano) (v31: visual F: "Atualizado em 08/10 às 14:32" + botao "Atualizar velocimetro" abaixo do velocimetro (zerado: "Falta informar" e o botao em destaque) e selo Estimado/Conferido no velocimetro do ano; a folha de atualizar abre sempre (v30: valor do DAS pelo CNAE do perfil (fiscal.js) e o CNPJ nas mensagens do WhatsApp (v29: velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
+﻿/* DASHBOARD v37 — Inicio de ANTES de volta como padrao (visual "atual": cartao de vidro, Proximo DAS, Como emitir nota e o chat da Isa embaixo, mesmas dimensoes); "Atualizado em" + "Atualizar velocimetro" EM CIMA do velocimetro, selo Estimado/Conferido tambem nele; o "?" do ano e o Tirar duvidas usam as perguntas do faqFisco (que tem resposta); DAS e NF do Inicio pelas acoes do Inicio (DAS e Notas); caixinha do chat com 16px e sem os botoes que nao faziam nada (MOSTRAR_ANEXOS_CHAT) (v36: Fisco vira Isa: foto da Isa (FotoIsa, webp) na barra DAS | Isa | NF, no botao do WhatsApp e no chat; textos "Isa" e "Pergunte à Isa..." (v35: o portao, quando as regras do pagador resolvem tudo sozinhas, tambem confere se o extrato ja pode substituir o total do ano digitado (substituirTotalPeloExtrato) (v34: proximo DAS com feriados nacionais (vencimentoDas.js: dia 20 ou o proximo dia util) (v33: o atalho NF abre a janela "Notas fiscais" (/notas-fiscais) (v32: o portao das entradas confirma pelas regras do pagador SEM contar duas vezes (lancarEntradasConfirmadas: casa com lancamento a mao e diminui o ajuste do total do ano) (v31: visual F: "Atualizado em 08/10 às 14:32" + botao "Atualizar velocimetro" abaixo do velocimetro (zerado: "Falta informar" e o botao em destaque) e selo Estimado/Conferido no velocimetro do ano; a folha de atualizar abre sempre (v30: valor do DAS pelo CNAE do perfil (fiscal.js) e o CNPJ nas mensagens do WhatsApp (v29: velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp)) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -32,7 +32,34 @@ import {
   MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
   MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA,
   MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO, MOSTRAR_NOTIFICACOES, MOSTRAR_JANELA_NOTAS,
+  MOSTRAR_ANEXOS_CHAT,
 } from "@/config/piloto";
+import { contextoFaq, perguntasDaFaixa, textoPergunta } from "@/lib/faqFisco";
+
+/* ===================================================================
+   DASHBOARD v37 (10/10/2026, tarefa de 10-10, Bloco B) — O INICIO DE
+   ANTES VOLTOU
+
+   Pedido do Fernando: o Inicio de antes das variacoes de 05/10, com o
+   chat da assistente embaixo, igual ao slide 1 das boas-vindas, com as
+   MESMAS dimensoes. E o visual "atual" (VISUAL_INICIO_PADRAO = "atual",
+   src/config/piloto.js), que nunca saiu do codigo: cartao de vidro com
+   o carrossel A/B, card "Proximo DAS" (o atalho do DAS), "Como emitir
+   nota" no topo (o atalho da NF) e, com MOSTRAR_CHAT_FISCO = true, a
+   foto da Isa (96px) com a barra "Pergunte à Isa..." (48px) — o mesmo
+   desenho do commit ed94504 (28/09). O visual F continua aqui: para
+   voltar, VISUAL_INICIO_PADRAO = "f".
+   Novo no "atual":
+   - "Atualizado em dd/mm às hh:mm" + "Atualizar velocímetro" EM CIMA
+     do cartao (LinhaAtualizacao emCima); zerado: "Falta informar" e o
+     botao em destaque, como no F. Selo Estimado/Conferido no cartao.
+   - O "?" do ano ("Tirar dúvidas") so no "atual" (duvidasNoAno), com as
+     perguntas do faqFisco: tocar leva a pergunta pronta para o chat, e
+     ela TEM resposta (antes as perguntas do painel nao existiam no
+     motor e o chat respondia sempre a mesma frase).
+   - Chat (pagina /fisco): respostas prontas do faqFisco; sem resposta,
+     "Falar com a Isa no WhatsApp" (ChatFiscoPagina v1).
+   =================================================================== */
 /* DASHBOARD v19 (04/10/2026) — EXTRAS DO PILOTO
    - Card "Proximo DAS" logo abaixo do velocimetro (CardProximoDas,
      chave MOSTRAR_CARD_DAS): data do proximo vencimento (dia 20) e o
@@ -428,6 +455,8 @@ function CardVelocimetroCarrossel({
   grande = false,
   /* v31: selo do velocimetro do ano */
   selo = null,
+  /* v37: "?" do ano sempre visivel (abre o Tirar duvidas) */
+  duvidasNoAno = MOSTRAR_CHAT_FISCO,
 }) {
   const [pagina, setPagina] = useState(0);
   const [dragPx, setDragPx] = useState(0);
@@ -594,7 +623,7 @@ function CardVelocimetroCarrossel({
             onValores={seNaoArrastou(onResumo)}
             /* Piloto (v18): sem o chat, o "?" do ano ("Tirar duvidas")
                some; o balao so aparece acima do limite. */
-            sempreMostrarBalao={MOSTRAR_CHAT_FISCO}
+            sempreMostrarBalao={duvidasNoAno}
             onExcedente={seNaoArrastou(onExcedente)}
             grande={grande}
             selo={selo}
@@ -1107,11 +1136,12 @@ function CardProximoDas({ tipoMEI, cnaes, onEmitirBoleto }) {
    Pequeno, no canto de cima (onde ficava o botao do banco), na mesma
    altura da linha do logo (34). Abre o passo a passo /como-emitir-nota.
    =================================================================== */
-function BotaoComoEmitirNota() {
+function BotaoComoEmitirNota({ onClick }) {
   const navigate = useNavigate();
   return (
     <button
-      onClick={() => navigate("/como-emitir-nota", DE_DASHBOARD)}
+      /* v37: abre a pagina Notas fiscais (acoesInicio.onNota) */
+      onClick={onClick || (() => navigate("/como-emitir-nota", DE_DASHBOARD))}
       className="toque shrink-0 flex items-center rounded-full"
       style={{
         height: 34,
@@ -1476,10 +1506,15 @@ function textoAtualizadoEm(iso) {
   return `Atualizado em ${pad2(d.getDate())}/${pad2(d.getMonth() + 1)} às ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
-function LinhaAtualizacao({ quando, faltaInformar, onAtualizar }) {
+/* v37: emCima = em cima do cartao do velocimetro (Inicio de antes):
+   texto e botao na MESMA linha quando cabem (senao, um embaixo do outro) */
+function LinhaAtualizacao({ quando, faltaInformar, onAtualizar, emCima = false }) {
   const texto = faltaInformar ? "Falta informar" : textoAtualizadoEm(quando);
   return (
-    <div className="shrink-0 flex flex-col items-center" style={{ marginTop: 12, gap: 8 }}>
+    <div
+      className={emCima ? "shrink-0 flex flex-wrap items-center justify-center" : "shrink-0 flex flex-col items-center"}
+      style={emCima ? { columnGap: 8, rowGap: 6, marginBottom: 10 } : { marginTop: 12, gap: 8 }}
+    >
       {texto && (
         <p style={{ fontSize: 13, color: faltaInformar ? "var(--text-secondary)" : "var(--text-tertiary)" }}>
           {texto}
@@ -1492,7 +1527,7 @@ function LinhaAtualizacao({ quando, faltaInformar, onAtualizar }) {
         style={{
           gap: 6,
           height: 34,
-          padding: "0 14px",
+          padding: emCima ? "0 11px" : "0 14px",
           fontSize: 13.5,
           background: "none",
           border: "1px solid var(--border)",
@@ -1679,6 +1714,7 @@ function CaixaFiscoExpandida({ onEnviarPrimeira }) {
         ref={inputRef}
         value={rascunho}
         rows={2}
+        placeholder="Pergunte à Isa..."
         onChange={(e) => {
           setRascunho(e.target.value);
           // Cresce com o texto ate MAX_ALTURA_CAIXA_FISCO; passando disso,
@@ -1694,7 +1730,7 @@ function CaixaFiscoExpandida({ onEnviarPrimeira }) {
           outline: "none",
           color: "var(--text)",
           caretColor: "var(--primary)",
-          fontSize: 15,
+          fontSize: 16,
           lineHeight: 1.4,
           fontFamily: "inherit",
           maxHeight: MAX_ALTURA_CAIXA_FISCO,
@@ -1703,7 +1739,9 @@ function CaixaFiscoExpandida({ onEnviarPrimeira }) {
       />
 
       <div className="flex items-center justify-between">
-        <div className="flex items-center" style={{ gap: 6 }}>
+        {/* v37: foto, galeria e documento nunca fizeram nada: escondidos
+            (MOSTRAR_ANEXOS_CHAT). O espaco fica, para a caixa nao mudar. */}
+        <div className="flex items-center" style={{ gap: 6, minHeight: 38, visibility: MOSTRAR_ANEXOS_CHAT ? "visible" : "hidden" }}>
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
@@ -1748,14 +1786,15 @@ function CaixaFiscoExpandida({ onEnviarPrimeira }) {
           </button>
         </div>
 
-        {rascunho.trim() ? (
+        {rascunho.trim() || !MOSTRAR_ANEXOS_CHAT ? (
           <button
             type="submit"
             aria-label="Enviar"
+            disabled={!rascunho.trim()}
             className="toque rounded-full flex items-center justify-center shrink-0"
             style={{ width: 38, height: 38 }}
           >
-            <Send size={21} strokeWidth={2.1} style={{ color: "var(--primary)" }} />
+            <Send size={21} strokeWidth={2.1} style={{ color: "var(--primary)", opacity: rascunho.trim() ? 1 : 0.4 }} />
           </button>
         ) : (
           <button
@@ -2153,6 +2192,8 @@ export default function Dashboard() {
 
   // Situacao do ano (cor e perguntas do painel de duvidas)
   const faixaAnual = faixaDoVelocimetro(percentualAtual);
+  /* v37: contexto do faqFisco (textos das perguntas do Tirar duvidas) */
+  const ctxFaq = contextoFaq({ tipoMEI, limite: limiteAtual, faturado: faturamentoAtual });
 
   const rotuloPerfil = LABEL_TIPO[tipoMEI];
   const saudacao = saudacaoPorHora();
@@ -2253,7 +2294,7 @@ export default function Dashboard() {
               o botao pequeno do tutorial da nota (v19) */}
           <div className="flex items-center shrink-0" style={{ gap: 8 }}>
             {/* v23: nas variacoes, "Como emitir nota" vai para baixo */}
-            {MOSTRAR_TUTORIAL_NOTA && visual === "atual" && <BotaoComoEmitirNota />}
+            {MOSTRAR_TUTORIAL_NOTA && visual === "atual" && <BotaoComoEmitirNota onClick={acoesInicio.onNota} />}
             {MOSTRAR_OPEN_FINANCE && <BotaoBanco onSincronizou={verificarEntradas} />}
             {/* v26: sininho discreto das notificacoes */}
             {MOSTRAR_NOTIFICACOES && (
@@ -2265,6 +2306,16 @@ export default function Dashboard() {
         <div className="px-5 pt-2 flex-1 flex flex-col min-h-0 relative">
           {/* v27: "tela B" (G) — os 3 atalhos em cima do velocimetro */}
           {visual === "g" && <InicioBarra {...acoesInicio} emCima />}
+
+          {/* v37: Inicio de antes: "Atualizado em" + botao EM CIMA */}
+          {visual === "atual" && (
+            <LinhaAtualizacao
+              emCima
+              quando={ultimaAtualizacaoVelocimetro}
+              faltaInformar={faltaInformar}
+              onAtualizar={() => setFolhaAtualizar(true)}
+            />
+          )}
 
           <CardVelocimetroCarrossel
             rotuloPerfil={rotuloPerfil}
@@ -2282,7 +2333,8 @@ export default function Dashboard() {
             moldura={molduraVelocimetro}
             mediaExplicada={mediaExplicada}
             grande={visual === "f"}
-            selo={visual === "f" ? seloVelocimetro : null}
+            selo={visual === "f" || visual === "atual" ? seloVelocimetro : null}
+            duvidasNoAno={MOSTRAR_CHAT_FISCO && visual === "atual"}
           />
 
           {/* v31: "Atualizado em..." + "Atualizar velocímetro" (so no F) */}
@@ -2296,7 +2348,7 @@ export default function Dashboard() {
 
           {/* Piloto (v19): proximo DAS, logo abaixo do velocimetro */}
           {MOSTRAR_CARD_DAS && visual === "atual" && (
-            <CardProximoDas tipoMEI={tipoMEI} cnaes={cnaesPerfil} onEmitirBoleto={() => setFolhaDas(true)} />
+            <CardProximoDas tipoMEI={tipoMEI} cnaes={cnaesPerfil} onEmitirBoleto={acoesInicio.onDas} />
           )}
 
           {/* Piloto (v18): o Fisco atende pelo WhatsApp */}
@@ -2322,7 +2374,8 @@ export default function Dashboard() {
             />
           )}
 
-          {MOSTRAR_CHAT_FISCO && (
+          {/* v37: o chat da Isa embaixo, so no Inicio de antes */}
+          {MOSTRAR_CHAT_FISCO && visual === "atual" && (
           <button
             onClick={() => setCaixaExpandida(true)}
             className="shrink-0 w-full flex items-start gap-2"
@@ -2373,7 +2426,7 @@ export default function Dashboard() {
                   paddingRight: 12,
                   marginTop: 24,
                   // So a barrinha some quando a caixa expandida esta aberta.
-                  // A foto do Fisco fica fixa, inclusive durante o fecho.
+                  // A foto da Isa fica fixa, inclusive durante o fecho.
                   visibility: caixaExpandida ? "hidden" : "visible",
                 }}
               >
@@ -2404,9 +2457,10 @@ export default function Dashboard() {
       </div>
 
       <PainelPerguntas
-        aberto={MOSTRAR_CHAT_FISCO && painelDuvidas === "anual"}
+        aberto={MOSTRAR_CHAT_FISCO && visual === "atual" && painelDuvidas === "anual"}
         onFechar={() => setPainelDuvidas(null)}
-        perguntas={perguntasDaSituacao(faixaAnual)}
+        /* v37: as perguntas do faqFisco (todas tem resposta no chat) */
+        perguntas={perguntasDaFaixa(faixaAnual).map((item) => textoPergunta(item, ctxFaq))}
         corFaixa={FAIXA_INFO[faixaAnual].cor}
         mostrarRegra20={faixaAnual === "estourou" || faixaAnual === "critico"}
         onPerguntar={perguntarAoFisco}

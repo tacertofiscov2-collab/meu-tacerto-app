@@ -1,4 +1,4 @@
-/* PILOTO v23 — Fisco vira Isa (assistente virtual com IA): mensagens prontas comecam com "Oi Isa!"; FRASE_APRESENTACAO_ISA e NOME_ASSISTENTE; nomes internos (WHATSAPP_FISCO, abrirWhatsAppFisco...) ficam iguais (v22: chave MOSTRAR_SIMULADOR (/simulador) (v21: MOSTRAR_PREFERENCIAS ligada (so o Lembrete do DAS) (v20: chave MOSTRAR_JANELA_NOTAS (/notas-fiscais); mensagem do certificado A1 com R$ 100,34 e o CNPJ (v19: chave MOSTRAR_MEU_LUCRO (/meu-lucro) (v18: chave MOSTRAR_ENVIAR_EXTRATO (/enviar-extrato e /conferir-saidas) (v17: o CNPJ do perfil entra nas mensagens prontas (formatado 12.345.678/0001-90); sem CNPJ, "Meu CNPJ: " continua em branco para a pessoa completar (v16: numero REAL do WhatsApp do Fisco (37 99199-9373), o mesmo do suporte; mensagem do suporte comeca com "Oi Fisco!" e pede suporte (v15: chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP)) */
+/* PILOTO v24 — Inicio de antes (visual "atual", com o chat da Isa embaixo) volta a ser o padrao: VISUAL_INICIO_PADRAO = "atual" e MOSTRAR_CHAT_FISCO = true; MOSTRAR_ANEXOS_CHAT (botoes sem funcao escondidos); mensagem pronta duvidaDoChat (v23: Fisco vira Isa (assistente virtual com IA): mensagens prontas comecam com "Oi Isa!"; FRASE_APRESENTACAO_ISA e NOME_ASSISTENTE; nomes internos (WHATSAPP_FISCO, abrirWhatsAppFisco...) ficam iguais (v22: chave MOSTRAR_SIMULADOR (/simulador) (v21: MOSTRAR_PREFERENCIAS ligada (so o Lembrete do DAS) (v20: chave MOSTRAR_JANELA_NOTAS (/notas-fiscais); mensagem do certificado A1 com R$ 100,34 e o CNPJ (v19: chave MOSTRAR_MEU_LUCRO (/meu-lucro) (v18: chave MOSTRAR_ENVIAR_EXTRATO (/enviar-extrato e /conferir-saidas) (v17: o CNPJ do perfil entra nas mensagens prontas (formatado 12.345.678/0001-90); sem CNPJ, "Meu CNPJ: " continua em branco para a pessoa completar (v16: numero REAL do WhatsApp do Fisco (37 99199-9373), o mesmo do suporte; mensagem do suporte comeca com "Oi Fisco!" e pede suporte (v15: chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP)) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 import { formatarCnpj, soDigitosCnpj } from "@/lib/cnpj";
 
@@ -41,8 +41,25 @@ export const MOSTRAR_OPEN_FINANCE = false;
    No lugar entra o botao "Falar com a Isa no WhatsApp".
    Com false, o balao do velocimetro do ano so aparece quando passa do
    limite (+N%) e abre a tela da regra dos 20%.
+
+   v24 (10/10/2026, tarefa de 10-10, Bloco B): LIGADO. O Inicio voltou
+   ao visual de antes (o "atual", com o chat da Isa embaixo, igual ao
+   slide 1 das boas-vindas). O chat responde com o MESMO motor de
+   respostas prontas que ja existia (src/lib/faqFisco.js, sem IA nova);
+   o que ele nao souber responder mostra o botao "Falar com a Isa no
+   WhatsApp" (mensagem pronta duvidaDoChat, com a pergunta). O "?" do
+   ano e o "Tirar duvidas" so aparecem no visual "atual" (o F fica
+   como era).
    ------------------------------------------------------------------- */
-export const MOSTRAR_CHAT_FISCO = false;
+export const MOSTRAR_CHAT_FISCO = true;
+
+/* -------------------------------------------------------------------
+   ANEXOS E AUDIO NO CHAT (v24 — 10/10/2026)
+   Os botoes de foto, galeria, documento, extrato ("+") e microfone do
+   chat e da caixinha do Inicio NUNCA fizeram nada. false esconde (o app
+   nao promete o que nao faz). true mostra de novo, ainda sem funcao.
+   ------------------------------------------------------------------- */
+export const MOSTRAR_ANEXOS_CHAT = false;
 
 /* -------------------------------------------------------------------
    NOTAS FISCAIS (historico e lancar nota)
@@ -267,9 +284,17 @@ export const MOSTRAR_CARD_DAS = true;
      Depois da escolha: VISUAL_INICIO_PADRAO = "f" ou "g" e false aqui.
    v14 (05/10/2026): ficou a A (F). Seletor desligado de novo; o G
      continua no codigo.
+   v24 (10/10/2026, tarefa de 10-10, Bloco B): o Fernando pediu o Inicio
+     de ANTES de volta (o que tinha o chat da assistente embaixo, igual
+     ao slide 1 das boas-vindas), com as mesmas dimensoes: e o "atual"
+     (cartao de vidro com o carrossel A/B, card "Proximo DAS", botao
+     "Como emitir nota" no topo e a barra "Pergunte a Isa..." com a
+     foto de 96px; commits ed94504 e ce6128a). Novo nele: "Atualizado em"
+     + "Atualizar velocimetro" EM CIMA do velocimetro e o selo
+     Estimado/Conferido. Para voltar ao F: troque "atual" por "f".
    ------------------------------------------------------------------- */
 export const MOSTRAR_SELETOR_VISUAL_INICIO = false;
-export const VISUAL_INICIO_PADRAO = "f";
+export const VISUAL_INICIO_PADRAO = "atual";
 
 /* -------------------------------------------------------------------
    NOTIFICACOES (v12 — 05/10/2026)
@@ -460,6 +485,11 @@ export const MENSAGENS_WHATSAPP = {
   /* v15: Declaracao anual (pagina e resultado da calculadora) */
   declaracaoAjuda: (d) =>
     `Oi Isa! Quero ajuda com a minha declaracao anual do MEI e o Imposto de Renda. ${quemSouComCnpj(d)}`,
+
+  /* v24: chat da Isa no app, quando a resposta pronta nao existe.
+     Vai com a pergunta que a pessoa fez. */
+  duvidaDoChat: (d, pergunta) =>
+    `Oi Isa! Perguntei no app e nao achei a resposta: "${String(pergunta || "").trim()}". ${quemSou(d)}`,
 
   atualizarVelocimetro: (d) =>
     `Oi Isa! Quero atualizar meu velocimetro. Vou te mandar os valores que recebi (ou o extrato do banco). ${quemSou(d)}`,

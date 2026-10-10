@@ -1,4 +1,4 @@
-/* CHATFISCOUI v3 — Fisco vira Isa: foto da Isa (webp) e nome "Isa" no cabecalho, "assistente virtual" no lugar de "Online" (v2: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026))) */
+/* CHATFISCOUI v4 — chat da Isa: botao "Falar com a Isa no WhatsApp" abaixo da resposta que a Isa nao soube (fora da bolha, por causa do segurar = menu); perguntas comuns em botoes na conversa que nao comecou; "+" de anexos e microfone escondidos (MOSTRAR_ANEXOS_CHAT: nunca fizeram nada); campo com 16px (o iPhone nao da zoom) (v3: Fisco vira Isa: foto da Isa (webp) e nome "Isa" no cabecalho, "assistente virtual" no lugar de "Online" (v2: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026)))) */
 import { useRef, useState, useEffect } from "react";
 import {
   Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList,
@@ -6,6 +6,8 @@ import {
 } from "lucide-react";
 import { rotuloData } from "@/lib/chatHistorico";
 import { FOTO_ISA_256 } from "./FotoIsa.jsx";
+import IconeWhatsApp from "./IconeWhatsApp.jsx";
+import { MOSTRAR_ANEXOS_CHAT } from "@/config/piloto";
 
 /* ===================================================================
    CHAT DO FISCO — componentes compartilhados
@@ -476,6 +478,8 @@ function PainelHistorico({ aberto, onFechar, conversas, idAtual, onAbrir, onNova
 export default function ChatFiscoUI({
   mensagens, digitando, onEnviar, onEditarMensagem, onFechar,
   conversas, idAtual, onAbrirConversa, onNovaConversa, onApagarConversa,
+  /* v4: botao do WhatsApp (resposta sem resposta pronta) e perguntas comuns */
+  onWhatsApp, perguntasProntas = [], onPerguntaPronta,
 }) {
   const temaClaro = useTemaClaro();
   const [rascunho, setRascunho] = useState("");
@@ -766,15 +770,60 @@ export default function ChatFiscoUI({
         }}
       >
         {mensagens.map((m) => (
-          <BolhaMensagem
-            key={m.id}
-            autor={m.autor}
-            texto={m.texto}
-            citando={m.citando}
-            temaClaro={temaClaro}
-            onSegurar={() => setMsgMenu(m)}
-          />
+          <div key={m.id} className="flex flex-col" style={{ gap: 8 }}>
+            <BolhaMensagem
+              autor={m.autor}
+              texto={m.texto}
+              citando={m.citando}
+              temaClaro={temaClaro}
+              onSegurar={() => setMsgMenu(m)}
+            />
+            {/* v4: a Isa nao soube: botao do WhatsApp FORA da bolha (o
+                segurar da bolha abre o menu). Abre dentro do toque. */}
+            {m.acao === "whatsapp" && onWhatsApp && (
+              <button
+                type="button"
+                onClick={() => onWhatsApp(m)}
+                className="toque self-start rounded-full font-semibold flex items-center"
+                style={{
+                  gap: 8,
+                  padding: "10px 16px",
+                  fontSize: 15,
+                  color: "var(--text)",
+                  background: "none",
+                  border: "1px solid rgba(34,197,94,0.45)",
+                }}
+              >
+                <IconeWhatsApp size={18} style={{ color: "var(--primary)" }} />
+                Falar com a Isa no WhatsApp
+              </button>
+            )}
+          </div>
         ))}
+        {/* v4: conversa que ainda nao comecou: perguntas comuns */}
+        {!digitando && perguntasProntas.length > 0 && onPerguntaPronta && (
+          <div className="flex flex-col items-start" style={{ gap: 8, marginTop: 4 }}>
+            {perguntasProntas.map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => onPerguntaPronta(p)}
+                className="toque rounded-2xl text-left"
+                style={{
+                  padding: "10px 14px",
+                  fontSize: 15,
+                  lineHeight: 1.3,
+                  color: "var(--text)",
+                  background: "none",
+                  border: "1px solid var(--border)",
+                  maxWidth: "88%",
+                }}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        )}
         {digitando && <FiscoDigitando />}
         <div ref={fimRef} />
       </div>
@@ -834,8 +883,8 @@ export default function ChatFiscoUI({
           </div>
         )}
 
-        {/* Menu de anexos, abre acima do "+" */}
-        {menuAnexo && (
+        {/* Menu de anexos, abre acima do "+" (v4: so com MOSTRAR_ANEXOS_CHAT) */}
+        {MOSTRAR_ANEXOS_CHAT && menuAnexo && (
           <>
             <div
               className="fixed inset-0"
@@ -875,7 +924,8 @@ export default function ChatFiscoUI({
         )}
 
         <form onSubmit={submeter} className="flex items-center gap-2">
-          {/* "+" FORA da barra, a esquerda */}
+          {/* "+" FORA da barra, a esquerda (v4: escondido, nunca fez nada) */}
+          {MOSTRAR_ANEXOS_CHAT && (
           <button
             type="button"
             onClick={() => setMenuAnexo((v) => !v)}
@@ -895,6 +945,7 @@ export default function ChatFiscoUI({
           >
             <Plus size={21} strokeWidth={2.4} style={{ color: "var(--text)" }} />
           </button>
+          )}
 
           {/* Barra que CRESCE conforme o texto, ate um limite (igual WhatsApp) */}
           <div
@@ -935,7 +986,7 @@ export default function ChatFiscoUI({
                 outline: "none",
                 color: "var(--text)",
                 caretColor: "var(--primary)",
-                fontSize: 15,
+                fontSize: 16,
                 lineHeight: 1.35,
                 fontFamily: "inherit",
                 maxHeight: MAX_ALTURA_CAMPO,
@@ -945,10 +996,11 @@ export default function ChatFiscoUI({
               }}
             />
 
-            {rascunho.trim() ? (
+            {rascunho.trim() || !MOSTRAR_ANEXOS_CHAT ? (
               <button
                 type="submit"
                 aria-label="Enviar"
+                disabled={!rascunho.trim()}
                 // Impede o botao de roubar o foco do campo: sem isso, o
                 // teclado piscava/fechava ao enviar. (So onMouseDown: em
                 // eventos de toque o navegador ignora o preventDefault e
@@ -958,7 +1010,7 @@ export default function ChatFiscoUI({
                 className="toque rounded-full flex items-center justify-center shrink-0"
                 style={{ width: 40, height: 40 }}
               >
-                <Send size={20} strokeWidth={2.1} style={{ color: "var(--text)" }} />
+                <Send size={20} strokeWidth={2.1} style={{ color: "var(--text)", opacity: rascunho.trim() ? 1 : 0.35 }} />
               </button>
             ) : (
               <button

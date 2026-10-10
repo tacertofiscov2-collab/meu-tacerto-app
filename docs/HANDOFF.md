@@ -351,3 +351,35 @@ A6. Foto: os avatares usam o recorte do rosto (`isa-whatsapp.jpg`). A
     contadora). Ok? (assim)
 A7. Os Termos dizem que a Isa "não é uma pessoa nem contadora". Escrever
     também que "a foto da Isa foi criada por IA"? (não escrevi)
+
+**Bloco B (Início de antes)**
+
+B1. "Visual de antes" = o **"atual"** (cartão de vidro com o carrossel,
+    card "Próximo DAS", "Como emitir nota" no topo) + o **chat da Isa
+    embaixo** (foto 96 + barra 48, igual ao slide 1; commits `ed94504` e
+    `ce6128a`). O F continua no código (`VISUAL_INICIO_PADRAO = "f"`
+    volta). Os atalhos pedidos nos blocos D e E ficaram: **DAS** = botão
+    "Emitir boleto" do card Próximo DAS; **NF** = "Como emitir nota" no
+    topo. Ok? Outras opções: barra fina DAS | NF entre o velocímetro e o
+    chat; ou dois botões "DAS" e "NF" no topo, ao lado do sininho.
+B2. Rodapé: voltou o "+" dentro do círculo verde (como era no Início de
+    antes). Prefere o "+" sem círculo que você escolheu em 05/10?
+    (deixei o de antes)
+B3. A luz verde girando na barra do chat e a bolinha verde na foto
+    voltaram iguais (mesmas dimensões). Deixar mais discreto? (iguais)
+B4. Os botões de foto, galeria, documento, extrato e microfone do chat
+    nunca fizeram nada: **escondi** (`MOSTRAR_ANEXOS_CHAT = false`). Ok?
+B5. Quando a Isa não sabe: "Essa eu ainda não sei responder por aqui. Me
+    chama no WhatsApp que eu te ajudo." + botão "Falar com a Isa no
+    WhatsApp" (a mensagem leva a pergunta). Ok o texto?
+B6. O chat do app responde com respostas prontas (não é IA de verdade),
+    mas a primeira fala diz "assistente com IA" (como pedido). Pela lei
+    do consumidor pode ser lido como exagero. Manter, ou no app usar
+    "assistente virtual do TaCerto"? (mantive o pedido)
+B7. As conversas do chat ficam guardadas no aparelho e na tabela
+    `conversas` do Supabase (já existia). Ok? (a Privacidade ganhou a
+    linha no Bloco M)
+B8. O botão "Como emitir nota" do topo agora abre a página **Notas
+    fiscais**. Trocar o texto para "Notas fiscais"? (mantive)
+B9. O "?" ao lado do % (Tirar dúvidas) voltou junto com o Início de
+    antes, agora com perguntas que têm resposta no chat. Ok?
