@@ -66,10 +66,10 @@
 |---|---|---|
 | **Início** | `/dashboard` | Visual F. **Novo:** embaixo do velocímetro, "Atualizado em 08/10 às 14:32" + botão "Atualizar velocímetro" (contorno). Zerado no ano: "Falta informar" e o botão em verde. **Selo** pequeno ao lado de "MEI Caminhoneiro · anual": "Estimado" (tem total do ano digitado) ou "Conferido" (veio de extrato e foi confirmado). A barra DAS \| Fisco \| NF não mudou de cara; o **NF** agora abre a janela "Notas fiscais". |
 | **Folha "Atualize seu velocímetro"** | (botão do Início e sininho) | 3 jeitos, uma frase cada: **Enviar extrato** (recomendado, borda verde fina) · **Digitar** (o "+") · **Mandar pro Fisco no WhatsApp**. |
-| **Enviar extrato** | `/enviar-extrato` | **Novo.** "Escolher arquivo" (OFX, CSV ou PDF). OFX/CSV lidos no celular, sem IA; só fica o que é do ano (ou da abertura em diante); repetido não entra. Fim: "Encontrei 37 entradas e 52 saídas de jan a out. Vamos conferir?" → Conferir / Depois. Mesmo arquivo de novo: "Esse extrato já estava aqui. Nada novo." PDF: guardado (pasta privada) "em análise": "Recebi! Vou ler e te aviso quando estiver pronto." |
-| **Conferência "É faturamento?"** | `/conferir-entradas` | **Novo:** 6 respostas curtas: É frete/serviço ✓ · Reembolso de despesa ✓ · Vale-pedágio ✕ · Empréstimo ✕ · Estorno/devolução ✕ · Dinheiro meu/família ✕ (MEI comum: "É venda/serviço" e sem vale-pedágio). Quando o extrato já diz o que é (vale-pedágio, estorno, resgate...), vem num grupo próprio com a resposta sugerida (borda verde fina). O que conta vira regra do pagador. **Nada contado duas vezes**: recebimento já lançado à mão (mesmo valor, até 3 dias) não é lançado de novo; o que já estava no "total do ano" digitado diminui o ajuste. A tela final avisa os dois casos. Vindo do extrato, segue para os gastos. |
-| **Seus gastos** | `/conferir-saidas` | **Novo.** Só os gastos do extrato em dúvida: "É gasto do caminhão?" com a categoria, ou "Não, é pessoal"; "O resto é pessoal" encerra. Grava na hora e lembra pelo fornecedor. |
-| **Meu lucro** | `/meu-lucro` | **Novo** (o Resumo do ano evoluído). Mês \| Ano. Recebido · Gastos · Sobrou (%). Ano com gráfico por mês. Gastos → por categoria → cada gasto com "com nota"/"sem nota"; tocar: anexar nota (foto/PDF), trocar categoria, "Não é do negócio". Sem extrato: só Recebido + "Envie o extrato para ver quanto sobrou." |
+| **Enviar extrato** | `/enviar-extrato` | **Novo.** "Escolher arquivo" (OFX, CSV ou PDF). OFX/CSV lidos no celular, sem IA; só fica o que é do ano (ou da abertura em diante); o mesmo arquivo não entra 2x. **Desde 10/10 (tarde):** o que bate no dia e no valor com outro extrato já enviado entra marcado "pode ser repetido" (a linha "X podem ser repetidas: você confirma na conferência."). Fim: "Encontrei 37 entradas e 52 saídas de jan a out. Vamos conferir?" → Conferir / Depois. Mesmo arquivo de novo: "Esse extrato já estava aqui. Nada novo." PDF: guardado (pasta privada) "em análise": "Recebi! Vou ler e te aviso quando estiver pronto." |
+| **Conferência "É faturamento?"** | `/conferir-entradas` | **Novo:** 6 respostas curtas: É frete/serviço ✓ · Reembolso de despesa ✓ · Vale-pedágio ✕ · Empréstimo ✕ · Estorno/devolução ✕ · Dinheiro meu/família ✕ (MEI comum: "É venda/serviço" e sem vale-pedágio). Quando o extrato já diz o que é (vale-pedágio, estorno, resgate...), vem num grupo próprio com a resposta sugerida (borda verde fina). O que conta vira regra do pagador. **Nada contado duas vezes**: recebimento já lançado à mão (mesmo valor, até 3 dias) não é lançado de novo; o que já estava no "total do ano" digitado diminui o ajuste. A tela final avisa os dois casos. Vindo do extrato, segue para os gastos. **Desde 10/10 (tarde):** (a) os possíveis repetidos vêm num grupo só, primeiro: "Pode ser repetido · N entradas iguais às de outro extrato" → **Sim, é repetido** (não conta) ou **Não é repetido** (vira as perguntas normais, por pagador); (b) **o extrato substitui o total digitado** quando os extratos cobrem do começo do ano (ou da abertura) até o dia do total e nada ficou sem resposta: o ajuste sai e a tela final diz "Agora o velocímetro usa o extrato no lugar do total que você digitou." (selo vira Conferido). Extrato de só alguns meses não substitui (só desconta o que já estava no total). |
+| **Seus gastos** | `/conferir-saidas` | **Novo.** Só os gastos do extrato em dúvida: "É gasto do caminhão?" com a categoria, ou "Não, é pessoal"; "O resto é pessoal" encerra. Grava na hora e lembra pelo fornecedor. **Desde 10/10 (tarde):** o grupo "Pode ser repetido" primeiro (Sim, é repetido / Não é repetido), igual às entradas. |
+| **Meu lucro** | `/meu-lucro` | **Novo** (o Resumo do ano evoluído). Mês \| Ano. Recebido · Gastos · Sobrou (%). Ano com gráfico por mês. Gastos → por categoria → cada gasto com "com nota"/"sem nota"; tocar: anexar nota (foto/PDF), trocar categoria, "Não é do negócio". Sem extrato: só Recebido + "Envie o extrato para ver quanto sobrou." **Desde 10/10 (tarde):** linha **"Lançar gasto"** (dinheiro vivo: valor, data, categoria, "o que foi"; entra já como gasto do negócio; aparece como "Gasto em dinheiro" e pode ser apagado) e, no fim de Gastos, **"Gastos pessoais"** (os que não contam, inclusive os "repetido"; tocar → "É do negócio" → escolhe a categoria e volta para o lucro). |
 | **Simulador** | `/simulador` | **Novo.** Quanto recebe por mês (já vem a média) e gasta (opcional) → previsto no ano, % do limite, mês em que passa, quanto ainda pode por mês, DAS do ano, Imposto de Renda estimado. |
 | **Notas fiscais** | `/notas-fiscais` | **Novo.** Sem certificado: quando emitir (NFS-e só frete na mesma cidade; CT-e entre cidades contratado direto; agregado sem IE em MG hoje não emite; 2027 em todo serviço), como o TaCerto ajuda, Certificado A1 (**R$ 100,34**, preço de custo; videochamada) e "Tenho interesse no certificado" (WhatsApp). Com `perfis.nota_automatica_ativa = true` (o Fernando liga à mão): vira **"Minhas notas"**. |
 | **Preferências** | `/preferencias` | **Religada, só com o Lembrete do DAS:** dias antes (7, 5, 3, 2, 1, no dia; padrão 7, 2 e no dia), horário (padrão 9:00), "Não quero lembretes". Grava no perfil. |
@@ -148,6 +148,20 @@ categorias de gasto).
   "Está certo" sem a data do MEI ainda pergunta "Abriu este ano?"; DAS de
   oficina mecânica conta como serviço; textos da nota (passo a passo e
   suporte) e dos Termos (PDF guardado até ser lido).
+- **Respostas do Fernando às perguntas (10/10, tarde)** — feito no mesmo
+  dia e enviado ao GitHub:
+  - 1 (extrato substitui o total): **feito**, com a trava de segurança
+    (só quando o extrato cobre o ano até o dia do total e tudo foi
+    respondido; folga de 10 dias). `conciliacao.js` v3
+    (`extratoCobreOAno`), `importarExtrato.js` v3
+    (`substituirTotalPeloExtrato`), Início v35, conferência v15.
+  - 8: o sininho diz **"Leva poucos minutos"**.
+  - 9: **Lançar gasto** no Meu lucro (`FolhaLancarGasto.jsx`, `lucro.js` v2).
+  - 11: **não descarta mais sozinho**: "Pode ser repetido" nas duas
+    conferências (`categorias.js` v2: `CATEGORIA_REPETIDO`).
+  - 12: lista **Gastos pessoais** para desfazer (`GastosDoLucro.jsx` v2).
+  - 2, 3, 5, 6, 7 (com a linha de aviso) e 10: ok como estavam. 4: manter
+    o portão.
 
 ---
 
@@ -161,7 +175,13 @@ categorias de gasto).
 4. Enviar extrato com um **OFX ou CSV de verdade** do seu banco: a
    contagem, a conferência das 6 respostas, os gastos em dúvida; mandar
    o mesmo arquivo de novo (não pode duplicar); um PDF.
-5. Meu lucro (Mês/Ano, gráfico, gastos por categoria, anexar nota).
+5. Meu lucro (Mês/Ano, gráfico, gastos por categoria, anexar nota,
+   **Lançar gasto**, **Gastos pessoais** → "É do negócio").
+5b. **Novos de 10/10 (tarde):** com um total do ano digitado, mandar o
+   extrato do ano inteiro e conferir tudo (o selo deve virar Conferido e
+   a tela final dizer que o velocímetro usa o extrato); mandar o mesmo
+   período em outro formato (OFX e CSV do mesmo banco): aparece "Pode ser
+   repetido" nas entradas e nos gastos.
 6. Simulador, Notas fiscais, Preferências (lembrete), painel do DAS
    ("Vence ..."), Termos e Privacidade.
 
@@ -191,8 +211,9 @@ categorias de gasto).
   da conta (`donoExtras`) e sobe para o banco o que faltar.
 - **Extrato:** a trava contra repetido é o `pluggy_transaction_id =
   "extrato-<chave>"` (restrição única do banco). E, para o mesmo período
-  em outro formato, o que já existe de extrato com o mesmo DIA e VALOR não
-  entra de novo (`importarExtrato.js`, v2). Datas do extrato vão como
+  em outro formato, o que já existe de extrato com o mesmo DIA e VALOR
+  entra com `categoria = "repetido"` e a pessoa confirma (v3; antes ficava
+  de fora). "repetido" nunca vira regra nem memória do fornecedor. Datas do extrato vão como
   `AAAA-MM-DDT12:00:00-03:00` (o dia nunca muda com o fuso).
 - **`adicionarLancamento` monta o lançamento ANTES do `setState`** (v4):
   dentro do `setState` o React 18 pode adiar e a gravação no banco saía
@@ -234,6 +255,7 @@ categorias de gasto).
 | `src/lib/importarExtrato.js` | Leva o extrato para o banco; lança o que foi confirmado |
 | `src/lib/lucro.js` | Contas do Meu lucro; anexar nota de gasto |
 | `src/components/FluxoCnpj.jsx` | "Qual o CNPJ" e "Achei você" |
+| `src/components/FolhaLancarGasto.jsx` | Folha "Lançar gasto" do Meu lucro (10/10, tarde) |
 | `src/pages/PerfilCnpj.jsx`, `ConferirSaidas.jsx`, `GastosDoLucro.jsx`, `NotasFiscais.jsx`, `Simulador.jsx` | Telas novas |
 | `docs/SQL-PENDENTE-08-10.sql` | O SQL de 08-10 (rodado) explicado |
 | `docs/PLANO-AUTOMACAO-DAS.md` | Plano do DAS no automático (estados, mensagens, Serpro, 3 fases) |
@@ -259,6 +281,13 @@ categorias de gasto).
 ---
 
 ## Perguntas para o Fernando
+
+**Respondidas em 10/10 (tarde):** 1 sim · 2 ok · 3 ok · 4 manter · 5 ok ·
+6 ok · 7 ok (com a linha de aviso) · 8 "Leva poucos minutos" · 9 sim
+(gasto à mão, dinheiro vivo) · 10 ok · 11 não descartar sozinho:
+"pode ser repetido" e a pessoa confirma · 12 sim (lista Gastos
+pessoais). Tudo feito (ver seção 4). O texto original fica abaixo para
+consulta. **Ainda aberta: a 13.**
 
 1. **Extrato mostra MENOS do que o total do ano que você digitou:** hoje
    o app mantém o total digitado (pode ter outra conta ou dinheiro vivo)

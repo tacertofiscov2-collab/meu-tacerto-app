@@ -1,4 +1,4 @@
-/* CONCILIACAO v2 — o ajuste do total do ano so absorve recebimento ate o DIA do ajuste (horario de Brasilia) e do mesmo ano; diaBR (v1:o que e ESTIMADO no velocimetro (total digitado) e o que e CONFERIDO (extrato confirmado), selo do velocimetro e a regra para nunca contar duas vezes (total do ano + extrato, lancamento a mao + extrato) */
+/* CONCILIACAO v3 — o extrato SUBSTITUI o total do ano digitado quando cobre o ano ate o dia do total e tudo foi conferido (resposta 1 do Fernando): extratoCobreOAno (v2: o ajuste do total do ano so absorve recebimento ate o DIA do ajuste (horario de Brasilia) e do mesmo ano; diaBR (v1:o que e ESTIMADO no velocimetro (total digitado) e o que e CONFERIDO (extrato confirmado), selo do velocimetro e a regra para nunca contar duas vezes (total do ano + extrato, lancamento a mao + extrato) */
 
 /* ===================================================================
    NADA CONTADO DUAS VEZES (decisao do Fernando, HANDOFF-08-10)
@@ -17,9 +17,18 @@
       ajuste, eles ja estavam dentro do total: o ajuste DIMINUI o mesmo
       tanto (nunca fica negativo; zerou, some). Recebimento DEPOIS da
       data do ajuste e dinheiro novo: soma normal.
-      Se o extrato mostrar MENOS do que o total digitado, sobra ajuste:
-      o app mantem o que a pessoa disse (pode ter outra conta, dinheiro
-      vivo). Pergunta registrada para o Fernando no HANDOFF.
+      Se o extrato mostrar MENOS do que o total digitado (v3, resposta 1
+      do Fernando, 10/10): O EXTRATO SUBSTITUI O TOTAL. O que sobrou do
+      ajuste sai, e o velocimetro passa a usar so o extrato (selo
+      "Conferido"). So quando e seguro:
+        - os extratos enviados (OFX/CSV) cobrem do comeco do ano (ou da
+          abertura do MEI) ate o dia do total digitado, sem buraco
+          (extratoCobreOAno, folga de 10 dias: o 1o recebimento do ano
+          pode ser dia 5, e o extrato pode ter sido tirado 2 dias antes);
+        - nao sobrou entrada do extrato sem resposta ate esse dia.
+      Extrato de so alguns meses NAO substitui: o total digitado tem os
+      meses que o extrato nao mostra. Lancamento a mao (dinheiro vivo)
+      continua contando.
 
    2) LANCAMENTO A MAO + EXTRATO
       Se a pessoa ja lancou a mao um recebimento com o MESMO valor (ao
@@ -97,6 +106,35 @@ export function planoDeAbsorcao(ajustes = [], entradasConfirmadas = []) {
     plano.push({ id: a.id, novoValor: (atual - tira) / 100 });
   }
   return plano;
+}
+
+/* "AAAA-MM-DD" + n dias (sem fuso: a conta e so de calendario) */
+function somarDias(dia, n) {
+  const d = new Date(`${dia}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * v3 — Regra 1, parte 2: os extratos enviados cobrem o periodo inteiro?
+ * periodos: [{ inicio: "AAAA-MM-DD", fim: "AAAA-MM-DD" }] (extratos_enviados)
+ * inicio: 1o dia que interessa (1o/jan ou o 1o dia do mes da abertura)
+ * ate: o dia do total digitado
+ * Cobre quando, juntando os periodos, nao ha buraco maior que a folga
+ * do inicio ate o fim.
+ */
+export function extratoCobreOAno(periodos = [], { inicio, ate, folgaDias = 10 } = {}) {
+  if (!inicio || !ate) return false;
+  const lista = periodos
+    .filter((p) => p?.inicio && p?.fim && p.fim >= inicio && p.inicio <= ate)
+    .sort((a, b) => (a.inicio < b.inicio ? -1 : a.inicio > b.inicio ? 1 : 0));
+  if (!lista.length) return false;
+  let coberto = inicio; // ate onde ja esta coberto
+  for (const p of lista) {
+    if (p.inicio > somarDias(coberto, folgaDias)) return false; // buraco
+    if (p.fim > coberto) coberto = p.fim;
+  }
+  return somarDias(coberto, folgaDias) >= ate;
 }
 
 /**

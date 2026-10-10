@@ -1,9 +1,11 @@
-/* RESUMOPERFIL v4 — linha "X gastos para conferir" (gastos do extrato ainda sem resposta) que abre a conferencia dos gastos (v3: vira "Meu lucro" (/meu-lucro): Mês | Ano com Recebido, Gastos e Sobrou (%); Ano com o grafico por mes (recebido x gastos); tocar em Gastos abre por categoria; sem dados de gastos, so o Recebido + "Envie o extrato para ver quanto sobrou." (v2: o resumo do ano passa a ter as SAIDAS, o grafico entradas x saidas e o IR (segmento + parte isenta)) */
+/* RESUMOPERFIL v5 — linha "Lançar gasto" (dinheiro vivo: abre a FolhaLancarGasto e o gasto ja entra como do negocio) (resposta 9 do Fernando) (v4: linha "X gastos para conferir" (gastos do extrato ainda sem resposta) que abre a conferencia dos gastos (v3: vira "Meu lucro" (/meu-lucro): Mês | Ano com Recebido, Gastos e Sobrou (%); Ano com o grafico por mes (recebido x gastos); tocar em Gastos abre por categoria; sem dados de gastos, so o Recebido + "Envie o extrato para ver quanto sobrou." (v2: o resumo do ano passa a ter as SAIDAS, o grafico entradas x saidas e o IR (segmento + parte isenta)) */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ChevronLeft, ChevronRight, ArrowDownLeft, ArrowUpRight, Wallet, FileUp, HelpCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowDownLeft, ArrowUpRight, Wallet, FileUp, HelpCircle, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { PREFIXO_EXTRATO } from "@/lib/conciliacao";
 import TopoRolavel from "../components/TopoRolavel.jsx";
+import FolhaLancarGasto from "../components/FolhaLancarGasto.jsx";
 import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
 import Valor from "../components/Valor.jsx";
 import { supabase } from "@/lib/supabase";
@@ -30,6 +32,9 @@ import {
      so o Recebido + "Envie o extrato para ver quanto sobrou."
    O antigo Resumo (segmento do IR, ritmo) saiu: o IR esta na Declaracao
    anual e a projecao no Simulador.
+   v5 (resposta 9): "Lançar gasto" — para o que foi pago em dinheiro vivo
+   (nao aparece no extrato). Folha FolhaLancarGasto; o gasto entra ja
+   como do negocio e aparece em Gastos (pode ser apagado la).
    =================================================================== */
 
 const MESES = [
@@ -51,12 +56,16 @@ export default function ResumoPerfil() {
   const irPara = (novo) => setParams({ ver, mes: String(mes), ...novo }, { replace: true });
 
   const [saidas, setSaidas] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [recarga, setRecarga] = useState(0);
+  const [lancando, setLancando] = useState(false);
   useEffect(() => {
     let ativo = true;
     (async () => {
       try {
         const { data } = await supabase.auth.getUser();
         if (!data?.user) { if (ativo) setSaidas([]); return; }
+        if (ativo) setUserId(data.user.id);
         const lista = await listarSaidasDoAno(data.user.id, ano);
         if (ativo) setSaidas(lista);
       } catch {
@@ -64,7 +73,7 @@ export default function ResumoPerfil() {
       }
     })();
     return () => { ativo = false; };
-  }, [ano]);
+  }, [ano, recarga]);
 
   const doMes = useMemo(
     () => resumoDoMes({ lancamentos, saidas: saidas || [], ano, mes, tipoMEI }),
@@ -167,6 +176,13 @@ export default function ResumoPerfil() {
           </SecaoLista>
         )}
 
+        {/* v5: gasto em dinheiro vivo */}
+        {saidas && (
+          <SecaoLista style={{ marginTop: 18 }}>
+            <LinhaLista Icon={Plus} rotulo="Lançar gasto" onClick={() => setLancando(true)} />
+          </SecaoLista>
+        )}
+
         {saidas && !comGastos && (
           <div className="flex flex-col items-center text-center" style={{ marginTop: 26 }}>
             <p style={{ fontSize: 15, color: "var(--text-secondary)" }}>Envie o extrato para ver quanto sobrou.</p>
@@ -184,6 +200,20 @@ export default function ResumoPerfil() {
 
         {ver === "ano" && comGastos && <GraficoPorMes meses={doAno.meses} mesAtual={mesAtual} />}
       </div>
+
+      {lancando && (
+        <FolhaLancarGasto
+          userId={userId}
+          tipoMEI={tipoMEI}
+          dataMin={`${ano}-${String(mesInicio).padStart(2, "0")}-01`}
+          onFechar={() => setLancando(false)}
+          onLancou={() => {
+            setLancando(false);
+            toast.success("Gasto lançado");
+            setRecarga((n) => n + 1);
+          }}
+        />
+      )}
     </div>
   );
 }

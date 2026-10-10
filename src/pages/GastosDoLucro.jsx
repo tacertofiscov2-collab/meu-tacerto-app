@@ -1,7 +1,7 @@
-/* GASTOSDOLUCRO v1 — "Meu lucro" > Gastos: por categoria (Diesel e Arla, Pedágio...) e, tocando na categoria, cada gasto com o selo "com nota" / "sem nota"; tocar no gasto deixa anexar a nota (foto ou PDF), trocar a categoria ou marcar como pessoal */
+/* GASTOSDOLUCRO v2 — lista "Gastos pessoais" do periodo (os que nao contam, inclusive os "repetido"), com "É do negócio" para desfazer; gasto lancado a mao pode ser apagado (respostas 9 e 12 do Fernando) (v1: "Meu lucro" > Gastos: por categoria (Diesel e Arla, Pedágio...) e, tocando na categoria, cada gasto com o selo "com nota" / "sem nota"; tocar no gasto deixa anexar a nota (foto ou PDF), trocar a categoria ou marcar como pessoal */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Receipt, Camera, Tag, UserRound } from "lucide-react";
+import { Receipt, Camera, Tag, UserRound, Briefcase, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import FolhaDeBaixo from "../components/FolhaDeBaixo.jsx";
@@ -9,10 +9,10 @@ import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
 import Valor from "../components/Valor.jsx";
 import { supabase } from "@/lib/supabase";
 import { useAppState } from "@/context/AppStateContext";
-import { categoriasSaida, rotuloCategoriaSaida } from "@/lib/categorias";
-import { nomeParaDescricao } from "@/lib/openfinance";
+import { categoriasSaida, rotuloCategoriaSaida, ehRepetido } from "@/lib/categorias";
+import { nomeParaDescricao, apagarSaidaManual } from "@/lib/openfinance";
 import {
-  listarSaidasDoAno, resumoDoMes, resumoDoAno, mudarGasto, anexarNotaDoGasto,
+  listarSaidasDoAno, resumoDoMes, resumoDoAno, mudarGasto, anexarNotaDoGasto, ehGastoAMao,
 } from "@/lib/lucro";
 
 /* ===================================================================
@@ -28,6 +28,15 @@ import {
        saidas.com_nota = true
      - Trocar categoria
      - Não é do negócio           -> vira pessoal (sai do lucro e do IR)
+
+   v2 (10/10/2026, respostas do Fernando):
+   - GASTOS PESSOAIS (resposta 12): no fim da lista das categorias, a
+     linha "Gastos pessoais" (so quando tem algum no periodo) abre
+     ...&cat=pessoais: os que nao contam no lucro (src/lib/lucro.js,
+     ehGastoPessoal), o "repetido" com essa etiqueta. Tocar: "É do
+     negócio" (escolhe a categoria e volta para o lucro).
+   - GASTO A MAO (resposta 9): "Apagar gasto" na folha, so para os
+     lancados a mao (os do extrato sao o registro do que saiu da conta).
    =================================================================== */
 
 const MESES = [
@@ -43,7 +52,9 @@ function diaMes(iso) {
 function nomeDoGasto(s) {
   if (s.recebedor_nome) return nomeParaDescricao(s.recebedor_nome);
   const limpa = String(s.descricao || "").replace(/\d{2}\/\d{2}(\/\d{2,4})?/g, " ").replace(/\s+/g, " ").trim();
-  return limpa ? nomeParaDescricao(limpa) : "Gasto";
+  if (limpa) return nomeParaDescricao(limpa);
+  /* v2: lancado a mao sem "O que foi" */
+  return ehGastoAMao(s) ? "Gasto em dinheiro" : "Gasto";
 }
 
 export default function GastosDoLucro() {
@@ -80,7 +91,12 @@ export default function GastosDoLucro() {
   }, [saidas, ver, mes, ano, tipoMEI]);
 
   const periodo = ver === "ano" ? `em ${ano}` : `em ${MESES[mes - 1]}`;
-  const itens = cat ? r.gastosDoNegocio.filter((s) => (s.categoria || "outros") === cat) : [];
+  const pessoais = cat === "pessoais";
+  const itens = pessoais
+    ? r.gastosPessoais
+    : cat ? r.gastosDoNegocio.filter((s) => (s.categoria || "outros") === cat) : [];
+  const totalPessoais = r.gastosPessoais.reduce((t, s) => t + (Number(s.valor) || 0), 0);
+  const escolhidoPessoal = escolhido && escolhido.do_negocio !== true;
 
   function voltar() {
     if ((window.history.state?.idx ?? 0) > 0) navigate(-1);
@@ -97,6 +113,19 @@ export default function GastosDoLucro() {
       carregar();
     } catch {
       toast.error("Não consegui mudar agora. Tente de novo.");
+    }
+  }
+
+  /* v2: so o lancado a mao */
+  async function apagar() {
+    if (!escolhido || !userId) return;
+    try {
+      await apagarSaidaManual(userId, escolhido.id);
+      toast.success("Gasto apagado");
+      setEscolhido(null);
+      carregar();
+    } catch {
+      toast.error("Não consegui apagar agora. Tente de novo.");
     }
   }
 
@@ -118,7 +147,7 @@ export default function GastosDoLucro() {
   return (
     <div className="tela-rolavel w-full flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <div className="conteudo-rolavel hide-scrollbar px-5" style={{ paddingBottom: "calc(32px + env(safe-area-inset-bottom))" }}>
-        <TopoRolavel titulo={cat ? rotuloCategoriaSaida(cat, tipoMEI) : "Gastos"} onVoltar={voltar} />
+        <TopoRolavel titulo={pessoais ? "Gastos pessoais" : cat ? rotuloCategoriaSaida(cat, tipoMEI) : "Gastos"} onVoltar={voltar} />
         <p style={{ fontSize: 14, color: "var(--text-tertiary)", marginTop: 2 }}>{periodo}</p>
 
         {saidas && !cat && (
@@ -139,14 +168,33 @@ export default function GastosDoLucro() {
           )
         )}
 
-        {saidas && cat && (
+        {/* v2: os que nao contam, para poder desfazer */}
+        {saidas && !cat && r.gastosPessoais.length > 0 && (
+          <SecaoLista style={{ marginTop: 18 }}>
+            <LinhaLista
+              Icon={UserRound}
+              rotulo="Gastos pessoais"
+              detalhe={r.gastosPessoais.length === 1 ? "1 gasto" : `${r.gastosPessoais.length} gastos`}
+              valor={<Valor px={15.5} peso={600}>{totalPessoais}</Valor>}
+              onClick={() => navigate(`/meu-lucro/gastos?ver=${ver}&mes=${mes}&cat=pessoais`, { state: { de: "lucro" } })}
+            />
+          </SecaoLista>
+        )}
+
+        {saidas && cat && !itens.length && (
+          <p style={{ fontSize: 15, color: "var(--text-secondary)", marginTop: 24 }}>
+            {pessoais ? `Nenhum gasto pessoal ${periodo}.` : `Nenhum gasto ${periodo}.`}
+          </p>
+        )}
+
+        {saidas && cat && itens.length > 0 && (
           <SecaoLista style={{ marginTop: 12 }}>
             {itens.map((s) => (
               <LinhaLista
                 key={s.id}
                 rotulo={nomeDoGasto(s)}
                 maxLinhas={2}
-                detalhe={<SeloNota comNota={s.com_nota} data={diaMes(s.data)} />}
+                detalhe={pessoais ? (ehRepetido(s) ? `${diaMes(s.data)} · repetido` : diaMes(s.data)) : <SeloNota comNota={s.com_nota} data={diaMes(s.data)} />}
                 valor={<Valor px={15.5} peso={600}>{s.valor}</Valor>}
                 onClick={() => { setEscolhido(s); setTrocando(false); }}
               />
@@ -156,7 +204,16 @@ export default function GastosDoLucro() {
       </div>
 
       <FolhaDeBaixo aberto={!!escolhido} onFechar={() => !enviando && setEscolhido(null)} titulo={escolhido ? nomeDoGasto(escolhido) : ""}>
-        {escolhido && !trocando && (
+        {/* v2: gasto pessoal — so "É do negócio" (e apagar, se foi a mao) */}
+        {escolhido && !trocando && escolhidoPessoal && (
+          <div style={{ paddingBottom: 8 }}>
+            <SecaoLista style={{ marginTop: 0 }}>
+              <LinhaLista Icon={Briefcase} rotulo="É do negócio" detalhe="Volta para o lucro." onClick={() => setTrocando(true)} />
+              {ehGastoAMao(escolhido) && <LinhaLista Icon={Trash2} rotulo="Apagar gasto" onClick={apagar} />}
+            </SecaoLista>
+          </div>
+        )}
+        {escolhido && !trocando && !escolhidoPessoal && (
           <div style={{ paddingBottom: 8 }}>
             <SecaoLista style={{ marginTop: 0 }}>
               <LinhaLista
@@ -167,6 +224,7 @@ export default function GastosDoLucro() {
               />
               <LinhaLista Icon={Tag} rotulo="Trocar categoria" valor={rotuloCategoriaSaida(escolhido.categoria || "outros", tipoMEI)} onClick={() => setTrocando(true)} />
               <LinhaLista Icon={UserRound} rotulo="Não é do negócio" detalhe="Sai do lucro e do Imposto de Renda." onClick={() => aplicar({ doNegocio: false }, "Marcado como pessoal")} />
+              {ehGastoAMao(escolhido) && <LinhaLista Icon={Trash2} rotulo="Apagar gasto" onClick={apagar} />}
             </SecaoLista>
             {enviando && <p className="text-center" style={{ color: "var(--text-tertiary)", fontSize: 14, marginTop: 8 }}>Enviando...</p>}
           </div>
@@ -179,8 +237,8 @@ export default function GastosDoLucro() {
                   key={c.id}
                   rotulo={c.rotulo}
                   semSeta
-                  valor={(escolhido.categoria || "outros") === c.id ? "Atual" : null}
-                  onClick={() => aplicar({ categoria: c.id, doNegocio: true }, "Categoria trocada")}
+                  valor={!escolhidoPessoal && (escolhido.categoria || "outros") === c.id ? "Atual" : null}
+                  onClick={() => aplicar({ categoria: c.id, doNegocio: true }, escolhidoPessoal ? "Voltou para o lucro" : "Categoria trocada")}
                 />
               ))}
             </SecaoLista>

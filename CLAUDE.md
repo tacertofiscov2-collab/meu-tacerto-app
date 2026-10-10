@@ -174,6 +174,14 @@ O projeto **não tem backup automático**. Por isso:
 
 ## Onde estamos (atualizar ao fim de cada sessão)
 
+- **10/10 (tarde): respostas do Fernando às 12 perguntas, feitas e
+  enviadas ao GitHub** (`git push` a pedido). Extrato **substitui** o
+  total do ano digitado quando cobre o ano até o dia do total e tudo foi
+  respondido; "Pode ser repetido" nas duas conferências (nada é
+  descartado sozinho); **Lançar gasto** (dinheiro vivo) e **Gastos
+  pessoais** (desfazer) no Meu lucro; sininho "Leva poucos minutos".
+  Detalhes no `docs/HANDOFF.md` (seção 4, "Respostas do Fernando"; a
+  pergunta 13 continua aberta). O `npm run dev` foi desligado no fim.
 - **10/10 (fim da tarefa de 08-10): CHAT NOVO, LER PRIMEIRO
   `docs/HANDOFF.md`** (telas, chaves, o que testar no iPhone e as
   **"Perguntas para o Fernando"** no fim) e `docs/HANDOFF-08-10-PESQUISAS.md`.

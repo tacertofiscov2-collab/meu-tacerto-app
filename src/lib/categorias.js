@@ -1,4 +1,4 @@
-/* CATEGORIAS v1 — categorias das entradas ("É faturamento?") e das saídas (gastos), sugestão de categoria pela descrição do extrato e chave para lembrar a categoria por fornecedor */
+/* CATEGORIAS v2 — marca "repetido" (CATEGORIA_REPETIDO): entrada ou gasto do extrato com o mesmo dia e valor de outro extrato ja guardado entra marcado e a pessoa confirma (antes ficava de fora sozinho) (v1: categorias das entradas ("É faturamento?") e das saídas (gastos), sugestão de categoria pela descrição do extrato e chave para lembrar a categoria por fornecedor */
 
 /* ===================================================================
    CATEGORIAS — REGRAS (escrito em 10/10/2026)
@@ -96,6 +96,23 @@ const casaAlgum = (texto, regexes) => regexes.some((re) => re.test(texto));
 /* Tipo de MEI: o mesmo jeito do AppStateContext (padrao MEI) */
 function ehCaminhoneiro(tipoMEI) {
   return String(tipoMEI || "MEI").toUpperCase() === "MEI_CAMINHONEIRO";
+}
+
+/* ===================================================================
+   POSSIVEL REPETIDO (v2 — 10/10/2026, resposta 11 do Fernando)
+   "Nao descartar sozinho: mostrar como 'pode ser repetido' e a pessoa
+   confirma." Quando um extrato traz uma transacao com o MESMO dia e
+   valor de outra que ja veio de outro extrato (o mesmo periodo em
+   outro formato, ou duas contas), ela entra com categoria "repetido":
+   - entrada: fica pendente e a conferencia pergunta "Pode ser
+     repetido" (É repetido = nao conta; ou uma das respostas normais);
+   - gasto: fica em duvida e a conferencia dos gastos pergunta igual.
+   "repetido" nunca vira regra nem memoria do fornecedor.
+   =================================================================== */
+export const CATEGORIA_REPETIDO = "repetido";
+
+export function ehRepetido(x) {
+  return x?.categoria === CATEGORIA_REPETIDO;
 }
 
 /* ===================================================================

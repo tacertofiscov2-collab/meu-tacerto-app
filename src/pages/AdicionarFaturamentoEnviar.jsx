@@ -1,4 +1,4 @@
-/* ADICIONARFATURAMENTOENVIAR v2 — vira a tela "Enviar extrato" (/enviar-extrato): OFX e CSV lidos no proprio app (so o que e deste ano fica guardado; entradas para a conferencia e saidas com categoria), mandar o mesmo arquivo 2x nao conta 2x; PDF vai para o Storage "em analise"; no fim "Encontrei X entradas e Y saídas de jan a out. Vamos conferir?" (v1: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26)) */
+/* ADICIONARFATURAMENTOENVIAR v3 — linha "X podem ser repetidas: você confirma na conferência." quando o extrato trouxe transacoes com o mesmo dia e valor de outro extrato (resposta 11 do Fernando) (v2: vira a tela "Enviar extrato" (/enviar-extrato): OFX e CSV lidos no proprio app (so o que e deste ano fica guardado; entradas para a conferencia e saidas com categoria), mandar o mesmo arquivo 2x nao conta 2x; PDF vai para o Storage "em analise"; no fim "Encontrei X entradas e Y saídas de jan a out. Vamos conferir?" (v1: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26)) */
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FileUp, Loader2, Check, AlertCircle } from "lucide-react";
@@ -16,7 +16,9 @@ import { importarExtrato } from "@/lib/importarExtrato";
    - OFX ou CSV: lido no celular (src/lib/extrato.js), sem IA. So o que
      e de 1º/jan a 31/dez deste ano (ou da abertura do MEI em diante)
      vai para o banco; o resto e descartado ANTES (importarExtrato).
-     Repetido nao entra (impressao digital de cada transacao).
+     Repetido nao entra (impressao digital de cada transacao). v3: o que
+     so bate no dia e no valor com outro extrato entra marcado e a
+     pessoa confirma ("Pode ser repetido" nas conferencias).
    - No fim: "Encontrei 37 entradas e 52 saídas de jan a out. Vamos
      conferir?" -> Conferir abre a conferencia "É faturamento?" e depois
      a dos gastos. "Depois": o portao do Inicio leva para a conferencia
@@ -134,7 +136,7 @@ export default function AdicionarFaturamentoEnviar() {
       </div>
     );
   } else if (resultado) {
-    const { entradasNovas, saidasNovas, lidas, descartadas, periodo } = resultado;
+    const { entradasNovas, saidasNovas, lidas, descartadas, periodo, possiveisRepetidas = 0 } = resultado;
     const temNovidade = entradasNovas + saidasNovas > 0;
     const partes = [
       entradasNovas > 0 && plural(entradasNovas, "entrada", "entradas"),
@@ -161,6 +163,11 @@ export default function AdicionarFaturamentoEnviar() {
         {descartadas > 0 && (
           <p style={{ fontSize: 13.5, color: "var(--text-tertiary)", marginTop: 10 }}>
             {descartadas === 1 ? "1 era de outro período e ficou de fora." : `${descartadas} eram de outro período e ficaram de fora.`}
+          </p>
+        )}
+        {possiveisRepetidas > 0 && (
+          <p style={{ fontSize: 13.5, color: "var(--text-tertiary)", marginTop: descartadas > 0 ? 4 : 10 }}>
+            {possiveisRepetidas === 1 ? "1 pode ser repetida: você confirma na conferência." : `${possiveisRepetidas} podem ser repetidas: você confirma na conferência.`}
           </p>
         )}
         {temNovidade ? (

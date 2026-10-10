@@ -121,7 +121,7 @@
   exemplo do Início (sem nome, "R$ •••") e um círculo verde passando por
   cada função (velocímetro, +, DAS, Fisco, NF, Perfil, sininho); o
   Fisco.ia explica embaixo. Só abre se a pessoa tocar; dá para rever.
-  A segunda é **"Atualize seu velocímetro"** ("Leva menos de 1 minuto"):
+  A segunda é **"Atualize seu velocímetro"** ("Leva poucos minutos" desde 10/10):
   abre uma folha com 2 jeitos fáceis — **digitar o total do ano** (abre
   o "+" no modo "Total do ano") ou **mandar pro Fisco.ia** valores ou a
   foto do extrato no WhatsApp (mensagem `atualizarVelocimetro`).
@@ -132,6 +132,15 @@
   dos recebimentos), substituído a cada atualização (o "Faturamento
   estimado até hoje" do onboarding entra nessa conta). Total menor que
   os recebimentos já lançados não deixa salvar e avisa.
+- **10/10 (tarde) — respostas do Fernando:** o **extrato substitui o
+  total do ano digitado** quando os extratos cobrem do começo do ano até
+  o dia do total e tudo foi respondido (extrato de só alguns meses não
+  substitui); transação com o mesmo dia e valor de outro extrato **não é
+  descartada sozinha**: aparece como "Pode ser repetido" e a pessoa
+  confirma; **Lançar gasto** (dinheiro vivo) e lista **Gastos pessoais**
+  (para desfazer) no Meu lucro; portão das entradas mantido; gastos
+  reconhecidos entram direto como do caminhão; DAS R$ 200,52 para CNAE
+  municipal + intermunicipal; lembrete do DAS às 9:00.
 - **Explicação da média limite** (o "?" do 2º velocímetro): só o texto e
   o "Entendi" (sem "Falar com o Fisco.ia" e sem "X"). Aparece **uma vez
   só**: ao fechar, o "?" some para sempre naquela conta, naquele

@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v34 — proximo DAS com feriados nacionais (vencimentoDas.js: dia 20 ou o proximo dia util) (v33: o atalho NF abre a janela "Notas fiscais" (/notas-fiscais) (v32: o portao das entradas confirma pelas regras do pagador SEM contar duas vezes (lancarEntradasConfirmadas: casa com lancamento a mao e diminui o ajuste do total do ano) (v31: visual F: "Atualizado em 08/10 às 14:32" + botao "Atualizar velocimetro" abaixo do velocimetro (zerado: "Falta informar" e o botao em destaque) e selo Estimado/Conferido no velocimetro do ano; a folha de atualizar abre sempre (v30: valor do DAS pelo CNAE do perfil (fiscal.js) e o CNPJ nas mensagens do WhatsApp (v29: velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
+﻿/* DASHBOARD v35 — o portao, quando as regras do pagador resolvem tudo sozinhas, tambem confere se o extrato ja pode substituir o total do ano digitado (substituirTotalPeloExtrato) (v34: proximo DAS com feriados nacionais (vencimentoDas.js: dia 20 ou o proximo dia util) (v33: o atalho NF abre a janela "Notas fiscais" (/notas-fiscais) (v32: o portao das entradas confirma pelas regras do pagador SEM contar duas vezes (lancarEntradasConfirmadas: casa com lancamento a mao e diminui o ajuste do total do ano) (v31: visual F: "Atualizado em 08/10 às 14:32" + botao "Atualizar velocimetro" abaixo do velocimetro (zerado: "Falta informar" e o botao em destaque) e selo Estimado/Conferido no velocimetro do ano; a folha de atualizar abre sempre (v30: valor do DAS pelo CNAE do perfil (fiscal.js) e o CNPJ nas mensagens do WhatsApp (v29: velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -25,7 +25,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { listarConexoes, sincronizar, organizarPelasRegras } from "@/lib/openfinance";
 import { seloDoVelocimetro, PREFIXO_EXTRATO } from "@/lib/conciliacao";
-import { lancarEntradasConfirmadas } from "@/lib/importarExtrato";
+import { lancarEntradasConfirmadas, substituirTotalPeloExtrato } from "@/lib/importarExtrato";
 import { proximoVencimentoDas } from "@/lib/vencimentoDas";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_RESUMO_ANO, linkWhatsAppFisco,
@@ -2139,11 +2139,14 @@ export default function Dashboard() {
       const { data } = await supabase.auth.getUser();
       const user = data?.user;
       if (!user) return;
-      const { pendentes } = await organizarPelasRegras(user.id, {
+      const { pendentes, organizadas } = await organizarPelasRegras(user.id, {
         tipoMEI: appRef.current.tipoMEI,
         aoConfirmar: (efetivas) => lancarEntradasConfirmadas(user.id, efetivas, () => appRef.current),
       });
       if (pendentes.length > 0) navigate("/conferir-entradas", { replace: true });
+      /* v35: as regras resolveram tudo: o extrato ja pode tomar o lugar
+         do total do ano digitado? (src/lib/conciliacao.js, regra 1) */
+      else if (organizadas > 0) await substituirTotalPeloExtrato(user.id, () => appRef.current);
     } catch {
       /* sem rede: segue normal */
     }

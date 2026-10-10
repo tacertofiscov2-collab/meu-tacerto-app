@@ -1,4 +1,4 @@
-/* NOTIFICACOES v2 — segunda notificacao: "Atualize seu velocimetro" (abre a FolhaAtualizarVelocimetro) (v1: sininho discreto no topo do Inicio + folha "Notificacoes"; a primeira e a Apresentacao do Fisco.ia (tutorial)) */
+/* NOTIFICACOES v3 — "Atualize seu velocímetro" diz "Leva poucos minutos" (com o extrato pode levar mais de 1 minuto; resposta 8 do Fernando) (v2: segunda notificacao: "Atualize seu velocimetro" (abre a FolhaAtualizarVelocimetro) (v1: sininho discreto no topo do Inicio + folha "Notificacoes"; a primeira e a Apresentacao do Fisco.ia (tutorial)) */
 import { useState } from "react";
 import { Bell, PlayCircle, Gauge } from "lucide-react";
 import FolhaDeBaixo from "./FolhaDeBaixo.jsx";
@@ -33,7 +33,7 @@ export const NOTIFICACOES = [
     id: "atualizar",
     Icon: Gauge,
     titulo: "Atualize seu velocímetro",
-    detalhe: "Leva menos de 1 minuto",
+    detalhe: "Leva poucos minutos",
   },
 ];
 
