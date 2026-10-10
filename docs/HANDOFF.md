@@ -31,10 +31,10 @@
 
 ## 1. Onde está o código
 
-- Branch **`piloto-simplificado`**. **Mais de 30 commits SEM PUSH**: a
-  prévia da Vercel ainda mostra o `353c036` (05/10). Quando o Fernando
-  pedir: `git push` (nunca `--force`). A **`main` não foi mexida**;
-  produção continua em `f1832bb`.
+- Branch **`piloto-simplificado`**. **Enviado ao GitHub (`git push`) em
+  10/10, a pedido do Fernando**, com tudo da tarefa de 08-10: a prévia da
+  Vercel passa a mostrar esta versão. Nunca `--force`. A **`main` não foi
+  mexida**; produção continua em `f1832bb`.
 - Commits da tarefa de 08-10 (antigo → novo): `b459798` (SQL pendente e
   pesquisas), `dc957cd` (CNPJ), `df0cd74` (velocímetro), `e4cd3e0`
   (bibliotecas do extrato), `d19cfdf` (CNPJ conferido), `dc8b181` (SQL
@@ -138,6 +138,16 @@ categorias de gasto).
 - **Revisão:** bibliotecas com testes (scratchpad), revisão de código por
   agentes independentes (3 focos + verificação), revisão visual Preto e
   Branco, 390×844 e 390×664, Console limpo, build OK.
+- **Corrigido na revisão (10/10):** o "Depois" do extrato fazia a
+  conferência dos gastos sumir (agora a conferência sempre termina nos
+  gastos em dúvida, e o Meu lucro mostra "X gastos para conferir"); o
+  mesmo período mandado em outro formato (OFX e depois CSV) não conta mais
+  duas vezes; o "total do ano" só absorve recebimento até o dia em que foi
+  digitado; lançamentos criados de uma vez às vezes não iam para o banco
+  (AppStateContext v4); gravações com centenas de itens vão em partes;
+  "Está certo" sem a data do MEI ainda pergunta "Abriu este ano?"; DAS de
+  oficina mecânica conta como serviço; textos da nota (passo a passo e
+  suporte) e dos Termos (PDF guardado até ser lido).
 
 ---
 
@@ -180,8 +190,13 @@ categorias de gasto).
   tolerante (`gravarPerfilNovo`). O AppState guarda no aparelho com o id
   da conta (`donoExtras`) e sobe para o banco o que faltar.
 - **Extrato:** a trava contra repetido é o `pluggy_transaction_id =
-  "extrato-<chave>"` (restrição única do banco). Datas do extrato vão como
+  "extrato-<chave>"` (restrição única do banco). E, para o mesmo período
+  em outro formato, o que já existe de extrato com o mesmo DIA e VALOR não
+  entra de novo (`importarExtrato.js`, v2). Datas do extrato vão como
   `AAAA-MM-DDT12:00:00-03:00` (o dia nunca muda com o fuso).
+- **`adicionarLancamento` monta o lançamento ANTES do `setState`** (v4):
+  dentro do `setState` o React 18 pode adiar e a gravação no banco saía
+  vazia quando vários eram criados de uma vez.
 - **Conferência:** o que conta é lançado por `lancarEntradasConfirmadas`
   (`src/lib/importarExtrato.js`) — nunca por `criarLancamento` direto —
   para não contar duas vezes. O "portão" do Início usa a mesma função.
@@ -227,7 +242,7 @@ categorias de gasto).
 
 ## 9. Pendente / para o Fernando decidir
 
-1. **`git push`** quando quiser a prévia da Vercel com tudo isto.
+1. ~~`git push`~~: feito em 10/10.
 2. **Testar no iPhone** (seção 5), principalmente com um extrato real.
 3. Antes de gente real: **desligar o modo teste** (`MODO_TESTE_LOGIN`),
    ligar o login por WhatsApp no painel, religar o "Require Log In" da
@@ -268,5 +283,11 @@ categorias de gasto).
    vêm do extrato.
 10. **No painel do DAS** coloquei uma linha "Vence 20/10 · R$ 195,52" (no
     Início F a data não aparece em outro lugar). Ok?
-11. Antigas: atualizar o slide 1 das boas-vindas? A notificação "Atualize
+11. **Extrato de duas contas diferentes** com o mesmo valor no mesmo dia:
+    o segundo fica de fora (é o jeito de não contar duas vezes quando o
+    mesmo período vem em outro formato). Ok? (Dá para lançar à mão.)
+12. Gastos marcados como pessoais ("Não é do negócio", "O resto é
+    pessoal") não aparecem no Meu lucro, então não dá para desfazer pelo
+    app. Quer uma lista "Gastos pessoais" para poder corrigir?
+13. Antigas: atualizar o slide 1 das boas-vindas? A notificação "Atualize
     seu velocímetro" volta todo mês? Ajustar `/regra-vinte` aberto direto?

@@ -1,4 +1,4 @@
-/* CONFERIRENTRADAS v13 — no lugar do Sim/Não, 6 respostas curtas (É frete/serviço, Reembolso de despesa, Vale-pedágio, Empréstimo, Estorno/devolução, Dinheiro meu/família); a sugerida pelo extrato vem com borda verde fina; grava a categoria; o que conta e lancado sem contar duas vezes (lancamento a mao igual e ajuste do total do ano); vindo do extrato, segue para os gastos (v12: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v11: "Fisco" vira "Fisco.ia" nos textos da tela (v10: explicacao enquadrada: icone no topo, passos centralizados, botao no pe da tela))) */
+/* CONFERIRENTRADAS v14 — no fim sempre passa pelos gastos em duvida (/conferir-saidas), tambem quando veio pelo portao do Inicio (v13: no lugar do Sim/Não, 6 respostas curtas (É frete/serviço, Reembolso de despesa, Vale-pedágio, Empréstimo, Estorno/devolução, Dinheiro meu/família); a sugerida pelo extrato vem com borda verde fina; grava a categoria; o que conta e lancado sem contar duas vezes (lancamento a mao igual e ajuste do total do ano); vindo do extrato, segue para os gastos (v12: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v11: "Fisco" vira "Fisco.ia" nos textos da tela (v10: explicacao enquadrada: icone no topo, passos centralizados, botao no pe da tela))) */
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -262,12 +262,13 @@ export default function ConferirEntradas() {
   const appRef = useRef(app);
   appRef.current = app;
 
-  // Para onde vai no fim: a faixa de Lancar volta para Lancar; vindo do
-  // extrato, os gastos (v13); o resto, Dashboard.
+  // Para onde vai no fim: a faixa de Lancar volta para Lancar; o resto
+  // passa pelos GASTOS em duvida (v14: tambem quando quem trouxe para ca
+  // foi o portao do Inicio, depois do "Depois" do extrato). Sem gasto em
+  // duvida, a /conferir-saidas volta sozinha para o Inicio.
   const de = location.state?.de;
-  const destinoFinal = de === "lancar" ? "/lancar" : de === "extrato" ? "/conferir-saidas" : "/dashboard";
-  const irParaODestino = () =>
-    navigate(destinoFinal, { replace: true, state: de === "extrato" ? { de: "extrato" } : undefined });
+  const destinoFinal = de === "lancar" ? "/lancar" : "/conferir-saidas";
+  const irParaODestino = () => navigate(destinoFinal, { replace: true });
 
   // carregando | explicacao | pergunta | salvando | fim | erro
   const [fase, setFase] = useState("carregando");

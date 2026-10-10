@@ -1,4 +1,4 @@
-/* IMPORTAREXTRATO v1 — o extrato enviado pelo app vai para o banco: OFX/CSV lidos no aparelho, corte do periodo ANTES de guardar, entradas para a conferencia "É faturamento?", saidas com categoria sugerida, nada duplicado; PDF guardado no Storage "em analise"; e o lancamento das entradas confirmadas sem contar duas vezes */
+/* IMPORTAREXTRATO v2 — o mesmo periodo mandado em outro formato (OFX depois CSV) nao conta duas vezes (dia + valor ja guardados); memoria por fornecedor pelos gastos mais recentes; o lancamento das confirmadas le os lancamentos do banco e nao casa com "lancado a mao" se nao conseguir ler as conferidas (v1: o extrato enviado pelo app vai para o banco: OFX/CSV lidos no aparelho, corte do periodo ANTES de guardar, entradas para a conferencia "É faturamento?", saidas com categoria sugerida, nada duplicado; PDF guardado no Storage "em analise"; e o lancamento das entradas confirmadas sem contar duas vezes */
 import { supabase } from "@/lib/supabase";
 import {
   detectarTipoArquivo, lerArquivoComoTexto, lerExtrato, cortarPeriodo, gerarChaves,
@@ -9,7 +9,7 @@ import {
 } from "@/lib/categorias";
 import { erroDeColunaFaltando } from "@/lib/perfil";
 import {
-  PREFIXO_EXTRATO, separarAjustes, planoDeAbsorcao, lancamentosAMao, casarComLancamentosAMao,
+  PREFIXO_EXTRATO, separarAjustes, planoDeAbsorcao, lancamentosAMao, casarComLancamentosAMao, diaBR,
 } from "@/lib/conciliacao";
 
 /* ===================================================================
@@ -109,19 +109,70 @@ function tirar(obj, campos) {
 async function memoriaDosFornecedores(userId) {
   const mapa = new Map();
   try {
+    /* v2: os mais RECENTES primeiro (o banco devolve no maximo 1000 por
+       vez); a primeira resposta de cada fornecedor e a que vale */
     const { data, error } = await supabase
       .from("saidas")
       .select("recebedor_documento, recebedor_nome, descricao, categoria, do_negocio, data")
       .eq("user_id", userId)
-      .order("data", { ascending: true });
+      .or("categoria.not.is.null,do_negocio.not.is.null")
+      .order("data", { ascending: false })
+      .limit(1000);
     if (error) return mapa;
     for (const s of data || []) {
       if (!s.categoria && s.do_negocio == null) continue;
       const chave = chaveFornecedor({ documento: s.recebedor_documento, nome: s.recebedor_nome, descricao: s.descricao });
-      mapa.set(chave, { categoria: s.categoria || null, doNegocio: s.do_negocio ?? null });
+      if (!mapa.has(chave)) mapa.set(chave, { categoria: s.categoria || null, doNegocio: s.do_negocio ?? null });
     }
   } catch { /* sem rede: sem memoria */ }
   return mapa;
+}
+
+/* ===================================================================
+   v2 — O MESMO PERIODO EM OUTRO FORMATO (OFX e depois CSV)
+   A impressao digital muda de um formato para o outro (o banco escreve
+   diferente). Para nao contar duas vezes: conta quantas transacoes do
+   extrato JA existem em cada DIA com cada VALOR; do arquivo novo, so
+   entra o que passar dessa conta. Duas transacoes iguais no mesmo dia,
+   no mesmo arquivo, continuam duas. (Duas contas de banco diferentes com
+   o mesmo valor no mesmo dia: a segunda fica de fora — raro, e a pessoa
+   pode lancar a mao.)
+   =================================================================== */
+async function jaGuardadasPorDiaEValor(tabela, userId, inicio, fim) {
+  const mapa = new Map();
+  if (!inicio || !fim) return mapa;
+  const PAGINA = 1000;
+  for (let de = 0; ; de += PAGINA) {
+    const { data, error } = await supabase
+      .from(tabela)
+      .select("data, valor")
+      .eq("user_id", userId)
+      .like("pluggy_transaction_id", `${PREFIXO_EXTRATO}%`)
+      .gte("data", `${inicio}T00:00:00-03:00`)
+      .lte("data", `${fim}T23:59:59-03:00`)
+      .range(de, de + PAGINA - 1);
+    if (error) throw error;
+    for (const r of data || []) {
+      const k = `${diaBR(r.data)}|${Math.round((Number(r.valor) || 0) * 100)}`;
+      mapa.set(k, (mapa.get(k) || 0) + 1);
+    }
+    if (!data || data.length < PAGINA) break;
+  }
+  return mapa;
+}
+
+/* Tira do arquivo o que ja existe (pela conta de dia+valor acima) */
+function semOQueJaExiste(transacoes, jaExistem) {
+  const sobra = new Map(jaExistem);
+  return transacoes.filter((t) => {
+    const k = `${t.data}|${Math.round((Number(t.valor) || 0) * 100)}`;
+    const n = sobra.get(k) || 0;
+    if (n > 0) {
+      sobra.set(k, n - 1);
+      return false;
+    }
+    return true;
+  });
 }
 
 /* Registro do extrato (tabela nova; sem o SQL, fica de fora) */
@@ -165,8 +216,18 @@ export async function importarExtrato(file, perfil = {}) {
   });
 
   const comChave = gerarChaves(dentro, { conta: lido.conta || "" });
-  const { creditos, debitos } = separarCreditosDebitos(comChave);
+  const separadas = separarCreditosDebitos(comChave);
   const tipoMEI = perfil.tipoMEI || "MEI";
+
+  /* v2: o que ja veio de outro extrato (mesmo dia e valor) nao entra de
+     novo, mesmo se o arquivo for de outro formato */
+  const periodoArquivo = periodoDasTransacoes(dentro);
+  const [entradasJa, saidasJa] = await Promise.all([
+    jaGuardadasPorDiaEValor("entradas", user.id, periodoArquivo.inicio, periodoArquivo.fim),
+    jaGuardadasPorDiaEValor("saidas", user.id, periodoArquivo.inicio, periodoArquivo.fim),
+  ]);
+  const creditos = semOQueJaExiste(separadas.creditos, entradasJa);
+  const debitos = semOQueJaExiste(separadas.debitos, saidasJa);
 
   const linhasEntradas = creditos.map((t) => ({
     user_id: user.id,
@@ -229,7 +290,7 @@ export async function importarExtrato(file, perfil = {}) {
     saidasNovas,
     lidas: comChave.length,
     descartadas: descartadas.length,
-    repetidas: creditos.length + debitos.length - entradasNovas - saidasNovas,
+    repetidas: separadas.creditos.length + separadas.debitos.length - entradasNovas - saidasNovas,
     periodo: textoPeriodo(periodo.inicio, periodo.fim),
   };
 }
@@ -281,19 +342,35 @@ export async function lancarEntradasConfirmadas(userId, efetivas, app) {
   if (!userId || !lista.length) return { criados: 0, casados: 0, total: 0 };
   const estado = typeof app === "function" ? app() : app;
 
-  let conferidas = [];
+  /* v2: os lancamentos vem do BANCO (o estado do app pode ainda nao ter
+     carregado, ex.: o portao do Inicio logo ao abrir). Sem conseguir
+     ler, usa o do app. */
+  let lancamentos = estado.lancamentos || [];
   try {
-    const { data } = await supabase
+    const { data, error } = await supabase
+      .from("lancamentos")
+      .select("id, descricao, valor, data")
+      .eq("user_id", userId);
+    if (!error && Array.isArray(data)) lancamentos = data;
+  } catch { /* sem rede: fica com o do app */ }
+
+  /* v2: sem conseguir ler as entradas ja conferidas, NAO casa com
+     lancamento a mao (poderia confundir um lancamento que veio de outro
+     extrato com um lancado a mao e deixar de lancar). */
+  let conferidas = null;
+  try {
+    const { data, error } = await supabase
       .from("entradas")
       .select("id, valor, data, lancamento_id")
       .eq("user_id", userId)
       .eq("status", "faturamento");
-    conferidas = data || [];
-  } catch { /* sem rede: casa so pelo que tem */ }
+    if (!error) conferidas = data || [];
+  } catch { /* sem rede: nao casa */ }
   const idsAgora = new Set(lista.map((e) => e.id));
-  conferidas = conferidas.filter((e) => !idsAgora.has(e.id));
 
-  const candidatos = lancamentosAMao(estado.lancamentos || [], conferidas);
+  const candidatos = conferidas
+    ? lancamentosAMao(lancamentos, conferidas.filter((e) => !idsAgora.has(e.id)))
+    : [];
   const casados = casarComLancamentosAMao(lista, candidatos);
   for (const [entradaId, lanc] of casados) {
     try {
@@ -302,7 +379,7 @@ export async function lancarEntradasConfirmadas(userId, efetivas, app) {
   }
 
   const novas = lista.filter((e) => !casados.has(e.id));
-  const { ajustes } = separarAjustes(estado.lancamentos || [], new Date().getFullYear());
+  const { ajustes } = separarAjustes(lancamentos, new Date().getFullYear());
   let absorvido = 0;
   for (const p of planoDeAbsorcao(ajustes, novas)) {
     const antes = Number(ajustes.find((a) => a.id === p.id)?.valor) || 0;

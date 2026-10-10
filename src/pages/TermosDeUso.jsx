@@ -1,4 +1,4 @@
-/* TERMOSDEUSO v8 — textos de 08-10: app de gestao do MEI, o CNPJ (dados publicos e, no futuro, o DAS), o extrato (so o ano atual fica, o resto e descartado) e a pessoa confirma o que e faturamento; sem chamar o TaCerto de contabilidade/contador (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v5: secao "Fale com a gente" (botao do WhatsApp) escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("fase de testes"); v2: botao do WhatsApp com mensagem pronta))) */
+/* TERMOSDEUSO v9 — diz que o extrato em PDF fica guardado ate ser lido (v8: textos de 08-10: app de gestao do MEI, o CNPJ (dados publicos e, no futuro, o DAS), o extrato (so o ano atual fica, o resto e descartado) e a pessoa confirma o que e faturamento; sem chamar o TaCerto de contabilidade/contador (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v5: secao "Fale com a gente" (botao do WhatsApp) escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("fase de testes"); v2: botao do WhatsApp com mensagem pronta))) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp, MOSTRAR_WHATSAPP_DOCUMENTOS } from "@/config/piloto";
@@ -54,7 +54,7 @@ const SECOES = [
   {
     titulo: "O extrato e o que é faturamento",
     paragrafos: [
-      "Quando você envia o extrato do banco, o app lê o arquivo e guarda só o que é deste ano (ou da abertura do MEI em diante). O resto é descartado.",
+      "Quando você envia o extrato do banco, o app lê o arquivo e guarda só o que é deste ano (ou da abertura do MEI em diante). O resto é descartado. Extrato em PDF fica guardado numa pasta só sua até ser lido.",
       "Quem diz o que é faturamento é você: nada entra no velocímetro sem você confirmar.",
     ],
   },

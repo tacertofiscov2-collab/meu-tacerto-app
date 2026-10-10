@@ -1,4 +1,4 @@
-/* COMOEMITIRNOTA v9 — correcoes de 08-10: aviso certo (este passo a passo e para frete na MESMA cidade; entre cidades e CT-e; agregado sem IE em MG hoje nao emite), A1 R$ 100,34 a preco de custo, videochamada (parado, internet, luz, CNH original) e "Tenho interesse no certificado" (v8: sem o "Em breve" no Certificado A1; explicacao do A1 nova (certificadora parceira credenciada, mais credibilidade e curta); secao "Como o TaCerto ajuda hoje"; icone do WhatsApp (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: padrao do Perfil: lista simples sem cartoes, selos nem botao verde cheio; aviso como linha; passos e Certificado A1 abrem em secoes abaixo; letras maiores (v5: A1: "Custa a partir de R$ 99,90" (vale 1 ano) no lugar de "valor a confirmar"; Fisco.ia (v4: selo so "Grátis"; v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1) */
+/* COMOEMITIRNOTA v10 — passos da NFS-e do caminhoneiro so para frete na mesma cidade (tomador = quem contratou; exemplo "Frete dentro de [cidade]") (v9: correcoes de 08-10: aviso certo (este passo a passo e para frete na MESMA cidade; entre cidades e CT-e; agregado sem IE em MG hoje nao emite), A1 R$ 100,34 a preco de custo, videochamada (parado, internet, luz, CNH original) e "Tenho interesse no certificado" (v8: sem o "Em breve" no Certificado A1; explicacao do A1 nova (certificadora parceira credenciada, mais credibilidade e curta); secao "Como o TaCerto ajuda hoje"; icone do WhatsApp (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: padrao do Perfil: lista simples sem cartoes, selos nem botao verde cheio; aviso como linha; passos e Certificado A1 abrem em secoes abaixo; letras maiores (v5: A1: "Custa a partir de R$ 99,90" (vale 1 ano) no lugar de "valor a confirmar"; Fisco.ia (v4: selo so "Grátis"; v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1) */
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -70,11 +70,11 @@ const CONTEUDO_POR_TIPO = {
       PASSO_NOVA,
       {
         titulo: "Quem contratou o frete",
-        texto: "Em \"Tomador do serviço\", escolha Brasil e digite o CNPJ da transportadora. O nome dela aparece sozinho.",
+        texto: "Em \"Tomador do serviço\", escolha Brasil e digite o CNPJ de quem contratou o frete. O nome aparece sozinho.",
       },
       {
         titulo: "O serviço",
-        texto: "Informe a cidade onde o serviço foi feito, escolha o código do serviço de transporte e escreva a descrição. Exemplo: \"Frete de [cidade] para [cidade], dia [data]\".",
+        texto: "Informe a cidade onde o serviço foi feito, escolha o código do serviço de transporte e escreva a descrição. Exemplo: \"Frete dentro de [cidade], dia [data]\".",
       },
       { titulo: "O valor", texto: "Digite o valor do frete." },
       PASSO_EMITIR,

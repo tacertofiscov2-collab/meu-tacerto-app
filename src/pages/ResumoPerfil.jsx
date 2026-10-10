@@ -1,7 +1,8 @@
-/* RESUMOPERFIL v3 — vira "Meu lucro" (/meu-lucro): Mês | Ano com Recebido, Gastos e Sobrou (%); Ano com o grafico por mes (recebido x gastos); tocar em Gastos abre por categoria; sem dados de gastos, so o Recebido + "Envie o extrato para ver quanto sobrou." (v2: o resumo do ano passa a ter as SAIDAS, o grafico entradas x saidas e o IR (segmento + parte isenta)) */
+/* RESUMOPERFIL v4 — linha "X gastos para conferir" (gastos do extrato ainda sem resposta) que abre a conferencia dos gastos (v3: vira "Meu lucro" (/meu-lucro): Mês | Ano com Recebido, Gastos e Sobrou (%); Ano com o grafico por mes (recebido x gastos); tocar em Gastos abre por categoria; sem dados de gastos, so o Recebido + "Envie o extrato para ver quanto sobrou." (v2: o resumo do ano passa a ter as SAIDAS, o grafico entradas x saidas e o IR (segmento + parte isenta)) */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ChevronLeft, ChevronRight, ArrowDownLeft, ArrowUpRight, Wallet, FileUp } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowDownLeft, ArrowUpRight, Wallet, FileUp, HelpCircle } from "lucide-react";
+import { PREFIXO_EXTRATO } from "@/lib/conciliacao";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
 import Valor from "../components/Valor.jsx";
@@ -75,6 +76,12 @@ export default function ResumoPerfil() {
   );
   const r = ver === "ano" ? doAno : doMes;
   const comGastos = temDadosDeGastos(saidas || []);
+  /* v4: gastos do extrato ainda sem resposta (do_negocio vazio). A
+     conferencia dos gastos so abre pelo extrato; aqui fica a entrada
+     fixa para quem tocou em "Depois". */
+  const paraConferir = (saidas || []).filter(
+    (s) => s.do_negocio == null && String(s.pluggy_transaction_id || "").startsWith(PREFIXO_EXTRATO),
+  ).length;
 
   function voltar() {
     if ((window.history.state?.idx ?? 0) > 0) navigate(-1);
@@ -148,6 +155,17 @@ export default function ResumoPerfil() {
             />
           )}
         </SecaoLista>
+
+        {paraConferir > 0 && (
+          <SecaoLista style={{ marginTop: 18 }}>
+            <LinhaLista
+              Icon={HelpCircle}
+              rotulo={paraConferir === 1 ? "1 gasto para conferir" : `${paraConferir} gastos para conferir`}
+              detalhe="Sem resposta, conta como pessoal."
+              onClick={() => navigate("/conferir-saidas", { state: { de: "lucro" } })}
+            />
+          </SecaoLista>
+        )}
 
         {saidas && !comGastos && (
           <div className="flex flex-col items-center text-center" style={{ marginTop: 26 }}>

@@ -177,8 +177,9 @@ O projeto **não tem backup automático**. Por isso:
 - **10/10 (fim da tarefa de 08-10): CHAT NOVO, LER PRIMEIRO
   `docs/HANDOFF.md`** (telas, chaves, o que testar no iPhone e as
   **"Perguntas para o Fernando"** no fim) e `docs/HANDOFF-08-10-PESQUISAS.md`.
-  Branch `piloto-simplificado` com **mais de 30 commits sem push** (a
-  prévia da Vercel ainda está no `353c036`). **SQL de 08-10 RODADO** em
+  Branch `piloto-simplificado` **enviada ao GitHub em 10/10** (`git push`
+  a pedido do Fernando; a prévia da Vercel mostra esta versão). **SQL de
+  08-10 RODADO** em
   10/10 (CNPJ e lembrete do DAS no perfil; categoria e chave_unica em
   entradas/saídas; tabela `extratos_enviados`) — `migrations.sql`
   PARTE 4D. Feito: CNPJ no cadastro (BrasilAPI, "Achei você") e no

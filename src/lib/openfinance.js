@@ -1,4 +1,4 @@
-/* OPENFINANCE v10 — conferencia com CATEGORIA (frete, reembolso, vale-pedagio...): classificarGrupo grava a categoria e pode entregar as confirmadas de uma vez (aoConfirmar, para lancar sem contar duas vezes); a regra do pagador NAO confirma sozinha entrada com cara de vale-pedagio, estorno ou emprestimo (v9: piloto: PLUGGY_ATIVO = false (antes true); o resto igual a v8) */
+/* OPENFINANCE v11 — classificarGrupo grava em partes de 100 ids (v10: conferencia com CATEGORIA (frete, reembolso, vale-pedagio...): classificarGrupo grava a categoria e pode entregar as confirmadas de uma vez (aoConfirmar, para lancar sem contar duas vezes); a regra do pagador NAO confirma sozinha entrada com cara de vale-pedagio, estorno ou emprestimo (v9: piloto: PLUGGY_ATIVO = false (antes true); o resto igual a v8) */
 import { supabase } from "@/lib/supabase";
 import { sugerirCategoriaEntrada } from "@/lib/categorias";
 import { erroDeColunaFaltando } from "@/lib/perfil";
@@ -589,14 +589,24 @@ export async function classificarGrupo(
     classificada_por: por,
     classificada_em: new Date().toISOString(),
   };
-  const atualizar = (dados) =>
-    supabase
-      .from("entradas")
-      .update(dados)
-      .in("id", entradas.map((e) => e.id))
-      .eq("user_id", userId)
-      .eq("status", "pendente")
-      .select("id");
+  /* v11: em partes de 100 (centenas de ids de uma vez estouram o
+     tamanho do endereco do pedido) */
+  const ids = entradas.map((e) => e.id);
+  const atualizar = async (dados) => {
+    const todas = [];
+    for (let i = 0; i < ids.length; i += 100) {
+      const { data, error } = await supabase
+        .from("entradas")
+        .update(dados)
+        .in("id", ids.slice(i, i + 100))
+        .eq("user_id", userId)
+        .eq("status", "pendente")
+        .select("id");
+      if (error) return { data: todas, error };
+      todas.push(...(data || []));
+    }
+    return { data: todas, error: null };
+  };
 
   let { data: mudadas, error } = await atualizar(categoria ? { ...patch, categoria } : patch);
   if (error && categoria && erroDeColunaFaltando(error)) {

@@ -1,4 +1,4 @@
-/* FISCAL v5 — DAS_VENCIMENTO_LABEL certo (prorroga para o proximo dia util) (v4: preco do Certificado A1 (R$ 100,34, preco de custo) num lugar so (v3: palavraDaSituacao: velocimetro zerado diz "Falta informar" (nunca "Tá tranquilo") (v2: valor do DAS pelo CNAE (caminhoneiro: municipal / intermunicipal / os dois; MEI comum: comercio / servicos / os dois) (v1: fonte unica das regras fiscais) */
+/* FISCAL v6 — DAS do MEI comum: oficina de carro/moto (4520, 4543) e manutencao de maquinas (divisao 33) contam como servico (v5: DAS_VENCIMENTO_LABEL certo (prorroga para o proximo dia util) (v4: preco do Certificado A1 (R$ 100,34, preco de custo) num lugar so (v3: palavraDaSituacao: velocimetro zerado diz "Falta informar" (nunca "Tá tranquilo") (v2: valor do DAS pelo CNAE (caminhoneiro: municipal / intermunicipal / os dois; MEI comum: comercio / servicos / os dois) (v1: fonte unica das regras fiscais) */
 // Fonte ÚNICA da verdade para regras fiscais do TaCerto!
 
 export const LIMITES_ANUAIS = {
@@ -175,7 +175,7 @@ export const DAS_2026 = {
      so 4930-2/02, /03 ou /04 (entre cidades)  -> ICMS       R$ 195,52
      sem CNAE no perfil                        -> R$ 195,52 (como antes)
    MEI COMUM:
-     comercio (divisoes 45 a 47) ou industria (05 a 33) -> ICMS R$ 82,05
+     comercio (45 a 47, menos 4520/4543) ou industria (05 a 32) -> ICMS R$ 82,05
      servico (o resto)                                   -> ISS  R$ 86,05
      os dois                                             -> R$ 87,05
      sem CNAE no perfil -> R$ 86,05 (servicos, como antes)
@@ -206,15 +206,17 @@ export function atividadeDasPeloCnae(tipo, cnaes = []) {
     return municipal ? "municipal" : "intermunicipal_interestadual";
   }
   if (!lista.length) return DAS_ATIVIDADE_PADRAO.MEI;
-  const divisao = (c) => Number(c.slice(0, 2));
-  const comercioOuIndustria = lista.some((c) => {
-    const d = divisao(c);
-    return (d >= 45 && d <= 47) || (d >= 5 && d <= 33);
-  });
-  const servico = lista.some((c) => {
-    const d = divisao(c);
-    return !((d >= 45 && d <= 47) || (d >= 5 && d <= 33));
-  });
+  /* v6: comercio = divisoes 45 a 47, MENOS a manutencao de veiculos
+     (4520 carro, 4543 moto), que e servico; industria = 05 a 32 (a 33 e
+     manutencao e instalacao de maquinas: servico) */
+  const ehComercioOuIndustria = (c) => {
+    const d = Number(c.slice(0, 2));
+    const grupo = c.slice(0, 4);
+    if (grupo === "4520" || grupo === "4543") return false;
+    return (d >= 45 && d <= 47) || (d >= 5 && d <= 32);
+  };
+  const comercioOuIndustria = lista.some(ehComercioOuIndustria);
+  const servico = lista.some((c) => !ehComercioOuIndustria(c));
   if (comercioOuIndustria && servico) return "comercio_e_servicos";
   return comercioOuIndustria ? "comercio_industria" : "servicos";
 }

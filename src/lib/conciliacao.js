@@ -1,4 +1,4 @@
-/* CONCILIACAO v1 — o que e ESTIMADO no velocimetro (total digitado) e o que e CONFERIDO (extrato confirmado), selo do velocimetro e a regra para nunca contar duas vezes (total do ano + extrato, lancamento a mao + extrato) */
+/* CONCILIACAO v2 — o ajuste do total do ano so absorve recebimento ate o DIA do ajuste (horario de Brasilia) e do mesmo ano; diaBR (v1:o que e ESTIMADO no velocimetro (total digitado) e o que e CONFERIDO (extrato confirmado), selo do velocimetro e a regra para nunca contar duas vezes (total do ano + extrato, lancamento a mao + extrato) */
 
 /* ===================================================================
    NADA CONTADO DUAS VEZES (decisao do Fernando, HANDOFF-08-10)
@@ -45,6 +45,14 @@ export function ehAjuste(l) {
 
 const DIA_MS = 86400000;
 const centavos = (v) => Math.round((Number(v) || 0) * 100);
+
+/* "AAAA-MM-DD" no horario de Brasilia (UTC-3, sem horario de verao
+   desde 2019), venha a data como vier (com fuso do banco ou local) */
+export function diaBR(valor) {
+  const t = new Date(valor).getTime();
+  if (Number.isNaN(t)) return "";
+  return new Date(t - 3 * 3600 * 1000).toISOString().slice(0, 10);
+}
 const doAno = (l, ano) => new Date(l.data).getFullYear() === ano;
 
 /* Ajustes do ano (mais recente primeiro) e a soma dos recebimentos */
@@ -71,9 +79,15 @@ export function planoDeAbsorcao(ajustes = [], entradasConfirmadas = []) {
   const plano = [];
   // O mais recente primeiro: e ele que reflete o ultimo total digitado
   const lista = [...ajustes].sort((a, b) => new Date(b.data) - new Date(a.data));
-  const dataLimite = new Date(lista[0].data).getTime();
+  /* v2: compara pelo DIA de Brasilia (o recebimento do dia seguinte ao
+     total digitado e dinheiro novo) e so do mesmo ano do ajuste */
+  const diaLimite = diaBR(lista[0].data);
+  const anoAjuste = diaLimite.slice(0, 4);
   let aAbater = entradasConfirmadas
-    .filter((e) => new Date(e.data).getTime() <= dataLimite + DIA_MS - 1)
+    .filter((e) => {
+      const d = diaBR(e.data);
+      return d.slice(0, 4) === anoAjuste && d <= diaLimite;
+    })
     .reduce((s, e) => s + centavos(e.valor), 0);
   for (const a of lista) {
     if (aAbater <= 0) break;

@@ -1,4 +1,4 @@
-/* ONBOARDING v15 — etapa nova "Qual o CNPJ do seu MEI?" depois do nome (opcional, "Preencher depois"); achou na BrasilAPI: "Achei você" e "Está certo" grava CNPJ, CNAE, MEI desde, tipo e abertura e vai pro Inicio (pula tipo e abertura); SAIU a etapa "Quanto você já faturou" (o onboarding termina no "Abriu este ano?") (v14: bolinhas de progresso (abaixo do logo) VERDES de novo, como eram antes da v13 (pedido do Fernando) (v13: cara do app: opcao escolhida sem verde e sem fundo cinza (so mais acesa), fundo preto em tudo, verde so no botao de continuar; letras maiores; campos com 16px (o iPhone dava zoom) (v12: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v11: botao "Começar a usar" em contorno verde (botao-confirmar) (v10: gesto de voltar do iPhone volta UMA ETAPA (nao sai mais do onboarding para o Inicio); onboarding ja feito volta para o Inicio (v9: nome ja preenchido; v8: "Digitar valor" em folha acima do teclado))) */
+/* ONBOARDING v16 — "Está certo" sem a data do MEI na Receita: o tipo vem do CNPJ e ainda pergunta "Abriu este ano?" (antes pulava e o limite podia ficar cheio por engano) (v15: etapa nova "Qual o CNPJ do seu MEI?" depois do nome (opcional, "Preencher depois"); achou na BrasilAPI: "Achei você" e "Está certo" grava CNPJ, CNAE, MEI desde, tipo e abertura e vai pro Inicio (pula tipo e abertura); SAIU a etapa "Quanto você já faturou" (o onboarding termina no "Abriu este ano?") (v14: bolinhas de progresso (abaixo do logo) VERDES de novo, como eram antes da v13 (pedido do Fernando) (v13: cara do app: opcao escolhida sem verde e sem fundo cinza (so mais acesa), fundo preto em tudo, verde so no botao de continuar; letras maiores; campos com 16px (o iPhone dava zoom) (v12: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v11: botao "Começar a usar" em contorno verde (botao-confirmar) (v10: gesto de voltar do iPhone volta UMA ETAPA (nao sai mais do onboarding para o Inicio); onboarding ja feito volta para o Inicio (v9: nome ja preenchido; v8: "Digitar valor" em folha acima do teclado))) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import {
@@ -151,6 +151,9 @@ export default function Onboarding() {
   const [cnpjDigitado, setCnpjDigitado] = useState("");
   const [dadosCnpj, setDadosCnpj] = useState(null);
   const [tipoDoCnpj, setTipoDoCnpj] = useState("MEI_CAMINHONEIRO");
+  /* v16: "Está certo", mas a Receita nao informou desde quando e MEI:
+     o tipo vem do CNPJ e a pessoa ainda responde "Abriu este ano?" */
+  const [cnpjConfirmadoSemData, setCnpjConfirmadoSemData] = useState(false);
 
   const { salvarDadosCnpj } = useAppState();
 
@@ -324,7 +327,7 @@ export default function Onboarding() {
 
     /* CNPJ: colunas novas, gravadas a parte (sem o SQL de 08-10 ficam
        so no aparelho e sobem depois — ver AppStateContext v3) */
-    if (peloCnpj && dadosCnpj) {
+    if ((peloCnpj || cnpjConfirmadoSemData) && dadosCnpj) {
       await salvarDadosCnpj({
         cnpj: dadosCnpj.cnpj,
         cnae: dadosCnpj.cnaePrincipal || null,
@@ -364,6 +367,8 @@ export default function Onboarding() {
     if (step === "verificar") { setErro(""); setStep(0); return true; }
     if (step === 1 && origemGoogle) { setErro(""); setStep(0); return true; }
     if (step === "achei") { setStep(2); return true; }
+    // v16: voltou da abertura depois do "Está certo" sem data: volta ao "Achei você"
+    if (step === 4 && cnpjConfirmadoSemData) { setCnpjConfirmadoSemData(false); setStep("achei"); return true; }
     if (typeof step === "number" && step > 1) { setStep(step - 1); return true; }
     return false;
   }
@@ -706,8 +711,16 @@ export default function Onboarding() {
               tipo={tipoDoCnpj}
               tipoDetectado={dadosCnpj.pareceCaminhoneiro ? "MEI_CAMINHONEIRO" : "MEI"}
               onTrocarTipo={() => setTipoDoCnpj((t) => (t === "MEI_CAMINHONEIRO" ? "MEI" : "MEI_CAMINHONEIRO"))}
-              onConfirmar={() => handleFinalizar({ peloCnpj: true })}
-              onNaoSouEu={() => { setDadosCnpj(null); setStep(2); }}
+              onConfirmar={() => {
+                if (dadosCnpj.dataOpcaoMei) handleFinalizar({ peloCnpj: true });
+                else {
+                  // v16: sem a data do MEI, pergunta a abertura (o tipo ja veio)
+                  setTipoMei(tipoDoCnpj);
+                  setCnpjConfirmadoSemData(true);
+                  setStep(4);
+                }
+              }}
+              onNaoSouEu={() => { setDadosCnpj(null); setCnpjConfirmadoSemData(false); setStep(2); }}
               salvando={finalizando}
             />
           )}

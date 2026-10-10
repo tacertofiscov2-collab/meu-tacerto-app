@@ -1,4 +1,4 @@
-/* SUPORTE v2 — correcoes de 08-10: DAS vence dia 20 e, se nao for dia util, no proximo dia util; NFS-e so para frete na mesma cidade (agregado sem IE em MG hoje nao emite); A1 a preco de custo (R$ 100,34) (v1: chat de suporte dentro do app (Perfil > Ajuda): perguntas prontas por assunto para afunilar; se nao resolver, a pessoa escreve e vai pro WhatsApp do suporte com tudo anotado */
+/* SUPORTE v3 — "Preciso emitir nota?" com a regra do agregado (v2: correcoes de 08-10: DAS vence dia 20 e, se nao for dia util, no proximo dia util; NFS-e so para frete na mesma cidade (agregado sem IE em MG hoje nao emite); A1 a preco de custo (R$ 100,34) (v1: chat de suporte dentro do app (Perfil > Ajuda): perguntas prontas por assunto para afunilar; se nao resolver, a pessoa escreve e vai pro WhatsApp do suporte com tudo anotado */
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
@@ -74,7 +74,7 @@ const ASSUNTOS = [
     perguntas: [
       {
         p: "Preciso emitir nota?",
-        r: "Para empresas, sim. E a partir de 2027 a nota passa a valer para todo serviço, inclusive para pessoa física.",
+        r: "Para empresa, em geral sim. Agregado de transportadora em MG, sem Inscrição Estadual, hoje não emite: quem emite é a transportadora. A partir de 2027, o MEI emite em todo serviço, inclusive para pessoa física.",
       },
       {
         p: "Como emito?",

@@ -1,4 +1,4 @@
-/* CONFERIRSAIDAS v1 — conferencia dos GASTOS que vieram do extrato e ficaram em duvida: "É gasto do caminhão?" com a categoria (Diesel e Arla, Pedágio...) ou "Não, é pessoal"; uma pergunta por fornecedor, grava na hora e lembra para a proxima; "O resto é pessoal" encerra */
+/* CONFERIRSAIDAS v2 — grava em partes de 100 ids (o "O resto é pessoal" com centenas de gastos falhava calado) (v1: conferencia dos GASTOS que vieram do extrato e ficaram em duvida: "É gasto do caminhão?" com a categoria (Diesel e Arla, Pedágio...) ou "Não, é pessoal"; uma pergunta por fornecedor, grava na hora e lembra para a proxima; "O resto é pessoal" encerra */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2, Check } from "lucide-react";
@@ -118,13 +118,21 @@ export default function ConferirSaidas() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* v2: em partes de 100 ids (centenas de uma vez estouram o tamanho do
+     endereco do pedido) */
+  async function atualizarEmPartes(ids, patch) {
+    for (let i = 0; i < ids.length; i += 100) {
+      const { error } = await supabase
+        .from("saidas")
+        .update(patch)
+        .in("id", ids.slice(i, i + 100))
+        .eq("user_id", userId);
+      if (error) throw error;
+    }
+  }
+
   async function gravarGrupo(g, { negocio, categoria }) {
-    const { error } = await supabase
-      .from("saidas")
-      .update({ do_negocio: negocio, categoria: negocio ? categoria : g.categoria })
-      .in("id", g.itens.map((s) => s.id))
-      .eq("user_id", userId);
-    if (error) throw error;
+    await atualizarEmPartes(g.itens.map((s) => s.id), { do_negocio: negocio, categoria: negocio ? categoria : g.categoria });
   }
 
   async function responder(resposta) {
@@ -146,8 +154,7 @@ export default function ConferirSaidas() {
     setFase("salvando");
     const resto = grupos.slice(indice);
     try {
-      const ids = resto.flatMap((g) => g.itens.map((s) => s.id));
-      await supabase.from("saidas").update({ do_negocio: false }).in("id", ids).eq("user_id", userId);
+      await atualizarEmPartes(resto.flatMap((g) => g.itens.map((s) => s.id)), { do_negocio: false });
     } catch { /* sem rede: ficam em branco (tambem = pessoal) */ }
     setFase("fim");
   }

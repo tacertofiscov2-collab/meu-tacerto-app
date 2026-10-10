@@ -1,4 +1,4 @@
-/* APPSTATE v3 — campos novos do perfil (CNPJ, CNAE, MEI desde, CNPJ confirmado, atualizacao do velocimetro, lembrete do DAS, nota automatica) lidos numa consulta separada e guardados no aparelho ate o SQL de 08-10 rodar; "Atualizado em" do velocimetro marcado a cada lancamento (v2: mediaMensal vira o RITMO do ano (faturado / meses que passaram) + mediaLimite) */
+/* APPSTATE v4 — adicionarLancamento monta o lancamento ANTES do setState (com varios de uma vez o React adiava e a gravacao no banco saia vazia) (v3: campos novos do perfil (CNPJ, CNAE, MEI desde, CNPJ confirmado, atualizacao do velocimetro, lembrete do DAS, nota automatica) lidos numa consulta separada e guardados no aparelho ate o SQL de 08-10 rodar; "Atualizado em" do velocimetro marcado a cada lancamento (v2: mediaMensal vira o RITMO do ano (faturado / meses que passaram) + mediaLimite) */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   LIMITES_ANUAIS,
@@ -388,26 +388,28 @@ export function AppStateProvider({ children }) {
   const adicionarLancamento = useCallback((l) => {
     // id temporário local — o banco gera o id definitivo; reconciliamos abaixo.
     const idLocal = uuid();
-    let novo;
-    setState((s) => {
-      const data = l.data || new Date().toISOString();
-      const d = new Date(data);
-      const mesmoMes = s.lancamentos.filter((x) => {
-        const dx = new Date(x.data);
-        return dx.getMonth() === d.getMonth() && dx.getFullYear() === d.getFullYear();
-      }).length;
-      const descricao =
-        (l.descricao && l.descricao.trim()) ||
-        `${ordinal(mesmoMes + 1)} Lançamento de ${MESES[d.getMonth()]}`;
-      novo = {
-        id: idLocal,
-        descricao,
-        valor: Number(l.valor) || 0,
-        data,
-        criado_em: new Date().toISOString(),
-      };
-      return { ...s, lancamentos: [novo, ...s.lancamentos] };
-    });
+    /* v4: o lancamento e montado AQUI, antes do setState. Antes ele era
+       montado dentro do setState, e o React 18 pode adiar essa funcao
+       (varios lancamentos de uma vez, ex.: conferencia do extrato): a
+       gravacao no banco rodava com o lancamento ainda vazio e NAO
+       gravava (ficava so no aparelho). */
+    const data = l.data || new Date().toISOString();
+    const d = new Date(data);
+    const mesmoMes = (stateRef.current.lancamentos || []).filter((x) => {
+      const dx = new Date(x.data);
+      return dx.getMonth() === d.getMonth() && dx.getFullYear() === d.getFullYear();
+    }).length;
+    const descricao =
+      (l.descricao && l.descricao.trim()) ||
+      `${ordinal(mesmoMes + 1)} Lançamento de ${MESES[d.getMonth()]}`;
+    const novo = {
+      id: idLocal,
+      descricao,
+      valor: Number(l.valor) || 0,
+      data,
+      criado_em: new Date().toISOString(),
+    };
+    setState((s) => ({ ...s, lancamentos: [novo, ...s.lancamentos] }));
     marcarVelocimetroAtualizado();
 
     // Grava no banco (se logado) e troca o id local pelo id real do banco.
