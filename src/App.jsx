@@ -1,4 +1,4 @@
-﻿/* APP v16 — rotas /enviar-extrato (OFX/CSV/PDF dentro do app) e /conferir-saidas (gastos em duvida), atras de MOSTRAR_ENVIAR_EXTRATO (v15: rota /perfil/cnpj (CNPJ pelo Perfil: buscar e confirmar) (v14: rotas /suporte (chat de suporte), /declaracao-anual e /declaracao-anual/calcular, atras das chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL (v13: login so pelo WhatsApp: /login e /cadastro abrem EntrarWhatsApp; /entrar-email (plano B) abre o Login antigo; esqueci/alterar senha e alterar-whatsapp atras de MOSTRAR_LOGIN_EMAIL (v12: rota /como-pagar-das; v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard) */
+﻿/* APP v17 — rotas /meu-lucro e /meu-lucro/gastos (MOSTRAR_MEU_LUCRO) (v16: rotas /enviar-extrato (OFX/CSV/PDF dentro do app) e /conferir-saidas (gastos em duvida), atras de MOSTRAR_ENVIAR_EXTRATO (v15: rota /perfil/cnpj (CNPJ pelo Perfil: buscar e confirmar) (v14: rotas /suporte (chat de suporte), /declaracao-anual e /declaracao-anual/calcular, atras das chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL (v13: login so pelo WhatsApp: /login e /cadastro abrem EntrarWhatsApp; /entrar-email (plano B) abre o Login antigo; esqueci/alterar senha e alterar-whatsapp atras de MOSTRAR_LOGIN_EMAIL (v12: rota /como-pagar-das; v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard) */
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
@@ -54,12 +54,13 @@ import DeclaracaoAnual from "./pages/DeclaracaoAnual.jsx";
 import CalcularDeclaracao from "./pages/CalcularDeclaracao.jsx";
 import PerfilCnpj from "./pages/PerfilCnpj.jsx";
 import ConferirSaidas from "./pages/ConferirSaidas.jsx";
+import GastosDoLucro from "./pages/GastosDoLucro.jsx";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_NOTAS_FISCAIS,
   MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_ADICIONAR_MOVIMENTACOES,
   MOSTRAR_RESUMO_ANO, MOSTRAR_PREFERENCIAS, MOSTRAR_SOBRE, MOSTRAR_INACABADOS,
   MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS, MOSTRAR_LOGIN_EMAIL,
-  MOSTRAR_SUPORTE, MOSTRAR_DECLARACAO_ANUAL, MOSTRAR_ENVIAR_EXTRATO,
+  MOSTRAR_SUPORTE, MOSTRAR_DECLARACAO_ANUAL, MOSTRAR_ENVIAR_EXTRATO, MOSTRAR_MEU_LUCRO,
 } from "./config/piloto.js";
 
 /* ===================================================================
@@ -184,6 +185,9 @@ export default function App() {
           <Route path="/historico" element={<Historico />} />
           <Route path="/notas-fiscais" element={<RotaComChave ligada={MOSTRAR_NOTAS_FISCAIS}><HistoricoNotas /></RotaComChave>} />
           <Route path="/perfil/resumo" element={<RotaComChave ligada={MOSTRAR_RESUMO_ANO}><ResumoPerfil /></RotaComChave>} />
+          {/* v17: "Meu lucro" (o Resumo do ano evoluido) e os gastos */}
+          <Route path="/meu-lucro" element={<RotaComChave ligada={MOSTRAR_MEU_LUCRO}><ResumoPerfil /></RotaComChave>} />
+          <Route path="/meu-lucro/gastos" element={<RotaComChave ligada={MOSTRAR_MEU_LUCRO}><GastosDoLucro /></RotaComChave>} />
           <Route path="/alertas" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><Alertas /></RotaComChave>} />
           <Route path="/regra-vinte" element={<RegraVinte />} />
           <Route path="/fisco" element={<RotaComChave ligada={MOSTRAR_CHAT_FISCO}><ChatFiscoPagina /></RotaComChave>} />

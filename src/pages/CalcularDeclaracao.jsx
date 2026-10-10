@@ -1,5 +1,7 @@
-/* CALCULARDECLARACAO v1 — "Calcular meu Imposto de Renda": uma pergunta por janela (atividade, faturamento, gastos, outras rendas, funcionario) e o resultado (parte isenta, se precisa declarar, o que vai na declaracao do MEI) */
+/* CALCULARDECLARACAO v2 — os gastos ja vem com a soma dos gastos do negocio COM NOTA guardados no app ("Meu lucro"); a pessoa ainda pode ajustar (v1: "Calcular meu Imposto de Renda": uma pergunta por janela (atividade, faturamento, gastos, outras rendas, funcionario) e o resultado (parte isenta, se precisa declarar, o que vai na declaracao do MEI)) */
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { somarGastosComNota } from "@/lib/lucro";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Check, ShieldCheck } from "lucide-react";
 import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
@@ -127,10 +129,39 @@ export default function CalcularDeclaracao() {
       gravarRespostas(novo);
       return novo;
     });
-  const { atividade, fatCent, gastosCent, outrasCent, funcionario } = r;
+  const { atividade, fatCent, gastosCent, outrasCent, funcionario, gastosDoApp } = r;
   const setAtividade = mudar("atividade");
   const setFatCent = mudar("fatCent");
-  const setGastosCent = mudar("gastosCent");
+  /* v2: mexeu nos gastos = a pessoa manda (o app nao troca mais) */
+  const setGastosCent = (valor) =>
+    setR((ant) => {
+      const novo = { ...ant, gastosCent: valor, gastosMexido: true, gastosDoApp: false };
+      gravarRespostas(novo);
+      return novo;
+    });
+
+  /* v2: gastos do negocio COM NOTA do ano declarado (src/lib/lucro.js),
+     so se a pessoa ainda nao digitou nada */
+  useEffect(() => {
+    if (r.gastosCent > 0 || r.gastosMexido) return undefined;
+    let ativo = true;
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!data?.user) return;
+        const total = await somarGastosComNota(data.user.id, anoDeclarado);
+        if (!ativo || !(total > 0)) return;
+        setR((ant) => {
+          if (ant.gastosCent > 0 || ant.gastosMexido) return ant;
+          const novo = { ...ant, gastosCent: Math.round(total * 100), gastosDoApp: true };
+          gravarRespostas(novo);
+          return novo;
+        });
+      } catch { /* sem rede: a pessoa digita */ }
+    })();
+    return () => { ativo = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const setOutrasCent = mudar("outrasCent");
   const setFuncionario = mudar("funcionario");
 
@@ -191,7 +222,9 @@ export default function CalcularDeclaracao() {
       <>
         <Pergunta
           titulo="Quanto gastou para trabalhar?"
-          ajuda="Só o que tem nota ou recibo: combustível, manutenção, pedágio, peças. Pode deixar em branco."
+          ajuda={gastosDoApp
+            ? "Já veio a soma dos gastos com nota que você guardou no app. Ajuste se precisar."
+            : "Só o que tem nota ou recibo: combustível, manutenção, pedágio, peças. Pode deixar em branco."}
         />
         <CampoDinheiro centavos={gastosCent} onMudar={setGastosCent} />
       </>
