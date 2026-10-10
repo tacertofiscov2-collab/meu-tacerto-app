@@ -1,3 +1,7 @@
+-- MIGRATIONS v5 — + PARTE 4D: SQL de 08-10 (CNPJ e lembrete do DAS no
+--   perfil, categoria/chave_unica em entradas e saidas, tabela
+--   extratos_enviados). RODADO em 10/10/2026 pelo conector, com o "pode"
+--   do Fernando; conferido (colunas, RLS, politicas, GRANT, logs, advisors).
 -- MIGRATIONS v4 — + PARTE 4C: tira o EXECUTE de handle_new_user e
 --   rls_auto_enable para o app (advisors de segurança). Rodado em 03/10.
 -- MIGRATIONS v3 — GRANT das 4 tabelas de 28/09 RODADO no banco real em
@@ -476,6 +480,117 @@ create policy "comprovantes: apagar arquivos proprios" on storage.objects
 revoke execute on function public.handle_new_user() from public, anon, authenticated;
 revoke execute on function public.rls_auto_enable() from public, anon, authenticated;
 grant  execute on function public.handle_new_user() to supabase_auth_admin;
+
+
+-- ===================================================================
+-- PARTE 4D — CNPJ, EXTRATO, "MEU LUCRO" E LEMBRETE DO DAS (08-10)
+--
+-- RODADO em 10/10/2026 (migration "tacerto_08_10_cnpj_extrato_lucro_lembrete").
+-- Copia de antes: backups/2026-10-10_antes_sql_08-10.json.
+-- So ACRESCENTA (nada apagado). O texto explicado em portugues simples
+-- esta em docs/SQL-PENDENTE-08-10.sql.
+-- Conferido depois: 18 colunas novas; extratos_enviados com RLS, 4
+-- politicas "so as proprias linhas" e GRANT para authenticated (anon sem
+-- acesso); perfis/entradas/saidas/lancamentos com as mesmas quantidades
+-- de antes (21/34/200/29); logs sem erro; advisors sem aviso novo.
+-- O PDF do extrato vai para o balde "comprovantes" que ja existia
+-- (pasta <user_id>/extratos/), com as politicas da PARTE 4B.
+-- ===================================================================
+
+-- -------------------------------------------------------------------
+-- 1) PERFIS
+-- -------------------------------------------------------------------
+alter table public.perfis add column if not exists cnpj                      text;
+alter table public.perfis add column if not exists cnae                      text;
+alter table public.perfis add column if not exists cnaes_secundarios         text[];
+alter table public.perfis add column if not exists data_opcao_mei            date;
+alter table public.perfis add column if not exists cnpj_confirmado           boolean default false;
+alter table public.perfis add column if not exists velocimetro_atualizado_em timestamptz;
+alter table public.perfis add column if not exists lembrete_das_dias         integer[] default '{7,2,0}';
+alter table public.perfis add column if not exists lembrete_das_hora         text;
+alter table public.perfis add column if not exists nota_automatica_ativa     boolean default false;
+
+
+-- -------------------------------------------------------------------
+-- 2) ENTRADAS
+-- A trava contra duplicata de sempre continua (user_id +
+-- pluggy_transaction_id). O extrato grava "extrato-<chave_unica>" nela.
+-- O indice abaixo e uma segunda trava, so para as linhas com chave.
+-- -------------------------------------------------------------------
+alter table public.entradas add column if not exists categoria   text;
+alter table public.entradas add column if not exists chave_unica text;
+create unique index if not exists entradas_user_chave_unica
+  on public.entradas (user_id, chave_unica)
+  where chave_unica is not null;
+
+
+-- -------------------------------------------------------------------
+-- 3) SAIDAS
+-- -------------------------------------------------------------------
+alter table public.saidas add column if not exists categoria   text;
+alter table public.saidas add column if not exists com_nota    boolean default false;
+alter table public.saidas add column if not exists do_negocio  boolean;
+alter table public.saidas add column if not exists chave_unica text;
+create unique index if not exists saidas_user_chave_unica
+  on public.saidas (user_id, chave_unica)
+  where chave_unica is not null;
+
+
+-- -------------------------------------------------------------------
+-- 4) EXTRATOS_ENVIADOS
+-- -------------------------------------------------------------------
+create table if not exists public.extratos_enviados (
+  id             uuid primary key default gen_random_uuid(),
+  user_id        uuid not null references auth.users(id) on delete cascade,
+  arquivo_path   text,              -- so o PDF (comprovantes/<user_id>/extratos/...)
+  nome_arquivo   text,
+  tipo           text not null,     -- ofx | csv | pdf
+  status         text not null default 'em_analise',
+                                    -- em_analise | lido | erro
+  periodo_inicio date,
+  periodo_fim    date,
+  qtd_entradas   integer,
+  qtd_saidas     integer,
+  criado_em      timestamptz not null default now()
+);
+create index if not exists extratos_enviados_user
+  on public.extratos_enviados (user_id, criado_em desc);
+
+-- GRANT abre a porta. POLICY diz quem passa. Precisa dos dois.
+grant select, insert, update, delete on public.extratos_enviados to authenticated;
+alter table public.extratos_enviados enable row level security;
+
+-- Politicas "so as proprias linhas" (criadas so se ainda nao existirem;
+-- sem DROP)
+do $
+begin
+  if not exists (select 1 from pg_policies where schemaname = 'public'
+                 and tablename = 'extratos_enviados' and policyname = 'extratos: ver os proprios') then
+    create policy "extratos: ver os proprios" on public.extratos_enviados
+      for select to authenticated using (auth.uid() = user_id);
+  end if;
+  if not exists (select 1 from pg_policies where schemaname = 'public'
+                 and tablename = 'extratos_enviados' and policyname = 'extratos: inserir os proprios') then
+    create policy "extratos: inserir os proprios" on public.extratos_enviados
+      for insert to authenticated with check (auth.uid() = user_id);
+  end if;
+  if not exists (select 1 from pg_policies where schemaname = 'public'
+                 and tablename = 'extratos_enviados' and policyname = 'extratos: atualizar os proprios') then
+    create policy "extratos: atualizar os proprios" on public.extratos_enviados
+      for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  end if;
+  if not exists (select 1 from pg_policies where schemaname = 'public'
+                 and tablename = 'extratos_enviados' and policyname = 'extratos: apagar os proprios') then
+    create policy "extratos: apagar os proprios" on public.extratos_enviados
+      for delete to authenticated using (auth.uid() = user_id);
+  end if;
+end $;
+
+
+-- -------------------------------------------------------------------
+-- 5) O app (PostgREST) enxergar as colunas novas na hora
+-- -------------------------------------------------------------------
+notify pgrst, 'reload schema';
 
 
 -- ===================================================================

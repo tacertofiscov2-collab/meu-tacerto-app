@@ -1,6 +1,6 @@
--- SQL-PENDENTE-08-10 v1 — bloco UNICO do banco para a tarefa de 08-10
+-- SQL-PENDENTE-08-10 v2 — RODADO em 10/10/2026 (com o "pode" do Fernando) e conferido; registrado em src/supabase/migrations.sql, PARTE 4D (v1: bloco UNICO do banco para a tarefa de 08-10)
 --   (CNPJ, velocimetro, extrato, "Meu lucro", notas, lembrete do DAS).
---   Escrito em 10/10/2026. ESPERANDO O "PODE" DO FERNANDO.
+--   Escrito em 10/10/2026. RODADO em 10/10/2026 (migration tacerto_08_10_cnpj_extrato_lucro_lembrete).
 --
 -- ===================================================================
 -- O QUE ESTE BLOCO FAZ (em portugues simples)
