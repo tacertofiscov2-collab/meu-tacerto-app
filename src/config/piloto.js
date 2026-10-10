@@ -1,4 +1,4 @@
-/* PILOTO v21 — MOSTRAR_PREFERENCIAS ligada (so o Lembrete do DAS) (v20: chave MOSTRAR_JANELA_NOTAS (/notas-fiscais); mensagem do certificado A1 com R$ 100,34 e o CNPJ (v19: chave MOSTRAR_MEU_LUCRO (/meu-lucro) (v18: chave MOSTRAR_ENVIAR_EXTRATO (/enviar-extrato e /conferir-saidas) (v17: o CNPJ do perfil entra nas mensagens prontas (formatado 12.345.678/0001-90); sem CNPJ, "Meu CNPJ: " continua em branco para a pessoa completar (v16: numero REAL do WhatsApp do Fisco (37 99199-9373), o mesmo do suporte; mensagem do suporte comeca com "Oi Fisco!" e pede suporte (v15: chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
+/* PILOTO v22 — chave MOSTRAR_SIMULADOR (/simulador) (v21: MOSTRAR_PREFERENCIAS ligada (so o Lembrete do DAS) (v20: chave MOSTRAR_JANELA_NOTAS (/notas-fiscais); mensagem do certificado A1 com R$ 100,34 e o CNPJ (v19: chave MOSTRAR_MEU_LUCRO (/meu-lucro) (v18: chave MOSTRAR_ENVIAR_EXTRATO (/enviar-extrato e /conferir-saidas) (v17: o CNPJ do perfil entra nas mensagens prontas (formatado 12.345.678/0001-90); sem CNPJ, "Meu CNPJ: " continua em branco para a pessoa completar (v16: numero REAL do WhatsApp do Fisco (37 99199-9373), o mesmo do suporte; mensagem do suporte comeca com "Oi Fisco!" e pede suporte (v15: chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 import { formatarCnpj, soDigitosCnpj } from "@/lib/cnpj";
 
@@ -102,6 +102,14 @@ export const MOSTRAR_MEU_LUCRO = true;
    escondido por MOSTRAR_NOTAS_FISCAIS.
    ------------------------------------------------------------------- */
 export const MOSTRAR_JANELA_NOTAS = true;
+
+/* -------------------------------------------------------------------
+   SIMULADOR DO MEI (v22 — 10/10/2026, tarefa de 08-10)
+   true mostra "Simulador" no Perfil > Meu MEI e libera /simulador
+   (quanto recebe por mes -> previsto no ano, % do limite, mes em que
+   passaria, quanto ainda pode por mes, DAS do ano e IR estimado).
+   ------------------------------------------------------------------- */
+export const MOSTRAR_SIMULADOR = true;
 
 /* -------------------------------------------------------------------
    RESUMO DO ANO (com saidas e Imposto de Renda)

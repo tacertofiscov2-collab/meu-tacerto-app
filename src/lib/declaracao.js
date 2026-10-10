@@ -1,4 +1,7 @@
-/* DECLARACAO v1 — regras e contas da Declaracao anual (DASN-SIMEI do MEI e o Imposto de Renda da pessoa), num lugar so para atualizar todo ano */
+/* DECLARACAO v2 — simularAnoMei (Simulador do MEI: previsto no ano, % do limite, mes em que passaria, quanto ainda pode por mes, DAS do ano e IR estimado) e atividadeDoIr (pelo tipo e CNAE) (v1: regras e contas da Declaracao anual (DASN-SIMEI do MEI e o Imposto de Renda da pessoa), num lugar so para atualizar todo ano) */
+import {
+  LIMITES_ANUAIS, limiteProporcional, valorDasMensal, atividadeDasPeloCnae,
+} from "./fiscal.js";
 
 /* ===================================================================
    DECLARACAO ANUAL — REGRAS (pesquisado em 06/10/2026)
@@ -77,5 +80,95 @@ export function calcularIR({ atividade, faturamento, gastos = 0, outrasRendas = 
     rendaTributavel,
     precisaDeclarar: rendaTributavel > LIMITE_DECLARAR_IR,
     dentroDaIsencaoNova: rendaTributavel <= ISENCAO_MENSAL_IR * 12,
+  };
+}
+
+/* ===================================================================
+   SIMULADOR DO MEI (v2 — 10/10/2026, tarefa de 08-10, Etapa 7)
+
+   Entrada: o ritmo que a pessoa diz (quanto recebe por mes; ja vem com a
+   media real do app) e, se quiser, quanto gasta por mes.
+   Conta (as mesmas regras do resto do app):
+   - meses ativos do ano: de janeiro, ou do mes de abertura se o MEI
+     abriu este ano, ate dezembro;
+   - LIMITE do ano: cheio (R$ 251.600 caminhoneiro / R$ 81.000 MEI) ou
+     proporcional se abriu este ano (fiscal.js, limiteProporcional);
+   - PREVISTO = o que ja faturou + ritmo x meses que faltam depois do mes
+     atual (o mesmo jeito da projecao do AppState);
+   - MES EM QUE PASSA: o primeiro mes em que o acumulado passa do limite
+     (null se nao passa; o mes atual se ja passou);
+   - QUANTO AINDA PODE POR MES: (limite - ja faturado) / meses que faltam
+     ate dezembro (contando o atual). Nunca negativo;
+   - DAS DO ANO: valor do DAS pelo CNAE x meses ativos;
+   - IR: calcularIR com o previsto, os gastos do ano previstos (gasto por
+     mes x meses ativos) e a atividade do tipo/CNAE (atividadeDoIr).
+   E uma ESTIMATIVA (a tela diz isso).
+   =================================================================== */
+
+/* Atividade do IR pelo tipo de MEI e CNAE: caminhoneiro = cargas (8%);
+   MEI comum: comercio/industria (8%) ou servicos (32% — o mais
+   conservador quando tem os dois) */
+export function atividadeDoIr(tipo, cnaes = []) {
+  if (tipo === "MEI_CAMINHONEIRO") return "cargas";
+  return atividadeDasPeloCnae("MEI", cnaes) === "comercio_industria" ? "comercio" : "servicos";
+}
+
+export function simularAnoMei({
+  tipo = "MEI",
+  cnaes = [],
+  mesAbertura = null,
+  anoAbertura = null,
+  faturadoAteAgora = 0,
+  recebeMes = 0,
+  gastaMes = 0,
+  hoje = new Date(),
+} = {}) {
+  const ano = hoje.getFullYear();
+  const mesAtual = hoje.getMonth() + 1;
+  const abriuEsteAno = Number(anoAbertura) === ano && Number(mesAbertura) >= 1;
+  const mesInicio = abriuEsteAno ? Math.min(Number(mesAbertura), 12) : 1;
+  const mesesAtivos = 12 - mesInicio + 1;
+
+  const limite = abriuEsteAno
+    ? limiteProporcional(tipo, Number(mesAbertura), ano, ano)
+    : LIMITES_ANUAIS[tipo] ?? LIMITES_ANUAIS.MEI;
+
+  const faturado = Math.max(0, Number(faturadoAteAgora) || 0);
+  const ritmo = Math.max(0, Number(recebeMes) || 0);
+  const gasto = Math.max(0, Number(gastaMes) || 0);
+
+  const mesesDepois = Math.max(0, 12 - Math.max(mesAtual, mesInicio));
+  const previsto = faturado + ritmo * mesesDepois;
+
+  let mesQuePassa = null;
+  if (faturado > limite) mesQuePassa = mesAtual;
+  else {
+    let acumulado = faturado;
+    for (let m = Math.max(mesAtual, mesInicio) + 1; m <= 12; m++) {
+      acumulado += ritmo;
+      if (acumulado > limite) { mesQuePassa = m; break; }
+    }
+  }
+
+  const mesesQueFaltam = 12 - Math.max(mesAtual, mesInicio) + 1;
+  const podePorMes = Math.max(0, limite - faturado) / Math.max(1, mesesQueFaltam);
+
+  const dasDoAno = (valorDasMensal(tipo, cnaes) || 0) * mesesAtivos;
+  const ir = calcularIR({
+    atividade: atividadeDoIr(tipo, cnaes),
+    faturamento: previsto,
+    gastos: gasto * mesesAtivos,
+  });
+
+  return {
+    ano,
+    limite,
+    proporcional: abriuEsteAno && mesInicio > 1,
+    previsto,
+    pctDoLimite: limite > 0 ? (previsto / limite) * 100 : 0,
+    mesQuePassa,
+    podePorMes,
+    dasDoAno,
+    ir,
   };
 }
