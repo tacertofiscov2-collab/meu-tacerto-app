@@ -1,4 +1,4 @@
-/* NOTASFISCAIS v1 — janela "Notas fiscais" (Perfil > Ajuda e o atalho NF do Inicio): sem certificado ativo, explica curto quando emitir (NFS-e so frete na mesma cidade; CT-e entre cidades contratado direto; agregado sem IE em MG hoje nao emite; 2027 em todo servico), como o TaCerto ajuda e o Certificado A1 (R$ 100,34, preco de custo; videochamada) com "Tenho interesse no certificado"; com certificado ativo vira "Minhas notas" */
+/* NOTASFISCAIS v2 — Fisco vira Isa: "A Isa monta a nota com você" (v1: janela "Notas fiscais" (Perfil > Ajuda e o atalho NF do Inicio): sem certificado ativo, explica curto quando emitir (NFS-e so frete na mesma cidade; CT-e entre cidades contratado direto; agregado sem IE em MG hoje nao emite; 2027 em todo servico), como o TaCerto ajuda e o Certificado A1 (R$ 100,34, preco de custo; videochamada) com "Tenho interesse no certificado"; com certificado ativo vira "Minhas notas") */
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   MapPin, Route, Truck, CalendarClock, ListChecks, Info, Sparkles, Wallet, Video, ShieldCheck,
@@ -27,7 +27,7 @@ import { PRECO_CERTIFICADO_A1 } from "@/lib/fiscal";
            Estadual = hoje nao emite (a transportadora emite); 2027 = o
            MEI emite em todo servico (LC 214/2025, art. 517). O MEI NUNCA
            emite NFS-e de frete entre cidades (Res. CGSN 140, art. 106-A).
-        2. Como o TaCerto ajuda hoje: o Fisco monta a nota no WhatsApp;
+        2. Como o TaCerto ajuda hoje: a Isa monta a nota no WhatsApp;
            passo a passo para fazer sozinho (/como-emitir-nota).
         3. Certificado A1: o que e, vantagens (nota automatica), preco
            R$ 100,34 (Tecnosign/Soluti, preco de custo — "o TaCerto nao
@@ -85,7 +85,7 @@ export default function NotasFiscais() {
         <SecaoLista titulo="Como o TaCerto ajuda hoje">
           <LinhaLista
             Icon={IconeWhatsApp}
-            rotulo="O Fisco monta a nota com você"
+            rotulo="A Isa monta a nota com você"
             detalhe={caminhoneiro ? "Você manda o valor e pra quem foi o frete." : "Você manda o valor e pra quem foi o serviço."}
             onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.notaAjuda(dados, caminhoneiro))}
           />

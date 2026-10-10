@@ -1,4 +1,4 @@
-/* FOLHAATUALIZARVELOCIMETRO v3 — 3 jeitos de atualizar, uma frase cada: Enviar extrato (recomendado, borda verde fina), Digitar (o "+", Recebimento ou Total do ano) e Mandar pro Fisco no WhatsApp; abre pelo sininho e pelo botao "Atualizar velocímetro" do Inicio (v2: "Fisco.ia" vira "Fisco" nos textos da tela (v1: notificacao "Atualize seu velocimetro": 2 jeitos faceis (digitar o total do ano no "+" ou mandar valores/extrato pro Fisco.ia no WhatsApp)) */
+/* FOLHAATUALIZARVELOCIMETRO v4 — Fisco vira Isa: "Mandar pra Isa no WhatsApp" (v3: 3 jeitos de atualizar, uma frase cada: Enviar extrato (recomendado, borda verde fina), Digitar (o "+", Recebimento ou Total do ano) e Mandar pro Fisco no WhatsApp; abre pelo sininho e pelo botao "Atualizar velocímetro" do Inicio (v2: "Fisco.ia" vira "Fisco" nos textos da tela (v1: notificacao "Atualize seu velocimetro": 2 jeitos faceis (digitar o total do ano no "+" ou mandar valores/extrato pro Fisco.ia no WhatsApp))) */
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, FileUp, Hash } from "lucide-react";
 import FolhaDeBaixo from "./FolhaDeBaixo.jsx";
@@ -16,7 +16,7 @@ import { MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco } from "@/con
         app"). E o unico que separa por mes e guarda os gastos.
      2) Digitar -> o "+" (/lancar?modo=total; la da para trocar para
         Recebimento). A frase avisa o que se perde digitando a mao.
-     3) Mandar pro Fisco no WhatsApp -> mensagem pronta
+     3) Mandar pra Isa no WhatsApp -> mensagem pronta
         (MENSAGENS_WHATSAPP.atualizarVelocimetro).
    =================================================================== */
 
@@ -75,7 +75,7 @@ export default function FolhaAtualizarVelocimetro({ aberto, onFechar }) {
         />
         <Opcao
           Icon={IconeWhatsApp}
-          titulo="Mandar pro Fisco no WhatsApp"
+          titulo="Mandar pra Isa no WhatsApp"
           frase="Mande os valores ou a foto do extrato."
           onClick={() => {
             abrirWhatsAppFisco(MENSAGENS_WHATSAPP.atualizarVelocimetro(dadosParaWhatsApp(app)));

@@ -1,4 +1,4 @@
-/* COMOEMITIRNOTA v10 — passos da NFS-e do caminhoneiro so para frete na mesma cidade (tomador = quem contratou; exemplo "Frete dentro de [cidade]") (v9: correcoes de 08-10: aviso certo (este passo a passo e para frete na MESMA cidade; entre cidades e CT-e; agregado sem IE em MG hoje nao emite), A1 R$ 100,34 a preco de custo, videochamada (parado, internet, luz, CNH original) e "Tenho interesse no certificado" (v8: sem o "Em breve" no Certificado A1; explicacao do A1 nova (certificadora parceira credenciada, mais credibilidade e curta); secao "Como o TaCerto ajuda hoje"; icone do WhatsApp (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: padrao do Perfil: lista simples sem cartoes, selos nem botao verde cheio; aviso como linha; passos e Certificado A1 abrem em secoes abaixo; letras maiores (v5: A1: "Custa a partir de R$ 99,90" (vale 1 ano) no lugar de "valor a confirmar"; Fisco.ia (v4: selo so "Grátis"; v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1) */
+/* COMOEMITIRNOTA v11 — Fisco vira Isa: "Com a Isa no WhatsApp" e explicacao na terceira pessoa (a Isa monta tudo e te guia) (v10: passos da NFS-e do caminhoneiro so para frete na mesma cidade (tomador = quem contratou; exemplo "Frete dentro de [cidade]") (v9: correcoes de 08-10: aviso certo (este passo a passo e para frete na MESMA cidade; entre cidades e CT-e; agregado sem IE em MG hoje nao emite), A1 R$ 100,34 a preco de custo, videochamada (parado, internet, luz, CNH original) e "Tenho interesse no certificado" (v8: sem o "Em breve" no Certificado A1; explicacao do A1 nova (certificadora parceira credenciada, mais credibilidade e curta); secao "Como o TaCerto ajuda hoje"; icone do WhatsApp (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: padrao do Perfil: lista simples sem cartoes, selos nem botao verde cheio; aviso como linha; passos e Certificado A1 abrem em secoes abaixo; letras maiores (v5: A1: "Custa a partir de R$ 99,90" (vale 1 ano) no lugar de "valor a confirmar"; Fisco.ia (v4: selo so "Grátis"; v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1)) */
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -20,7 +20,7 @@ import { PRECO_CERTIFICADO_A1 } from "@/lib/fiscal";
    COMOEMITIRNOTA v3 (04/10/2026) — pedido do Fernando:
    - Topo: aviso curto (pelo tipo de MEI, ver CONTEUDO_POR_TIPO).
    - "Escolha como emitir sua nota", com 3 cards:
-       a) Emitir com o Fisco pelo WhatsApp — selo "Grátis durante o
+       a) Emitir com a Isa pelo WhatsApp — selo "Grátis durante o
           piloto". Abre o WhatsApp com MENSAGENS_WHATSAPP.notaAjuda.
           No piloto, quem ajuda e o Fernando, na mao.
        b) Fazer sozinho — o passo a passo que ja existia (v2), agora
@@ -64,7 +64,7 @@ const CONTEUDO_POR_TIPO = {
        art. 106-A); agregado sem IE em MG hoje nao emite. */
     avisoTitulo: "Este passo a passo é para frete na mesma cidade",
     aviso: "Frete entre cidades, contratado direto, é CT-e. Agregado de transportadora em MG, sem Inscrição Estadual, hoje não emite.",
-    explicacaoFisco: "Você me manda o valor e pra quem foi o frete, eu monto tudo e te guio no gov.br.",
+    explicacaoFisco: "Você manda o valor e pra quem foi o frete; a Isa monta tudo e te guia no gov.br.",
     passos: [
       PASSO_ENTRAR,
       PASSO_NOVA,
@@ -89,7 +89,7 @@ const CONTEUDO_POR_TIPO = {
   MEI: {
     avisoTitulo: "Serviço ou produto?",
     aviso: "Este passo a passo é para quem presta serviço (NFS-e). Se você vende produtos, a nota é outra (NF-e).",
-    explicacaoFisco: "Você me manda o valor e pra quem foi o serviço, eu monto tudo e te guio no gov.br.",
+    explicacaoFisco: "Você manda o valor e pra quem foi o serviço; a Isa monta tudo e te guia no gov.br.",
     passos: [
       PASSO_ENTRAR,
       PASSO_NOVA,
@@ -180,7 +180,7 @@ export default function ComoEmitirNota() {
         <SecaoLista titulo="Escolha como emitir">
           <LinhaLista
             Icon={IconeWhatsApp}
-            rotulo="Com o Fisco no WhatsApp"
+            rotulo="Com a Isa no WhatsApp"
             detalhe={conteudo.explicacaoFisco}
             onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.notaAjuda(dados, caminhoneiro))}
           />

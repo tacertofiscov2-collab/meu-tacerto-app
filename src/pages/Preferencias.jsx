@@ -1,4 +1,4 @@
-/* PREFERENCIAS v4 — so o que funciona: "Lembrete do DAS" (dias antes: 7, 5, 3, 2, 1 e no dia, varios; horario; "Não quero lembretes"), gravado no perfil (lembrete_das_dias e lembrete_das_hora); sairam Tema (fica no Perfil), Tamanho da fonte e "Alertas do Fisco" (nao faziam nada) (v3: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v2: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026)))) */
+/* PREFERENCIAS v5 — Fisco vira Isa: "A Isa te avisa no WhatsApp" (v4: so o que funciona: "Lembrete do DAS" (dias antes: 7, 5, 3, 2, 1 e no dia, varios; horario; "Não quero lembretes"), gravado no perfil (lembrete_das_dias e lembrete_das_hora); sairam Tema (fica no Perfil), Tamanho da fonte e "Alertas do Fisco" (nao faziam nada) (v3: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v2: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026))))) */
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, BellOff } from "lucide-react";
@@ -107,7 +107,7 @@ export default function Preferencias() {
 
         <p style={{ ...ROTULO_SECAO, marginTop: 10 }}>Lembrete do DAS</p>
         <p style={{ fontSize: 15, lineHeight: 1.45, color: "var(--text-secondary)", marginTop: 8 }}>
-          O Fisco te avisa no WhatsApp, antes de vencer.
+          A Isa te avisa no WhatsApp, antes de vencer.
         </p>
         <p style={{ fontSize: 13.5, lineHeight: 1.45, color: "var(--text-tertiary)", marginTop: 4 }}>
           {TEXTO_VENCIMENTO_DAS} Próximo: {formatarDiaMes(proximo)}.

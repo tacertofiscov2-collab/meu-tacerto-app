@@ -1,4 +1,4 @@
-/* PRIVACIDADE v9 — textos de 08-10: CNPJ e dados publicos, extrato (so o ano atual; PDF numa pasta so da pessoa ate ser lido), gastos, notas e comprovantes, lembrete do DAS; caminho certo do Excluir conta (Perfil > Excluir conta) (v8: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v7: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v6: secao "Fale com a gente" inteira escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v5: so o botao; v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta))) */
+/* PRIVACIDADE v10 — Fisco vira Isa: "A Isa usa inteligência artificial" (assistente virtual, não é pessoa nem contadora) (v9: textos de 08-10: CNPJ e dados publicos, extrato (so o ano atual; PDF numa pasta so da pessoa ate ser lido), gastos, notas e comprovantes, lembrete do DAS; caminho certo do Excluir conta (Perfil > Excluir conta) (v8: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v7: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v6: secao "Fale com a gente" inteira escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v5: so o botao; v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta)))) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp, MOSTRAR_WHATSAPP_DOCUMENTOS } from "@/config/piloto";
@@ -34,7 +34,7 @@ const SECOES = [
     paragrafos: [
       "Seu nome (ou apelido) e seu WhatsApp.",
       "O seu MEI: CNPJ, tipo (MEI ou MEI Caminhoneiro), atividade, desde quando é MEI e, se você abriu o MEI este ano, o mês de abertura.",
-      "Os lançamentos do seu faturamento: valor, data e descrição. Isso inclui o que você lança no app, o total do ano que você digita e o que você conta ao Fisco no WhatsApp.",
+      "Os lançamentos do seu faturamento: valor, data e descrição. Isso inclui o que você lança no app, o total do ano que você digita e o que você conta à Isa no WhatsApp.",
       "Do extrato que você envia: só as movimentações deste ano (data, valor, descrição e, quando o banco informa, o nome e o CPF ou CNPJ de quem pagou ou recebeu). O resto do arquivo é descartado. Extrato em PDF fica guardado numa pasta só sua até ser lido.",
       "Seus gastos, e as notas e comprovantes que você anexar, para a sua gestão: lucro e Imposto de Renda.",
       "Suas escolhas no app, como os dias do lembrete do DAS.",
@@ -63,9 +63,9 @@ const SECOES = [
     ],
   },
   {
-    titulo: "O Fisco usa inteligência artificial",
+    titulo: "A Isa usa inteligência artificial",
     paragrafos: [
-      "O Fisco é um assistente baseado em inteligência artificial. Ele pode errar. Para decisões importantes, confirme com um contador.",
+      "A Isa é a assistente virtual do TaCerto!, baseada em inteligência artificial. Ela não é uma pessoa nem contadora, e pode errar. Para decisões importantes, confirme com um contador.",
     ],
   },
   {
@@ -136,7 +136,7 @@ export default function Privacidade() {
             Fale com a gente
           </h2>
           <p className="text-[14.5px] leading-relaxed mt-2" style={{ color: "var(--text-secondary)" }}>
-            Dúvida sobre seus dados? Chame o Fisco no WhatsApp.
+            Dúvida sobre seus dados? Chame a Isa no WhatsApp.
           </p>
           <a
             href={linkWhatsAppFisco(MENSAGENS_WHATSAPP.falarComFisco(dadosParaWhatsApp(app)))}
@@ -153,7 +153,7 @@ export default function Privacidade() {
               textDecoration: "none",
             }}
           >
-            Falar com o Fisco no WhatsApp
+            Falar com a Isa no WhatsApp
           </a>
         </section>
         )}

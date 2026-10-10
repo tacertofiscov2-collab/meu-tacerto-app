@@ -174,6 +174,15 @@ O projeto **não tem backup automático**. Por isso:
 
 ## Onde estamos (atualizar ao fim de cada sessão)
 
+- **10/10 (noite): tarefa de `docs/PROMPT-CODE-10-10.md` (blocos A a M).**
+  **O Fisco morreu; o nome é Isa**, assistente virtual com IA (foto gerada
+  por IA, de uma pessoa que não existe: `public/isa/`, webp de 96/256/512
+  px; componente `src/components/FotoIsa.jsx`). Em todo texto da tela e
+  nas mensagens prontas do WhatsApp ("Oi Isa!"). A Isa **nunca diz que é
+  pessoa nem contadora**. Nomes internos continuam "Fisco" (Fisco.jsx,
+  ChatFiscoUI, ApresentacaoFisco, faqFisco, WHATSAPP_FISCO,
+  abrirWhatsAppFisco, MOSTRAR_CHAT_FISCO, rota `/fisco`): não renomear.
+
 - **10/10 (tarde): respostas do Fernando às 12 perguntas, feitas e
   enviadas ao GitHub** (`git push` a pedido). Extrato **substitui** o
   total do ano digitado quando cobre o ano até o dia do total e tudo foi

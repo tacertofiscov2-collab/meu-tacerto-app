@@ -1,4 +1,4 @@
-/* WELCOME v14 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v13: slide 5: WhatsApp claro (original) e conversa nova (soma no velocimetro + "Devo emitir a nota fiscal?" Sim/Nao); slide 4: "Emissão de nota fiscal" e "Fisco.ia 24h para te ajudar" (v12: textos com destaque em facilidades (titulos e frases novos), slide 3 nota por audio/mensagem/automatica/sozinho, slide 4 itens de facilidade (v11: letras maiores (zoom de 10% igual em todos os desenhos; moldura ocupa o espaco ate o card de baixo), destaques verdes discretos (so borda, sem fundo nem selo), slide 2 "Boleto automático no WhatsApp" e "te lembra" (v10: correcao: o slide 3 (nota) fica FORA da conta da escala comum, entao os slides 1, 2, 4 e 5 voltam a ser como antes da v9 (v9: slide 3 preenchido, sem "Gratis"; v8: Fisco.ia; v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos))) */
+/* WELCOME v15 — Fisco vira Isa: foto da Isa (webp) nos desenhos, textos "a Isa" nos slides e no WhatsApp de exemplo ("Isa · TaCerto!" / "assistente virtual"); so nome, foto e texto: nenhum desenho mudou de tamanho (escala comum) (v14: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v13: slide 5: WhatsApp claro (original) e conversa nova (soma no velocimetro + "Devo emitir a nota fiscal?" Sim/Nao); slide 4: "Emissão de nota fiscal" e "Fisco.ia 24h para te ajudar" (v12: textos com destaque em facilidades (titulos e frases novos), slide 3 nota por audio/mensagem/automatica/sozinho, slide 4 itens de facilidade (v11: letras maiores (zoom de 10% igual em todos os desenhos; moldura ocupa o espaco ate o card de baixo), destaques verdes discretos (so borda, sem fundo nem selo), slide 2 "Boleto automático no WhatsApp" e "te lembra" (v10: correcao: o slide 3 (nota) fica FORA da conta da escala comum, entao os slides 1, 2, 4 e 5 voltam a ser como antes da v9 (v9: slide 3 preenchido, sem "Gratis"; v8: Fisco.ia; v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos))) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -80,6 +80,7 @@ import {
   MessageCircle, Headphones, ListChecks, Globe, Zap, CheckCircle2,
 } from "lucide-react";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
+import { FOTO_ISA_256 } from "@/components/FotoIsa";
 import SimboloPluggy from "@/components/SimboloPluggy";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_NOTAS_FISCAIS,
@@ -288,7 +289,7 @@ function MiniVelocimetro({ pct = 58 }) {
   );
 }
 
-/* Foto redonda do Fisco com a bolinha verde. */
+/* Foto redonda da assistente (v15: a Isa; antes o robo Fisco) com a bolinha verde. */
 function FotoFisco({ tamanho = 46, borda = "var(--bg)" }) {
   return (
     <span className="relative shrink-0" style={{ width: tamanho, height: tamanho }}>
@@ -296,7 +297,7 @@ function FotoFisco({ tamanho = 46, borda = "var(--bg)" }) {
         className="rounded-full overflow-hidden block"
         style={{ width: tamanho, height: tamanho, ...VIDRO, border: "1.5px solid rgba(34,197,94,0.45)" }}
       >
-        <img src="/fisco-perfil.png" alt="" style={{ width: "108%", height: "108%", objectFit: "cover", objectPosition: "50% 18%" }} />
+        <img src={FOTO_ISA_256} alt="" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       </span>
       <span
         className="absolute rounded-full"
@@ -363,7 +364,7 @@ function MiniInicio() {
         </div>
       </div>
 
-      {/* Fisco + barra do chat, no pé */}
+      {/* Isa + barra do chat, no pé */}
       <div className="flex items-center gap-2 shrink-0" style={{ marginTop: "auto", paddingTop: 12 }}>
         <FotoFisco tamanho={44} />
         <span
@@ -374,8 +375,8 @@ function MiniInicio() {
             className="flex-1 truncate"
             style={{ color: "var(--text-tertiary)", fontSize: 10.5, fontStyle: "italic", fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive' }}
           >
-            {/* Piloto: o Fisco atende pelo WhatsApp, nao no app */}
-            {MOSTRAR_CHAT_FISCO ? "Pergunte ao Fisco..." : "Fisco no WhatsApp"}
+            {/* Sem o chat no app, a Isa atende pelo WhatsApp */}
+            {MOSTRAR_CHAT_FISCO ? "Pergunte à Isa..." : "Isa no WhatsApp"}
           </span>
           <Send size={12} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
         </span>
@@ -471,7 +472,7 @@ function MiniDas() {
      palavra foi para a frase. Destaque so na borda verde fina. */
   const opcoes = [
     { Icon: MessageCircle, t: "Boleto automático no WhatsApp" },
-    { Icon: Headphones, t: "Fisco me ajuda agora" },
+    { Icon: Headphones, t: "A Isa me ajuda agora" },
     { Icon: ListChecks, t: "Quero fazer sozinho" },
     { Icon: Globe, t: "Abrir o site do governo" },
   ];
@@ -561,7 +562,7 @@ function MiniDas() {
    comum (foraDaEscala): os outros slides nao mudam por causa dela. */
 function MiniNota() {
   const opcoes = [
-    { Icon: Mic, t: "Por áudio", d: "Você fala, o Fisco emite" },
+    { Icon: Mic, t: "Por áudio", d: "Você fala, a Isa emite" },
     { Icon: MessageCircle, t: "Por mensagem", d: "Só o valor e para quem foi" },
     { Icon: Zap, t: "Automática", d: "Todo mês, sem digitar nada" },
     { Icon: ListChecks, t: "Sozinho", d: "Passo a passo no gov.br" },
@@ -604,7 +605,8 @@ function MiniNota() {
 }
 
 /* -------------------------- 4. PILOTO (v6) --------------------------
-   O resumo do que o piloto da, de graca. O Fisco fazendo joinha. */
+   O resumo do que o piloto da, de graca. v15: a foto da Isa (antes o
+   Fisco fazendo joinha). */
 function MiniPiloto() {
   /* v12: cada item e uma FACILIDADE (pedido do Fernando), frase curta
      para caber em uma linha */
@@ -612,13 +614,13 @@ function MiniPiloto() {
     "Limite anual acompanhado 24h",
     "Boleto do DAS no WhatsApp",
     "Emissão de nota fiscal",
-    "Fisco 24h para te ajudar",
+    "Isa, assistente virtual 24h",
   ];
   return (
     <MiniTela>
       <div className="flex flex-col items-center shrink-0" style={{ marginTop: "auto" }}>
         <span className="rounded-full overflow-hidden block" style={{ width: 74, height: 74, ...VIDRO, border: "1.5px solid rgba(34,197,94,0.45)" }}>
-          <img src="/fisco-joinha.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 20%" }} />
+          <img src={FOTO_ISA_256} alt="" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </span>
         <span
           className="rounded-full font-bold"
@@ -738,8 +740,8 @@ function MiniWhatsApp() {
         <ArrowLeft size={14} style={{ color: WA.texto }} />
         <FotoFisco tamanho={28} borda={WA.topo} />
         <span className="flex flex-col">
-          <span className="font-semibold" style={{ color: WA.texto, fontSize: 12 }}>Fisco · TaCerto!</span>
-          <span style={{ color: WA.hora, fontSize: 9 }}>online</span>
+          <span className="font-semibold" style={{ color: WA.texto, fontSize: 12 }}>Isa · TaCerto!</span>
+          <span style={{ color: WA.hora, fontSize: 9 }}>assistente virtual</span>
         </span>
       </div>
 
@@ -791,11 +793,11 @@ const SLIDES = [
      (pedido do Fernando). Titulos curtos: uma linha no iPhone. */
   { Mini: MiniInicio, titulo: "Limite sob controle 24h", subtitulo: "Veja na hora quanto já faturou e quanto ainda pode faturar no ano." },
   { Mini: MiniBanco, mostrar: MOSTRAR_OPEN_FINANCE, titulo: "Tudo chega sozinho", subtitulo: "Conecte o banco do seu MEI e as entradas e os gastos aparecem no app." },
-  { Mini: MiniDas, mostrar: MOSTRAR_CARD_DAS, titulo: "DAS no automático", subtitulo: "Todo mês o Fisco te lembra e manda o boleto do DAS no WhatsApp." },
-  { Mini: MiniNota, foraDaEscala: true, mostrar: MOSTRAR_TUTORIAL_NOTA, titulo: "Nota fiscal do seu jeito", subtitulo: "Mande um áudio ou uma mensagem e o Fisco emite sua nota. Pode ser automática." },
+  { Mini: MiniDas, mostrar: MOSTRAR_CARD_DAS, titulo: "DAS no automático", subtitulo: "Todo mês a Isa te lembra e manda o boleto do DAS no WhatsApp." },
+  { Mini: MiniNota, foraDaEscala: true, mostrar: MOSTRAR_TUTORIAL_NOTA, titulo: "Nota fiscal do seu jeito", subtitulo: "Mande um áudio ou uma mensagem e a Isa emite sua nota. Pode ser automática." },
   /* Conferencia "É faturamento?": fora dos slides do piloto (a
      "propaganda" foi reprovada em 04/10). Troque para true para voltar. */
-  { Mini: MiniConferir, mostrar: false, titulo: "O Fisco organiza pra você", subtitulo: "Você diz uma vez se é faturamento. Da próxima, ele já sabe." },
+  { Mini: MiniConferir, mostrar: false, titulo: "A Isa organiza pra você", subtitulo: "Você diz uma vez se é faturamento. Da próxima, ela já sabe." },
   {
     Mini: MiniHistoricos,
     mostrar: MOSTRAR_SAIDAS && MOSTRAR_HISTORICO_DAS && MOSTRAR_NOTAS_FISCAIS,
@@ -803,7 +805,7 @@ const SLIDES = [
     subtitulo: "Entradas, saídas, DAS e notas fiscais, organizados mês a mês.",
   },
   { Mini: MiniPiloto, titulo: "Tudo isso, grátis", subtitulo: "Menos burocracia e mais tempo para trabalhar, sem pagar nada." },
-  { Mini: MiniWhatsApp, titulo: "Tudo pelo WhatsApp", subtitulo: "Às 21h o Fisco pergunta quanto você recebeu e anota tudo para você." },
+  { Mini: MiniWhatsApp, titulo: "Tudo pelo WhatsApp", subtitulo: "Às 21h a Isa pergunta quanto você recebeu e anota tudo para você." },
 ].filter((s) => s.mostrar !== false);
 
 export default function Welcome() {

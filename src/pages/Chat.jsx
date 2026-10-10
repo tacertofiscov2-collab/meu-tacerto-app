@@ -1,4 +1,4 @@
-/* CHAT v4 — velocimetro zerado: a fala diz "Falta informar" (palavraDaSituacao), nunca "Tá tranquilo" (v3: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v2: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026))) */
+/* CHAT v5 — Fisco vira Isa nos textos (titulo, "Assistente virtual", "Isa está digitando", "Pergunte à Isa...") (v4: velocimetro zerado: a fala diz "Falta informar" (palavraDaSituacao), nunca "Tá tranquilo" (v3: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v2: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026)))) */
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Paperclip, Sparkles } from "lucide-react";
@@ -149,7 +149,7 @@ export default function Chat() {
         </button>
         {!modoContextual && (
           <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-            Fisco
+            Isa
           </h1>
         )}
       </header>
@@ -197,7 +197,7 @@ export default function Chat() {
                     className="text-[10px] font-bold uppercase"
                     style={{ color: "var(--primary)", letterSpacing: "0.08em" }}
                   >
-                    Online
+                    Assistente virtual
                   </span>
                 </div>
               </div>
@@ -301,7 +301,7 @@ export default function Chat() {
                   style={{ backgroundColor: "var(--field)", borderBottomLeftRadius: 6 }}
                 >
                   <span className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
-                    Fisco está digitando
+                    Isa está digitando
                   </span>
                   {[0, 1, 2].map((i) => (
                     <span
@@ -380,7 +380,7 @@ export default function Chat() {
             value={texto}
             maxLength={LIMITE_PERGUNTA_CHAT}
             onChange={(e) => setTexto(e.target.value)}
-            placeholder="Pergunte ao Fisco..."
+            placeholder="Pergunte à Isa..."
             className="flex-1 bg-transparent outline-none text-sm py-2 min-w-0"
             style={{ color: "var(--text)" }}
           />

@@ -1,4 +1,4 @@
-/* NOTIFICACOES v3 — "Atualize seu velocímetro" diz "Leva poucos minutos" (com o extrato pode levar mais de 1 minuto; resposta 8 do Fernando) (v2: segunda notificacao: "Atualize seu velocimetro" (abre a FolhaAtualizarVelocimetro) (v1: sininho discreto no topo do Inicio + folha "Notificacoes"; a primeira e a Apresentacao do Fisco.ia (tutorial)) */
+/* NOTIFICACOES v4 — Fisco vira Isa: "Apresentação da Isa" (o id "apresentacao" fica igual: as lidas sao guardadas pelo id) (v3: "Atualize seu velocímetro" diz "Leva poucos minutos" (com o extrato pode levar mais de 1 minuto; resposta 8 do Fernando) (v2: segunda notificacao: "Atualize seu velocimetro" (abre a FolhaAtualizarVelocimetro) (v1: sininho discreto no topo do Inicio + folha "Notificacoes"; a primeira e a Apresentacao do Fisco.ia (tutorial)) */
 import { useState } from "react";
 import { Bell, PlayCircle, Gauge } from "lucide-react";
 import FolhaDeBaixo from "./FolhaDeBaixo.jsx";
@@ -14,19 +14,19 @@ import { useMarcaDaConta } from "@/lib/marcasDaConta";
    - Tocar abre a folha "Notificacoes" (lista simples, como o Perfil).
      Notificacao nova tem o pontinho verde no fim da linha.
    - A primeira notificacao (desde o primeiro login) e a "Apresentacao
-     do Fisco.ia": abre o tutorial (ApresentacaoFisco). Ela continua na
+     da Isa" (ate 10/10, "do Fisco.ia"): abre o tutorial (ApresentacaoFisco). Ela continua na
      lista depois de vista, para rever quando quiser.
    - "Lida" = a pessoa tocou nela. Fica guardado por conta e aparelho
      (useMarcaDaConta). Por enquanto a lista e fixa aqui no codigo.
    - v2: "Atualize seu velocimetro" (tambem desde o primeiro login):
      abre a folha com os 2 jeitos faceis (digitar o total do ano no "+"
-     ou mandar valores/extrato pro Fisco no WhatsApp).
+     ou mandar valores/extrato pra Isa no WhatsApp).
    =================================================================== */
 export const NOTIFICACOES = [
   {
     id: "apresentacao",
     Icon: PlayCircle,
-    titulo: "Apresentação do Fisco.ia",
+    titulo: "Apresentação da Isa",
     detalhe: "Veja como o app funciona",
   },
   {

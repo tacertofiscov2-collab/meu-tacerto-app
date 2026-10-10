@@ -1,17 +1,18 @@
-/* APRESENTACAOFISCO v4 — celular MENOR, menos espaco vazio dentro dele (desenho mais justo: 340 x 715, mesma proporcao) e icones MAIORES (barra DAS/Fisco/NF, rodape e sininho); celular e texto do Fisco juntos, centrados na tela (pedido do Fernando) (v3: celular de exemplo com proporcao de celular de verdade (390 x 820) e igual ao Inicio novo: saudacao, velocimetro grande e a barra dos 3 atalhos centrada entre as bolinhas e o rodape (v2: celular de exemplo igual ao Inicio novo (DAS, Fisco com o simbolo do WhatsApp, NF; casinha cinza; velocimetro mais alto); textos do + e do Perfil (v1: tutorial "Apresentação do Fisco.ia": celular de exemplo do Inicio (visual F) com um circulo verde passando por cada funcao e o Fisco.ia explicando, em slides */
+/* APRESENTACAOFISCO v5 — Fisco vira Isa: "Oi, sou a Isa" (assistente com IA do TaCerto), foto da Isa (FotoIsa) no texto e na barra do celular de exemplo, titulo "Apresentação da Isa" (v4: celular MENOR, menos espaco vazio dentro dele (desenho mais justo: 340 x 715, mesma proporcao) e icones MAIORES (barra DAS/Fisco/NF, rodape e sininho); celular e texto do Fisco juntos, centrados na tela (pedido do Fernando) (v3: celular de exemplo com proporcao de celular de verdade (390 x 820) e igual ao Inicio novo: saudacao, velocimetro grande e a barra dos 3 atalhos centrada entre as bolinhas e o rodape (v2: celular de exemplo igual ao Inicio novo (DAS, Fisco com o simbolo do WhatsApp, NF; casinha cinza; velocimetro mais alto); textos do + e do Perfil (v1: tutorial "Apresentação do Fisco.ia": celular de exemplo do Inicio (visual F) com um circulo verde passando por cada funcao e o Fisco.ia explicando, em slides */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   ArrowLeft, Gauge, Bell, CalendarClock, FileText, Home, Plus, User,
 } from "lucide-react";
 import VelocimetroAnimado from "./VelocimetroAnimado.jsx";
-import IconeWhatsApp from "./IconeWhatsApp.jsx";
+import FotoIsa from "./FotoIsa.jsx";
 import { MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA } from "@/config/piloto";
 
 /* ===================================================================
-   APRESENTACAO DO FISCO.IA (05/10/2026 — pedido do Fernando)
+   APRESENTACAO DA ISA (05/10/2026 — pedido do Fernando; ate 10/10 era
+   a "Apresentacao do Fisco.ia")
 
-   Abre pela notificacao "Apresentacao do Fisco.ia" (sininho do Inicio).
+   Abre pela notificacao "Apresentacao da Isa" (sininho do Inicio).
    So aparece se a pessoa quiser ver: nada abre sozinho.
 
    - Em cima: um CELULAR DE EXEMPLO do Inicio (visual F), desenhado no
@@ -19,7 +20,7 @@ import { MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA } from "@/config/piloto";
      nos slides de boas-vindas: sem nome e sem valores ("R$ •••").
    - Um CIRCULO VERDE passa de uma funcao para a outra (desliza), e o
      resto do celular fica escurecido.
-   - Embaixo: a foto do Fisco.ia "falando" o que da para fazer. Todos os
+   - Embaixo: a foto da Isa "falando" o que da para fazer. Todos os
      textos ficam empilhados no mesmo lugar (como nas boas-vindas): a
      altura nao muda de um slide para o outro.
    - "Proximo" (contorno verde); no ultimo, "Começar". Da para arrastar
@@ -30,7 +31,7 @@ import { MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA } from "@/config/piloto";
    =================================================================== */
 
 const PASSOS = [
-  { alvo: null, titulo: "Oi! Eu sou o Fisco.ia", texto: "Vou te mostrar o TaCerto! rapidinho." },
+  { alvo: null, titulo: "Oi, sou a Isa", texto: "A assistente com IA do TaCerto. Vou te mostrar o app rapidinho." },
   {
     alvo: "velocimetro",
     titulo: "Seu limite do ano",
@@ -74,7 +75,7 @@ const ALVOS_REDONDOS = ["mais", "perfil", "sino"];
 const LARGURA_DESENHO = 340;
 const ALTURA_DESENHO = 715;
 const LARGURA_MAX_CELULAR = 225;
-/* v4: espaco entre o celular e o texto do Fisco */
+/* v4: espaco entre o celular e o texto da Isa */
 const ESPACO_CELULAR_TEXTO = 20;
 
 /* Saudacao do topo, como no Inicio (sem o nome: e um exemplo) */
@@ -87,27 +88,22 @@ function saudacaoDoMomento(agora = new Date()) {
 /* Folga do circulo em volta da funcao (px do desenho) */
 const FOLGA_CIRCULO = 9;
 
-/* Foto redonda do Fisco.ia (borda verde fina) */
+/* Foto redonda da Isa (borda verde fina). v5: era a foto do Fisco */
 function FotoFisco({ tamanho = 40 }) {
-  return (
-    <span
-      className="rounded-full overflow-hidden shrink-0 flex items-center justify-center"
-      style={{ width: tamanho, height: tamanho, border: "1.5px solid rgba(34,197,94,0.45)" }}
-    >
-      <img
-        src="/fisco-perfil.png"
-        alt=""
-        style={{ width: "108%", height: "108%", objectFit: "cover", objectPosition: "50% 18%" }}
-      />
-    </span>
-  );
+  return <FotoIsa size={tamanho} borda />;
+}
+
+/* v5: a foto da Isa no lugar do simbolo do WhatsApp, na barra do
+   celular de exemplo (30px com margem -1,5: mesma altura do icone 27) */
+function IconeFotoIsaExemplo() {
+  return <FotoIsa size={30} style={{ margin: "-1.5px 0" }} />;
 }
 
 /* O Inicio (visual F) desenhado no tamanho real, sem nome e sem valores */
 function InicioDeExemplo() {
   const segmentos = [
     MOSTRAR_CARD_DAS && { id: "das", Icon: CalendarClock, rotulo: "DAS" },
-    { id: "fisco", Icon: IconeWhatsApp, rotulo: "Fisco" },
+    { id: "fisco", Icon: IconeFotoIsaExemplo, rotulo: "Isa" },
     MOSTRAR_TUTORIAL_NOTA && { id: "nota", Icon: FileText, rotulo: "NF" },
   ].filter(Boolean);
 
@@ -293,7 +289,7 @@ export default function ApresentacaoFisco({ aberto, onFechar }) {
   const textoRef = useRef(null);
   const [escala, setEscala] = useState(0.5);
 
-  /* v4: escala do celular. Celular + texto do Fisco ficam JUNTOS e
+  /* v4: escala do celular. Celular + texto da Isa ficam JUNTOS e
      centrados no espaco entre o cabecalho e as bolinhas; o celular
      usa a altura que sobra depois do texto (ate o maximo) */
   useLayoutEffect(() => {
@@ -360,7 +356,7 @@ export default function ApresentacaoFisco({ aberto, onFechar }) {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Apresentação do Fisco.ia"
+      aria-label="Apresentação da Isa"
       className="fixed inset-0 flex flex-col"
       style={{
         zIndex: 90,
@@ -391,7 +387,7 @@ export default function ApresentacaoFisco({ aberto, onFechar }) {
         >
           <ArrowLeft size={24} strokeWidth={2} style={{ color: "var(--text)" }} />
         </button>
-        <span className="font-bold truncate" style={{ fontSize: 20 }}>Apresentação do Fisco.ia</span>
+        <span className="font-bold truncate" style={{ fontSize: 20 }}>Apresentação da Isa</span>
       </div>
 
       {/* Celular + texto: da para arrastar para os lados.

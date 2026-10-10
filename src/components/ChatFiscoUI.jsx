@@ -1,10 +1,11 @@
-/* CHATFISCOUI v2 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026)) */
+/* CHATFISCOUI v3 — Fisco vira Isa: foto da Isa (webp) e nome "Isa" no cabecalho, "assistente virtual" no lugar de "Online" (v2: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026))) */
 import { useRef, useState, useEffect } from "react";
 import {
   Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList,
   Copy, CornerUpLeft, Pencil, History, MessageSquarePlus, Trash2,
 } from "lucide-react";
 import { rotuloData } from "@/lib/chatHistorico";
+import { FOTO_ISA_256 } from "./FotoIsa.jsx";
 
 /* ===================================================================
    CHAT DO FISCO — componentes compartilhados
@@ -713,14 +714,15 @@ export default function ChatFiscoUI({
           style={{ width: 54, height: 54, border: "1.5px solid rgba(34,197,94,0.45)" }}
         >
           <img
-            src="/fisco-perfil.png"
-            alt="Fisco"
-            style={{ width: "108%", height: "108%", objectFit: "cover", objectPosition: "50% 18%" }}
+            src={FOTO_ISA_256}
+            alt="Isa"
+            decoding="async"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         </span>
         <div className="flex-1 min-w-0">
-          <p className="font-bold" style={{ color: "var(--text)", fontSize: 18 }}>Fisco</p>
-          <p style={{ color: "var(--primary)", fontSize: 13 }}>&#9679; Online</p>
+          <p className="font-bold" style={{ color: "var(--text)", fontSize: 18 }}>Isa</p>
+          <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>Assistente virtual</p>
         </div>
         <button
           onClick={() => setHistoricoAberto(true)}

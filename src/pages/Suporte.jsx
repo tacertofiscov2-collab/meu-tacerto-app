@@ -1,4 +1,4 @@
-/* SUPORTE v3 — "Preciso emitir nota?" com a regra do agregado (v2: correcoes de 08-10: DAS vence dia 20 e, se nao for dia util, no proximo dia util; NFS-e so para frete na mesma cidade (agregado sem IE em MG hoje nao emite); A1 a preco de custo (R$ 100,34) (v1: chat de suporte dentro do app (Perfil > Ajuda): perguntas prontas por assunto para afunilar; se nao resolver, a pessoa escreve e vai pro WhatsApp do suporte com tudo anotado */
+/* SUPORTE v4 — Fisco vira Isa na resposta sobre nota fiscal (v3: "Preciso emitir nota?" com a regra do agregado (v2: correcoes de 08-10: DAS vence dia 20 e, se nao for dia util, no proximo dia util; NFS-e so para frete na mesma cidade (agregado sem IE em MG hoje nao emite); A1 a preco de custo (R$ 100,34) (v1: chat de suporte dentro do app (Perfil > Ajuda): perguntas prontas por assunto para afunilar; se nao resolver, a pessoa escreve e vai pro WhatsApp do suporte com tudo anotado) */
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
@@ -78,7 +78,7 @@ const ASSUNTOS = [
       },
       {
         p: "Como emito?",
-        r: "No Início, toque em NF. Lá diz quando você precisa emitir e como: com o Fisco no WhatsApp, sozinho ou automática, com o Certificado A1.",
+        r: "No Início, toque em NF. Lá diz quando você precisa emitir e como: com a Isa no WhatsApp, sozinho ou automática, com o Certificado A1.",
       },
       {
         p: "O que é o Certificado A1?",

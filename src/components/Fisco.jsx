@@ -1,4 +1,4 @@
-/* FISCO v2 — "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026)) */
+/* FISCO v3 — aria-labels dizem Isa (o desenho do robo ficou so no Chat.jsx, sem rota) (v2: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026))) */
 /**
  * Fisco — mascote robô do TaCerto!
  *
@@ -96,7 +96,7 @@ export default function Fisco({
           height={size}
           viewBox="112 26 156 156"
           role="img"
-          aria-label="Fisco"
+          aria-label="Isa"
           className={className}
           style={style}
           xmlns="http://www.w3.org/2000/svg"
@@ -143,7 +143,7 @@ export default function Fisco({
         height={alturaProp}
         viewBox={`${vbX} ${vbY} ${vbW} ${vbH}`}
         role="img"
-        aria-label={fala ? `Fisco diz: ${fala}` : "Fisco, seu amigo fiscal"}
+        aria-label={fala ? `Isa diz: ${fala}` : "Isa, sua assistente virtual"}
         className={className}
         style={{ display: "block", overflow: "visible", ...style }}
         xmlns="http://www.w3.org/2000/svg"

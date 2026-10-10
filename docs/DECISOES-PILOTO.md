@@ -53,7 +53,28 @@
 
 ---
 
-## 1B. Nome do assistente: **Fisco** (06/10 — antes Fisco.ia)
+## 1A. Nome da assistente: **Isa** (10/10 — o Fisco morreu)
+
+- **10/10 (pedido do Fernando): "Fisco" e "Fisco.ia" viraram "Isa"** em
+  todo texto que a pessoa vê (telas, slides, Apresentação, notificações,
+  Termos, Privacidade) e nas mensagens prontas do WhatsApp ("Oi Isa!").
+- A Isa é uma **assistente virtual com IA**. Ao lado do nome, quando
+  cabe: "assistente virtual". Primeira fala: "Oi, sou a Isa, a assistente
+  com IA do TaCerto." Ela **nunca** diz que é pessoa nem contadora
+  (Termos e Privacidade dizem isso com todas as letras).
+- Foto gerada por IA (pessoa que não existe): `public/isa/isa.png` e
+  `isa-whatsapp.jpg` (originais, NÃO usados no app) → webp leves
+  `isa-96.webp`, `isa-256.webp` (recorte do rosto) e `isa-512.webp`
+  (foto inteira). Componente `src/components/FotoIsa.jsx`. A foto do
+  robô (`fisco-perfil.png`, `fisco-joinha.png`) não é mais usada (os
+  arquivos continuam em `public/`, nada apagado).
+- Nomes internos **não mudaram** (arquivos, funções, chaves, rota
+  `/fisco`, autor "fisco" das conversas salvas): trocar quebraria
+  conversas e links guardados.
+- O Fernando troca o nome e a foto do WhatsApp Business para
+  "Isa · TaCerto".
+
+## 1B. (Histórico) Nome do assistente: **Fisco** (06/10 — antes Fisco.ia)
 
 - **06/10 (pedido do Fernando): "Fisco.ia" saiu de tudo e virou "Fisco".**
   O nome "Fisco.ia" ficou **só na Apresentação do Fisco.ia** (o tutorial

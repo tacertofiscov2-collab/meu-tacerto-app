@@ -1,11 +1,11 @@
-/* PILOTO v22 — chave MOSTRAR_SIMULADOR (/simulador) (v21: MOSTRAR_PREFERENCIAS ligada (so o Lembrete do DAS) (v20: chave MOSTRAR_JANELA_NOTAS (/notas-fiscais); mensagem do certificado A1 com R$ 100,34 e o CNPJ (v19: chave MOSTRAR_MEU_LUCRO (/meu-lucro) (v18: chave MOSTRAR_ENVIAR_EXTRATO (/enviar-extrato e /conferir-saidas) (v17: o CNPJ do perfil entra nas mensagens prontas (formatado 12.345.678/0001-90); sem CNPJ, "Meu CNPJ: " continua em branco para a pessoa completar (v16: numero REAL do WhatsApp do Fisco (37 99199-9373), o mesmo do suporte; mensagem do suporte comeca com "Oi Fisco!" e pede suporte (v15: chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP) */
+/* PILOTO v23 — Fisco vira Isa (assistente virtual com IA): mensagens prontas comecam com "Oi Isa!"; FRASE_APRESENTACAO_ISA e NOME_ASSISTENTE; nomes internos (WHATSAPP_FISCO, abrirWhatsAppFisco...) ficam iguais (v22: chave MOSTRAR_SIMULADOR (/simulador) (v21: MOSTRAR_PREFERENCIAS ligada (so o Lembrete do DAS) (v20: chave MOSTRAR_JANELA_NOTAS (/notas-fiscais); mensagem do certificado A1 com R$ 100,34 e o CNPJ (v19: chave MOSTRAR_MEU_LUCRO (/meu-lucro) (v18: chave MOSTRAR_ENVIAR_EXTRATO (/enviar-extrato e /conferir-saidas) (v17: o CNPJ do perfil entra nas mensagens prontas (formatado 12.345.678/0001-90); sem CNPJ, "Meu CNPJ: " continua em branco para a pessoa completar (v16: numero REAL do WhatsApp do Fisco (37 99199-9373), o mesmo do suporte; mensagem do suporte comeca com "Oi Fisco!" e pede suporte (v15: chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP)) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 import { formatarCnpj, soDigitosCnpj } from "@/lib/cnpj";
 
 /* ===================================================================
    POR QUE ESTE ARQUIVO EXISTE (04/10/2026)
 
-   No piloto o canal principal e o WhatsApp: todo dia as 21h o Fisco
+   No piloto o canal principal e o WhatsApp: todo dia as 21h a Isa
    pergunta o que a pessoa recebeu, e as respostas sao lancadas pela
    equipe no Supabase. O app serve para ver o velocimetro e os
    lancamentos. Por isso ele fica SIMPLES, so com o basico.
@@ -35,10 +35,10 @@ export const MOSTRAR_OPEN_FINANCE = false;
 /* -------------------------------------------------------------------
    CHAT DO FISCO DENTRO DO APP
    false esconde: a pagina /fisco (ChatFiscoUI, historico de conversas,
-   menu de anexos), a barra "Pergunte ao Fisco..." do Dashboard, o
+   menu de anexos), a barra "Pergunte a Isa..." do Dashboard, o
    painel "Tirar duvidas" (o balao "?" do velocimetro do ano) e o botao
-   "Nao entendi, falar com o Fisco" da media limite.
-   No lugar entra o botao "Falar com o Fisco no WhatsApp".
+   "Nao entendi, falar com a Isa" da media limite.
+   No lugar entra o botao "Falar com a Isa no WhatsApp".
    Com false, o balao do velocimetro do ano so aparece quando passa do
    limite (+N%) e abre a tela da regra dos 20%.
    ------------------------------------------------------------------- */
@@ -250,8 +250,8 @@ export const MOSTRAR_CARD_DAS = true;
    seletor de teste "Atual | A | B | C". A escolha fica guardada no
    aparelho (localStorage "tacerto_visual_inicio").
      atual  o visual de antes (cartoes de vidro, borda luminosa)
-     a      LISTA: velocimetro solto + linhas finas (DAS, Fisco.ia, nota)
-     b      BLOCOS: fundos suaves sem borda (DAS e Fisco.ia lado a lado)
+     a      LISTA: velocimetro solto + linhas finas (DAS, Isa, nota)
+     b      BLOCOS: fundos suaves sem borda (DAS e Isa lado a lado)
      c      ATALHOS: velocimetro solto + 3 atalhos redondos
    Depois da escolha: VISUAL_INICIO_PADRAO = a escolhida e o seletor
    desligado (false).
@@ -275,7 +275,7 @@ export const VISUAL_INICIO_PADRAO = "f";
    NOTIFICACOES (v12 — 05/10/2026)
    true mostra o sininho discreto no canto de cima do Inicio e a folha
    "Notificacoes" (src/components/Notificacoes.jsx). A primeira
-   notificacao, desde o primeiro login, e a "Apresentacao do Fisco.ia"
+   notificacao, desde o primeiro login, e a "Apresentacao da Isa"
    (tutorial em slides, src/components/ApresentacaoFisco.jsx). So abre
    se a pessoa tocar. false esconde tudo.
    ------------------------------------------------------------------- */
@@ -313,32 +313,49 @@ export const MOSTRAR_SUPORTE = true;
 export const MOSTRAR_DECLARACAO_ANUAL = true;
 
 /* -------------------------------------------------------------------
-   WHATSAPP DO FISCO
+   WHATSAPP DA ISA (antes "Fisco"; o nome interno WHATSAPP_FISCO ficou)
    So numeros: 55 + DDD + numero.
    v16 (06/10/2026): numero real, passado pelo Fernando: (37) 99199-9373.
-   E o MESMO para o Fisco e para o suporte (Perfil > Ajuda): o que muda
+   E o MESMO para a Isa e para o suporte (Perfil > Ajuda): o que muda
    e a mensagem pronta de cada botao (MENSAGENS_WHATSAPP).
    ------------------------------------------------------------------- */
 export const WHATSAPP_FISCO = "5537991999373";
 
 /* -------------------------------------------------------------------
+   v23 (10/10/2026) — O FISCO MORREU: O NOME E ISA
+   A assistente do TaCerto agora e a "Isa", assistente virtual com IA
+   (foto gerada por IA, de uma pessoa que nao existe: public/isa/).
+   - Em todo texto que a pessoa ve: "Isa" (e, quando couber ao lado do
+     nome, "assistente virtual").
+   - A Isa NUNCA diz que e pessoa nem contadora.
+   - Nomes internos NAO mudaram (arquivos Fisco.jsx, ChatFiscoUI.jsx,
+     ApresentacaoFisco.jsx, faqFisco.js; WHATSAPP_FISCO,
+     abrirWhatsAppFisco, MOSTRAR_CHAT_FISCO, rota /fisco, autor "fisco"
+     das mensagens salvas): trocar quebraria conversas e links salvos.
+   ------------------------------------------------------------------- */
+export const NOME_ASSISTENTE = "Isa";
+export const DESCRICAO_ASSISTENTE = "assistente virtual";
+/* Primeira fala da Isa (chat do app e WhatsApp) */
+export const FRASE_APRESENTACAO_ISA = "Oi, sou a Isa, a assistente com IA do TaCerto.";
+
+/* -------------------------------------------------------------------
    BOTAO DO WHATSAPP NOS DOCUMENTOS (v4 — 05/10/2026)
    false esconde a secao "Fale com a gente" (com o botao "Falar com o
-   Fisco.ia no WhatsApp") do fim dos Termos de uso (/termos-de-uso) e
+   Isa no WhatsApp") do fim dos Termos de uso (/termos-de-uso) e
    da Politica de privacidade (/privacidade — ali, junto, some a frase
-   "Duvida sobre seus dados? Chame o Fisco.ia no WhatsApp.", pedido do
+   "Duvida sobre seus dados? Chame a Isa no WhatsApp.", pedido do
    Fernando em 05/10). O resto do texto dos documentos nao muda.
    ------------------------------------------------------------------- */
 export const MOSTRAR_WHATSAPP_DOCUMENTOS = false;
 
-/* Link que abre a conversa com o Fisco no WhatsApp. Com `texto`, a
+/* Link que abre a conversa com a Isa no WhatsApp. Com `texto`, a
    mensagem ja chega escrita (a pessoa so toca em enviar). */
 export function linkWhatsAppFisco(texto) {
   const base = `https://wa.me/${WHATSAPP_FISCO}`;
   return texto ? `${base}?text=${encodeURIComponent(texto)}` : base;
 }
 
-/* Abre o WhatsApp do Fisco com a mensagem pronta. Usar DENTRO do toque
+/* Abre o WhatsApp da Isa com a mensagem pronta. Usar DENTRO do toque
    (onClick): o iPhone so deixa abrir outra janela a partir de um toque.
    Se o navegador bloquear a janela nova, abre na mesma aba. */
 export function abrirWhatsAppFisco(texto) {
@@ -395,55 +412,55 @@ function quemSouComCnpj(dados = {}) {
 }
 
 export const MENSAGENS_WHATSAPP = {
-  /* Botao "Falar com o Fisco no WhatsApp" (Inicio, Perfil, termos) */
+  /* Botao "Falar com a Isa no WhatsApp" (Inicio, Perfil, termos) */
   falarComFisco: (d) =>
-    `Oi Fisco! Vim pelo app e quero tirar uma duvida. ${quemSou(d)}`,
+    `Oi Isa! Vim pelo app e quero tirar uma duvida. ${quemSou(d)}`,
 
   /* Painel do DAS, opcao a) "Receber meu boleto todo mes no WhatsApp" */
   dasAutomatico: (d) =>
-    `Oi Fisco! Quero receber meu boleto do DAS automaticamente todo mes. ${quemSouComCnpj(d)}`,
+    `Oi Isa! Quero receber meu boleto do DAS automaticamente todo mes. ${quemSouComCnpj(d)}`,
 
-  /* Painel do DAS, opcao b) "Fisco me ajuda agora" e o botao
-     "Prefiro que o Fisco me ajude" da tela /como-pagar-das */
+  /* Painel do DAS, opcao b) "A Isa me ajuda agora" e o botao
+     "Prefiro que a Isa me ajude" da tela /como-pagar-das */
   dasAjudaAgora: (d) =>
-    `Oi Fisco! Quero ajuda pra emitir meu boleto do DAS deste mes. ${quemSouComCnpj(d)}`,
+    `Oi Isa! Quero ajuda pra emitir meu boleto do DAS deste mes. ${quemSouComCnpj(d)}`,
 
-  /* /como-emitir-nota, card "Emitir com o Fisco pelo WhatsApp".
+  /* /como-emitir-nota, card "Emitir com a Isa pelo WhatsApp".
      Caminhoneiro fala em frete; MEI comum, em servico. */
   notaAjuda: (d, caminhoneiro = true) =>
     caminhoneiro
-      ? `Oi Fisco! Quero ajuda pra emitir uma nota fiscal. ${quemSou(d)}. Valor do frete: R$ ___. Para quem (empresa/CNPJ): ___`
-      : `Oi Fisco! Quero ajuda pra emitir uma nota fiscal. ${quemSou(d)}. Valor do servico: R$ ___. Para quem (empresa/CNPJ ou CPF): ___`,
+      ? `Oi Isa! Quero ajuda pra emitir uma nota fiscal. ${quemSou(d)}. Valor do frete: R$ ___. Para quem (empresa/CNPJ): ___`
+      : `Oi Isa! Quero ajuda pra emitir uma nota fiscal. ${quemSou(d)}. Valor do servico: R$ ___. Para quem (empresa/CNPJ ou CPF): ___`,
 
   /* Janela "Notas fiscais" (/notas-fiscais) e /como-emitir-nota,
      botao "Tenho interesse no certificado". v20: preco de custo
      R$ 100,34 (Tecnosign/Soluti); o agendamento e feito pelo WhatsApp. */
   certificadoA1: (d) =>
-    `Oi Fisco! Tenho interesse no Certificado Digital A1 (R$ 100,34, preco de custo) pra emitir nota automatica. Quero agendar a videochamada. ${quemSouComCnpj(d)}`,
+    `Oi Isa! Tenho interesse no Certificado Digital A1 (R$ 100,34, preco de custo) pra emitir nota automatica. Quero agendar a videochamada. ${quemSouComCnpj(d)}`,
 
-  /* Inicio, painel da media limite: "Falar com o Fisco no WhatsApp" */
+  /* Inicio, painel da media limite: "Falar com a Isa no WhatsApp" */
   mediaLimite: (d) =>
-    `Oi Fisco! Nao entendi a media limite do app. Me explica de um jeito mais facil, com um exemplo do dia a dia? ${quemSou(d)}`,
+    `Oi Isa! Nao entendi a media limite do app. Me explica de um jeito mais facil, com um exemplo do dia a dia? ${quemSou(d)}`,
 
   /* v3: Editar perfil, aviso "Seu numero e usado para entrar no app".
      O numero e o login da pessoa, entao quem troca e a equipe. */
   trocarNumero: (d) =>
-    `Oi Fisco! Quero trocar o numero do meu WhatsApp no TaCerto. Nome: ${d?.nome || "___"}`,
+    `Oi Isa! Quero trocar o numero do meu WhatsApp no TaCerto. Nome: ${d?.nome || "___"}`,
 
   /* v14: notificacao "Atualize seu velocimetro", opcao "Mandar pro
-     Fisco no WhatsApp". A pessoa manda os valores ou o extrato depois. */
+     Isa no WhatsApp". A pessoa manda os valores ou o extrato depois. */
   /* v15: chat de suporte (/suporte), quando a pergunta pronta nao resolveu.
      Vai com o assunto, a pergunta escolhida e o que a pessoa escreveu. */
   suporte: (d, { assunto, pergunta, detalhe } = {}) =>
-    `Oi Fisco! Preciso de suporte no app TaCerto. ${quemSou(d)}.` +
+    `Oi Isa! Preciso de suporte no app TaCerto. ${quemSou(d)}.` +
     (assunto ? ` Assunto: ${assunto}.` : "") +
     (pergunta ? ` Duvida: ${pergunta}${/[.!?]$/.test(pergunta) ? "" : "."}` : "") +
     (detalhe ? ` O que aconteceu: ${detalhe}` : ""),
 
   /* v15: Declaracao anual (pagina e resultado da calculadora) */
   declaracaoAjuda: (d) =>
-    `Oi Fisco! Quero ajuda com a minha declaracao anual do MEI e o Imposto de Renda. ${quemSouComCnpj(d)}`,
+    `Oi Isa! Quero ajuda com a minha declaracao anual do MEI e o Imposto de Renda. ${quemSouComCnpj(d)}`,
 
   atualizarVelocimetro: (d) =>
-    `Oi Fisco! Quero atualizar meu velocimetro. Vou te mandar os valores que recebi (ou o extrato do banco). ${quemSou(d)}`,
+    `Oi Isa! Quero atualizar meu velocimetro. Vou te mandar os valores que recebi (ou o extrato do banco). ${quemSou(d)}`,
 };

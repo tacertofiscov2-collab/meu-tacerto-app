@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v35 — o portao, quando as regras do pagador resolvem tudo sozinhas, tambem confere se o extrato ja pode substituir o total do ano digitado (substituirTotalPeloExtrato) (v34: proximo DAS com feriados nacionais (vencimentoDas.js: dia 20 ou o proximo dia util) (v33: o atalho NF abre a janela "Notas fiscais" (/notas-fiscais) (v32: o portao das entradas confirma pelas regras do pagador SEM contar duas vezes (lancarEntradasConfirmadas: casa com lancamento a mao e diminui o ajuste do total do ano) (v31: visual F: "Atualizado em 08/10 às 14:32" + botao "Atualizar velocimetro" abaixo do velocimetro (zerado: "Falta informar" e o botao em destaque) e selo Estimado/Conferido no velocimetro do ano; a folha de atualizar abre sempre (v30: valor do DAS pelo CNAE do perfil (fiscal.js) e o CNPJ nas mensagens do WhatsApp (v29: velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
+﻿/* DASHBOARD v36 — Fisco vira Isa: foto da Isa (FotoIsa, webp) na barra DAS | Isa | NF, no botao do WhatsApp e no chat; textos "Isa" e "Pergunte à Isa..." (v35: o portao, quando as regras do pagador resolvem tudo sozinhas, tambem confere se o extrato ja pode substituir o total do ano digitado (substituirTotalPeloExtrato) (v34: proximo DAS com feriados nacionais (vencimentoDas.js: dia 20 ou o proximo dia util) (v33: o atalho NF abre a janela "Notas fiscais" (/notas-fiscais) (v32: o portao das entradas confirma pelas regras do pagador SEM contar duas vezes (lancarEntradasConfirmadas: casa com lancamento a mao e diminui o ajuste do total do ano) (v31: visual F: "Atualizado em 08/10 às 14:32" + botao "Atualizar velocimetro" abaixo do velocimetro (zerado: "Falta informar" e o botao em destaque) e selo Estimado/Conferido no velocimetro do ano; a folha de atualizar abre sempre (v30: valor do DAS pelo CNAE do perfil (fiscal.js) e o CNPJ nas mensagens do WhatsApp (v29: velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -14,8 +14,8 @@ import SimboloPluggy from "../components/SimboloPluggy.jsx";
 import FolhaPagarDas from "../components/FolhaPagarDas.jsx";
 import BotaoNotificacoes from "../components/Notificacoes.jsx";
 import ApresentacaoFisco from "../components/ApresentacaoFisco.jsx";
+import FotoIsa, { FOTO_ISA_256 } from "../components/FotoIsa.jsx";
 import FolhaAtualizarVelocimetro from "../components/FolhaAtualizarVelocimetro.jsx";
-import IconeWhatsApp from "../components/IconeWhatsApp.jsx";
 import { useMarcaDaConta } from "@/lib/marcasDaConta";
 import { useAppState } from "@/context/AppStateContext";
 import {
@@ -987,31 +987,12 @@ function PainelMediaLimite({ aberto, onFechar, limiteAnual, mediaLimite }) {
   );
 }
 
-/* Foto redonda pequena do Fisco (28px, borda verde) — a mesma que ja
-   ficava no botao "Nao entendi, falar com o Fisco". Separada em v18
-   porque agora tambem aparece no botao do WhatsApp. */
+/* Foto redonda pequena da assistente (28px, borda verde) — a mesma que
+   ja ficava no botao "Nao entendi, falar com a Isa". Separada em v18
+   porque agora tambem aparece no botao do WhatsApp. v36: era a foto do
+   robo Fisco; agora e a foto da Isa (FotoIsa, webp leve). */
 function FotoFiscoMini({ tamanho = 28 }) {
-  return (
-    <span
-      className="rounded-full overflow-hidden shrink-0 flex items-center justify-center"
-      style={{
-        width: tamanho,
-        height: tamanho,
-        border: "1.5px solid rgba(34,197,94,0.45)",
-      }}
-    >
-      <img
-        src="/fisco-perfil.png"
-        alt=""
-        style={{
-          width: "112%",
-          height: "112%",
-          objectFit: "cover",
-          objectPosition: "50% 18%",
-        }}
-      />
-    </span>
-  );
+  return <FotoIsa size={tamanho} borda />;
 }
 
 /* ===================================================================
@@ -1042,7 +1023,7 @@ function BotaoFiscoWhatsApp({ dadosWhats }) {
     >
       <BordaCorrendo raio={16} />
       <FotoFiscoMini tamanho={30} />
-      Falar com o Fisco no WhatsApp
+      Falar com a Isa no WhatsApp
     </a>
   );
 }
@@ -1246,7 +1227,7 @@ function InicioLista({ das, onDas, onFisco, onNota }) {
           onClick={onDas}
         />
       )}
-      <LinhaLista Icon={MessageCircle} rotulo="Falar com o Fisco" detalhe="No WhatsApp" onClick={onFisco} />
+      <LinhaLista Icon={MessageCircle} rotulo="Falar com a Isa" detalhe="No WhatsApp" onClick={onFisco} />
       {MOSTRAR_TUTORIAL_NOTA && <LinhaLista Icon={FileText} rotulo="Como emitir nota" onClick={onNota} />}
     </SecaoLista>
   );
@@ -1272,7 +1253,7 @@ function InicioBlocos({ das, onDas, onFisco, onNota }) {
         <button type="button" onClick={onFisco} className="toque text-left flex flex-col" style={{ ...bloco, padding: "14px 15px" }}>
           <span className="flex items-center" style={{ gap: 8 }}>
             <FotoFiscoMini tamanho={24} />
-            <span className="font-semibold" style={{ fontSize: 15, color: "var(--text)" }}>Fisco</span>
+            <span className="font-semibold" style={{ fontSize: 15, color: "var(--text)" }}>Isa</span>
           </span>
           <span style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 4 }}>Dúvidas e ajuda</span>
           <span className="font-semibold" style={{ fontSize: 13.5, color: "var(--primary)", marginTop: "auto", paddingTop: 10 }}>
@@ -1300,7 +1281,7 @@ function InicioBlocos({ das, onDas, onFisco, onNota }) {
 function InicioAtalhos({ das, onDas, onFisco, onNota }) {
   const itens = [
     MOSTRAR_CARD_DAS && { Icon: CalendarClock, rotulo: "Boleto do DAS", onClick: onDas },
-    { Icon: MessageCircle, rotulo: "Fisco", onClick: onFisco },
+    { Icon: MessageCircle, rotulo: "Isa", onClick: onFisco },
     MOSTRAR_TUTORIAL_NOTA && { Icon: FileText, rotulo: "Emitir nota", onClick: onNota },
   ].filter(Boolean);
   return (
@@ -1341,7 +1322,7 @@ const BORDA_DESTAQUE_INICIO = "1px solid rgba(34,197,94,0.4)";
 function InicioCartoes(acoes) {
   const textos = {
     das: ["DAS", `Vence ${acoes.das.dia}/${acoes.das.mes}`],
-    fisco: ["Fisco", "WhatsApp"],
+    fisco: ["Isa", "WhatsApp"],
     nota: ["Nota fiscal", "Como emitir"],
   };
   const itens = atalhosInicio(acoes);
@@ -1395,7 +1376,7 @@ function InicioDestaque({ das, onDas, onFisco, onNota }) {
       <div className="grid" style={{ gridTemplateColumns: MOSTRAR_TUTORIAL_NOTA ? "1fr 1fr" : "1fr", gap: 10, marginTop: 10 }}>
         <button type="button" onClick={onFisco} className="toque flex items-center justify-center" style={pilula}>
           <MessageCircle size={19} strokeWidth={1.9} style={{ color: "var(--primary)" }} />
-          <span className="font-medium" style={{ fontSize: 15, color: "var(--text)" }}>Fisco</span>
+          <span className="font-medium" style={{ fontSize: 15, color: "var(--text)" }}>Isa</span>
         </button>
         {MOSTRAR_TUTORIAL_NOTA && (
           <button type="button" onClick={onNota} className="toque flex items-center justify-center" style={pilula}>
@@ -1413,9 +1394,15 @@ function InicioDestaque({ das, onDas, onFisco, onNota }) {
    v28: rotulos curtos (DAS, Fisco, NF) e o Fisco com o simbolo do
    WhatsApp em contorno. Embaixo do velocimetro (F) a barra nao tem
    margem propria: quem separa e o respiro (ver RESPIRO_ACIMA_DA_BARRA). */
+function IconeFotoIsaBarra() {
+  return <FotoIsa size={24} style={{ margin: "-1.5px 0" }} />;
+}
+
 function InicioBarra({ emCima = false, ...acoes }) {
-  const rotulos = { das: "DAS", fisco: "Fisco", nota: "NF" };
-  const icones = { fisco: IconeWhatsApp };
+  const rotulos = { das: "DAS", fisco: "Isa", nota: "NF" };
+  /* v36: a Isa aparece com a foto (24px, margem -1,5 em cima e embaixo
+     para a barra ficar com a mesma altura do icone de 21px) */
+  const icones = { fisco: IconeFotoIsaBarra };
   return (
     <div
       className="shrink-0 flex items-stretch overflow-hidden"
@@ -2358,14 +2345,10 @@ export default function Dashboard() {
               >
                 <span className="rounded-full overflow-hidden flex items-center justify-center" style={{ width: "100%", height: "100%" }}>
                   <img
-                    src="/fisco-perfil.png"
-                    alt="Fisco"
-                    style={{
-                      width: "108%",
-                      height: "108%",
-                      objectFit: "cover",
-                      objectPosition: "50% 18%",
-                    }}
+                    src={FOTO_ISA_256}
+                    alt="Isa, assistente virtual"
+                    decoding="async"
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
                 </span>
                 <span
@@ -2405,7 +2388,7 @@ export default function Dashboard() {
                     fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive',
                   }}
                 >
-                  Pergunte ao Fisco...
+                  Pergunte à Isa...
                 </span>
 
                 <Send

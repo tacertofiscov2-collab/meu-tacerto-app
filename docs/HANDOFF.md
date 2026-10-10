@@ -320,3 +320,34 @@ consulta. **Ainda aberta: a 13.**
     app. Quer uma lista "Gastos pessoais" para poder corrigir?
 13. Antigas: atualizar o slide 1 das boas-vindas? A notificação "Atualize
     seu velocímetro" volta todo mês? Ajustar `/regra-vinte` aberto direto?
+
+---
+
+## Perguntas para o Fernando — tarefa de 10-10 (`docs/PROMPT-CODE-10-10.md`)
+
+> Decisões que não estavam no pedido. Segui o padrão de cada uma (entre
+> parênteses) e anotei aqui. Responda pelo número.
+
+**Bloco A (Isa)**
+
+A1. No piloto quem responde o WhatsApp é você, à mão. A Apresentação diz
+    "Fale comigo no WhatsApp, a qualquer hora" e o slide 4 diz "Isa,
+    assistente virtual 24h". Manter as promessas de "a qualquer hora" e
+    "24h"? (mantive)
+A2. O suporte humano usa o mesmo número; a mensagem pronta agora começa
+    com "Oi Isa! Preciso de suporte...". Ok, ou começar com "Oi! Preciso
+    de suporte"? (mantive "Oi Isa!", como pedido)
+A3. Os slides 3 e 5 dizem que a Isa **emite** a nota; os Termos dizem que
+    quem emite é você (o MEI). Trocar para "a Isa **monta** sua nota"?
+    (mantive "emite"; só troquei o nome)
+A4. A bolinha verde de "online" na foto ficou; o texto "online" virou
+    "assistente virtual" (slide 5 e cabeçalho do chat). Ok? (assim)
+A5. A frase "Oi, sou a Isa, a assistente com IA do TaCerto." entrou na
+    Apresentação e no chat do app. No desenho do WhatsApp do slide 5 não
+    entrou (mudaria a escala dos 5 slides). No WhatsApp de verdade, ela é
+    a saudação do WhatsApp Business, que você configura. Ok? (assim)
+A6. Foto: os avatares usam o recorte do rosto (`isa-whatsapp.jpg`). A
+    foto de blazer (`isa.png`) não aparece no app (pode lembrar
+    contadora). Ok? (assim)
+A7. Os Termos dizem que a Isa "não é uma pessoa nem contadora". Escrever
+    também que "a foto da Isa foi criada por IA"? (não escrevi)

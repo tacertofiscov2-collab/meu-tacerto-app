@@ -1,4 +1,4 @@
-/* COMOPAGARDAS v6 — vencimento certo: "Vence dia 20. Se cair em fim de semana ou feriado, vence no próximo dia útil" (v5: secao "Como o TaCerto ajuda hoje" (boleto pronto no WhatsApp, boleto atrasado) e icone do WhatsApp (v4: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v3: padrao do Perfil (lista simples, sem cartoes nem caixa amarela, letras maiores; acoes como linhas) (v2: Fisco.ia; v1: passo a passo do PGMEI))) */
+/* COMOPAGARDAS v7 — Fisco vira Isa: "Prefiro que a Isa me ajude" (v6: vencimento certo: "Vence dia 20. Se cair em fim de semana ou feriado, vence no próximo dia útil" (v5: secao "Como o TaCerto ajuda hoje" (boleto pronto no WhatsApp, boleto atrasado) e icone do WhatsApp (v4: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v3: padrao do Perfil (lista simples, sem cartoes nem caixa amarela, letras maiores; acoes como linhas) (v2: Fisco.ia; v1: passo a passo do PGMEI)))) */
 import { useLocation, useNavigate } from "react-router-dom";
 import { CalendarClock, ExternalLink, CheckCircle2 } from "lucide-react";
 import IconeWhatsApp from "../components/IconeWhatsApp.jsx";
@@ -115,10 +115,10 @@ export default function ComoPagarDas() {
             detalhe="Site do governo que gera o boleto"
             onClick={() => window.open(LINK_PGMEI, "_blank", "noopener")}
           />
-          {/* a mesma mensagem da opcao "Fisco.ia me ajuda agora" */}
+          {/* a mesma mensagem da opcao "A Isa me ajuda agora" */}
           <LinhaLista
             Icon={IconeWhatsApp}
-            rotulo="Prefiro que o Fisco me ajude"
+            rotulo="Prefiro que a Isa me ajude"
             onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.dasAjudaAgora(dadosParaWhatsApp(app)))}
           />
         </SecaoLista>

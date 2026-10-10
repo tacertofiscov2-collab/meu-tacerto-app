@@ -1,4 +1,4 @@
-/* CONFERIRENTRADAS v15 — "Pode ser repetido": as entradas com o mesmo dia e valor de outro extrato vem num grupo so, primeiro (Sim, é repetido = nao conta; Não é repetido = viram as perguntas normais por pagador); no fim, o extrato pode substituir o total do ano digitado (respostas 1 e 11 do Fernando) (v14: no fim sempre passa pelos gastos em duvida (/conferir-saidas), tambem quando veio pelo portao do Inicio (v13: no lugar do Sim/Não, 6 respostas curtas (É frete/serviço, Reembolso de despesa, Vale-pedágio, Empréstimo, Estorno/devolução, Dinheiro meu/família); a sugerida pelo extrato vem com borda verde fina; grava a categoria; o que conta e lancado sem contar duas vezes (lancamento a mao igual e ajuste do total do ano); vindo do extrato, segue para os gastos (v12: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v11: "Fisco" vira "Fisco.ia" nos textos da tela (v10: explicacao enquadrada: icone no topo, passos centralizados, botao no pe da tela))) */
+/* CONFERIRENTRADAS v16 — Fisco vira Isa: passo 3 "A Isa aprende" (v15: "Pode ser repetido": as entradas com o mesmo dia e valor de outro extrato vem num grupo so, primeiro (Sim, é repetido = nao conta; Não é repetido = viram as perguntas normais por pagador); no fim, o extrato pode substituir o total do ano digitado (respostas 1 e 11 do Fernando) (v14: no fim sempre passa pelos gastos em duvida (/conferir-saidas), tambem quando veio pelo portao do Inicio (v13: no lugar do Sim/Não, 6 respostas curtas (É frete/serviço, Reembolso de despesa, Vale-pedágio, Empréstimo, Estorno/devolução, Dinheiro meu/família); a sugerida pelo extrato vem com borda verde fina; grava a categoria; o que conta e lancado sem contar duas vezes (lancamento a mao igual e ajuste do total do ano); vindo do extrato, segue para os gastos (v12: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v11: "Fisco" vira "Fisco.ia" nos textos da tela (v10: explicacao enquadrada: icone no topo, passos centralizados, botao no pe da tela)))) */
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -80,7 +80,7 @@ import { lancarEntradasConfirmadas, substituirTotalPeloExtrato } from "@/lib/imp
      pelo Fernando entre tres mostradas no chat):
        1 Veja quem te pagou        — Nome, valor e datas
        2 Responda: é faturamento?  — Sim ou Não
-       3 O Fisco aprende           — Da próxima vez, entra sozinho
+       3 A Isa aprende             — Da próxima vez, entra sozinho
      e, embaixo, um quadro pequeno com o que e Sim e o que e Não.
 
    v7 (27/09/2026): a explicacao estava "baguncada" (texto centralizado
@@ -547,7 +547,7 @@ export default function ConferirEntradas() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                     <Passo numero={1} titulo="Veja quem te pagou" detalhe="Nome, valor e datas" />
                     <Passo numero={2} titulo="Responda: é faturamento?" detalhe="Um toque na resposta certa" />
-                    <Passo numero={3} titulo="O Fisco aprende" detalhe="Da próxima vez, entra sozinho" />
+                    <Passo numero={3} titulo="A Isa aprende" detalhe="Da próxima vez, entra sozinho" />
                   </div>
                 </div>
 

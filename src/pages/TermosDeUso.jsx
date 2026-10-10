@@ -1,4 +1,4 @@
-/* TERMOSDEUSO v9 — diz que o extrato em PDF fica guardado ate ser lido (v8: textos de 08-10: app de gestao do MEI, o CNPJ (dados publicos e, no futuro, o DAS), o extrato (so o ano atual fica, o resto e descartado) e a pessoa confirma o que e faturamento; sem chamar o TaCerto de contabilidade/contador (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v5: secao "Fale com a gente" (botao do WhatsApp) escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("fase de testes"); v2: botao do WhatsApp com mensagem pronta))) */
+/* TERMOSDEUSO v10 — Fisco vira Isa: "A Isa é uma assistente virtual com IA" (não é pessoa nem contadora, pode errar) (v9: diz que o extrato em PDF fica guardado ate ser lido (v8: textos de 08-10: app de gestao do MEI, o CNPJ (dados publicos e, no futuro, o DAS), o extrato (so o ano atual fica, o resto e descartado) e a pessoa confirma o que e faturamento; sem chamar o TaCerto de contabilidade/contador (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v5: secao "Fale com a gente" (botao do WhatsApp) escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("fase de testes"); v2: botao do WhatsApp com mensagem pronta)))) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp, MOSTRAR_WHATSAPP_DOCUMENTOS } from "@/config/piloto";
@@ -38,9 +38,9 @@ const SECOES = [
     ],
   },
   {
-    titulo: "O Fisco é uma inteligência artificial",
+    titulo: "A Isa é uma assistente virtual com IA",
     paragrafos: [
-      "O Fisco é um assistente baseado em inteligência artificial. Ele pode errar.",
+      "A Isa é a assistente virtual do TaCerto!, baseada em inteligência artificial. Ela não é uma pessoa nem contadora, e pode errar.",
       "Para decisões importantes, confirme com um contador.",
     ],
   },
@@ -62,7 +62,7 @@ const SECOES = [
     titulo: "Quem cuida das obrigações é você",
     paragrafos: [
       "O TaCerto! organiza, calcula e explica. Quem confirma e transmite as obrigações fiscais do MEI é você: pagar o DAS, emitir as notas fiscais e entregar a declaração anual (DASN-SIMEI).",
-      "Os números do app vêm do que você lança, envia, confirma ou conta ao Fisco. O total do ano que você digita é uma estimativa. Confira sempre.",
+      "Os números do app vêm do que você lança, envia, confirma ou conta à Isa. O total do ano que você digita é uma estimativa. Confira sempre.",
     ],
   },
   {
@@ -167,7 +167,7 @@ export default function TermosDeUso() {
               textDecoration: "none",
             }}
           >
-            Falar com o Fisco no WhatsApp
+            Falar com a Isa no WhatsApp
           </a>
         </section>
         )}
