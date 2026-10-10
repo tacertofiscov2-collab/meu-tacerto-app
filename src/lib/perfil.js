@@ -1,4 +1,4 @@
-/* PERFIL (lib) v1 — o que o Perfil e o Editar perfil usam juntos: nomes do tipo de MEI, prazo para corrigir o tipo, telefone formatado e gravar no banco (veio do EditarPerfil.jsx) */
+/* PERFIL (lib) v2 — campos novos do perfil (CNPJ, atualizacao do velocimetro, lembrete do DAS, nota automatica): ler e gravar SEM QUEBRAR se a coluna ainda nao existir no banco (v1: nomes do tipo de MEI, prazo para corrigir o tipo, telefone formatado e gravar no banco (veio do EditarPerfil.jsx)) */
 import { supabase } from "@/lib/supabase";
 
 /* Nome do tipo de MEI como aparece no perfil */
@@ -47,5 +47,79 @@ export async function sincronizarPerfilNoBanco(patch) {
     await supabase.from("perfis").update(update).eq("id", data.user.id);
   } catch {
     /* falha de rede/visitante — não quebra a tela */
+  }
+}
+
+/* ===================================================================
+   CAMPOS NOVOS DO PERFIL (v2 — 10/10/2026)
+
+   Vieram com o SQL de 08-10 (docs/SQL-PENDENTE-08-10.sql). Enquanto o
+   SQL nao roda, as colunas NAO existem no banco e o Supabase recusa
+   qualquer leitura ou gravacao que cite uma delas. Por isso:
+   - elas sao lidas numa consulta SEPARADA da leitura de sempre (nome,
+     tipo, abertura). Se essa falhar, o resto do perfil continua;
+   - a gravacao e tolerante: se a coluna nao existe, devolve
+     { ok: false, faltaColuna: true } e ninguem quebra. O valor fica
+     guardado no aparelho (AppStateContext) e vai para o banco sozinho
+     quando o SQL rodar (ver "empurrar" no AppStateContext).
+
+   Nomes no app (camelCase) -> coluna no banco:
+   =================================================================== */
+export const CAMPOS_PERFIL_NOVOS = {
+  cnpj: "cnpj",
+  cnae: "cnae",
+  cnaesSecundarios: "cnaes_secundarios",
+  dataOpcaoMei: "data_opcao_mei",
+  cnpjConfirmado: "cnpj_confirmado",
+  velocimetroAtualizadoEm: "velocimetro_atualizado_em",
+  lembreteDasDias: "lembrete_das_dias",
+  lembreteDasHora: "lembrete_das_hora",
+  notaAutomaticaAtiva: "nota_automatica_ativa",
+};
+
+/* Para o select: "cnpj, cnae, ..." */
+export const COLUNAS_PERFIL_NOVAS = Object.values(CAMPOS_PERFIL_NOVOS).join(", ");
+
+/* O erro e de coluna que ainda nao existe?
+   - leitura: Postgres 42703 ("column perfis.cnpj does not exist")
+   - gravacao: PostgREST PGRST204 ("Could not find the 'cnpj' column") */
+export function erroDeColunaFaltando(error) {
+  if (!error) return false;
+  const codigo = String(error.code || "");
+  if (codigo === "42703" || codigo === "PGRST204") return true;
+  return /column/i.test(String(error.message || "")) && /(does not exist|could not find)/i.test(String(error.message || ""));
+}
+
+/* Linha do banco (snake_case) -> objeto do app (camelCase), so com o
+   que veio. */
+export function perfilNovoDoBanco(linha) {
+  const saida = {};
+  if (!linha) return saida;
+  for (const [app, coluna] of Object.entries(CAMPOS_PERFIL_NOVOS)) {
+    if (coluna in linha) saida[app] = linha[coluna];
+  }
+  return saida;
+}
+
+/**
+ * Grava os campos novos do perfil (patch em camelCase, so os presentes).
+ * Nunca lanca. Devolve { ok } ou { ok: false, faltaColuna, visitante }.
+ */
+export async function gravarPerfilNovo(patch = {}) {
+  try {
+    const { data } = await supabase.auth.getUser();
+    if (!data?.user) return { ok: false, visitante: true };
+
+    const update = {};
+    for (const [app, coluna] of Object.entries(CAMPOS_PERFIL_NOVOS)) {
+      if (patch[app] !== undefined) update[coluna] = patch[app];
+    }
+    if (Object.keys(update).length === 0) return { ok: true };
+
+    const { error } = await supabase.from("perfis").update(update).eq("id", data.user.id);
+    if (error) return { ok: false, faltaColuna: erroDeColunaFaltando(error) };
+    return { ok: true };
+  } catch {
+    return { ok: false };
   }
 }

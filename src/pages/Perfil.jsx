@@ -1,4 +1,4 @@
-﻿/* PERFIL v18 — "Excluir conta" em branco (como as outras linhas); vermelho so no "Sair da conta" (pedido do Fernando) (v17: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes))) */
+﻿/* PERFIL v19 — Meu MEI: linha "CNPJ" (mascarado 12.345.•••/••01-90; sem CNPJ, "Não preenchido" com pontinho de aviso) que abre a busca/confirmacao (/perfil/cnpj) (v18: "Excluir conta" em branco (como as outras linhas); vermelho so no "Sair da conta" (pedido do Fernando) (v17: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes))) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
@@ -6,8 +6,9 @@ import {
   User, Settings, Info, Shield, Lock, LogOut,
   ChevronDown, UserPlus, X, Check, TrendingUp, BarChart3,
   Trash2, FileText, ArrowUpRight, ArrowDownLeft, CalendarCheck,
-  Briefcase, CalendarDays, Gauge, Sun, Moon, History, Phone, Headphones, Landmark,
+  Briefcase, CalendarDays, Gauge, Sun, Moon, History, Phone, Headphones, Landmark, Building2,
 } from "lucide-react";
+import { mascararCnpj } from "@/lib/cnpj";
 import Calendario from "../components/Calendario.jsx";
 import { LinhaCampo, AvisoFaleConosco, FolhaTipoMei } from "../components/PerfilFolhas.jsx";
 import {
@@ -67,6 +68,16 @@ const MOSTRAR_NOME_NO_TOPO = false;
 /* v12 (pedido do Fernando): a barra de baixo (Inicio, +, Perfil) some no
    Perfil. Volta-se ao Inicio pela setinha do topo ou pelo gesto. */
 const MOSTRAR_BARRA_NO_PERFIL = false;
+
+/* v19: "Não preenchido" com um pontinho de aviso (amarelo apagado) */
+function NaoPreenchido() {
+  return (
+    <span className="inline-flex items-center" style={{ gap: 7 }}>
+      Não preenchido
+      <span aria-hidden className="inline-block rounded-full" style={{ width: 7, height: 7, backgroundColor: "#f59e0b", opacity: 0.85 }} />
+    </span>
+  );
+}
 
 /* Preto | Branco, na propria linha do Tema */
 function SeletorTema({ tema, onEscolher }) {
@@ -167,7 +178,7 @@ export default function Perfil() {
   const navigate = useNavigate();
   const { nome, visitante, setNome: salvarNome, setTipo } = useUserState();
   const app = useAppState();
-  const { resetarConta, tipoMEI, mesAnoAbertura, setMesAnoAbertura, limiteAtual, faturamentoAtual, email } = app;
+  const { resetarConta, tipoMEI, mesAnoAbertura, setMesAnoAbertura, limiteAtual, faturamentoAtual, email, cnpj } = app;
   const [saindo, setSaindo] = useState(false);
 
   /* v14: dados que vieram do Editar perfil (ver o topo do arquivo) */
@@ -500,6 +511,14 @@ export default function Perfil() {
           {/* ===== Meu MEI: so informacao, sem setinha ===== */}
           {!visitante && (
             <SecaoLista titulo="Meu MEI">
+              {/* v19: CNPJ. Sem CNPJ: "Não preenchido" + pontinho de aviso
+                  discreto ("aparece so quando precisa": nao insiste). */}
+              <LinhaLista
+                Icon={Building2}
+                rotulo="CNPJ"
+                valor={cnpj ? mascararCnpj(cnpj) : <NaoPreenchido />}
+                onClick={() => navigate("/perfil/cnpj", DE_PERFIL)}
+              />
               {/* v14: tocaveis (vieram do Editar perfil). A abertura so
                   muda para quem abriu este ano (limite proporcional). */}
               <LinhaLista Icon={Briefcase} rotulo="Tipo de MEI" valor={rotuloTipo} onClick={() => setFolhaTipoAberta(true)} />

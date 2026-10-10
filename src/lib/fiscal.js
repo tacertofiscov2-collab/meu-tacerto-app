@@ -1,3 +1,4 @@
+/* FISCAL v2 — valor do DAS pelo CNAE (caminhoneiro: municipal / intermunicipal / os dois; MEI comum: comercio / servicos / os dois) (v1: fonte unica das regras fiscais) */
 // Fonte ÚNICA da verdade para regras fiscais do TaCerto!
 
 export const LIMITES_ANUAIS = {
@@ -144,9 +145,76 @@ export const DAS_2026 = {
   MEI_CAMINHONEIRO: {
     intermunicipal_interestadual: 195.52,
     municipal: 199.52,
+    /* v2: R$ 200,52 e quem paga ICMS + ISS (frete municipal E
+       intermunicipal). O nome antigo da chave ficou para nao quebrar
+       quem ja usa; o certo e "icms_e_iss" (abaixo). */
     produtos_perigosos_mudancas: 200.52,
+    icms_e_iss: 200.52,
   },
 };
+
+/* ===================================================================
+   VALOR DO DAS PELO CNAE (v2 — 10/10/2026)
+
+   Salario minimo de 2026: R$ 1.621 (Decreto 12.797/2025). O DAS do MEI
+   e INSS + R$ 1 de ICMS (comercio, industria, frete entre cidades) e/ou
+   R$ 5 de ISS (servicos, frete na mesma cidade).
+
+   MEI CAMINHONEIRO (CNAE 4930-2/xx):
+     so 4930-2/01 (frete municipal)            -> ISS        R$ 199,52
+     4930-2/01 + outro 4930-2/0x               -> ICMS + ISS R$ 200,52
+     so 4930-2/02, /03 ou /04 (entre cidades)  -> ICMS       R$ 195,52
+     sem CNAE no perfil                        -> R$ 195,52 (como antes)
+   MEI COMUM:
+     comercio (divisoes 45 a 47) ou industria (05 a 33) -> ICMS R$ 82,05
+     servico (o resto)                                   -> ISS  R$ 86,05
+     os dois                                             -> R$ 87,05
+     sem CNAE no perfil -> R$ 86,05 (servicos, como antes)
+   Conta o CNAE principal E os secundarios (o DAS cobra pelas
+   atividades registradas).
+   ⚠️ Valores de 2026: trocar DAS_2026 quando sair o salario de 2027.
+   =================================================================== */
+export const DAS_ATIVIDADE_PADRAO = {
+  MEI_CAMINHONEIRO: "intermunicipal_interestadual",
+  MEI: "servicos",
+};
+
+function cnae7(c) {
+  const d = String(c ?? "").replace(/\D/g, "");
+  return d.length === 7 ? d : "";
+}
+
+/* Qual linha do DAS_2026 vale para o tipo e os CNAEs (principal +
+   secundarios, em qualquer formato: 4930202, "4930-2/02"...) */
+export function atividadeDasPeloCnae(tipo, cnaes = []) {
+  const lista = (Array.isArray(cnaes) ? cnaes : [cnaes]).map(cnae7).filter(Boolean);
+  if (tipo === "MEI_CAMINHONEIRO") {
+    const frete = lista.filter((c) => c.startsWith("49302"));
+    if (!frete.length) return DAS_ATIVIDADE_PADRAO.MEI_CAMINHONEIRO;
+    const municipal = frete.includes("4930201");
+    const entreCidades = frete.some((c) => c !== "4930201");
+    if (municipal && entreCidades) return "icms_e_iss";
+    return municipal ? "municipal" : "intermunicipal_interestadual";
+  }
+  if (!lista.length) return DAS_ATIVIDADE_PADRAO.MEI;
+  const divisao = (c) => Number(c.slice(0, 2));
+  const comercioOuIndustria = lista.some((c) => {
+    const d = divisao(c);
+    return (d >= 45 && d <= 47) || (d >= 5 && d <= 33);
+  });
+  const servico = lista.some((c) => {
+    const d = divisao(c);
+    return !((d >= 45 && d <= 47) || (d >= 5 && d <= 33));
+  });
+  if (comercioOuIndustria && servico) return "comercio_e_servicos";
+  return comercioOuIndustria ? "comercio_industria" : "servicos";
+}
+
+/* Valor do DAS do mes (R$) para o tipo e os CNAEs do perfil */
+export function valorDasMensal(tipo, cnaes = []) {
+  const tabela = DAS_2026[tipo] || DAS_2026.MEI;
+  return tabela[atividadeDasPeloCnae(tipo, cnaes)] ?? tabela[DAS_ATIVIDADE_PADRAO[tipo] || DAS_ATIVIDADE_PADRAO.MEI];
+}
 
 export const DAS_VENCIMENTO_DIA = 20;
 export const DAS_VENCIMENTO_LABEL =

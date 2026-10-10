@@ -1,84 +1,45 @@
-/* ONBOARDING v14 — bolinhas de progresso (abaixo do logo) VERDES de novo, como eram antes da v13 (pedido do Fernando) (v13: cara do app: opcao escolhida sem verde e sem fundo cinza (so mais acesa), fundo preto em tudo, verde so no botao de continuar; letras maiores; campos com 16px (o iPhone dava zoom) (v12: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v11: botao "Começar a usar" em contorno verde (botao-confirmar) (v10: gesto de voltar do iPhone volta UMA ETAPA (nao sai mais do onboarding para o Inicio); onboarding ja feito volta para o Inicio (v9: nome ja preenchido; v8: "Digitar valor" em folha acima do teclado))) */
+/* ONBOARDING v15 — etapa nova "Qual o CNPJ do seu MEI?" depois do nome (opcional, "Preencher depois"); achou na BrasilAPI: "Achei você" e "Está certo" grava CNPJ, CNAE, MEI desde, tipo e abertura e vai pro Inicio (pula tipo e abertura); SAIU a etapa "Quanto você já faturou" (o onboarding termina no "Abriu este ano?") (v14: bolinhas de progresso (abaixo do logo) VERDES de novo, como eram antes da v13 (pedido do Fernando) (v13: cara do app: opcao escolhida sem verde e sem fundo cinza (so mais acesa), fundo preto em tudo, verde so no botao de continuar; letras maiores; campos com 16px (o iPhone dava zoom) (v12: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v11: botao "Começar a usar" em contorno verde (botao-confirmar) (v10: gesto de voltar do iPhone volta UMA ETAPA (nao sai mais do onboarding para o Inicio); onboarding ja feito volta para o Inicio (v9: nome ja preenchido; v8: "Digitar valor" em folha acima do teclado))) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import {
-  ArrowLeft, ArrowRight, Briefcase, Truck, CheckCircle2, Clock, Gauge, CalendarDays, X,
+  ArrowLeft, ArrowRight, Briefcase, Truck, CheckCircle2, Clock, Gauge, CalendarDays,
 } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
 import { setUserState } from "@/lib/userState";
 import { LIMITES_ANUAIS, limiteProporcional, LIMITE_NOME_INPUT } from "@/lib/fiscal";
+import { mesAnoDaOpcaoMei } from "@/lib/cnpj";
 import SeletorMesAno from "@/components/SeletorMesAno";
 import Valor from "@/components/Valor";
+import { PassoDigitarCnpj, PassoAcheiVoce } from "@/components/FluxoCnpj";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 import { useAppState } from "@/context/AppStateContext";
 
 /* ===================================================================
-   ONBOARDING v8 (04/10/2026) — pedido do Fernando, testado no iPhone
+   ONBOARDING v15 (10/10/2026) — CNPJ e fim do "Quanto você já faturou"
+   (tarefa de 08-10, decisoes do Fernando em docs/HANDOFF-08-10-PESQUISAS.md)
 
-   1) TECLADO: o campo do "Digitar valor" ficava no meio da tela e o
-      teclado do iPhone subia por cima dele. Agora o "Digitar valor"
-      abre uma FOLHA que sobe de baixo (FolhaDigitarValor), com a mesma
-      tecnica da folha "Lançar saída" (Saidas.jsx): a folha acompanha o
-      espaco visivel acima do teclado (visualViewport), entao o campo e
-      o botao nunca ficam escondidos. O botao da folha ja termina o
-      cadastro ("Começar a usar"). Fechar pelo X guarda o valor: ele
-      aparece no proprio quadrinho ("R$ 98.000") e o "Começar a usar"
-      da tela tambem funciona.
-      Sem campo na tela, o step 4 voltou a ficar centralizado, como o
-      2 e o 3.
-
-   2) TITULO: "Quanto você já faturou em <ano>?" — sem o "mais ou
-      menos".
+   Etapas agora:
+     1 Nome  ->  2 CNPJ (opcional)  ->  3 Tipo de MEI  ->  4 Abriu este ano?
+   - 2 CNPJ: "Qual o CNPJ do seu MEI?" (src/components/FluxoCnpj.jsx).
+       "Preencher depois" -> etapa 3, sem CNPJ.
+       Buscar e achou -> "Achei você" (etapa "achei"): nome, "Parece MEI
+         Caminhoneiro"/"Parece MEI" (1 toque troca) e "MEI desde".
+         "Está certo" grava CNPJ, CNAE, MEI desde, CNPJ confirmado, o
+         tipo e a abertura (mes/ano da opcao pelo MEI, SO se for deste
+         ano — a mesma regra de hoje) e vai DIRETO pro Inicio.
+         "Não sou eu" volta para o campo (com os numeros, para corrigir).
+       Buscar e falhou (sem rede, nao achou): "Não consegui buscar agora"
+         e segue para as etapas 3 e 4. O CNPJ digitado (valido) fica
+         guardado como NAO confirmado.
+   - SAIU a etapa "Quanto você já faturou em <ano>?" (faixas e "Digitar
+     valor", v7/v8). O "Começar a usar" voltou para a etapa 4. Quem
+     quiser pode atualizar o velocimetro no Inicio. (O codigo antigo
+     esta no Git, commits ate 5081b2f.)
+   - Gesto de voltar do iPhone: volta UMA etapa ("achei" volta para o
+     CNPJ). Igual a v10.
    =================================================================== */
-
-/* ===================================================================
-   ONBOARDING v7 (04/10/2026) — PILOTO COM MEI CAMINHONEIROS
-
-   1) TIPO DE MEI: "MEI Caminhoneiro" vem PRIMEIRO e JA MARCADO (e o
-      publico do piloto). "MEI (outras atividades)" continua ali, e so
-      tocar. Sem aviso nenhum (o "Confira" segue rejeitado, ver v6).
-
-   2) ETAPA NOVA (step 4), depois da data de abertura:
-      "Quanto voce mais ou menos ja faturou em <ano>?"
-        - faixas para tocar (FAIXAS_FATURAMENTO): grava o PONTO MEDIO
-          da faixa. "Mais de R$ 200 mil" nao tem fim: grava 225 mil
-          (meio do caminho entre 200 mil e 250 mil, perto do limite do
-          caminhoneiro).
-        - "Digitar valor": grava o valor digitado (em reais, sem
-          centavos).
-        - "Nao sei agora": pula, nao grava nada.
-      SEM MUDAR O BANCO: vira um LANCAMENTO normal na tabela
-      `lancamentos` que ja existe, com a descricao DESCRICAO_ESTIMADO e
-      a data de hoje, pelo mesmo adicionarLancamento do botao "+". Por
-      isso o velocimetro ja mostra o valor ao abrir o Dashboard, e a
-      pessoa pode editar ou apagar depois no Historico de entradas.
-      Se ja existir um lancamento com essa descricao (onboarding feito
-      de novo), nao grava outro — nao conta em dobro.
-      O step 4 rola e ancora no topo (temCampoDeTexto), porque o
-      "Digitar valor" abre o teclado.
-
-   3) O "Comecar a usar" saiu do step 3 (virou "Continuar") e foi para
-      o step 4. Os botoes finais travam enquanto salva (toque duplo nao
-      grava duas vezes).
-   =================================================================== */
-
-/* Descricao do lancamento do faturamento estimado (aparece no
-   Historico de entradas). */
-const DESCRICAO_ESTIMADO = "Faturamento estimado até hoje";
-
-/* Faixas do step 4. `valor` = o que vai para o velocimetro. */
-const FAIXAS_FATURAMENTO = [
-  { id: "ate50", rotulo: "Até R$ 50 mil", valor: 25000 },
-  { id: "50a100", rotulo: "R$ 50 a 100 mil", valor: 75000 },
-  { id: "100a150", rotulo: "R$ 100 a 150 mil", valor: 125000 },
-  { id: "150a200", rotulo: "R$ 150 a 200 mil", valor: 175000 },
-  { id: "mais200", rotulo: "Mais de R$ 200 mil", valor: 225000 },
-];
-const FAIXA_DIGITAR = "digitar";
-/* Ate 9.999.999 (7 digitos), dentro do teto de um lancamento. */
-const MAX_DIGITOS_ESTIMADO = 7;
 
 /* ===================================================================
    ONBOARDING v6 (26/09/2026)
@@ -167,161 +128,6 @@ function Progress({ step }) {
   );
 }
 
-/* ===================================================================
-   FOLHA "DIGITAR VALOR" (v8)
-
-   Mesma tecnica da folha "Lançar saída" (Saidas.jsx), que ja funciona
-   no iPhone: a area da folha acompanha o espaco visivel ACIMA do
-   teclado (visualViewport). A folha fica no fim dessa area, entao o
-   campo e o botao sobem junto com o teclado e nunca ficam por baixo
-   dele. Vive num portal, fora da tela do onboarding.
-   =================================================================== */
-function FolhaDigitarValor({ ano, valor, onMudar, finalizando, onFechar, onConfirmar }) {
-  const areaRef = useRef(null);
-
-  useEffect(() => {
-    const area = areaRef.current;
-    const vv = window.visualViewport;
-    const htmlEl = document.documentElement;
-    const bodyEl = document.body;
-    const oh = htmlEl.style.overflow;
-    const ob = bodyEl.style.overflow;
-    htmlEl.style.overflow = "hidden";
-    bodyEl.style.overflow = "hidden";
-
-    // Sem isso, arrastar o dedo rolava a tela de tras
-    const bloquear = (e) => e.preventDefault();
-    document.addEventListener("touchmove", bloquear, { passive: false });
-
-    const ajustar = () => {
-      if (!area || !vv) return;
-      area.style.top = `${vv.offsetTop}px`;
-      area.style.height = `${vv.height}px`;
-    };
-    ajustar();
-    vv?.addEventListener("resize", ajustar);
-    vv?.addEventListener("scroll", ajustar);
-    return () => {
-      document.removeEventListener("touchmove", bloquear);
-      htmlEl.style.overflow = oh;
-      bodyEl.style.overflow = ob;
-      vv?.removeEventListener("resize", ajustar);
-      vv?.removeEventListener("scroll", ajustar);
-    };
-  }, []);
-
-  const numero = Number(valor || 0);
-  const podeConfirmar = numero > 0 && !finalizando;
-
-  return createPortal(
-    <>
-      <style>{`
-        @keyframes folhaValorSobe { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        @keyframes folhaValorFundo { from { opacity: 0; } to { opacity: 1; } }
-        @media (prefers-reduced-motion: reduce) { .folha-valor { animation: none !important; } }
-      `}</style>
-
-      <div
-        className="fixed inset-0"
-        style={{ zIndex: 80, background: "rgba(0,0,0,0.55)", animation: "folhaValorFundo 220ms ease-out" }}
-        onClick={() => !finalizando && onFechar()}
-      />
-
-      <div
-        ref={areaRef}
-        className="fixed flex flex-col justify-end"
-        style={{ zIndex: 81, left: 0, right: 0, top: 0, height: "100dvh", paddingTop: 24, pointerEvents: "none" }}
-      >
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Digitar o valor faturado"
-          className="folha-valor w-full mx-auto flex flex-col rounded-t-3xl"
-          style={{
-            pointerEvents: "auto",
-            maxWidth: 480,
-            maxHeight: "100%",
-            backgroundColor: "var(--bg)",
-            border: "1px solid var(--card-borda)",
-            borderBottom: "none",
-            animation: "folhaValorSobe 280ms cubic-bezier(0.22,0.61,0.36,1)",
-          }}
-        >
-          {/* titulo + fechar */}
-          <div className="shrink-0 flex items-center justify-between" style={{ padding: "16px 18px 6px" }}>
-            <p className="font-bold" style={{ fontSize: 18, color: "var(--text)" }}>
-              Faturado em {ano}
-            </p>
-            <button
-              onClick={onFechar}
-              disabled={finalizando}
-              aria-label="Fechar"
-              className="rounded-full flex items-center justify-center"
-              style={{ width: 32, height: 32, border: "1px solid var(--border)" }}
-            >
-              <X size={16} style={{ color: "var(--text-secondary)" }} />
-            </button>
-          </div>
-
-          {/* campo */}
-          <div className="shrink-0" style={{ padding: "8px 18px 14px" }}>
-            <input
-              type="text"
-              inputMode="numeric"
-              autoFocus
-              aria-label="Valor faturado no ano"
-              placeholder="R$ 0"
-              value={numero ? `R$ ${numero.toLocaleString("pt-BR")}` : ""}
-              onChange={(e) =>
-                onMudar(
-                  e.target.value.replace(/\D/g, "").replace(/^0+/, "").slice(0, MAX_DIGITOS_ESTIMADO),
-                )
-              }
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && podeConfirmar) onConfirmar();
-              }}
-              className="campo-tacerto w-full rounded-2xl font-bold focus:outline-none placeholder:opacity-50"
-              style={{
-                backgroundColor: "transparent",
-                border: "1px solid var(--border)",
-                color: "var(--text)",
-                fontSize: 22,
-                padding: "12px 14px",
-              }}
-            />
-          </div>
-
-          {/* rodape: o botao nunca some atras do teclado */}
-          <div
-            className="shrink-0"
-            style={{
-              padding: "12px 18px",
-              paddingBottom: "calc(14px + env(safe-area-inset-bottom))",
-              borderTop: "1px solid var(--border)",
-            }}
-          >
-            <button
-              onClick={onConfirmar}
-              disabled={!podeConfirmar}
-              className="botao-confirmar w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 transition active:scale-[0.99] disabled:opacity-40"
-              style={{
-                backgroundColor: "var(--primary)",
-                color: "var(--primary-contrast)",
-                fontSize: 16,
-                lineHeight: "22px",
-              }}
-            >
-              Começar a usar
-              <ArrowRight size={18} strokeWidth={2.4} />
-            </button>
-          </div>
-        </div>
-      </div>
-    </>,
-    document.body,
-  );
-}
-
 export default function Onboarding() {
   useTemaEscuroForcado();
   const navigate = useNavigate();
@@ -339,14 +145,14 @@ export default function Onboarding() {
   const [meiEsseAno, setMeiEsseAno] = useState(null);
   const [mesMei, setMesMei] = useState("");
   const [seletorMes, setSeletorMes] = useState(false);
-  /* v7: step 4 (faturamento estimado) */
-  const [faixaFat, setFaixaFat] = useState(null);
-  const [valorDigitado, setValorDigitado] = useState("");
   const [finalizando, setFinalizando] = useState(false);
-  /* v8: folha do "Digitar valor" (fica acima do teclado) */
-  const [folhaValor, setFolhaValor] = useState(false);
+  /* v15: CNPJ (etapa 2). cnpjDigitado = o que a pessoa digitou (vale
+     mesmo sem confirmar); dadosCnpj = o que a BrasilAPI devolveu. */
+  const [cnpjDigitado, setCnpjDigitado] = useState("");
+  const [dadosCnpj, setDadosCnpj] = useState(null);
+  const [tipoDoCnpj, setTipoDoCnpj] = useState("MEI_CAMINHONEIRO");
 
-  const { lancamentos, adicionarLancamento, setModoSimulacao } = useAppState();
+  const { salvarDadosCnpj } = useAppState();
 
   const inputCodigoRef = useRef(null);
 
@@ -412,18 +218,9 @@ export default function Onboarding() {
       ? limiteProporcional(tipoCanonico, parseInt(mesMei), anoAtual, anoAtual)
       : limiteCheio;
 
-  /* v7: valor que o step 4 vai gravar (0 = nada escolhido ainda) */
-  const valorEstimado =
-    faixaFat === FAIXA_DIGITAR
-      ? Number(valorDigitado || 0)
-      : FAIXAS_FATURAMENTO.find((f) => f.id === faixaFat)?.valor || 0;
-
+  /* v15: 1 nome, 2 CNPJ ("achei" tambem e a 2), 3 tipo, 4 abertura */
   const progressStep =
-    step === 4
-      ? faixaFat && valorEstimado > 0 ? 4 : 3
-      : step === 3
-      ? meiEsseAno === false || (meiEsseAno === true && mesMei) ? 3 : 2
-      : step === 0 || step === "verificar" ? 1 : step;
+    step === "achei" ? 2 : step === 0 || step === "verificar" ? 1 : step;
 
   const fieldStyle = {
     backgroundColor: "transparent",
@@ -477,56 +274,102 @@ export default function Onboarding() {
     setStep(1);
   }
 
-  /* v7: `estimado` = faturamento do ano informado no step 4 (0 = "Nao
-     sei agora"). Vira um lancamento normal — ver o topo do arquivo. */
-  async function handleFinalizar(estimado = 0) {
+  /* v15: termina o cadastro. Dois caminhos:
+     - pelas etapas 3 e 4 (tipo + "Abriu este ano?"): usa o que a pessoa
+       escolheu ali; o CNPJ digitado (se houver) vai como NAO confirmado.
+     - pelo "Está certo" do CNPJ (`peloCnpj`): tipo do "Achei você" e
+       abertura pela data de opcao pelo MEI (so se for deste ano). */
+  async function handleFinalizar({ peloCnpj = false } = {}) {
     if (finalizando) return;
     setFinalizando(true);
+
+    let tipoFinal = tipoCanonico;
+    let mesAb = meiEsseAno && mesMei ? parseInt(mesMei) : null;
+    let anoAb = meiEsseAno && mesMei ? anoAtual : null;
+    if (peloCnpj && dadosCnpj) {
+      tipoFinal = tipoDoCnpj === "MEI_CAMINHONEIRO" ? "MEI_CAMINHONEIRO" : "MEI";
+      const ab = mesAnoDaOpcaoMei(dadosCnpj.dataOpcaoMei, anoAtual);
+      mesAb = ab?.mes || null;
+      anoAb = ab?.ano || null;
+    }
+    const limiteGravado = mesAb && anoAb
+      ? limiteProporcional(tipoFinal, mesAb, anoAb, anoAtual)
+      : LIMITES_ANUAIS[tipoFinal];
+
     salvarPerfilLocal({
       nome,
-      perfil: tipoCanonico.toLowerCase(),
-      limite: limiteFinal,
+      perfil: tipoFinal.toLowerCase(),
+      limite: limiteGravado,
     });
     setUserState({
       nome,
-      tipo: tipoCanonico,
-      mesAbertura: meiEsseAno && mesMei ? parseInt(mesMei) : null,
-      anoAbertura: meiEsseAno && mesMei ? anoAtual : null,
+      tipo: tipoFinal,
+      mesAbertura: mesAb,
+      anoAbertura: anoAb,
     });
-    const jaTemEstimado = lancamentos.some((l) => l.descricao === DESCRICAO_ESTIMADO);
-    if (estimado > 0 && !jaTemEstimado) {
-      // Igual ao "+": sai do modo simulacao para o velocimetro somar os lancamentos
-      setModoSimulacao(false);
-      adicionarLancamento({
-        descricao: DESCRICAO_ESTIMADO,
-        valor: estimado,
-        data: new Date().toISOString(),
-      });
-    }
     try {
       const { data } = await supabase.auth.getUser();
       if (data.user) {
         await salvarWhatsapp(data.user.id);
         await supabase.from("perfis").update({
           nome,
-          tipo_mei: tipoCanonico,
+          tipo_mei: tipoFinal,
           onboarding_ok: true,
-          mes_abertura: meiEsseAno && mesMei ? parseInt(mesMei) : null,
-          ano_abertura: meiEsseAno && mesMei ? anoAtual : null,
+          mes_abertura: mesAb,
+          ano_abertura: anoAb,
           atualizado_em: new Date().toISOString(),
         }).eq("id", data.user.id);
       }
     } catch { /* visitante */ }
+
+    /* CNPJ: colunas novas, gravadas a parte (sem o SQL de 08-10 ficam
+       so no aparelho e sobem depois — ver AppStateContext v3) */
+    if (peloCnpj && dadosCnpj) {
+      await salvarDadosCnpj({
+        cnpj: dadosCnpj.cnpj,
+        cnae: dadosCnpj.cnaePrincipal || null,
+        cnaesSecundarios: dadosCnpj.cnaesSecundarios || [],
+        dataOpcaoMei: dadosCnpj.dataOpcaoMei || null,
+        cnpjConfirmado: true,
+      });
+    } else if (cnpjDigitado) {
+      await salvarDadosCnpj({ cnpj: cnpjDigitado, cnpjConfirmado: false });
+    }
+
     /* v10: troca a marca do historico pelo Inicio (ver "GESTO DE VOLTAR") */
     saindoRef.current = true;
     navigate("/dashboard", { replace: true });
   }
 
+  /* v15: CNPJ achado -> "Achei você", ja com o tipo que o CNAE sugere */
+  function aoAcharCnpj(dados) {
+    setCnpjDigitado(dados.cnpj);
+    setDadosCnpj(dados);
+    setTipoDoCnpj(dados.pareceCaminhoneiro ? "MEI_CAMINHONEIRO" : "MEI");
+    setStep("achei");
+  }
+
+  /* v15: nao deu para buscar: avisa e segue para as perguntas de sempre.
+     O CNPJ digitado e valido (os digitos conferem), entao fica guardado
+     como nao confirmado. */
+  function aoFalharCnpj(digitos) {
+    setCnpjDigitado(digitos);
+    setDadosCnpj(null);
+    toast("Não consegui buscar agora");
+    setStep(3);
+  }
+
+  /* Etapa anterior (setinha e gesto). "achei" volta para o campo. */
+  function etapaAnterior() {
+    if (step === "verificar") { setErro(""); setStep(0); return true; }
+    if (step === 1 && origemGoogle) { setErro(""); setStep(0); return true; }
+    if (step === "achei") { setStep(2); return true; }
+    if (typeof step === "number" && step > 1) { setStep(step - 1); return true; }
+    return false;
+  }
+
   function handleBack() {
-    if (step === "verificar") { setErro(""); setStep(0); }
-    else if (step === 1 && origemGoogle) { setErro(""); setStep(0); }
-    else if (step > 1) setStep(step - 1);
-    else sairDoOnboarding();
+    if (!etapaAnterior()) sairDoOnboarding();
   }
 
   /* ===================================================================
@@ -548,11 +391,8 @@ export default function Onboarding() {
   const saindoRef = useRef(false);
   const voltarPeloGestoRef = useRef(null);
   voltarPeloGestoRef.current = () => {
-    if (folhaValor) { setFolhaValor(false); return; }
-    if (step === "verificar") { setErro(""); setStep(0); }
-    else if (step === 1 && origemGoogle) { setErro(""); setStep(0); }
-    else if (typeof step === "number" && step > 1) setStep(step - 1);
-    // primeira etapa: fica aqui
+    // primeira etapa: fica aqui (etapaAnterior devolve false)
+    etapaAnterior();
   };
 
   useEffect(() => {
@@ -587,9 +427,9 @@ export default function Onboarding() {
 
      Os steps 2 e 3 sao escolhas por botao — nao abrem teclado, entao
      continuam centralizados e travados, como sempre. */
-  /* v8: o step 4 NAO entra aqui — o "Digitar valor" abre uma folha
-     propria (FolhaDigitarValor), que ja cuida do teclado. */
-  const temCampoDeTexto = step === 0 || step === 1 || isVerificar;
+  /* v15: o 2 (CNPJ) tem campo, entao entra aqui. O "achei" e os 3 e 4
+     sao so botoes. */
+  const temCampoDeTexto = step === 0 || step === 1 || step === 2 || isVerificar;
 
   return (
     <div
@@ -849,8 +689,31 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* ====== STEP 2: TIPO MEI ====== */}
+          {/* ====== STEP 2: CNPJ (v15, opcional) ====== */}
           {step === 2 && (
+            <PassoDigitarCnpj
+              valorInicial={cnpjDigitado}
+              onAchou={aoAcharCnpj}
+              onFalhou={aoFalharCnpj}
+              onPular={() => { setCnpjDigitado(""); setDadosCnpj(null); setStep(3); }}
+            />
+          )}
+
+          {/* ====== STEP "ACHEI": CONFIRMAR O CNPJ (v15) ====== */}
+          {step === "achei" && dadosCnpj && (
+            <PassoAcheiVoce
+              dados={dadosCnpj}
+              tipo={tipoDoCnpj}
+              tipoDetectado={dadosCnpj.pareceCaminhoneiro ? "MEI_CAMINHONEIRO" : "MEI"}
+              onTrocarTipo={() => setTipoDoCnpj((t) => (t === "MEI_CAMINHONEIRO" ? "MEI" : "MEI_CAMINHONEIRO"))}
+              onConfirmar={() => handleFinalizar({ peloCnpj: true })}
+              onNaoSouEu={() => { setDadosCnpj(null); setStep(2); }}
+              salvando={finalizando}
+            />
+          )}
+
+          {/* ====== STEP 3: TIPO MEI (v15: era o 2) ====== */}
+          {step === 3 && (
             <div className="shrink-0">
               <h1
                 className="text-2xl font-bold text-center mb-5"
@@ -904,7 +767,7 @@ export default function Onboarding() {
 
               <div className="mt-6">
                 <button
-                  onClick={() => setStep(3)}
+                  onClick={() => setStep(4)}
                   disabled={!tipoMei}
                   className={btnPrincipalClasse}
                   style={btnPrincipal}
@@ -916,8 +779,8 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* ====== STEP 3: ABERTURA ====== */}
-          {step === 3 && (
+          {/* ====== STEP 4: ABERTURA (v15: era o 3; agora e a ultima) ====== */}
+          {step === 4 && (
             <div className="shrink-0">
               <h1
                 className="text-2xl font-bold text-center mb-5"
@@ -1024,105 +887,21 @@ export default function Onboarding() {
                 )}
               </div>
 
-              {/* v7: segue para o faturamento estimado (step 4) */}
+              {/* v15: ultima etapa — termina o cadastro */}
               <button
-                onClick={() => setStep(4)}
-                disabled={meiEsseAno === null || (meiEsseAno === true && !mesMei)}
+                onClick={() => handleFinalizar()}
+                disabled={finalizando || meiEsseAno === null || (meiEsseAno === true && !mesMei)}
                 className={btnPrincipalClasse}
                 style={btnPrincipal}
               >
-                Continuar
+                Começar a usar
                 <ArrowRight size={18} strokeWidth={2.4} />
               </button>
             </div>
           )}
 
-          {/* ====== STEP 4: FATURAMENTO ESTIMADO (v7) ====== */}
-          {step === 4 && (
-            <div className="shrink-0">
-              {/* v8: linhas equilibradas ("Quanto você já / faturou em
-                  2026?") — sem isso o "2026?" ficava sozinho embaixo */}
-              <h1
-                className="text-2xl font-bold text-center mb-5"
-                style={{ color: "var(--text)", textWrap: "balance" }}
-              >
-                Quanto você já faturou em{" "}{anoAtual}?
-              </h1>
-
-              {/* Mesmo padrao de escolha do step 3 (grade de 2).
-                  v8: "Digitar valor" abre a folha; depois de digitado, o
-                  quadrinho mostra o valor ("R$ 98.000"). */}
-              <div className="grid grid-cols-2 gap-2.5">
-                {[
-                  ...FAIXAS_FATURAMENTO,
-                  {
-                    id: FAIXA_DIGITAR,
-                    rotulo: valorDigitado
-                      ? `R$ ${Number(valorDigitado).toLocaleString("pt-BR")}`
-                      : "Digitar valor",
-                  },
-                ].map((f) => {
-                  const sel = faixaFat === f.id;
-                  return (
-                    <button
-                      key={f.id}
-                      onClick={() => {
-                        setFaixaFat(f.id);
-                        if (f.id === FAIXA_DIGITAR) setFolhaValor(true);
-                      }}
-                      className="py-3 px-2 rounded-2xl text-[15px] font-medium inline-flex items-center justify-center text-center"
-                      style={{
-                        ...estiloCard(sel, faixaFat !== null),
-                        color: "var(--text)",
-                        minHeight: 52,
-                      }}
-                    >
-                      {f.rotulo}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="mt-6">
-                <button
-                  onClick={() => handleFinalizar(valorEstimado)}
-                  disabled={finalizando || valorEstimado <= 0}
-                  className={btnPrincipalClasse}
-                  style={btnPrincipal}
-                >
-                  Começar a usar
-                  <ArrowRight size={18} strokeWidth={2.4} />
-                </button>
-
-                <button
-                  onClick={() => handleFinalizar(0)}
-                  disabled={finalizando}
-                  className="w-full text-center text-[15px] pt-4 disabled:opacity-40"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Não sei agora
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
-
-      {/* v8: folha do "Digitar valor" — fica acima do teclado */}
-      {folhaValor && (
-        <FolhaDigitarValor
-          ano={anoAtual}
-          valor={valorDigitado}
-          onMudar={setValorDigitado}
-          finalizando={finalizando}
-          onFechar={() => {
-            setFolhaValor(false);
-            // Fechou sem digitar nada: desmarca o quadrinho
-            if (!valorDigitado) setFaixaFat(null);
-          }}
-          onConfirmar={() => handleFinalizar(Number(valorDigitado || 0))}
-        />
-      )}
 
       <SeletorMesAno
         aberto={seletorMes}

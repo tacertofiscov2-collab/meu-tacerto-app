@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v29 — velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
+﻿/* DASHBOARD v30 — valor do DAS pelo CNAE do perfil (fiscal.js) e o CNPJ nas mensagens do WhatsApp (v29: velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -20,7 +20,7 @@ import { useMarcaDaConta } from "@/lib/marcasDaConta";
 import { useAppState } from "@/context/AppStateContext";
 import {
   LABEL_TIPO, faixaDoVelocimetro, FAIXA_INFO,
-  truncarNome, DAS_2026, DAS_VENCIMENTO_DIA,
+  truncarNome, DAS_VENCIMENTO_DIA, valorDasMensal,
 } from "@/lib/fiscal";
 import { supabase } from "@/lib/supabase";
 import { listarConexoes, sincronizar, organizarPelasRegras } from "@/lib/openfinance";
@@ -1062,22 +1062,18 @@ function BotaoFiscoWhatsApp({ dadosWhats }) {
    ⚠️ Valores de 2026: trocar em fiscal.js quando o salario minimo de
    2027 sair.
    =================================================================== */
-const DAS_ATIVIDADE_PADRAO = {
-  MEI_CAMINHONEIRO: "intermunicipal_interestadual",
-  MEI: "servicos",
-};
+/* v30: o valor vem de fiscal.js (valorDasMensal), pelo CNAE do perfil */
 
 function proximoVencimentoDas(hoje = new Date()) {
   const mes = hoje.getDate() <= DAS_VENCIMENTO_DIA ? hoje.getMonth() : hoje.getMonth() + 1;
   return new Date(hoje.getFullYear(), mes, DAS_VENCIMENTO_DIA);
 }
 
-function CardProximoDas({ tipoMEI, onEmitirBoleto }) {
+function CardProximoDas({ tipoMEI, cnaes, onEmitirBoleto }) {
   const vencimento = proximoVencimentoDas();
   const dia = String(vencimento.getDate()).padStart(2, "0");
   const mes = String(vencimento.getMonth() + 1).padStart(2, "0");
-  const tabela = DAS_2026[tipoMEI] || DAS_2026.MEI;
-  const valor = tabela[DAS_ATIVIDADE_PADRAO[tipoMEI] || DAS_ATIVIDADE_PADRAO.MEI];
+  const valor = valorDasMensal(tipoMEI, cnaes);
 
   return (
     /* Sem icone a esquerda: com ele, "Proximo DAS: dia 20/10" ficava
@@ -1220,13 +1216,12 @@ function SeletorVisualInicio({ visual, onEscolher }) {
 }
 
 /* Dia, mes e valor do proximo DAS (o mesmo calculo do CardProximoDas) */
-function dadosProximoDas(tipoMEI) {
+function dadosProximoDas(tipoMEI, cnaes) {
   const vencimento = proximoVencimentoDas();
-  const tabela = DAS_2026[tipoMEI] || DAS_2026.MEI;
   return {
     dia: String(vencimento.getDate()).padStart(2, "0"),
     mes: String(vencimento.getMonth() + 1).padStart(2, "0"),
-    valor: tabela[DAS_ATIVIDADE_PADRAO[tipoMEI] || DAS_ATIVIDADE_PADRAO.MEI],
+    valor: valorDasMensal(tipoMEI, cnaes),
   };
 }
 
@@ -2002,10 +1997,11 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const {
     nome, tipoMEI, faturamentoAtual, limiteAtual, limiteCheio, percentualAtual,
-    mediaMensal, mediaLimite, adicionarLancamento,
+    mediaMensal, mediaLimite, adicionarLancamento, cnpj, cnae, cnaesSecundarios,
   } = useAppState();
   // v20: nome e tipo de MEI que vao nas mensagens prontas do WhatsApp
-  const dadosWhats = dadosParaWhatsApp({ nome, tipoMEI });
+  // v30: e o CNPJ do perfil
+  const dadosWhats = dadosParaWhatsApp({ nome, tipoMEI, cnpj });
 
   /* =================================================================
      PORTAO DAS ENTRADAS (v15 — pedido do Fernando, 27/09/2026)
@@ -2068,7 +2064,9 @@ export default function Dashboard() {
     setVisual(v);
     try { localStorage.setItem(CHAVE_VISUAL_INICIO, v); } catch { /* ignora */ }
   }
-  const das = dadosProximoDas(tipoMEI);
+  /* v30: CNAE principal + secundarios do perfil (valor do DAS) */
+  const cnaesPerfil = [cnae, ...(cnaesSecundarios || [])].filter(Boolean);
+  const das = dadosProximoDas(tipoMEI, cnaesPerfil);
   const acoesInicio = {
     das,
     onDas: () => setFolhaDas(true),
@@ -2176,7 +2174,7 @@ export default function Dashboard() {
 
           {/* Piloto (v19): proximo DAS, logo abaixo do velocimetro */}
           {MOSTRAR_CARD_DAS && visual === "atual" && (
-            <CardProximoDas tipoMEI={tipoMEI} onEmitirBoleto={() => setFolhaDas(true)} />
+            <CardProximoDas tipoMEI={tipoMEI} cnaes={cnaesPerfil} onEmitirBoleto={() => setFolhaDas(true)} />
           )}
 
           {/* Piloto (v18): o Fisco atende pelo WhatsApp */}
