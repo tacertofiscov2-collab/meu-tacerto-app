@@ -1,4 +1,4 @@
-/* APRESENTACAOFISCO v5 — Fisco vira Isa: "Oi, sou a Isa" (assistente com IA do TaCerto), foto da Isa (FotoIsa) no texto e na barra do celular de exemplo, titulo "Apresentação da Isa" (v4: celular MENOR, menos espaco vazio dentro dele (desenho mais justo: 340 x 715, mesma proporcao) e icones MAIORES (barra DAS/Fisco/NF, rodape e sininho); celular e texto do Fisco juntos, centrados na tela (pedido do Fernando) (v3: celular de exemplo com proporcao de celular de verdade (390 x 820) e igual ao Inicio novo: saudacao, velocimetro grande e a barra dos 3 atalhos centrada entre as bolinhas e o rodape (v2: celular de exemplo igual ao Inicio novo (DAS, Fisco com o simbolo do WhatsApp, NF; casinha cinza; velocimetro mais alto); textos do + e do Perfil (v1: tutorial "Apresentação do Fisco.ia": celular de exemplo do Inicio (visual F) com um circulo verde passando por cada funcao e o Fisco.ia explicando, em slides */
+/* APRESENTACAOFISCO v6 — modo "tutorial" (primeiro acesso, Bloco L): 4 telas (o velocimetro e o limite; integracoes e o que automatizam; tudo tambem pelo WhatsApp; comece pelo extrato, Recomendado), "Pular tutorial" no topo e, no fim, "Enviar extrato" + "Agora não"; o modo de sempre (Apresentacao da Isa) nao mudou (v5: Fisco vira Isa: "Oi, sou a Isa" (assistente com IA do TaCerto), foto da Isa (FotoIsa) no texto e na barra do celular de exemplo, titulo "Apresentação da Isa" (v4: celular MENOR, menos espaco vazio dentro dele (desenho mais justo: 340 x 715, mesma proporcao) e icones MAIORES (barra DAS/Fisco/NF, rodape e sininho); celular e texto do Fisco juntos, centrados na tela (pedido do Fernando) (v3: celular de exemplo com proporcao de celular de verdade (390 x 820) e igual ao Inicio novo: saudacao, velocimetro grande e a barra dos 3 atalhos centrada entre as bolinhas e o rodape (v2: celular de exemplo igual ao Inicio novo (DAS, Fisco com o simbolo do WhatsApp, NF; casinha cinza; velocimetro mais alto); textos do + e do Perfil (v1: tutorial "Apresentação do Fisco.ia": celular de exemplo do Inicio (visual F) com um circulo verde passando por cada funcao e o Fisco.ia explicando, em slides) */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import VelocimetroAnimado from "./VelocimetroAnimado.jsx";
 import FotoIsa from "./FotoIsa.jsx";
+import SeloRecomendado from "./SeloRecomendado.jsx";
 import { MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA } from "@/config/piloto";
 
 /* ===================================================================
@@ -30,7 +31,7 @@ import { MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA } from "@/config/piloto";
      fecha a apresentacao, sem sair do Inicio.
    =================================================================== */
 
-const PASSOS = [
+const PASSOS_ISA = [
   { alvo: null, titulo: "Oi, sou a Isa", texto: "A assistente com IA do TaCerto. Vou te mostrar o app rapidinho." },
   {
     alvo: "velocimetro",
@@ -62,6 +63,33 @@ const PASSOS = [
     texto: "Lembretes aparecem aqui. E esta apresentação, se quiser ver de novo.",
   },
 ].filter((p) => p.mostrar !== false);
+
+/* v6: TUTORIAL DO PRIMEIRO ACESSO (12/10/2026, tarefa de 10-10, Bloco L)
+   No maximo 4 telas, o mesmo celular de exemplo. Abre sozinho na
+   primeira vez no Inicio (Dashboard) e da para rever em Perfil > Ajuda. */
+const PASSOS_TUTORIAL = [
+  {
+    alvo: "velocimetro",
+    titulo: "Seu limite do ano",
+    texto: "O velocímetro mostra quanto você já faturou e quanto ainda cabe no limite do MEI.",
+  },
+  {
+    alvo: "das",
+    titulo: "Conecte e o app faz sozinho",
+    texto: "O CNPJ preenche seus dados, o extrato soma o que entrou e saiu, e o boleto do DAS chega no WhatsApp.",
+  },
+  {
+    alvo: "fisco",
+    titulo: "Tudo isso também pelo WhatsApp",
+    texto: "Fale com a Isa quando quiser, sem abrir o app.",
+  },
+  {
+    /* sem destaque: o extrato nao e o "+" (o botao "Enviar extrato" vem logo abaixo) */
+    alvo: null,
+    titulo: "Comece pelo extrato",
+    texto: "Mande o extrato do banco: eu separo o que é faturamento e o velocímetro fica certo.",
+  },
+];
 
 /* Alvos redondos (icones soltos): o circulo vira circulo de verdade */
 const ALVOS_REDONDOS = ["mais", "perfil", "sino"];
@@ -280,7 +308,10 @@ function CelularDeExemplo({ alvo, escala }) {
   );
 }
 
-export default function ApresentacaoFisco({ aberto, onFechar }) {
+export default function ApresentacaoFisco({ aberto, onFechar, modo = "isa", onEnviarExtrato }) {
+  /* v6: "tutorial" = as 4 telas do primeiro acesso; "isa" = a Apresentacao de sempre */
+  const tutorial = modo === "tutorial";
+  const PASSOS = tutorial ? PASSOS_TUTORIAL : PASSOS_ISA;
   const [atual, setAtual] = useState(0);
   const toqueX = useRef(null);
   const fecharRef = useRef(onFechar);
@@ -356,7 +387,7 @@ export default function ApresentacaoFisco({ aberto, onFechar }) {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Apresentação da Isa"
+      aria-label={tutorial ? "Como funciona o TaCerto" : "Apresentação da Isa"}
       className="fixed inset-0 flex flex-col"
       style={{
         zIndex: 90,
@@ -387,7 +418,20 @@ export default function ApresentacaoFisco({ aberto, onFechar }) {
         >
           <ArrowLeft size={24} strokeWidth={2} style={{ color: "var(--text)" }} />
         </button>
-        <span className="font-bold truncate" style={{ fontSize: 20 }}>Apresentação da Isa</span>
+        <span className="font-bold truncate flex-1 min-w-0" style={{ fontSize: 20 }}>
+          {tutorial ? "Como funciona" : "Apresentação da Isa"}
+        </span>
+        {/* v6: no tutorial, "Pular tutorial" sempre a mao */}
+        {tutorial && (
+          <button
+            type="button"
+            onClick={onFechar}
+            className="toque shrink-0 font-medium"
+            style={{ fontSize: 14.5, color: "var(--text-secondary)", background: "none", padding: "8px 2px" }}
+          >
+            Pular tutorial
+          </button>
+        )}
       </div>
 
       {/* Celular + texto: da para arrastar para os lados.
@@ -446,14 +490,37 @@ export default function ApresentacaoFisco({ aberto, onFechar }) {
             />
           ))}
         </div>
-        <button
-          type="button"
-          onClick={proximo}
-          className="toque botao-confirmar w-full rounded-2xl font-semibold"
-          style={{ padding: "13px 0", fontSize: 16 }}
-        >
-          {ultimo ? "Começar" : "Próximo"}
-        </button>
+        {tutorial && ultimo ? (
+          /* v6: o ultimo passo do tutorial ja leva ao extrato */
+          <>
+            <button
+              type="button"
+              onClick={() => (onEnviarExtrato ? onEnviarExtrato() : onFechar())}
+              className="toque botao-confirmar relative w-full rounded-2xl font-semibold"
+              style={{ padding: "13px 0", fontSize: 16 }}
+            >
+              <SeloRecomendado />
+              Enviar extrato
+            </button>
+            <button
+              type="button"
+              onClick={onFechar}
+              className="toque w-full font-medium"
+              style={{ marginTop: 6, padding: "9px 0", fontSize: 15, color: "var(--text-secondary)", background: "none" }}
+            >
+              Agora não
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={proximo}
+            className="toque botao-confirmar w-full rounded-2xl font-semibold"
+            style={{ padding: "13px 0", fontSize: 16 }}
+          >
+            {ultimo ? "Começar" : "Próximo"}
+          </button>
+        )}
       </div>
     </div>,
     document.body,

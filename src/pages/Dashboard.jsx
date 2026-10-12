@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v38 — o atalho DAS ("Emitir boleto" do card Proximo DAS) abre a pagina do DAS (/das, MOSTRAR_PAGINA_DAS) em vez da folha (v37: Inicio de ANTES de volta como padrao (visual "atual": cartao de vidro, Proximo DAS, Como emitir nota e o chat da Isa embaixo, mesmas dimensoes); "Atualizado em" + "Atualizar velocimetro" EM CIMA do velocimetro, selo Estimado/Conferido tambem nele; o "?" do ano e o Tirar duvidas usam as perguntas do faqFisco (que tem resposta); DAS e NF do Inicio pelas acoes do Inicio (DAS e Notas); caixinha do chat com 16px e sem os botoes que nao faziam nada (MOSTRAR_ANEXOS_CHAT) (v36: Fisco vira Isa: foto da Isa (FotoIsa, webp) na barra DAS | Isa | NF, no botao do WhatsApp e no chat; textos "Isa" e "Pergunte à Isa..." (v35: o portao, quando as regras do pagador resolvem tudo sozinhas, tambem confere se o extrato ja pode substituir o total do ano digitado (substituirTotalPeloExtrato) (v34: proximo DAS com feriados nacionais (vencimentoDas.js: dia 20 ou o proximo dia util) (v33: o atalho NF abre a janela "Notas fiscais" (/notas-fiscais) (v32: o portao das entradas confirma pelas regras do pagador SEM contar duas vezes (lancarEntradasConfirmadas: casa com lancamento a mao e diminui o ajuste do total do ano) (v31: visual F: "Atualizado em 08/10 às 14:32" + botao "Atualizar velocimetro" abaixo do velocimetro (zerado: "Falta informar" e o botao em destaque) e selo Estimado/Conferido no velocimetro do ano; a folha de atualizar abre sempre (v30: valor do DAS pelo CNAE do perfil (fiscal.js) e o CNPJ nas mensagens do WhatsApp (v29: velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp))) */
+﻿/* DASHBOARD v39 — tutorial do primeiro acesso (Bloco L): na primeira vez no Inicio abre o "Como funciona" (4 telas, Pular tutorial); ao fechar ou ao tocar em Enviar extrato, guarda que ja viu (perfis.tutorial_visto; antes do SQL de 10-10, no aparelho) (v38: o atalho DAS ("Emitir boleto" do card Proximo DAS) abre a pagina do DAS (/das, MOSTRAR_PAGINA_DAS) em vez da folha (v37: Inicio de ANTES de volta como padrao (visual "atual": cartao de vidro, Proximo DAS, Como emitir nota e o chat da Isa embaixo, mesmas dimensoes); "Atualizado em" + "Atualizar velocimetro" EM CIMA do velocimetro, selo Estimado/Conferido tambem nele; o "?" do ano e o Tirar duvidas usam as perguntas do faqFisco (que tem resposta); DAS e NF do Inicio pelas acoes do Inicio (DAS e Notas); caixinha do chat com 16px e sem os botoes que nao faziam nada (MOSTRAR_ANEXOS_CHAT) (v36: Fisco vira Isa: foto da Isa (FotoIsa, webp) na barra DAS | Isa | NF, no botao do WhatsApp e no chat; textos "Isa" e "Pergunte à Isa..." (v35: o portao, quando as regras do pagador resolvem tudo sozinhas, tambem confere se o extrato ja pode substituir o total do ano digitado (substituirTotalPeloExtrato) (v34: proximo DAS com feriados nacionais (vencimentoDas.js: dia 20 ou o proximo dia util) (v33: o atalho NF abre a janela "Notas fiscais" (/notas-fiscais) (v32: o portao das entradas confirma pelas regras do pagador SEM contar duas vezes (lancarEntradasConfirmadas: casa com lancamento a mao e diminui o ajuste do total do ano) (v31: visual F: "Atualizado em 08/10 às 14:32" + botao "Atualizar velocimetro" abaixo do velocimetro (zerado: "Falta informar" e o botao em destaque) e selo Estimado/Conferido no velocimetro do ano; a folha de atualizar abre sempre (v30: valor do DAS pelo CNAE do perfil (fiscal.js) e o CNPJ nas mensagens do WhatsApp (v29: velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp)))) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -2203,6 +2203,18 @@ export default function Dashboard() {
   const [folhaDas, setFolhaDas] = useState(false);
   // v26: Apresentacao do Fisco.ia (abre pela notificacao do sininho)
   const [apresentacao, setApresentacao] = useState(false);
+  /* v39: tutorial do primeiro acesso. So decide depois de ler os campos
+     de 10-10 desta conta (extras10Prontos), para nao abrir para quem ja
+     viu em outro aparelho. Visitante nao ve. */
+  const [tutorialAberto, setTutorialAberto] = useState(false);
+  const { extras10Prontos, tutorialVisto, visitante, salvarExtras } = app;
+  useEffect(() => {
+    if (extras10Prontos && !visitante && !tutorialVisto) setTutorialAberto(true);
+  }, [extras10Prontos, visitante, tutorialVisto]);
+  function fecharTutorial() {
+    setTutorialAberto(false);
+    salvarExtras({ tutorialVisto: true });
+  }
   // v28: folha "Atualize seu velocimetro" (outra notificacao do sininho)
   const [folhaAtualizar, setFolhaAtualizar] = useState(false);
   function abrirNotificacao(id) {
@@ -2478,6 +2490,16 @@ export default function Dashboard() {
       {MOSTRAR_NOTIFICACOES && (
         <ApresentacaoFisco aberto={apresentacao} onFechar={() => setApresentacao(false)} />
       )}
+      {/* v39: tutorial do primeiro acesso */}
+      <ApresentacaoFisco
+        modo="tutorial"
+        aberto={tutorialAberto && !apresentacao}
+        onFechar={fecharTutorial}
+        onEnviarExtrato={() => {
+          fecharTutorial();
+          navigate("/enviar-extrato", DE_DASHBOARD);
+        }}
+      />
       {/* v31: abre pelo sininho E pelo botao "Atualizar velocímetro" */}
       <FolhaAtualizarVelocimetro aberto={folhaAtualizar} onFechar={() => setFolhaAtualizar(false)} />
 

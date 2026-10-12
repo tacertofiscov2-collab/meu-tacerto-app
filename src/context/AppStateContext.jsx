@@ -1,4 +1,4 @@
-/* APPSTATE v5 — campos de 10-10 (resumo e data da consulta do CNPJ, tutorial visto, avisos no WhatsApp, forma de pagar o DAS) numa leitura SEPARADA (dono proprio no aparelho, donoExtras10); salvarDadosCnpj grava tambem o resumo e a data da consulta; removerCnpj (apaga o CNPJ e o que veio dele); salvarExtras; adicionarLancamento devolve o id do banco (para ligar nota/comprovante ao lancamento) (v4: adicionarLancamento monta o lancamento ANTES do setState (com varios de uma vez o React adiava e a gravacao no banco saia vazia) (v3: campos novos do perfil (CNPJ, CNAE, MEI desde, CNPJ confirmado, atualizacao do velocimetro, lembrete do DAS, nota automatica) lidos numa consulta separada e guardados no aparelho ate o SQL de 08-10 rodar; "Atualizado em" do velocimetro marcado a cada lancamento (v2: mediaMensal vira o RITMO do ano (faturado / meses que passaram) + mediaLimite)) */
+/* APPSTATE v6 — extras10Prontos (os campos de 10-10 desta conta ja foram lidos nesta sessao; o tutorial do primeiro acesso so decide depois disso, para nao piscar) (v5: campos de 10-10 (resumo e data da consulta do CNPJ, tutorial visto, avisos no WhatsApp, forma de pagar o DAS) numa leitura SEPARADA (dono proprio no aparelho, donoExtras10); salvarDadosCnpj grava tambem o resumo e a data da consulta; removerCnpj (apaga o CNPJ e o que veio dele); salvarExtras; adicionarLancamento devolve o id do banco (para ligar nota/comprovante ao lancamento) (v4: adicionarLancamento monta o lancamento ANTES do setState (com varios de uma vez o React adiava e a gravacao no banco saia vazia) (v3: campos novos do perfil (CNPJ, CNAE, MEI desde, CNPJ confirmado, atualizacao do velocimetro, lembrete do DAS, nota automatica) lidos numa consulta separada e guardados no aparelho ate o SQL de 08-10 rodar; "Atualizado em" do velocimetro marcado a cada lancamento (v2: mediaMensal vira o RITMO do ano (faturado / meses que passaram) + mediaLimite))) */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   LIMITES_ANUAIS,
@@ -187,6 +187,9 @@ export function AppStateProvider({ children }) {
   stateRef.current = state;
   const userIdRef = useRef(null);
   const timerVelocimetroRef = useRef(null);
+  /* v6: os campos de 10-10 desta conta ja foram lidos nesta sessao (nao
+     vai para o aparelho: comeca false a cada abertura do app) */
+  const [extras10Prontos, setExtras10Prontos] = useState(false);
 
   // ------------------------------------------------------------------
   // PONTE COM O SUPABASE AUTH
@@ -301,10 +304,12 @@ export function AppStateProvider({ children }) {
 
       if (!linha) {
         setState((s) => (s.donoExtras10 === userId ? s : { ...s, ...EXTRAS_10_10, donoExtras10: userId }));
+        setExtras10Prontos(true);
         return;
       }
       const { mesclado, subir } = mesclarExtras10(perfilNovoDoBanco(linha, CAMPOS_PERFIL_10_10), local);
       setState((s) => ({ ...s, ...mesclado, donoExtras10: userId }));
+      setExtras10Prontos(true);
       if (Object.keys(subir).length) gravarPerfilNovo(subir);
     }
 
@@ -743,6 +748,7 @@ export function AppStateProvider({ children }) {
     salvarDadosCnpj,
     removerCnpj,
     salvarExtras,
+    extras10Prontos,
     salvarLembreteDas,
     ultimaAtualizacaoVelocimetro,
     adicionarLancamento,

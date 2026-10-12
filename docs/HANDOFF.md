@@ -563,3 +563,19 @@ K2. "Extratos enviados → Ver e apagar": apagar tira o **arquivo e o
 K3. "Notificações do celular" só mostra o status (Ligadas / Bloqueadas /
     Não pedidas): o app ainda não manda notificação no celular. Pedir a
     permissão quando existir notificação de verdade.
+
+**Bloco L (tutorial do primeiro acesso)**
+
+L1. Na **primeira vez no Início** abre o "Como funciona" (4 telas, o
+    mesmo celular da Apresentação): 1) o velocímetro e o limite; 2)
+    "Conecte e o app faz sozinho" (CNPJ, extrato, boleto do DAS no
+    WhatsApp); 3) "Tudo isso também pelo WhatsApp"; 4) "Comece pelo
+    extrato" com **Enviar extrato** (Recomendado) e "Agora não". "Pular
+    tutorial" no topo. Fica guardado (`tutorial_visto`; antes do SQL, no
+    aparelho). Rever: **Perfil > Ajuda > Tutorial do app**.
+L2. Quem **já usa** o app vai ver o tutorial **uma vez** ao abrir esta
+    versão (ninguém tem `tutorial_visto` ainda). Ok? (assim)
+L3. ⚠️ O celular de exemplo (da Apresentação e do tutorial) ainda mostra
+    o **Início F** (barra DAS | Isa | NF), mas o Início de verdade voltou
+    ao de antes (Bloco B). Redesenhar o exemplo igual ao Início de
+    agora? (não mexi: é o mesmo desenho dos slides)
