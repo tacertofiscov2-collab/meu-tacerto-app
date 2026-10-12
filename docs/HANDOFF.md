@@ -511,3 +511,12 @@ H1. No "Histórico de entradas", o seletor ganhou **"Ano todo"**, e tocar
     "Por mês" (só os meses com entrada; tocar abre o mês) + a lista de
     sempre. No mês, a linha "No ano de 2026: R$ X ›" também leva ao ano
     todo. Mostrar também os meses sem entrada (R$ 0,00)? (não mostrei)
+
+**Bloco I (selo Recomendado)**
+
+I1. Um componente só (`src/components/SeloRecomendado.jsx`), pendurado
+    no canto de cima: folha "Atualize seu velocímetro", "Meu lucro"
+    (sem gastos), a barra do Calcular e "A Isa me manda o boleto" (DAS).
+    A tela antiga "Adicionar movimentações" (escondida no piloto) ficou
+    sem o selo: ela ainda fala em "A IA lê" o extrato, o que não é
+    verdade hoje.

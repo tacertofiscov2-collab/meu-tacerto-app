@@ -1,7 +1,8 @@
-/* FOLHAATUALIZARVELOCIMETRO v4 — Fisco vira Isa: "Mandar pra Isa no WhatsApp" (v3: 3 jeitos de atualizar, uma frase cada: Enviar extrato (recomendado, borda verde fina), Digitar (o "+", Recebimento ou Total do ano) e Mandar pro Fisco no WhatsApp; abre pelo sininho e pelo botao "Atualizar velocímetro" do Inicio (v2: "Fisco.ia" vira "Fisco" nos textos da tela (v1: notificacao "Atualize seu velocimetro": 2 jeitos faceis (digitar o total do ano no "+" ou mandar valores/extrato pro Fisco.ia no WhatsApp))) */
+/* FOLHAATUALIZARVELOCIMETRO v5 — "Enviar extrato" com o selo "Recomendado" no canto (SeloRecomendado, o mesmo de todo o app; Bloco I) (v4: Fisco vira Isa: "Mandar pra Isa no WhatsApp" (v3: 3 jeitos de atualizar, uma frase cada: Enviar extrato (recomendado, borda verde fina), Digitar (o "+", Recebimento ou Total do ano) e Mandar pro Fisco no WhatsApp; abre pelo sininho e pelo botao "Atualizar velocímetro" do Inicio (v2: "Fisco.ia" vira "Fisco" nos textos da tela (v1: notificacao "Atualize seu velocimetro": 2 jeitos faceis (digitar o total do ano no "+" ou mandar valores/extrato pro Fisco.ia no WhatsApp)))) */
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, FileUp, Hash } from "lucide-react";
 import FolhaDeBaixo from "./FolhaDeBaixo.jsx";
+import SeloRecomendado from "./SeloRecomendado.jsx";
 import IconeWhatsApp from "./IconeWhatsApp.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import { MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco } from "@/config/piloto";
@@ -20,12 +21,12 @@ import { MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco } from "@/con
         (MENSAGENS_WHATSAPP.atualizarVelocimetro).
    =================================================================== */
 
-function Opcao({ Icon, titulo, frase, destaque, onClick }) {
+function Opcao({ Icon, titulo, frase, destaque, recomendado, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="toque w-full flex items-center text-left rounded-2xl"
+      className="toque relative w-full flex items-center text-left rounded-2xl"
       style={{
         gap: 14,
         padding: "15px 14px 15px 16px",
@@ -33,6 +34,7 @@ function Opcao({ Icon, titulo, frase, destaque, onClick }) {
         border: `1px solid ${destaque ? "rgba(34,197,94,0.45)" : "var(--border)"}`,
       }}
     >
+      {recomendado && <SeloRecomendado />}
       <Icon size={22} strokeWidth={1.9} className="shrink-0" style={{ color: "var(--primary)" }} />
       <span className="flex-1 min-w-0">
         <span className="block font-semibold leading-snug" style={{ color: "var(--text)", fontSize: 16 }}>
@@ -53,12 +55,14 @@ export default function FolhaAtualizarVelocimetro({ aberto, onFechar }) {
 
   return (
     <FolhaDeBaixo aberto={aberto} onFechar={onFechar} titulo="Atualize seu velocímetro">
-      <div className="flex flex-col" style={{ gap: 10, paddingBottom: 8 }}>
+      {/* v5: paddingTop para o selo pendurado nao ser cortado pela rolagem */}
+      <div className="flex flex-col" style={{ gap: 10, paddingTop: 10, paddingBottom: 8 }}>
         <Opcao
           Icon={FileUp}
           titulo="Enviar extrato"
           frase="Eu separo tudo por mês e guardo seus gastos."
           destaque
+          recomendado
           onClick={() => {
             onFechar();
             navigate("/enviar-extrato", { state: { de: "dashboard" } });

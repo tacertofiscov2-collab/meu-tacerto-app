@@ -1,4 +1,4 @@
-/* RESUMOPERFIL v5 — linha "Lançar gasto" (dinheiro vivo: abre a FolhaLancarGasto e o gasto ja entra como do negocio) (resposta 9 do Fernando) (v4: linha "X gastos para conferir" (gastos do extrato ainda sem resposta) que abre a conferencia dos gastos (v3: vira "Meu lucro" (/meu-lucro): Mês | Ano com Recebido, Gastos e Sobrou (%); Ano com o grafico por mes (recebido x gastos); tocar em Gastos abre por categoria; sem dados de gastos, so o Recebido + "Envie o extrato para ver quanto sobrou." (v2: o resumo do ano passa a ter as SAIDAS, o grafico entradas x saidas e o IR (segmento + parte isenta)) */
+/* RESUMOPERFIL v6 — "Enviar extrato" do Meu lucro com o selo "Recomendado" (SeloRecomendado; Bloco I) (v5: linha "Lançar gasto" (dinheiro vivo: abre a FolhaLancarGasto e o gasto ja entra como do negocio) (resposta 9 do Fernando) (v4: linha "X gastos para conferir" (gastos do extrato ainda sem resposta) que abre a conferencia dos gastos (v3: vira "Meu lucro" (/meu-lucro): Mês | Ano com Recebido, Gastos e Sobrou (%); Ano com o grafico por mes (recebido x gastos); tocar em Gastos abre por categoria; sem dados de gastos, so o Recebido + "Envie o extrato para ver quanto sobrou." (v2: o resumo do ano passa a ter as SAIDAS, o grafico entradas x saidas e o IR (segmento + parte isenta))) */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, ArrowDownLeft, ArrowUpRight, Wallet, FileUp, HelpCircle, Plus } from "lucide-react";
@@ -8,6 +8,7 @@ import TopoRolavel from "../components/TopoRolavel.jsx";
 import FolhaLancarGasto from "../components/FolhaLancarGasto.jsx";
 import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
 import Valor from "../components/Valor.jsx";
+import SeloRecomendado from "../components/SeloRecomendado.jsx";
 import { supabase } from "@/lib/supabase";
 import { useAppState } from "@/context/AppStateContext";
 import {
@@ -189,9 +190,10 @@ export default function ResumoPerfil() {
             <button
               type="button"
               onClick={() => navigate("/enviar-extrato", { state: { de: "lucro" } })}
-              className="botao-confirmar toque rounded-full font-semibold flex items-center"
-              style={{ marginTop: 14, gap: 7, padding: "10px 18px", fontSize: 15 }}
+              className="botao-confirmar toque relative rounded-full font-semibold flex items-center"
+              style={{ marginTop: 18, gap: 7, padding: "10px 18px", fontSize: 15 }}
             >
+              <SeloRecomendado />
               <FileUp size={17} strokeWidth={2.1} />
               Enviar extrato
             </button>
