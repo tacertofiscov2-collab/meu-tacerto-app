@@ -1,4 +1,4 @@
-/* SUPORTE v6 — datas da declaracao (Bloco G): a do MEI "pode ser feita desde o começo do ano até 31 de maio" e "quando você quiser, dentro do prazo, a Isa faz com você" (sai o "em maio") (v5: resposta do Imposto de Renda aponta para Perfil > Calcular > Imposto de Renda (a calculadora saiu da Declaracao anual) (v4: Fisco vira Isa na resposta sobre nota fiscal (v3: "Preciso emitir nota?" com a regra do agregado (v2: correcoes de 08-10: DAS vence dia 20 e, se nao for dia util, no proximo dia util; NFS-e so para frete na mesma cidade (agregado sem IE em MG hoje nao emite); A1 a preco de custo (R$ 100,34) (v1: chat de suporte dentro do app (Perfil > Ajuda): perguntas prontas por assunto para afunilar; se nao resolver, a pessoa escreve e vai pro WhatsApp do suporte com tudo anotado))) */
+/* SUPORTE v7 — o DAS e as notas sairam do Inicio: as respostas dizem "No Perfil, toque em DAS" / "Notas fiscais" (v6: datas da declaracao (Bloco G): a do MEI "pode ser feita desde o começo do ano até 31 de maio" e "quando você quiser, dentro do prazo, a Isa faz com você" (sai o "em maio") (v5: resposta do Imposto de Renda aponta para Perfil > Calcular > Imposto de Renda (a calculadora saiu da Declaracao anual) (v4: Fisco vira Isa na resposta sobre nota fiscal (v3: "Preciso emitir nota?" com a regra do agregado (v2: correcoes de 08-10: DAS vence dia 20 e, se nao for dia util, no proximo dia util; NFS-e so para frete na mesma cidade (agregado sem IE em MG hoje nao emite); A1 a preco de custo (R$ 100,34) (v1: chat de suporte dentro do app (Perfil > Ajuda): perguntas prontas por assunto para afunilar; se nao resolver, a pessoa escreve e vai pro WhatsApp do suporte com tudo anotado)))) */
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
@@ -56,11 +56,11 @@ const ASSUNTOS = [
       },
       {
         p: "Como recebo o boleto?",
-        r: "No Início, toque em DAS e escolha receber o boleto no WhatsApp. A gente manda pronto antes do vencimento.",
+        r: "No Perfil, toque em DAS e escolha receber o boleto no WhatsApp. A gente manda pronto antes do vencimento.",
       },
       {
         p: "Atrasei. E agora?",
-        r: "Dá para pagar atrasado: o boleto novo já vem com multa e juros. Peça no DAS do Início que a gente gera pra você.",
+        r: "Dá para pagar atrasado: o boleto novo já vem com multa e juros. Peça no DAS do Perfil que a gente gera pra você.",
       },
       {
         p: "Tenho meses antigos sem pagar",
@@ -78,7 +78,7 @@ const ASSUNTOS = [
       },
       {
         p: "Como emito?",
-        r: "No Início, toque em NF. Lá diz quando você precisa emitir e como: com a Isa no WhatsApp, sozinho ou automática, com o Certificado A1.",
+        r: "No Perfil, toque em Notas fiscais. Lá diz quando você precisa emitir e como: com a Isa no WhatsApp, sozinho ou automática, com o Certificado A1.",
       },
       {
         p: "O que é o Certificado A1?",

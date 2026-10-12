@@ -1,13 +1,17 @@
-/* APRESENTACAOFISCO v6 — modo "tutorial" (primeiro acesso, Bloco L): 4 telas (o velocimetro e o limite; integracoes e o que automatizam; tudo tambem pelo WhatsApp; comece pelo extrato, Recomendado), "Pular tutorial" no topo e, no fim, "Enviar extrato" + "Agora não"; o modo de sempre (Apresentacao da Isa) nao mudou (v5: Fisco vira Isa: "Oi, sou a Isa" (assistente com IA do TaCerto), foto da Isa (FotoIsa) no texto e na barra do celular de exemplo, titulo "Apresentação da Isa" (v4: celular MENOR, menos espaco vazio dentro dele (desenho mais justo: 340 x 715, mesma proporcao) e icones MAIORES (barra DAS/Fisco/NF, rodape e sininho); celular e texto do Fisco juntos, centrados na tela (pedido do Fernando) (v3: celular de exemplo com proporcao de celular de verdade (390 x 820) e igual ao Inicio novo: saudacao, velocimetro grande e a barra dos 3 atalhos centrada entre as bolinhas e o rodape (v2: celular de exemplo igual ao Inicio novo (DAS, Fisco com o simbolo do WhatsApp, NF; casinha cinza; velocimetro mais alto); textos do + e do Perfil (v1: tutorial "Apresentação do Fisco.ia": celular de exemplo do Inicio (visual F) com um circulo verde passando por cada funcao e o Fisco.ia explicando, em slides) */
+/* APRESENTACAOFISCO v7 — o celular de exemplo mostra o Inicio NOVO igual ao de verdade (pecas e medidas de InicioPartes: so o sininho, card do velocimetro com "Atualizar velocímetro" no canto, chat da Isa com camera/clipe/microfone, barra de baixo de vidro; desenho 390 x 800) e ganha a tela da conversa no WhatsApp (ConversaIsaExemplo); tutorial: 3a tela "Tudo pelo WhatsApp com a Isa" (nota, DAS, entradas e gastos, duvidas), 2a "Seu MEI no Perfil" e a 4a destaca o Atualizar velocímetro; Apresentacao da Isa sem os passos do DAS e da NF do Inicio (agora no Perfil e no WhatsApp) (v6: modo "tutorial" (primeiro acesso, Bloco L): 4 telas (o velocimetro e o limite; integracoes e o que automatizam; tudo tambem pelo WhatsApp; comece pelo extrato, Recomendado), "Pular tutorial" no topo e, no fim, "Enviar extrato" + "Agora não"; o modo de sempre (Apresentacao da Isa) nao mudou (v5: Fisco vira Isa: "Oi, sou a Isa" (assistente com IA do TaCerto), foto da Isa (FotoIsa) no texto e na barra do celular de exemplo, titulo "Apresentação da Isa" (v4: celular MENOR, menos espaco vazio dentro dele (desenho mais justo: 340 x 715, mesma proporcao) e icones MAIORES (barra DAS/Fisco/NF, rodape e sininho); celular e texto do Fisco juntos, centrados na tela (pedido do Fernando) (v3: celular de exemplo com proporcao de celular de verdade (390 x 820) e igual ao Inicio novo: saudacao, velocimetro grande e a barra dos 3 atalhos centrada entre as bolinhas e o rodape (v2: celular de exemplo igual ao Inicio novo (DAS, Fisco com o simbolo do WhatsApp, NF; casinha cinza; velocimetro mais alto); textos do + e do Perfil (v1: tutorial "Apresentação do Fisco.ia": celular de exemplo do Inicio (visual F) com um circulo verde passando por cada funcao e o Fisco.ia explicando, em slides)) */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
-  ArrowLeft, Gauge, Bell, CalendarClock, FileText, Home, Plus, User,
+  ArrowLeft, Gauge, Bell, Home, Plus, User,
 } from "lucide-react";
 import VelocimetroAnimado from "./VelocimetroAnimado.jsx";
 import FotoIsa from "./FotoIsa.jsx";
 import SeloRecomendado from "./SeloRecomendado.jsx";
-import { MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA } from "@/config/piloto";
+import ConversaIsaExemplo from "./ConversaIsaExemplo.jsx";
+import { MEDIDAS_INICIO, VIDRO, BotaoAtualizarCanto, BarraIsaInicio } from "./InicioPartes.jsx";
+import { useAppState } from "@/context/AppStateContext";
+import { LABEL_TIPO } from "@/lib/fiscal";
+import { MOSTRAR_ANEXOS_CHAT, MOSTRAR_COMPROVANTE_FOTO } from "@/config/piloto";
 
 /* ===================================================================
    APRESENTACAO DA ISA (05/10/2026 — pedido do Fernando; ate 10/10 era
@@ -16,9 +20,13 @@ import { MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA } from "@/config/piloto";
    Abre pela notificacao "Apresentacao da Isa" (sininho do Inicio).
    So aparece se a pessoa quiser ver: nada abre sozinho.
 
-   - Em cima: um CELULAR DE EXEMPLO do Inicio (visual F), desenhado no
-     tamanho real do app (390 de largura) e encolhido para caber. Como
-     nos slides de boas-vindas: sem nome e sem valores ("R$ •••").
+   - Em cima: um CELULAR DE EXEMPLO do Inicio, desenhado no tamanho
+     real do app (390 de largura) e encolhido para caber. Como nos
+     slides de boas-vindas: sem nome e sem valores ("R$ •••").
+     v7: e o Inicio NOVO, com as MESMAS pecas e medidas do Dashboard
+     (src/components/InicioPartes.jsx) — antes era um desenho a parte
+     que ficou parado no visual F. Um passo pode mostrar outra tela
+     (tela: "whatsapp" = a conversa com a Isa, ConversaIsaExemplo).
    - Um CIRCULO VERDE passa de uma funcao para a outra (desliza), e o
      resto do celular fica escurecido.
    - Embaixo: a foto da Isa "falando" o que da para fazer. Todos os
@@ -31,6 +39,10 @@ import { MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA } from "@/config/piloto";
      fecha a apresentacao, sem sair do Inicio.
    =================================================================== */
 
+/* v7: sem os passos "DAS sem esquecer" e "Nota fiscal" do Inicio (o
+   card do DAS e o "Como emitir nota" sairam de la): o DAS e as notas
+   ficam no Perfil e no WhatsApp. Novos: o "Atualizar velocímetro" do
+   canto e a conversa no WhatsApp. */
 const PASSOS_ISA = [
   { alvo: null, titulo: "Oi, sou a Isa", texto: "A assistente com IA do TaCerto. Vou te mostrar o app rapidinho." },
   {
@@ -39,34 +51,42 @@ const PASSOS_ISA = [
     texto: "Quanto você já faturou e quanto ainda pode. Arraste para o lado e veja a média do mês.",
   },
   {
+    alvo: "atualizar",
+    titulo: "Atualize quando quiser",
+    texto: "Toque aqui para mandar o extrato, digitar o total do ano ou me contar no WhatsApp.",
+  },
+  {
     alvo: "mais",
     titulo: "Recebeu? Lance aqui",
     texto: "Toque no + para lançar o que recebeu, ou para atualizar o total do ano.",
   },
   {
-    alvo: "das",
-    mostrar: MOSTRAR_CARD_DAS,
-    titulo: "DAS sem esquecer",
-    texto: "Veja quando vence e receba o boleto no WhatsApp.",
+    alvo: "fisco",
+    titulo: "Ficou com dúvida?",
+    texto: "Pergunte aqui, tire foto do comprovante ou mande um áudio no WhatsApp.",
   },
-  { alvo: "fisco", titulo: "Ficou com dúvida?", texto: "Fale comigo no WhatsApp, a qualquer hora." },
   {
-    alvo: "nota",
-    mostrar: MOSTRAR_TUTORIAL_NOTA,
-    titulo: "Nota fiscal",
-    texto: "Eu te ajudo a emitir, por áudio ou por mensagem.",
+    tela: "whatsapp",
+    alvo: null,
+    titulo: "Tudo pelo WhatsApp",
+    texto: "Nota fiscal, boleto do DAS, entradas e gastos, dúvidas: é só me mandar mensagem.",
   },
-  { alvo: "perfil", titulo: "Seu Perfil", texto: "Seus dados, limite restante e histórico de lançamentos." },
+  { alvo: "perfil", titulo: "Seu Perfil", texto: "Seus dados, o DAS, as notas fiscais, o limite restante e o histórico." },
   {
     alvo: "sino",
     titulo: "Notificações",
     texto: "Lembretes aparecem aqui. E esta apresentação, se quiser ver de novo.",
   },
-].filter((p) => p.mostrar !== false);
+];
 
 /* v6: TUTORIAL DO PRIMEIRO ACESSO (12/10/2026, tarefa de 10-10, Bloco L)
    No maximo 4 telas, o mesmo celular de exemplo. Abre sozinho na
    primeira vez no Inicio (Dashboard) e da para rever em Perfil > Ajuda. */
+/* v7 (12/10/2026, pedido do Fernando): a 3a tela da forca ao WhatsApp
+   ("a pessoa pode fazer tudo pelo chat do WhatsApp com a Isa: nota,
+   duvidas, entradas e gastos, boleto do DAS") e mostra a conversa; a 2a
+   diz que o DAS e as notas ficam no Perfil (sairam do Inicio); a 4a
+   destaca o "Atualizar velocímetro" do canto do card. */
 const PASSOS_TUTORIAL = [
   {
     alvo: "velocimetro",
@@ -74,20 +94,21 @@ const PASSOS_TUTORIAL = [
     texto: "O velocímetro mostra quanto você já faturou e quanto ainda cabe no limite do MEI.",
   },
   {
-    alvo: "das",
-    titulo: "Conecte e o app faz sozinho",
-    texto: "O CNPJ preenche seus dados, o extrato soma o que entrou e saiu, e o boleto do DAS chega no WhatsApp.",
+    alvo: "perfil",
+    titulo: "Seu MEI no Perfil",
+    texto: "CNPJ, DAS e notas fiscais ficam no Perfil. O boleto do DAS chega no seu WhatsApp.",
   },
   {
-    alvo: "fisco",
-    titulo: "Tudo isso também pelo WhatsApp",
-    texto: "Fale com a Isa quando quiser, sem abrir o app.",
-  },
-  {
-    /* sem destaque: o extrato nao e o "+" (o botao "Enviar extrato" vem logo abaixo) */
+    tela: "whatsapp",
     alvo: null,
+    titulo: "Tudo pelo WhatsApp com a Isa",
+    texto: "Nota fiscal, boleto do DAS, entradas e gastos, dúvidas: é só mandar mensagem, áudio ou foto.",
+  },
+  {
+    /* o ultimo passo leva ao extrato (botao "Enviar extrato" embaixo) */
+    alvo: "atualizar",
     titulo: "Comece pelo extrato",
-    texto: "Mande o extrato do banco: eu separo o que é faturamento e o velocímetro fica certo.",
+    texto: "Toque em Atualizar velocímetro e mande o extrato: eu separo o que é faturamento.",
   },
 ];
 
@@ -99,9 +120,11 @@ const ALVOS_REDONDOS = ["mais", "perfil", "sino"];
    "achatado", pedido do Fernando: estava desproporcional)
    v4: 340 x 715 — a MESMA proporcao, mas o desenho mais justo: o
    conteudo ocupa mais o celular e sobra menos espaco vazio dentro dele
-   ("espacamento muito grande"). Celular menor na tela (270 -> 225). */
-const LARGURA_DESENHO = 340;
-const ALTURA_DESENHO = 715;
+   ("espacamento muito grande"). Celular menor na tela (270 -> 225).
+   v7: 390 x 800 — a largura do app de verdade, para usar as MESMAS
+   medidas do Inicio (InicioPartes) e o exemplo ficar igual a ele. */
+const LARGURA_DESENHO = 390;
+const ALTURA_DESENHO = 800;
 const LARGURA_MAX_CELULAR = 225;
 /* v4: espaco entre o celular e o texto da Isa */
 const ESPACO_CELULAR_TEXTO = 20;
@@ -121,106 +144,110 @@ function FotoFisco({ tamanho = 40 }) {
   return <FotoIsa size={tamanho} borda />;
 }
 
-/* v5: a foto da Isa no lugar do simbolo do WhatsApp, na barra do
-   celular de exemplo (30px com margem -1,5: mesma altura do icone 27) */
-function IconeFotoIsaExemplo() {
-  return <FotoIsa size={30} style={{ margin: "-1.5px 0" }} />;
-}
+/* Cartao de vidro do velocimetro (o mesmo do Inicio) */
+const VIDRO_CARD = {
+  ...VIDRO,
+  boxShadow:
+    "inset 0 1px 0 0 var(--vidro-topo-medio), inset 0 6px 14px -8px var(--vidro-topo-fraco), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
+};
 
-/* O Inicio (visual F) desenhado no tamanho real, sem nome e sem valores */
+/* v7: o Inicio NOVO desenhado no tamanho real (390), sem nome e sem
+   valores, com as pecas e medidas do Dashboard (InicioPartes) */
 function InicioDeExemplo() {
-  const segmentos = [
-    MOSTRAR_CARD_DAS && { id: "das", Icon: CalendarClock, rotulo: "DAS" },
-    { id: "fisco", Icon: IconeFotoIsaExemplo, rotulo: "Isa" },
-    MOSTRAR_TUTORIAL_NOTA && { id: "nota", Icon: FileText, rotulo: "NF" },
-  ].filter(Boolean);
+  const { tipoMEI } = useAppState();
+  const rotuloPerfil = LABEL_TIPO[tipoMEI];
+  const V = MEDIDAS_INICIO.velocimetro;
+  const C = MEDIDAS_INICIO.card;
+  /* exemplo de "ja atualizou": o texto pequeno embaixo do botao */
+  const atualizadoEm = new Date().toISOString();
 
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       {/* topo: logo, saudacao e sininho (igual ao Inicio, sem o nome) */}
-      <div className="flex items-start justify-between shrink-0" style={{ padding: "16px 20px 0" }}>
+      <div className="flex items-start justify-between shrink-0" style={{ padding: "16px 20px 4px" }}>
         <div className="flex flex-col">
           <div className="flex items-center gap-2.5">
             <Gauge size={34} strokeWidth={2.2} style={{ color: "var(--primary)" }} />
-            <span className="font-bold leading-none" style={{ fontSize: 24 }}>
+            <span className="font-bold text-2xl leading-none">
               Ta<span style={{ color: "var(--primary)" }}>Certo!</span>
             </span>
           </div>
-          <span className="font-semibold" style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 6 }}>
+          <span className="font-semibold" style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 6, lineHeight: "22px" }}>
             {saudacaoDoMomento()}
           </span>
         </div>
-        <span data-alvo="sino" className="relative flex items-center justify-center" style={{ width: 36, height: 36 }}>
-          <Bell size={26} strokeWidth={1.9} style={{ color: "var(--text-secondary)" }} />
+        <span data-alvo="sino" className="relative flex items-center justify-center" style={{ width: 38, height: 34, marginRight: -8 }}>
+          <Bell size={22} strokeWidth={1.9} style={{ color: "var(--text-secondary)" }} />
         </span>
       </div>
 
-      {/* velocimetro do ano (grande, como no Inicio v29) */}
-      <div className="flex-1 min-h-0 flex flex-col justify-center" style={{ padding: "8px 20px 0" }}>
-        <div data-alvo="velocimetro" className="flex flex-col" style={{ padding: "0 20px" }}>
-          <VelocimetroAnimado percentual={58} maxWidth={250} numeroClasse="text-5xl font-bold" />
-          <p className="text-center" style={{ color: "var(--text-tertiary)", fontSize: 14, marginTop: 22 }}>
-            MEI · anual
-          </p>
-          <div className="flex items-stretch" style={{ borderTop: "1px solid var(--border)", marginTop: 4, paddingTop: 12 }}>
-            {["Faturado", "Limite"].map((rotulo, i) => (
-              <div
-                key={rotulo}
-                className="flex-1 flex flex-col items-center"
-                style={{ borderLeft: i ? "1px solid var(--border)" : "none" }}
-              >
-                <span className="font-semibold" style={{ fontSize: 19 }}>R$ •••</span>
-                <span style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 4 }}>{rotulo}</span>
+      <div className="flex-1 min-h-0 flex flex-col" style={{ padding: "8px 20px 0" }}>
+        {/* card do velocimetro (altura maxima e centrado, como no Inicio) */}
+        <div className="flex flex-col flex-1 min-h-0" style={{ maxHeight: C.alturaMax + 21, marginTop: "auto", marginBottom: "auto" }}>
+          <div data-alvo="velocimetro" className="relative flex-1 min-h-0 rounded-3xl overflow-hidden flex flex-col" style={VIDRO_CARD}>
+            <BotaoAtualizarCanto exemplo quando={atualizadoEm} faltaInformar={false} />
+            <div className="flex-1 min-h-0 flex flex-col px-5" style={{ paddingTop: C.topo, paddingBottom: C.base }}>
+              <div className="flex-1 min-h-0 flex items-center justify-center">
+                <VelocimetroAnimado
+                  percentual={58}
+                  maxWidth={V.larguraMax}
+                  numeroClasse={V.numeroClasse}
+                  sempreMostrarBalao
+                  tamanhoBalao={V.balao}
+                />
               </div>
-            ))}
+              <p className="text-center shrink-0" style={{ color: "var(--text-tertiary)", fontSize: 14, marginTop: 6, marginBottom: 2 }}>
+                {rotuloPerfil ? `${rotuloPerfil} · anual` : "MEI · anual"}
+              </p>
+              <div className="flex items-stretch pt-3 shrink-0" style={{ borderTop: "1px solid var(--border)", marginTop: 2 }}>
+                {["Faturado", "Limite"].map((rotulo, i) => (
+                  <div
+                    key={rotulo}
+                    className="flex-1 flex flex-col items-center"
+                    style={{ borderLeft: i ? "1px solid var(--border)" : "none" }}
+                  >
+                    <span style={{ fontSize: V.valorPx, fontWeight: 600, lineHeight: 1.1 }}>R$ •••</span>
+                    <span className="mt-1" style={{ color: "var(--text-secondary)", fontSize: V.rotuloValorPx }}>{rotulo}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="flex items-center justify-center gap-2" style={{ marginTop: 12 }}>
-            <span className="rounded-full" style={{ width: 12, height: 12, backgroundColor: "var(--primary)" }} />
-            <span className="rounded-full" style={{ width: 10, height: 10, backgroundColor: "var(--primary)", opacity: 0.22 }} />
+          <div className="flex items-center justify-center gap-2 shrink-0" style={{ marginTop: 10 }}>
+            <span className="rounded-full" style={{ width: 11, height: 11, backgroundColor: "var(--primary)", boxShadow: "0 0 9px rgba(34, 197, 94, 0.65)" }} />
+            <span className="rounded-full" style={{ width: 9, height: 9, backgroundColor: "var(--primary)", opacity: 0.22 }} />
           </div>
         </div>
+
+        {/* chat da Isa no pe (a mesma barra do Inicio) */}
+        <BarraIsaInicio exemplo anexos={MOSTRAR_ANEXOS_CHAT && MOSTRAR_COMPROVANTE_FOTO} />
       </div>
 
-      {/* respiros iguais em cima e embaixo da barra (como no Inicio v29) */}
-      <div aria-hidden style={{ flex: "0.09 1 17px", minHeight: 30 }} />
-
-      {/* barra unica (visual F). v4: icones e nomes maiores */}
+      {/* barra de baixo (a de vidro do Inicio: casinha verde e o + no circulo) */}
       <div
-        className="shrink-0 flex items-stretch"
-        style={{ margin: "0 20px", border: "1px solid var(--border)", borderRadius: 18 }}
+        className="shrink-0 flex items-end justify-around"
+        style={{
+          padding: "10px 13px 18px",
+          background:
+            "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
+          borderTop: "1px solid var(--vidro-borda)",
+          boxShadow: "inset 0 1px 0 0 var(--vidro-topo-medio), inset 0 7px 16px -8px var(--vidro-topo-fraco)",
+        }}
       >
-        {segmentos.map(({ id, Icon, rotulo }, i) => (
-          <div
-            key={id}
-            data-alvo={id}
-            className="flex-1 flex flex-col items-center justify-center"
-            style={{ padding: "13px 4px 12px", gap: 7, borderLeft: i ? "1px solid var(--border)" : "none" }}
-          >
-            <Icon size={27} strokeWidth={1.9} style={{ color: "var(--primary)" }} />
-            <span className="font-medium" style={{ fontSize: 15.5 }}>{rotulo}</span>
-          </div>
-        ))}
-      </div>
-
-      <div aria-hidden style={{ flex: "0.09 1 0%", minHeight: 13 }} />
-
-      {/* barra de baixo (Inicio, +, Perfil). v4: icones e nomes maiores */}
-      <div className="shrink-0 flex items-end" style={{ padding: "17px 13px 22px" }}>
-        <div className="flex-1 flex flex-col items-center gap-1">
-          <Home size={30} strokeWidth={2} style={{ color: "var(--text-secondary)" }} />
-          <span className="font-medium leading-none" style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>Início</span>
+        <div className="flex flex-col items-center gap-1">
+          <Home size={26} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
+          <span className="font-medium leading-none" style={{ fontSize: 11, color: "var(--primary)" }}>Início</span>
         </div>
-        <div className="flex-1 flex items-center justify-center" style={{ height: 47 }}>
-          <span data-alvo="mais" className="flex items-center justify-center" style={{ width: 48, height: 48 }}>
-            <Plus size={62} strokeWidth={1.9} style={{ color: "var(--primary)", flexShrink: 0 }} />
-          </span>
-        </div>
-        {/* o alvo e so o icone + rotulo (nao a coluna inteira): circulo justo */}
-        <div className="flex-1 flex justify-center">
-          <div data-alvo="perfil" className="flex flex-col items-center gap-1">
-            <User size={30} strokeWidth={2} style={{ color: "var(--text-secondary)" }} />
-            <span className="font-medium leading-none" style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>Perfil</span>
-          </div>
+        <span
+          data-alvo="mais"
+          className="flex items-center justify-center"
+          style={{ width: 48, height: 48, borderRadius: "50%", backgroundColor: "var(--primary)" }}
+        >
+          <Plus size={26} strokeWidth={2.8} style={{ color: "var(--primary-contrast)" }} />
+        </span>
+        <div data-alvo="perfil" className="flex flex-col items-center gap-1">
+          <User size={26} strokeWidth={2} style={{ color: "var(--text-secondary)" }} />
+          <span className="font-medium leading-none" style={{ fontSize: 11, color: "var(--text-secondary)" }}>Perfil</span>
         </div>
       </div>
     </div>
@@ -230,7 +257,7 @@ function InicioDeExemplo() {
 /* O celular de exemplo, encolhido para caber, com o circulo verde.
    v4: a escala vem de fora (ApresentacaoFisco mede o espaco que sobra
    para o celular e o texto juntos) */
-function CelularDeExemplo({ alvo, escala }) {
+function CelularDeExemplo({ alvo, escala, tela = "inicio" }) {
   const desenhoRef = useRef(null);
   const [circulo, setCirculo] = useState(null);
 
@@ -258,7 +285,7 @@ function CelularDeExemplo({ alvo, escala }) {
       h = lado;
     }
     setCirculo({ x, y, w, h, redondo, visivel: true });
-  }, [alvo, escala]);
+  }, [alvo, escala, tela]);
 
   return (
     <div className="shrink-0 w-full flex justify-center">
@@ -284,7 +311,13 @@ function CelularDeExemplo({ alvo, escala }) {
             transformOrigin: "top left",
           }}
         >
-          <InicioDeExemplo />
+          {/* v7: as duas telas uma por cima da outra; troca suave */}
+          <div className="absolute inset-0" style={{ opacity: tela === "whatsapp" ? 0 : 1, transition: "opacity 260ms ease" }}>
+            <InicioDeExemplo />
+          </div>
+          <div className="absolute inset-0" style={{ opacity: tela === "whatsapp" ? 1 : 0, transition: "opacity 260ms ease" }}>
+            <ConversaIsaExemplo />
+          </div>
           {circulo && (
             <div
               className="absolute"
@@ -443,7 +476,7 @@ export default function ApresentacaoFisco({ aberto, onFechar, modo = "isa", onEn
         onTouchStart={inicioToque}
         onTouchEnd={fimToque}
       >
-        <CelularDeExemplo alvo={PASSOS[atual].alvo} escala={escala} />
+        <CelularDeExemplo alvo={PASSOS[atual].alvo} escala={escala} tela={PASSOS[atual].tela} />
 
         {/* Todos os textos no mesmo lugar: a altura nao muda */}
         <div ref={textoRef} className="shrink-0 grid" style={{ marginTop: ESPACO_CELULAR_TEXTO }}>
@@ -512,14 +545,23 @@ export default function ApresentacaoFisco({ aberto, onFechar, modo = "isa", onEn
             </button>
           </>
         ) : (
-          <button
-            type="button"
-            onClick={proximo}
-            className="toque botao-confirmar w-full rounded-2xl font-semibold"
-            style={{ padding: "13px 0", fontSize: 16 }}
-          >
-            {ultimo ? "Começar" : "Próximo"}
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={proximo}
+              className="toque botao-confirmar w-full rounded-2xl font-semibold"
+              style={{ padding: "13px 0", fontSize: 16 }}
+            >
+              {ultimo ? "Começar" : "Próximo"}
+            </button>
+            {/* v7: no tutorial, o lugar do "Agora não" fica reservado em
+                todos os passos: assim o celular nao encolhe no ultimo */}
+            {tutorial && (
+              <span aria-hidden className="block w-full font-medium" style={{ marginTop: 6, padding: "9px 0", fontSize: 15, visibility: "hidden" }}>
+                Agora não
+              </span>
+            )}
+          </>
         )}
       </div>
     </div>,
