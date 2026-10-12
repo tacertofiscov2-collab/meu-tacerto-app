@@ -259,9 +259,10 @@ categorias de gasto).
     pelo WhatsApp com a Isa"); o celular não muda de tamanho no último
     passo. A **Apresentação da Isa** (sininho) também.
 20. **Perfil > Permissões e integrações:** só WhatsApp, CNPJ e
-    Notificações. No Safari: "Notificação da semana · Como fazer" (folha
-    com os 3 passos). Para testar a notificação de verdade: seguir
-    `docs/NOTIFICACOES.md` (precisa do "pode" para o SQL e a função).
+    Notificações (**"Permitir notificações"** com a chave, sem texto).
+    No Safari do iPhone, ligar a chave só mostra "Adicione o TaCerto à
+    Tela de Início para permitir." Para testar a notificação de verdade:
+    seguir `docs/NOTIFICACOES.md` (precisa do "pode" para o SQL e a função).
 21. **App na Tela de Início** (Safari > Compartilhar > Adicionar à Tela
     de Início): o ícone verde do TaCerto; abre sem a barra do Safari;
     pede para entrar de novo (o app instalado guarda os dados à parte);
@@ -753,14 +754,15 @@ M6. A FAQ do chat (`src/lib/faqFisco.js`) já estava em dia (o "Perfil >
   extrato** (destaca o "Atualizar velocímetro"). A Apresentação perdeu os
   passos do DAS e da NF do Início e ganhou o "Atualizar" e o WhatsApp.
 - **Permissões e integrações** (print): só o que existe — WhatsApp (com a
-  chave dos avisos), CNPJ e **Notificação da semana**. Saíram Extratos
+  chave dos avisos), CNPJ e **Permitir notificações** (só a chave, sem
+  texto: pedido do Fernando, 12/10 noite). Saíram Extratos
   enviados, Receita Federal, Certificado A1, Banco (Open Finance) e o
   rodapé (Privacidade e Excluir conta já estão no Perfil).
 - **Notificação da semana:** a pessoa ativa (o celular pergunta se
   aceita) e recebe 1 por semana: "Você já usou X% do limite do ano." +
   uma frase curta da situação, sem valores e sem CNPJ (aparece na tela
   bloqueada). No iPhone, só com o TaCerto **na Tela de Início** (iOS
-  16.4+): no Safari, a linha mostra "Como fazer" (3 passos). O app ficou
+  16.4+): no Safari, ligar a chave só mostra um aviso curto. O app ficou
   **instalável** (ícone, manifesto, programinha da notificação sem cache).
   Servidor escrito, esperando o "pode" (pendência 9).
 - **"Receita Federal" sumiu do app** (CNPJ, chat da Isa, mensagem do

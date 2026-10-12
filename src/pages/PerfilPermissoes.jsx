@@ -1,8 +1,8 @@
-/* PERFILPERMISSOES v2 — so o que o app tem hoje (pedido do Fernando, 12/10): WhatsApp (Conectado + liga/desliga dos lembretes e avisos), CNPJ (e Remover CNPJ) e a Notificacao da semana no celular (ativar, liga/desliga; no iPhone, como adicionar a Tela de Inicio); sairam Extratos enviados, Receita Federal, Certificado A1 (fica com a plataforma de notas, nao com o TaCerto), Banco (Open Finance) e o rodape com Privacidade e Excluir conta (ja estao no Perfil) (v1: o que o TaCerto usa, com status e acao: WhatsApp, CNPJ, Extratos enviados (ver e apagar), Receita Federal e Banco (Em breve), Certificado A1 e Notificacoes do celular (status); rodape com Privacidade e Excluir conta) */
+/* PERFILPERMISSOES v3 — notificacoes so com "Permitir notificações" e a chave, sem texto explicando (pedido do Fernando: "sem falar e explicar demais"; saiu o "No iPhone, adicione a Tela de Inicio" e a folha "Como fazer"; se o celular nao deixar, so um aviso curto no toque) (v2: so o que o app tem hoje (pedido do Fernando, 12/10): WhatsApp (Conectado + liga/desliga dos lembretes e avisos), CNPJ (e Remover CNPJ) e a Notificacao da semana no celular (ativar, liga/desliga; no iPhone, como adicionar a Tela de Inicio); sairam Extratos enviados, Receita Federal, Certificado A1 (fica com a plataforma de notas, nao com o TaCerto), Banco (Open Finance) e o rodape com Privacidade e Excluir conta (ja estao no Perfil) (v1: o que o TaCerto usa, com status e acao: WhatsApp, CNPJ, Extratos enviados (ver e apagar), Receita Federal e Banco (Em breve), Certificado A1 e Notificacoes do celular (status); rodape com Privacidade e Excluir conta)) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Building2, Bell, BellOff, Trash2, MessageSquareOff, MessageSquare, Share, SquarePlus } from "lucide-react";
+import { Building2, Bell, BellOff, Trash2, MessageSquareOff, MessageSquare } from "lucide-react";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import FolhaDeBaixo from "../components/FolhaDeBaixo.jsx";
 import IconeWhatsApp from "../components/IconeWhatsApp.jsx";
@@ -27,13 +27,13 @@ import {
      esse campo antes de mandar.
    - CNPJ: o numero mascarado (ou "Não conectado") -> pagina do CNPJ; e
      "Remover CNPJ" (a mesma acao da pagina do CNPJ).
-   - Notificacoes: "Notificação da semana" (1 por semana, como esta o
-     velocimetro; src/lib/notificacoesCelular.js). No iPhone so funciona
-     com o TaCerto adicionado a Tela de Inicio (iOS 16.4+): no Safari
-     normal a linha explica como. A permissao so e pedida no toque em
-     "Ativar". O envio semanal comeca quando o SQL e a funcao
-     aviso-semanal estiverem no ar (docs/NOTIFICACOES.md); antes disso a
-     pessoa ja pode ativar.
+   - Notificacoes: "Permitir notificações" com a chave e NADA de texto
+     (v3, pedido do Fernando). E a notificacao da semana (como esta o
+     velocimetro; src/lib/notificacoesCelular.js). A permissao do celular
+     so e pedida no toque na chave. No iPhone so funciona com o TaCerto na
+     Tela de Inicio (iOS 16.4+): no Safari normal, ligar a chave so mostra
+     um aviso curto. O envio comeca quando o SQL e a funcao aviso-semanal
+     estiverem no ar (docs/NOTIFICACOES.md); antes disso ja da para ligar.
    v2 tirou: Extratos enviados (o extrato vira entradas e saidas no app e
    o arquivo fica guardado; se a pessoa pedir, a equipe manda pelo
    WhatsApp), Receita Federal e Banco (Em breve), Certificado A1 (quem
@@ -84,33 +84,14 @@ function LinhaComChave({ Icon, titulo, frase, ligada, onMudar, desativada }) {
       <Icon size={20} strokeWidth={1.9} className="shrink-0" style={{ color: "var(--text-tertiary)" }} />
       <span className="flex-1 min-w-0">
         <span className="block font-medium leading-snug" style={{ fontSize: 16.5 }}>{titulo}</span>
-        <span className="block" style={{ color: "var(--text-tertiary)", fontSize: 13.5, marginTop: 1 }}>{frase}</span>
+        {frase && <span className="block" style={{ color: "var(--text-tertiary)", fontSize: 13.5, marginTop: 1 }}>{frase}</span>}
       </span>
       <Chave ligada={ligada} onMudar={onMudar} rotulo={titulo} desativada={desativada} />
     </div>
   );
 }
 
-/* Um passo numerado da folha "Receber no iPhone" */
-function Passo({ n, Icon, children }) {
-  return (
-    <div className="flex items-start" style={{ gap: 12 }}>
-      <span
-        className="shrink-0 rounded-full flex items-center justify-center font-semibold"
-        style={{ width: 26, height: 26, fontSize: 13.5, border: "1px solid var(--border)", color: "var(--text-secondary)" }}
-      >
-        {n}
-      </span>
-      <span className="flex-1" style={{ fontSize: 15.5, lineHeight: 1.45, color: "var(--text)", paddingTop: 2 }}>
-        {children}
-        {Icon && <Icon size={17} strokeWidth={2} style={{ display: "inline", verticalAlign: "-3px", marginLeft: 6, color: "var(--text-secondary)" }} />}
-      </span>
-    </div>
-  );
-}
-
-const NOTIFICACAO = "Notificação da semana";
-const FRASE_NOTIFICACAO = "Uma por semana: como está seu velocímetro.";
+const NOTIFICACAO = "Permitir notificações";
 
 export default function PerfilPermissoes() {
   const navigate = useNavigate();
@@ -120,7 +101,6 @@ export default function PerfilPermissoes() {
   const [confirmarRemoverCnpj, setConfirmarRemoverCnpj] = useState(false);
   const [notificacoes, setNotificacoes] = useState(estadoNotificacoes);
   const [ativando, setAtivando] = useState(false);
-  const [comoInstalar, setComoInstalar] = useState(false);
   const temCnpj = Boolean(cnpj);
 
   useEffect(() => {
@@ -154,15 +134,18 @@ export default function PerfilPermissoes() {
     const novo = await ativarNotificacoes(userId);
     setAtivando(false);
     setNotificacoes(novo);
-    if (novo === "ligadas") toast("Pronto: toda semana chega um resumo do seu velocímetro");
-    else if (novo === "bloqueadas") toast("O celular bloqueou. Libere em Ajustes > Notificações > TaCerto.");
+    if (novo === "bloqueadas") toast("Notificações bloqueadas nos Ajustes do celular.");
   }
 
+  /* v3: so a chave. Quando o celular nao deixa, um aviso curto no toque */
   async function mudarNotificacoes(ligar) {
-    if (ligar) return ativar();
-    const novo = await desligarNotificacoes(userId);
-    setNotificacoes(novo);
-    toast("Notificação da semana desligada");
+    if (!ligar) {
+      setNotificacoes(await desligarNotificacoes(userId));
+      return;
+    }
+    if (notificacoes === "instalar") return toast("Adicione o TaCerto à Tela de Início para permitir.");
+    if (notificacoes === "indisponivel") return toast("Este celular não recebe notificações do app.");
+    return ativar();
   }
 
   async function removerOCnpj() {
@@ -204,46 +187,13 @@ export default function PerfilPermissoes() {
         </SecaoLista>
 
         <SecaoLista titulo="Notificações">
-          {notificacoes === "ligadas" || notificacoes === "desligadas" ? (
-            <LinhaComChave
-              Icon={notificacoes === "ligadas" ? Bell : BellOff}
-              titulo={NOTIFICACAO}
-              frase={notificacoes === "ligadas" ? FRASE_NOTIFICACAO : "Desligada: o app não manda notificação."}
-              ligada={notificacoes === "ligadas"}
-              onMudar={mudarNotificacoes}
-              desativada={ativando}
-            />
-          ) : notificacoes === "ativar" ? (
-            <LinhaLista
-              Icon={Bell}
-              rotulo={NOTIFICACAO}
-              detalhe={FRASE_NOTIFICACAO}
-              semSeta
-              valor={
-                <span className="font-semibold" style={{ color: "var(--primary)" }}>
-                  {ativando ? "Ativando..." : "Ativar"}
-                </span>
-              }
-              onClick={ativar}
-            />
-          ) : notificacoes === "instalar" ? (
-            <LinhaLista
-              Icon={Bell}
-              rotulo={NOTIFICACAO}
-              detalhe="No iPhone, adicione o TaCerto à Tela de Início"
-              valor="Como fazer"
-              onClick={() => setComoInstalar(true)}
-            />
-          ) : notificacoes === "bloqueadas" ? (
-            <LinhaLista
-              Icon={BellOff}
-              rotulo={NOTIFICACAO}
-              detalhe="Para liberar: Ajustes > Notificações > TaCerto"
-              valor="Bloqueada"
-            />
-          ) : (
-            <LinhaLista Icon={BellOff} rotulo={NOTIFICACAO} detalhe="Este celular não recebe notificação do app" valor="Não disponível" />
-          )}
+          <LinhaComChave
+            Icon={notificacoes === "ligadas" ? Bell : BellOff}
+            titulo={NOTIFICACAO}
+            ligada={notificacoes === "ligadas"}
+            onMudar={mudarNotificacoes}
+            desativada={ativando}
+          />
         </SecaoLista>
       </div>
 
@@ -252,23 +202,6 @@ export default function PerfilPermissoes() {
           Os dados que vieram dele saem do app. Você pode preencher à mão ou buscar de novo quando quiser.
         </p>
         <BotoesConfirmar rotulo="Remover" onCancelar={() => setConfirmarRemoverCnpj(false)} onConfirmar={removerOCnpj} />
-      </FolhaDeBaixo>
-
-      {/* No iPhone, a notificacao do app so existe com ele na Tela de Inicio */}
-      <FolhaDeBaixo aberto={comoInstalar} onFechar={() => setComoInstalar(false)} titulo="Notificação no iPhone">
-        <div className="flex flex-col" style={{ gap: 14, marginTop: 2, paddingBottom: 6 }}>
-          <Passo n={1} Icon={Share}>Abra no Safari e toque em Compartilhar</Passo>
-          <Passo n={2} Icon={SquarePlus}>Toque em Adicionar à Tela de Início</Passo>
-          <Passo n={3}>Abra o TaCerto pelo ícone, entre e volte aqui para ativar</Passo>
-        </div>
-        <button
-          type="button"
-          onClick={() => setComoInstalar(false)}
-          className="botao-confirmar toque w-full rounded-2xl font-semibold"
-          style={{ marginTop: 18, marginBottom: 8, padding: "13px 0", fontSize: 15.5 }}
-        >
-          Entendi
-        </button>
       </FolhaDeBaixo>
     </div>
   );

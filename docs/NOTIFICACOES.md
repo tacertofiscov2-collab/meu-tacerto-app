@@ -1,4 +1,4 @@
-<!-- NOTIFICACOES v2 — o nome da linha no app é "Notificação da semana" (igual à tela); o script das chaves usa o webcrypto do node:crypto (funciona também no Node 18) (v1: passo a passo da notificação da semana no celular (chaves, SQL, segredos, função aviso-semanal, despertador, teste no iPhone, como desligar, custos e riscos). Escrito em 12/10/2026.) -->
+<!-- NOTIFICACOES v3 — na tela a linha agora é só "Permitir notificações" com a chave (pedido do Fernando: sem texto explicando) (v2: o nome da linha no app era "Notificação da semana"; o script das chaves usa o webcrypto do node:crypto (funciona também no Node 18) (v1: passo a passo da notificação da semana no celular (chaves, SQL, segredos, função aviso-semanal, despertador, teste no iPhone, como desligar, custos e riscos). Escrito em 12/10/2026.)) -->
 # Notificação da semana no celular — passo a passo (12/10/2026)
 
 > **Uma notificação por semana**, toda **segunda às 9h**, para cada pessoa
@@ -166,8 +166,8 @@ A partir daí, toda **segunda às 9h** sai a notificação, sozinha.
    **Adicionar à Tela de Início** → **Adicionar**.
 3. Feche o Safari e abra o TaCerto **pelo ícone novo** na Tela de Início.
 4. **Entre na conta** (o app instalado pede o login de novo; é normal).
-5. **Perfil** → **Permissões e integrações** → **Notificação da semana**
-   → **Ativar** → **Permitir**.
+5. **Perfil** → **Permissões e integrações** → ligar **Permitir
+   notificações** → no aviso do iPhone, **Permitir**.
 6. Avise o Claude Code. Ele manda um **envio de teste só para você** (o
    comando "ENVIO DE TESTE" do fim do arquivo SQL; pede o "pode"). O teste
    não conta como "a da semana": a de segunda chega normal.
@@ -182,7 +182,7 @@ Se não chegar: **Ajustes do iPhone** → **Notificações** → **TaCerto** →
 
 ## Como desligar
 
-- **Uma pessoa:** no app, **Notificação da semana** → desligar. Ou no iPhone:
+- **Uma pessoa:** no app, **Permitir notificações** → desligar. Ou no iPhone:
   **Ajustes** → **Notificações** → **TaCerto** → desligar.
 - **Todo mundo, por um tempo (volta fácil):** o comando **"PAUSAR"** do fim
   do arquivo SQL (precisa do "pode"). Para voltar: **"LIGAR de novo"**.
