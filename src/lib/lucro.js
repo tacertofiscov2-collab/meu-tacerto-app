@@ -1,4 +1,4 @@
-/* LUCRO v2 — gasto lancado a mao (dinheiro vivo: lancarGastoAMao, ja como gasto do negocio com a categoria) e os GASTOS PESSOAIS do periodo (gastosPessoais, para poder desfazer) (respostas 9 e 12 do Fernando) (v1: "Meu lucro": recebido x gastos do negocio por mes e no ano, gastos por categoria, selo com nota / sem nota, anexar a nota de um gasto e a soma dos gastos com nota para o Imposto de Renda */
+/* LUCRO v3 — lancarGastoAMao aceita meio e comNota (gasto lancado pelo comprovante do "+": meio "Comprovante", com nota) (v2: gasto lancado a mao (dinheiro vivo: lancarGastoAMao, ja como gasto do negocio com a categoria) e os GASTOS PESSOAIS do periodo (gastosPessoais, para poder desfazer) (respostas 9 e 12 do Fernando) (v1: "Meu lucro": recebido x gastos do negocio por mes e no ano, gastos por categoria, selo com nota / sem nota, anexar a nota de um gasto e a soma dos gastos com nota para o Imposto de Renda) */
 import { supabase } from "@/lib/supabase";
 import { ehAjuste, PREFIXO_EXTRATO } from "@/lib/conciliacao";
 import { categoriasSaida, rotuloCategoriaSaida } from "@/lib/categorias";
@@ -155,7 +155,7 @@ export async function somarGastosComNota(userId, ano) {
 
 /* v2: gasto lancado a mao (dinheiro vivo). Ja e do negocio, com a
    categoria escolhida (sem escolher: "outros"). data = "AAAA-MM-DD". */
-export async function lancarGastoAMao(userId, { valor, data, descricao, categoria }) {
+export async function lancarGastoAMao(userId, { valor, data, descricao, categoria, meio = "Dinheiro", comNota = false }) {
   const codigo = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const { data: linha, error } = await supabase
     .from("saidas")
@@ -168,9 +168,10 @@ export async function lancarGastoAMao(userId, { valor, data, descricao, categori
       valor: Number(valor) || 0,
       data: `${data}T12:00:00-03:00`,
       recebedor_nome: null,
-      meio: "Dinheiro",
+      meio,
       categoria: categoria || "outros",
       do_negocio: true,
+      ...(comNota ? { com_nota: true } : {}),
     })
     .select()
     .single();

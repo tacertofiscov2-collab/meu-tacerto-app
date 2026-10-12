@@ -1,14 +1,40 @@
-/* LANCAR v10 — as descricoes dos lancamentos de ajuste (Total do ano) vem de src/lib/conciliacao.js, a mesma fonte do selo Estimado/Conferido e da conferencia do extrato (v9: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v8: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v7: modo "Total do ano": digitar so o faturamento do ano e o velocimetro fica igual a ele (um lancamento de ajuste, sem contar em dobro); /lancar?modo=total abre direto nele (v6: padrao do Perfil: rotulos em cinza maiusculo, campos com 16px (sem zoom no iPhone), "Ultimo lancamento" em linha simples, letras maiores, botao em contorno (botao-confirmar)))) */
+/* LANCAR v11 — "Foto ou PDF do comprovante" no Recebimento (Bloco J): guarda o arquivo, a IA le (funcao ler-comprovante) e preenche valor, data e quem pagou para a pessoa CONFERIR; parece gasto: "Lançar como gasto" (Meu lucro, com nota); ao salvar com comprovante, procura recebimento parecido (+-1%, +-15 dias) e pergunta "É o mesmo?" (so liga o comprovante); sem a funcao ou sem a chave, segue no lancamento a mao com o arquivo anexado (v10: as descricoes dos lancamentos de ajuste (Total do ano) vem de src/lib/conciliacao.js, a mesma fonte do selo Estimado/Conferido e da conferencia do extrato (v9: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v8: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v7: modo "Total do ano": digitar so o faturamento do ano e o velocimetro fica igual a ele (um lancamento de ajuste, sem contar em dobro); /lancar?modo=total abre direto nele (v6: padrao do Perfil: rotulos em cinza maiusculo, campos com 16px (sem zoom no iPhone), "Ultimo lancamento" em linha simples, letras maiores, botao em contorno (botao-confirmar))))) */
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useState, useMemo, useEffect } from "react";
-import { ArrowLeft, Calendar as CalendarIcon, TrendingUp } from "lucide-react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { ArrowLeft, Calendar as CalendarIcon, TrendingUp, Camera, FileText, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAppState } from "@/context/AppStateContext";
 import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
 import PendenciasEntradas from "../components/PendenciasEntradas.jsx";
 import { dataMinimaLancamento, LIMITE_VALOR_LANCAMENTO } from "@/lib/fiscal";
-import { DESCRICAO_AJUSTE_ANO, DESCRICOES_DE_AJUSTE } from "@/lib/conciliacao";
+import { DESCRICAO_AJUSTE_ANO, DESCRICOES_DE_AJUSTE, acharLancamentoParecido } from "@/lib/conciliacao";
+import FolhaSomarNoVelocimetro from "../components/FolhaSomarNoVelocimetro.jsx";
+import { supabase } from "@/lib/supabase";
+import {
+  enviarArquivoComprovante, lerComprovante, guardarComprovante, ligarComprovanteAoLancamento,
+} from "@/lib/comprovantes";
+import { lancarGastoAMao } from "@/lib/lucro";
+import { MOSTRAR_COMPROVANTE_FOTO, MOSTRAR_MEU_LUCRO } from "@/config/piloto";
+
+/* ===================================================================
+   LANCAR v11 (12/10/2026, tarefa de 10-10, Bloco J) — COMPROVANTE
+
+   No Recebimento (lancamento novo), a linha "Foto ou PDF do
+   comprovante" (camera ou arquivo; Pix, comprovante, recibo, nota):
+   1) o arquivo vai para o balde "comprovantes" (pasta da pessoa);
+   2) a funcao ler-comprovante (IA) le valor, data, quem pagou e se e
+      recebimento ou gasto. A tela PREENCHE os campos e avisa "Li do
+      comprovante: confira e corrija se precisar." Nada e salvo sem a
+      pessoa tocar em Salvar;
+   3) parece gasto: "Lançar como gasto" (vai para o Meu lucro, com nota);
+   4) ao salvar: antes de criar o lancamento, procura recebimento
+      PARECIDO no velocimetro (+-1%, +-15 dias). Achou: "É o mesmo?" (so
+      liga o comprovante a ele). Nao achou ou "é outro": cria e liga.
+   SEM a funcao publicada ou sem a chave da IA: "Não consegui ler
+   sozinho. Preencha você" e o lancamento a mao segue com o arquivo
+   anexado. Chave MOSTRAR_COMPROVANTE_FOTO em src/config/piloto.js.
+   =================================================================== */
 
 /* ===================================================================
    LANCAR v7 (05/10/2026) — MODO "TOTAL DO ANO" (pedido do Fernando)
@@ -186,6 +212,13 @@ export default function Lancar() {
   const [preenchido, setPreenchido] = useState(false);
   const [calendarioAberto, setCalendarioAberto] = useState(false);
   const [atingiuTeto, setAtingiuTeto] = useState(false);
+  /* v11: comprovante { userId, caminho, tipo, nome, previa, lendo, lido, falhou }
+     e o "É o mesmo?" ao salvar ({ valor, data, descricao, parecido }) */
+  const [comprovante, setComprovante] = useState(null);
+  const [somarCom, setSomarCom] = useState(null);
+  const inputComprovanteRef = useRef(null);
+  const previaRef = useRef(null);
+  useEffect(() => () => { if (previaRef.current) URL.revokeObjectURL(previaRef.current); }, []);
 
   useEffect(() => {
     if (lancamentoAtual && !preenchido) {
@@ -269,9 +302,82 @@ export default function Lancar() {
     navigate("/dashboard");
   }
 
+  /* v11: escolheu a foto ou o PDF do comprovante */
+  async function escolherComprovante(e) {
+    const arquivo = e.target.files?.[0];
+    e.target.value = "";
+    if (!arquivo) return;
+    const { data: sessao } = await supabase.auth.getUser().catch(() => ({ data: null }));
+    const user = sessao?.user;
+    if (!user) {
+      toast("Entre na sua conta para guardar comprovantes.");
+      return;
+    }
+    if (previaRef.current) URL.revokeObjectURL(previaRef.current);
+    const previa = String(arquivo.type || "").startsWith("image/") ? URL.createObjectURL(arquivo) : null;
+    previaRef.current = previa;
+    setComprovante({ userId: user.id, nome: arquivo.name, previa, lendo: true, lido: null, falhou: false });
+
+    let enviado;
+    try {
+      enviado = await enviarArquivoComprovante(user.id, arquivo);
+    } catch (err) {
+      toast.error(String(err?.message || "").includes("10 MB") ? err.message : "Não consegui guardar o arquivo. Tente de novo.");
+      setComprovante(null);
+      return;
+    }
+    const lido = await lerComprovante(enviado);
+    if (lido.ok && lido.eh_comprovante && lido.valor > 0) {
+      setCentavos(Math.min(Math.round(lido.valor * 100), MAX_CENTAVOS));
+      setAtingiuTeto(false);
+      if (lido.data && validarDataBR(isoToBR(lido.data))) setDataBR(isoToBR(lido.data));
+      if (lido.pessoa) setDescricao((d) => (d.trim() ? d : lido.pessoa.slice(0, LIMITE_DESCRICAO)));
+      setComprovante((c) => c && { ...c, ...enviado, lendo: false, lido });
+    } else {
+      setComprovante((c) => c && { ...c, ...enviado, lendo: false, falhou: true });
+    }
+  }
+
+  function tirarComprovante() {
+    if (previaRef.current) URL.revokeObjectURL(previaRef.current);
+    previaRef.current = null;
+    setComprovante(null);
+  }
+
+  /* v11: grava o comprovante (com o que a pessoa confirmou) e liga ao lancamento */
+  async function guardarELigar(idLancamento, { valor, data, descricao: desc }) {
+    if (!comprovante?.caminho) return;
+    const linha = await guardarComprovante(comprovante.userId, {
+      caminho: comprovante.caminho, tipo: comprovante.tipo, nome: comprovante.nome, valor, data, descricao: desc,
+    });
+    if (linha?.id && idLancamento) await ligarComprovanteAoLancamento(comprovante.userId, linha.id, idLancamento);
+  }
+
+  /* v11: o comprovante parece um pagamento que a pessoa FEZ */
+  async function lancarComoGasto() {
+    const iso = brToISO(dataBR);
+    if (!comprovante?.caminho || centavos <= 0 || !dataValida || salvando) return;
+    setSalvando(true);
+    try {
+      const saida = await lancarGastoAMao(comprovante.userId, {
+        valor: centavos / 100, data: iso, descricao: descricao.trim(), categoria: null, meio: "Comprovante", comNota: true,
+      });
+      await guardarComprovante(comprovante.userId, {
+        caminho: comprovante.caminho, tipo: comprovante.tipo, nome: comprovante.nome,
+        valor: centavos / 100, data: new Date(iso + "T12:00:00").toISOString(), descricao: descricao.trim(), saidaId: saida?.id || null,
+      });
+      toast.success("Gasto lançado no Meu lucro");
+      navigate(MOSTRAR_MEU_LUCRO ? "/meu-lucro" : "/dashboard");
+    } catch {
+      toast.error("Não consegui salvar agora. Tente de novo.");
+      setSalvando(false);
+    }
+  }
+
   async function handleSalvar() {
     if (modoTotal) return salvarTotalDoAno();
     if (centavos <= 0 || !dataValida || salvando) return;
+    if (comprovante?.lendo) return;
 
     if (!modoEdicao && visitante && lancamentos.length >= LIMITE_VISITANTE) {
       navigate("/lancar/limite-atingido", { replace: true });
@@ -287,6 +393,18 @@ export default function Lancar() {
     };
     if (modoEdicao) {
       atualizarLancamento(lancamentoAtual.id, payload);
+    } else if (comprovante?.caminho) {
+      /* v11: com comprovante, antes de somar procura o mesmo dinheiro */
+      setModoSimulacao(false);
+      const parecido = acharLancamentoParecido(lancamentos, { valor: payload.valor, data: payload.data });
+      if (parecido) {
+        setSalvando(false);
+        setSomarCom({ ...payload, parecido });
+        return;
+      }
+      const id = await adicionarLancamento(payload);
+      await guardarELigar(id, payload);
+      toast.success("Lançamento salvo com o comprovante");
     } else {
       setModoSimulacao(false);
       adicionarLancamento(payload);
@@ -363,6 +481,82 @@ export default function Lancar() {
               nada pendente, o componente não renderiza e os campos
               ficam no lugar de sempre. */}
           {!modoEdicao && !modoTotal && <PendenciasEntradas />}
+
+          {/* v11: comprovante (foto ou PDF) lido pela IA */}
+          {MOSTRAR_COMPROVANTE_FOTO && !modoEdicao && !modoTotal && (
+            <>
+              <input
+                ref={inputComprovanteRef}
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={escolherComprovante}
+                style={{ display: "none" }}
+              />
+              {!comprovante ? (
+                <button
+                  type="button"
+                  onClick={() => inputComprovanteRef.current?.click()}
+                  className="toque card-tacerto w-full rounded-xl flex items-center text-left"
+                  style={{ gap: 12, minHeight: 56, padding: "10px 14px" }}
+                >
+                  <Camera size={21} strokeWidth={1.9} className="shrink-0" style={{ color: "var(--text-secondary)" }} />
+                  <span className="flex-1 min-w-0">
+                    <span className="block font-semibold" style={{ fontSize: 15.5, color: "var(--text)" }}>Foto ou PDF do comprovante</span>
+                    <span className="block" style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 1 }}>Pix, comprovante, recibo ou nota</span>
+                  </span>
+                </button>
+              ) : (
+                <div className="card-tacerto rounded-xl" style={{ padding: "10px 12px 11px" }}>
+                  <div className="flex items-center" style={{ gap: 12 }}>
+                    {comprovante.previa ? (
+                      <img src={comprovante.previa} alt="" className="shrink-0 rounded-lg" style={{ width: 42, height: 42, objectFit: "cover" }} />
+                    ) : (
+                      <span className="shrink-0 rounded-lg flex items-center justify-center" style={{ width: 42, height: 42, border: "1px solid var(--border)" }}>
+                        <FileText size={20} style={{ color: "var(--text-secondary)" }} />
+                      </span>
+                    )}
+                    <p className="flex-1 min-w-0 flex items-center" style={{ gap: 7, fontSize: 14, lineHeight: 1.4, color: "var(--text-secondary)" }}>
+                      {comprovante.lendo && <Loader2 size={15} className="animate-spin shrink-0" />}
+                      <span>
+                        {comprovante.lendo
+                          ? "Lendo o comprovante..."
+                          : comprovante.lido
+                          ? "Li do comprovante: confira e corrija se precisar."
+                          : "Não consegui ler sozinho. Preencha você: o comprovante fica guardado junto."}
+                      </span>
+                    </p>
+                    <button
+                      type="button"
+                      onClick={tirarComprovante}
+                      disabled={salvando}
+                      aria-label="Tirar o comprovante"
+                      className="toque shrink-0 rounded-full flex items-center justify-center"
+                      style={{ width: 30, height: 30, border: "1px solid var(--border)" }}
+                    >
+                      <X size={15} style={{ color: "var(--text-secondary)" }} />
+                    </button>
+                  </div>
+                  {comprovante.lido?.confianca === "baixa" && (
+                    <p style={{ fontSize: 13, color: "#f59e0b", marginTop: 8 }}>A leitura ficou incerta: confira com atenção.</p>
+                  )}
+                  {comprovante.lido?.tipo === "gasto" && (
+                    <div className="flex items-center justify-between" style={{ gap: 10, marginTop: 10 }}>
+                      <span style={{ fontSize: 13.5, color: "var(--text-secondary)" }}>Parece um pagamento que você fez.</span>
+                      <button
+                        type="button"
+                        onClick={lancarComoGasto}
+                        disabled={salvando || !podeSalvar}
+                        className="toque shrink-0 rounded-full font-semibold disabled:opacity-40"
+                        style={{ fontSize: 13.5, padding: "7px 12px", border: "1px solid var(--text-secondary)", color: "var(--text)", background: "none" }}
+                      >
+                        Lançar como gasto
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
 
           <div>
             <label
@@ -537,6 +731,19 @@ export default function Lancar() {
         </div>
       </div>
 
+      {/* v11: com comprovante, "É o mesmo?" antes de somar */}
+      <FolhaSomarNoVelocimetro
+        aberto={Boolean(somarCom)}
+        parecido={somarCom?.parecido || null}
+        valor={somarCom?.valor}
+        data={somarCom?.data}
+        descricao={somarCom?.descricao}
+        oQue="comprovante"
+        onLigar={(id) => guardarELigar(id, somarCom)}
+        onFechar={() => setSomarCom(null)}
+        onConcluir={() => navigate("/dashboard")}
+      />
+
       <Calendario
         aberto={calendarioAberto}
         modo="dia"
@@ -561,7 +768,7 @@ export default function Lancar() {
         <div className="max-w-md mx-auto">
           <button
             onClick={handleSalvar}
-            disabled={salvando || !podeSalvar}
+            disabled={salvando || !podeSalvar || Boolean(comprovante?.lendo)}
             className="botao-confirmar toque toque-escala w-full rounded-2xl font-bold disabled:opacity-40"
             style={{
               paddingTop: 16,

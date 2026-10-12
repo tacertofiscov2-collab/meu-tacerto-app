@@ -1,4 +1,4 @@
-/* NOTAS v2 — nota ligada ao lancamento do velocimetro (ligarNotaAoLancamento, lancamentoDaNota; notas_fiscais.lancamento_id, com copia no aparelho ate o SQL de 10-10) e descricaoDoLancamentoDaNota ("Nota fiscal nº 12 · Cliente") (v1: notas fiscais lancadas a mao (e, no futuro, as emitidas pelo app)) */
+/* NOTAS v3 — comprimirImagem exportada (o comprovante do "+" usa a mesma reducao da foto) (v2: nota ligada ao lancamento do velocimetro (ligarNotaAoLancamento, lancamentoDaNota; notas_fiscais.lancamento_id, com copia no aparelho ate o SQL de 10-10) e descricaoDoLancamentoDaNota ("Nota fiscal nº 12 · Cliente") (v1: notas fiscais lancadas a mao (e, no futuro, as emitidas pelo app))) */
 import { supabase } from "@/lib/supabase";
 
 /* ===================================================================
@@ -29,7 +29,7 @@ function novoCodigo() {
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-async function comprimirImagem(arquivo, ladoMax = 1600, qualidade = 0.8) {
+export async function comprimirImagem(arquivo, ladoMax = 1600, qualidade = 0.8) {
   if (!arquivo?.type?.startsWith("image/")) return arquivo;
   try {
     const endereco = URL.createObjectURL(arquivo);

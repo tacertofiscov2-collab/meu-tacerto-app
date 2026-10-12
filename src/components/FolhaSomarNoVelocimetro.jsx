@@ -1,4 +1,4 @@
-/* FOLHASOMARNOVELOCIMETRO v1 — depois de guardar uma nota (ou comprovante) de recebimento: "Posso somar R$ X no velocímetro?" [Não] [Sim]; antes de somar procura um recebimento parecido (+-1%, +-15 dias) e pergunta "É o mesmo?" — se for, so liga a nota a ele (nao conta duas vezes) */
+/* FOLHASOMARNOVELOCIMETRO v2 — props parecido (comeca direto no "É o mesmo?": o "+" com comprovante, quando a pessoa ja tocou em Salvar) e onConcluir (fechar sem salvar volta para a tela; concluir segue em frente) (v1: depois de guardar uma nota (ou comprovante) de recebimento: "Posso somar R$ X no velocímetro?" [Não] [Sim]; antes de somar procura um recebimento parecido (+-1%, +-15 dias) e pergunta "É o mesmo?" — se for, so liga a nota a ele (nao conta duas vezes)) */
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -26,6 +26,9 @@ import { acharLancamentoParecido } from "@/lib/conciliacao";
    Props: aberto, valor (R$), data (ISO), descricao (do lancamento novo,
    ex.: "Nota fiscal nº 12"), oQue ("nota" | "comprovante"), onLigar,
    onFechar.
+   v2: parecido = o lancamento parecido ja achado (comeca no "É o
+   mesmo?"); onConcluir = chamado depois de ligar ou somar (sem ele, e o
+   onFechar). Assim, fechar a folha sem escolher NAO conta como concluir.
    =================================================================== */
 
 function reais(v) {
@@ -39,7 +42,7 @@ function diaMes(iso) {
   return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export default function FolhaSomarNoVelocimetro({ aberto, valor, data, descricao, oQue = "nota", onLigar, onFechar }) {
+export default function FolhaSomarNoVelocimetro({ aberto, valor, data, descricao, oQue = "nota", onLigar, onFechar, onConcluir, parecido: parecidoInicial = null }) {
   const { lancamentos, adicionarLancamento, tipoMEI } = useAppState();
   const [etapa, setEtapa] = useState("pergunta"); // pergunta | mesmo
   const [parecido, setParecido] = useState(null);
@@ -48,11 +51,12 @@ export default function FolhaSomarNoVelocimetro({ aberto, valor, data, descricao
   // Abriu de novo (outra nota): volta para a primeira pergunta
   useEffect(() => {
     if (aberto) {
-      setEtapa("pergunta");
-      setParecido(null);
+      setEtapa(parecidoInicial ? "mesmo" : "pergunta");
+      setParecido(parecidoInicial);
       setSalvando(false);
     }
-  }, [aberto]);
+  }, [aberto, parecidoInicial]);
+  const concluir = () => (onConcluir || onFechar)();
 
   const caminhoneiro = tipoMEI === "MEI_CAMINHONEIRO";
   const doQue = caminhoneiro ? "de um frete" : "de um serviço ou venda";
@@ -64,7 +68,7 @@ export default function FolhaSomarNoVelocimetro({ aberto, valor, data, descricao
     await onLigar?.(id, { criado: true });
     setSalvando(false);
     toast.success(`Somei ${reais(valor)} no velocímetro`);
-    onFechar();
+    concluir();
   }
 
   function sim() {
@@ -82,7 +86,7 @@ export default function FolhaSomarNoVelocimetro({ aberto, valor, data, descricao
     await onLigar?.(parecido.id, { criado: false });
     setSalvando(false);
     toast.success(oQue === "comprovante" ? "Comprovante ligado ao recebimento" : "Nota ligada ao recebimento");
-    onFechar();
+    concluir();
   }
 
   const titulo = etapa === "mesmo" ? "Já está no velocímetro?" : "Somar no velocímetro?";

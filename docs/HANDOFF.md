@@ -297,6 +297,11 @@ categorias de gasto).
    lá o app funciona: o que for desses campos fica no aparelho e sobe
    sozinho depois (testado em 12/10 num banco de mentira sem as colunas).
    O arquivo cresce a cada bloco da tarefa de 10-10 que precisar de banco.
+8. **Função `ler-comprovante` (IA do comprovante) ESCRITA, NÃO
+   PUBLICADA** (Bloco J). Falta: o Fernando criar a chave da Anthropic e
+   pôr como segredo `ANTHROPIC_API_KEY` no Supabase, e dar o "pode" para
+   publicar. Passo a passo e custo: **`docs/IA-COMPROVANTE.md`**. Até lá o
+   "+" segue no lançamento à mão com o arquivo guardado.
 
 ---
 
@@ -520,3 +525,25 @@ I1. Um componente só (`src/components/SeloRecomendado.jsx`), pendurado
     A tela antiga "Adicionar movimentações" (escondida no piloto) ficou
     sem o selo: ela ainda fala em "A IA lê" o extrato, o que não é
     verdade hoje.
+
+**Bloco J ("+" com foto ou PDF)**
+
+J1. A linha **"Foto ou PDF do comprovante"** fica no topo do "+"
+    (Recebimento). A IA preenche valor, data e o nome de quem pagou (na
+    Descrição, só se estiver vazia), com "Li do comprovante: confira e
+    corrija se precisar."; leitura incerta mostra "A leitura ficou
+    incerta: confira com atenção." Ok?
+J2. Modelo da IA: deixei o **`claude-opus-5-5`** (o mais preciso), com o
+    "fallback" automático da Anthropic ligado (se recusar, outro modelo
+    tenta). Custa ≈ US$ 0,02 por leitura (≈ R$ 0,11); o
+    **`claude-haiku-5-5`** custa ≈ US$ 0,0005. A troca é só o segredo
+    `MODELO_COMPROVANTE`. Qual usar no piloto? (detalhes em
+    `docs/IA-COMPROVANTE.md`)
+J3. Parece **gasto**: aparece "Lançar como gasto" (vai para o Meu lucro,
+    "com nota", meio "Comprovante", categoria "Outros" para a pessoa
+    trocar). Ok, ou perguntar a categoria na hora?
+J4. Se a pessoa escolhe a foto e desiste (sai sem salvar), o arquivo fica
+    no balde sem registro. É pouco espaço; limpar depois? (deixei)
+J5. Lançar sem comprovante continua igual (sem a pergunta "É o mesmo?").
+    Com comprovante, a pergunta aparece quando há recebimento parecido
+    (±1%, ±15 dias). Ok?
