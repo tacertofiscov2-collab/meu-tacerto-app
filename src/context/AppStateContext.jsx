@@ -1,4 +1,4 @@
-/* APPSTATE v4 — adicionarLancamento monta o lancamento ANTES do setState (com varios de uma vez o React adiava e a gravacao no banco saia vazia) (v3: campos novos do perfil (CNPJ, CNAE, MEI desde, CNPJ confirmado, atualizacao do velocimetro, lembrete do DAS, nota automatica) lidos numa consulta separada e guardados no aparelho ate o SQL de 08-10 rodar; "Atualizado em" do velocimetro marcado a cada lancamento (v2: mediaMensal vira o RITMO do ano (faturado / meses que passaram) + mediaLimite) */
+/* APPSTATE v5 — campos de 10-10 (resumo e data da consulta do CNPJ, tutorial visto, avisos no WhatsApp, forma de pagar o DAS) numa leitura SEPARADA (dono proprio no aparelho, donoExtras10); salvarDadosCnpj grava tambem o resumo e a data da consulta; removerCnpj (apaga o CNPJ e o que veio dele); salvarExtras; adicionarLancamento devolve o id do banco (para ligar nota/comprovante ao lancamento) (v4: adicionarLancamento monta o lancamento ANTES do setState (com varios de uma vez o React adiava e a gravacao no banco saia vazia) (v3: campos novos do perfil (CNPJ, CNAE, MEI desde, CNPJ confirmado, atualizacao do velocimetro, lembrete do DAS, nota automatica) lidos numa consulta separada e guardados no aparelho ate o SQL de 08-10 rodar; "Atualizado em" do velocimetro marcado a cada lancamento (v2: mediaMensal vira o RITMO do ano (faturado / meses que passaram) + mediaLimite)) */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   LIMITES_ANUAIS,
@@ -9,6 +9,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import {
   COLUNAS_PERFIL_NOVAS, perfilNovoDoBanco, gravarPerfilNovo,
+  COLUNAS_PERFIL_10_10, CAMPOS_PERFIL_10_10,
 } from "@/lib/perfil";
 
 /* ===================================================================
@@ -63,6 +64,43 @@ function mesclarExtras(doBanco, local) {
   return { mesclado, subir };
 }
 
+/* ===================================================================
+   CAMPOS DE 10-10 (v5 — 10/10/2026, tarefa de 10-10)
+   Mesma ideia dos de 08-10, num grupo e numa leitura SEPARADOS (ver
+   src/lib/perfil.js, CAMPOS_PERFIL_10_10): antes do SQL de 10-10, a
+   leitura deles falha sozinha e o resto carrega normal. O que a pessoa
+   escolher fica no aparelho (dono: donoExtras10) e sobe depois.
+   =================================================================== */
+const EXTRAS_10_10 = {
+  cnpjDados: null,
+  cnpjConsultadoEm: null,
+  tutorialVisto: false,
+  avisosWhatsapp: true,
+  dasForma: null,
+};
+
+/* Junta banco e aparelho. O banco ganha quando tem um valor diferente
+   do padrao da coluna; se o banco esta no padrao (ou vazio) e o
+   aparelho tem outro valor, vale o do aparelho e ele sobe. (Ex.: viu o
+   tutorial antes do SQL rodar: no banco fica false, o padrao.) */
+function mesclarExtras10(doBanco, local) {
+  const mesclado = { ...EXTRAS_10_10 };
+  const subir = {};
+  for (const campo of Object.keys(EXTRAS_10_10)) {
+    const padrao = EXTRAS_10_10[campo];
+    const b = doBanco[campo];
+    const l = local[campo];
+    const bancoNoPadrao = b === null || b === undefined || b === "" || b === padrao;
+    const localDiferente = !(l === null || l === undefined || l === "" || l === padrao);
+    if (!bancoNoPadrao) mesclado[campo] = b;
+    else if (localDiferente) {
+      mesclado[campo] = l;
+      subir[campo] = l;
+    }
+  }
+  return { mesclado, subir };
+}
+
 const STORAGE_KEY = "tacerto_app_state";
 const EVT = "tacerto-user-changed";
 
@@ -98,6 +136,9 @@ const DEFAULT_STATE = {
   /* v3: campos novos do perfil + de qual conta eles sao */
   ...EXTRAS_VAZIOS,
   donoExtras: null,
+  /* v5: campos de 10-10 + de qual conta eles sao */
+  ...EXTRAS_10_10,
+  donoExtras10: null,
 };
 
 function hidratar() {
@@ -210,6 +251,8 @@ export function AppStateProvider({ children }) {
 
         // v3: campos novos do perfil, numa consulta SEPARADA (ver topo)
         await carregarExtras(user.id);
+        // v5: campos de 10-10, em outra consulta separada
+        await carregarExtras10(user.id);
       } catch {
         // Falha ao buscar perfil não deve derrubar a sessão.
         if (!ativo) return;
@@ -239,6 +282,29 @@ export function AppStateProvider({ children }) {
       }
       const { mesclado, subir } = mesclarExtras(perfilNovoDoBanco(linha), local);
       setState((s) => ({ ...s, ...mesclado, donoExtras: userId }));
+      if (Object.keys(subir).length) gravarPerfilNovo(subir);
+    }
+
+    /* v5: campos de 10-10 (mesma regra, grupo proprio) */
+    async function carregarExtras10(userId) {
+      const local = stateRef.current.donoExtras10 === userId ? stateRef.current : EXTRAS_10_10;
+      let linha = null;
+      try {
+        const { data, error } = await supabase
+          .from("perfis")
+          .select(COLUNAS_PERFIL_10_10)
+          .eq("id", userId)
+          .single();
+        if (!error) linha = data;
+      } catch { /* sem rede */ }
+      if (!ativo) return;
+
+      if (!linha) {
+        setState((s) => (s.donoExtras10 === userId ? s : { ...s, ...EXTRAS_10_10, donoExtras10: userId }));
+        return;
+      }
+      const { mesclado, subir } = mesclarExtras10(perfilNovoDoBanco(linha, CAMPOS_PERFIL_10_10), local);
+      setState((s) => ({ ...s, ...mesclado, donoExtras10: userId }));
       if (Object.keys(subir).length) gravarPerfilNovo(subir);
     }
 
@@ -366,13 +432,54 @@ export function AppStateProvider({ children }) {
   }, []);
 
   /* v3: CNPJ confirmado (ou so digitado) — Onboarding e Perfil.
-     `dados`: { cnpj, cnae, cnaesSecundarios, dataOpcaoMei, cnpjConfirmado } */
+     `dados`: { cnpj, cnae, cnaesSecundarios, dataOpcaoMei, cnpjConfirmado }
+     v5: tambem { cnpjDados, cnpjConsultadoEm } (resumo e data da
+     consulta; cnpjDados sem data = agora). */
   const salvarDadosCnpj = useCallback(async (dados = {}) => {
     const patch = {};
-    for (const campo of ["cnpj", "cnae", "cnaesSecundarios", "dataOpcaoMei", "cnpjConfirmado"]) {
+    for (const campo of ["cnpj", "cnae", "cnaesSecundarios", "dataOpcaoMei", "cnpjConfirmado", "cnpjDados", "cnpjConsultadoEm"]) {
       if (dados[campo] !== undefined) patch[campo] = dados[campo];
     }
-    setState((s) => ({ ...s, ...patch, donoExtras: userIdRef.current || s.donoExtras }));
+    if (patch.cnpjDados && patch.cnpjConsultadoEm === undefined) patch.cnpjConsultadoEm = new Date().toISOString();
+    setState((s) => ({
+      ...s,
+      ...patch,
+      donoExtras: userIdRef.current || s.donoExtras,
+      donoExtras10: userIdRef.current || s.donoExtras10,
+    }));
+    return gravarPerfilNovo(patch);
+  }, []);
+
+  /* v5: "Remover CNPJ" (Perfil > CNPJ e Permissoes): apaga o CNPJ e os
+     dados que vieram dele. Tipo de MEI e abertura ficam como estao, mas
+     voltam a ser editaveis (deixam de estar "travados"). No banco o CNPJ
+     vira vazio (null). */
+  const removerCnpj = useCallback(async () => {
+    setState((s) => ({
+      ...s,
+      cnpj: "",
+      cnae: "",
+      cnaesSecundarios: [],
+      dataOpcaoMei: null,
+      cnpjConfirmado: false,
+      cnpjDados: null,
+      cnpjConsultadoEm: null,
+      donoExtras: userIdRef.current || s.donoExtras,
+      donoExtras10: userIdRef.current || s.donoExtras10,
+    }));
+    return gravarPerfilNovo({
+      cnpj: null, cnae: null, cnaesSecundarios: [], dataOpcaoMei: null, cnpjConfirmado: false,
+      cnpjDados: null, cnpjConsultadoEm: null,
+    });
+  }, []);
+
+  /* v5: tutorial visto, avisos no WhatsApp, forma de pagar o DAS */
+  const salvarExtras = useCallback(async (dados = {}) => {
+    const patch = {};
+    for (const campo of ["tutorialVisto", "avisosWhatsapp", "dasForma"]) {
+      if (dados[campo] !== undefined) patch[campo] = dados[campo];
+    }
+    setState((s) => ({ ...s, ...patch, donoExtras10: userIdRef.current || s.donoExtras10 }));
     return gravarPerfilNovo(patch);
   }, []);
 
@@ -385,6 +492,9 @@ export function AppStateProvider({ children }) {
     return gravarPerfilNovo(patch);
   }, []);
 
+  /* v5: devolve uma Promise com o id do lancamento no banco (ou o id
+     local, sem login/sem rede) — para ligar nota ou comprovante a ele.
+     Quem nao precisa do id simplesmente ignora o retorno. */
   const adicionarLancamento = useCallback((l) => {
     // id temporário local — o banco gera o id definitivo; reconciliamos abaixo.
     const idLocal = uuid();
@@ -413,11 +523,11 @@ export function AppStateProvider({ children }) {
     marcarVelocimetroAtualizado();
 
     // Grava no banco (se logado) e troca o id local pelo id real do banco.
-    (async () => {
+    return (async () => {
       try {
         const { data: userData } = await supabase.auth.getUser();
         const user = userData?.user;
-        if (!user || !novo) return;
+        if (!user || !novo) return idLocal;
         const { data: inserido } = await supabase
           .from("lancamentos")
           .insert({
@@ -435,9 +545,12 @@ export function AppStateProvider({ children }) {
               x.id === idLocal ? { ...x, id: inserido.id } : x,
             ),
           }));
+          return inserido.id;
         }
+        return idLocal;
       } catch {
         /* visitante ou falha de rede — segue só no local */
+        return idLocal;
       }
     })();
   }, [marcarVelocimetroAtualizado]);
@@ -628,6 +741,8 @@ export function AppStateProvider({ children }) {
     ...state,
     marcarVelocimetroAtualizado,
     salvarDadosCnpj,
+    removerCnpj,
+    salvarExtras,
     salvarLembreteDas,
     ultimaAtualizacaoVelocimetro,
     adicionarLancamento,

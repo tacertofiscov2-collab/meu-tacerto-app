@@ -1,4 +1,4 @@
-/* CNPJ v1 — CNPJ do MEI: mascara enquanto digita, CNPJ escondido, conferencia dos digitos e busca dos dados publicos na BrasilAPI (nome, CNAE, data do MEI) */
+/* CNPJ v2 — a consulta tambem devolve as atividades com o nome (principal e secundarias), para a pagina do CNPJ; situacaoEhAtiva e textoConsultadoEm (v1: CNPJ do MEI: mascara enquanto digita, CNPJ escondido, conferencia dos digitos e busca dos dados publicos na BrasilAPI (nome, CNAE, data do MEI)) */
 
 /* Conferido em 10/10/2026 (verificacao independente), ainda v1 porque nao
    foi publicado. Corrigido:
@@ -281,10 +281,18 @@ function montarDados(c, digitos) {
   const cnaePrincipal = soDigitosCnae(c.cnae_fiscal);
 
   const cnaesSecundarios = [];
+  /* v2: atividades com o nome, para mostrar na pagina do CNPJ */
+  const atividades = [];
+  if (cnaePrincipal) {
+    atividades.push({ codigo: cnaePrincipal, descricao: texto(c.cnae_fiscal_descricao).trim(), principal: true });
+  }
   const lista = Array.isArray(c.cnaes_secundarios) ? c.cnaes_secundarios : [];
   for (const item of lista) {
     const cod = soDigitosCnae(item && typeof item === "object" ? item.codigo : item);
-    if (cod && !cnaesSecundarios.includes(cod)) cnaesSecundarios.push(cod);
+    if (cod && !cnaesSecundarios.includes(cod)) {
+      cnaesSecundarios.push(cod);
+      atividades.push({ codigo: cod, descricao: texto(item && typeof item === "object" ? item.descricao : "").trim(), principal: false });
+    }
   }
 
   const opcao = c.opcao_pelo_mei;
@@ -303,6 +311,7 @@ function montarDados(c, digitos) {
     dataInicioAtividade: dataIso(c.data_inicio_atividade),
     municipio: texto(c.municipio).trim(),
     uf: texto(c.uf).trim(),
+    atividades,
     pareceCaminhoneiro:
       ehCnaeCaminhoneiro(cnaePrincipal) || cnaesSecundarios.some((cod) => ehCnaeCaminhoneiro(cod)),
   };
@@ -391,4 +400,39 @@ export async function buscarCnpj(cnpj, opcoes = {}) {
   } finally {
     clearTimeout(relogio);
   }
+}
+
+/* ===================================================================
+   v2 (10/10/2026, tarefa de 10-10) — PAGINA DO CNPJ
+   =================================================================== */
+
+/* A situacao cadastral e "ATIVA"? (a BrasilAPI manda em maiusculas:
+   ATIVA, BAIXADA, INAPTA, SUSPENSA, NULA). Vazio = nao sabe (null). */
+export function situacaoEhAtiva(situacao) {
+  const s = texto(situacao).trim().toUpperCase();
+  if (!s) return null;
+  return s === "ATIVA";
+}
+
+/* "ATIVA" -> "Ativa"; "INAPTA" -> "Inapta" */
+export function situacaoTexto(situacao) {
+  const s = texto(situacao).trim().toLowerCase();
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+}
+
+/* "Consultado em 10/10 às 18:40" (hora do aparelho) */
+export function textoConsultadoEm(iso) {
+  const d = iso ? new Date(iso) : null;
+  if (!d || isNaN(d.getTime())) return "";
+  const p = (n) => String(n).padStart(2, "0");
+  return `Consultado em ${p(d.getDate())}/${p(d.getMonth() + 1)} às ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+/* "Divinópolis/MG" (a BrasilAPI manda o municipio em maiusculas) */
+export function municipioTexto(municipio, uf) {
+  const m = texto(municipio).trim().toLowerCase()
+    .replace(/(^|\s)(\S)/g, (_x, esp, letra) => esp + letra.toUpperCase())
+    .replace(/\s(De|Da|Do|Das|Dos|E)\s/g, (x) => x.toLowerCase());
+  const u = texto(uf).trim().toUpperCase();
+  return m && u ? `${m}/${u}` : m || u;
 }

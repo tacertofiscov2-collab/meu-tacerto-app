@@ -1,4 +1,4 @@
-﻿/* PERFIL v23 — Meu MEI: linha "Simulador" (/simulador) (v22: Preferencias com o detalhe "Lembrete do DAS" (a tela voltou so com ele) (v21: Ajuda: "Notas fiscais" abre a janela nova (/notas-fiscais) (v20: Meu MEI: linha "Meu lucro" (/meu-lucro) (v19: Meu MEI: linha "CNPJ" (mascarado 12.345.•••/••01-90; sem CNPJ, "Não preenchido" com pontinho de aviso) que abre a busca/confirmacao (/perfil/cnpj) (v18: "Excluir conta" em branco (como as outras linhas); vermelho so no "Sair da conta" (pedido do Fernando) (v17: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes))) */
+﻿/* PERFIL v24 — dados que vieram do CNPJ ficam TRAVADOS: Tipo de MEI (quando bate com o CNPJ) e Abertura mostram um cadeado pequeno e "Veio do seu CNPJ"; tocar abre a pagina do CNPJ (Atualizar / Remover CNPJ) (v23: Meu MEI: linha "Simulador" (/simulador) (v22: Preferencias com o detalhe "Lembrete do DAS" (a tela voltou so com ele) (v21: Ajuda: "Notas fiscais" abre a janela nova (/notas-fiscais) (v20: Meu MEI: linha "Meu lucro" (/meu-lucro) (v19: Meu MEI: linha "CNPJ" (mascarado 12.345.•••/••01-90; sem CNPJ, "Não preenchido" com pontinho de aviso) que abre a busca/confirmacao (/perfil/cnpj) (v18: "Excluir conta" em branco (como as outras linhas); vermelho so no "Sair da conta" (pedido do Fernando) (v17: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes)))) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
@@ -8,7 +8,8 @@ import {
   Trash2, FileText, ArrowUpRight, ArrowDownLeft, CalendarCheck,
   Briefcase, CalendarDays, Gauge, Sun, Moon, History, Phone, Headphones, Landmark, Building2, Wallet, Calculator,
 } from "lucide-react";
-import { mascararCnpj } from "@/lib/cnpj";
+import { Lock as Cadeado } from "lucide-react";
+import { mascararCnpj, ehCnaeCaminhoneiro } from "@/lib/cnpj";
 import Calendario from "../components/Calendario.jsx";
 import { LinhaCampo, AvisoFaleConosco, FolhaTipoMei } from "../components/PerfilFolhas.jsx";
 import {
@@ -75,6 +76,16 @@ function NaoPreenchido() {
     <span className="inline-flex items-center" style={{ gap: 7 }}>
       Não preenchido
       <span aria-hidden className="inline-block rounded-full" style={{ width: 7, height: 7, backgroundColor: "#f59e0b", opacity: 0.85 }} />
+    </span>
+  );
+}
+
+/* v24: valor de um dado que veio do CNPJ: o valor + cadeado pequeno */
+function ValorTravado({ children }) {
+  return (
+    <span className="inline-flex items-center" style={{ gap: 6 }}>
+      {children}
+      <Cadeado size={13} strokeWidth={2.2} aria-label="Veio do seu CNPJ" style={{ color: "var(--text-tertiary)", flexShrink: 0 }} />
     </span>
   );
 }
@@ -179,6 +190,20 @@ export default function Perfil() {
   const { nome, visitante, setNome: salvarNome, setTipo } = useUserState();
   const app = useAppState();
   const { resetarConta, tipoMEI, mesAnoAbertura, setMesAnoAbertura, limiteAtual, faturamentoAtual, email, cnpj } = app;
+
+  /* v24 (10/10/2026, Bloco C): o que veio do CNPJ nao se edita a mao.
+     Travado = CNPJ confirmado. O Tipo de MEI so fica travado quando o
+     que esta no app BATE com o CNPJ (se a pessoa corrigiu pela folha "O
+     que mudou?", continua editavel). A Abertura, quando o CNPJ tem a
+     data de opcao pelo MEI. Tocar no campo travado abre a pagina do
+     CNPJ (la estao "Atualizar dados do CNPJ" e "Remover CNPJ"). */
+  const cnpjTravado = Boolean(cnpj && app.cnpjConfirmado);
+  const caminhoneiroPeloCnpj = typeof app.cnpjDados?.pareceCaminhoneiro === "boolean"
+    ? app.cnpjDados.pareceCaminhoneiro
+    : [app.cnae, ...(app.cnaesSecundarios || [])].filter(Boolean).some((c) => ehCnaeCaminhoneiro(c));
+  const tipoTravado = cnpjTravado && (caminhoneiroPeloCnpj ? "MEI_CAMINHONEIRO" : "MEI") === tipoMEI;
+  const aberturaTravada = cnpjTravado && Boolean(app.dataOpcaoMei);
+  const abrirCnpj = () => navigate("/perfil/cnpj", DE_PERFIL);
   const [saindo, setSaindo] = useState(false);
 
   /* v14: dados que vieram do Editar perfil (ver o topo do arquivo) */
@@ -521,15 +546,21 @@ export default function Perfil() {
               />
               {/* v14: tocaveis (vieram do Editar perfil). A abertura so
                   muda para quem abriu este ano (limite proporcional). */}
-              <LinhaLista Icon={Briefcase} rotulo="Tipo de MEI" valor={rotuloTipo} onClick={() => setFolhaTipoAberta(true)} />
-              {abertura && (
+              {tipoTravado ? (
+                <LinhaLista Icon={Briefcase} rotulo="Tipo de MEI" detalhe="Veio do seu CNPJ" valor={<ValorTravado>{rotuloTipo}</ValorTravado>} onClick={abrirCnpj} />
+              ) : (
+                <LinhaLista Icon={Briefcase} rotulo="Tipo de MEI" valor={rotuloTipo} onClick={() => setFolhaTipoAberta(true)} />
+              )}
+              {abertura && (aberturaTravada ? (
+                <LinhaLista Icon={CalendarDays} rotulo="Abertura" detalhe="Veio do seu CNPJ" valor={<ValorTravado>{abertura}</ValorTravado>} onClick={abrirCnpj} />
+              ) : (
                 <LinhaLista
                   Icon={CalendarDays}
                   rotulo="Abertura"
                   valor={abertura}
                   onClick={Number(mesAnoAbertura?.ano) === anoAtual ? () => setCalendarioAberto(true) : undefined}
                 />
-              )}
+              ))}
               <LinhaLista
                 Icon={Gauge}
                 rotulo="Limite do ano"

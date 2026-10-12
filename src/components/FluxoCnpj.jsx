@@ -1,4 +1,4 @@
-/* FLUXOCNPJ v1 — "Qual o CNPJ do seu MEI?" (digitar com mascara, validar e buscar os dados publicos na BrasilAPI) e "Achei você" (nome, tipo de MEI e "MEI desde"); usado no Onboarding e no Perfil (/perfil/cnpj) */
+/* FLUXOCNPJ v2 — PassoDigitarCnpj com semTitulo (a pagina do CNPJ do Perfil mostra as vantagens no lugar do titulo) (v1: "Qual o CNPJ do seu MEI?" (digitar com mascara, validar e buscar os dados publicos na BrasilAPI) e "Achei você" (nome, tipo de MEI e "MEI desde"); usado no Onboarding e no Perfil (/perfil/cnpj)) */
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Loader2, AlertTriangle } from "lucide-react";
 import {
@@ -46,6 +46,8 @@ export function PassoDigitarCnpj({
   onPular,
   textoPular = "Preencher depois",
   autoFocus = true,
+  /* v2: sem o titulo e a frase (quem chama ja explica) */
+  semTitulo = false,
 }) {
   const [digitos, setDigitos] = useState(() => soDigitosCnpj(valorInicial));
   const [buscando, setBuscando] = useState(false);
@@ -70,12 +72,16 @@ export function PassoDigitarCnpj({
 
   return (
     <div className="shrink-0">
-      <h1 className="text-2xl font-bold text-center" style={{ color: "var(--text)", marginBottom: 8 }}>
-        Qual o CNPJ do seu MEI?
-      </h1>
-      <p className="text-center" style={{ color: "var(--text-secondary)", fontSize: 15, marginBottom: 20 }}>
-        Com ele eu preencho o resto pra você.
-      </p>
+      {!semTitulo && (
+        <>
+          <h1 className="text-2xl font-bold text-center" style={{ color: "var(--text)", marginBottom: 8 }}>
+            Qual o CNPJ do seu MEI?
+          </h1>
+          <p className="text-center" style={{ color: "var(--text-secondary)", fontSize: 15, marginBottom: 20 }}>
+            Com ele eu preencho o resto pra você.
+          </p>
+        </>
+      )}
 
       <input
         ref={campoRef}

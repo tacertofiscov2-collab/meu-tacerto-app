@@ -1,4 +1,4 @@
-/* PERFIL (lib) v2 — campos novos do perfil (CNPJ, atualizacao do velocimetro, lembrete do DAS, nota automatica): ler e gravar SEM QUEBRAR se a coluna ainda nao existir no banco (v1: nomes do tipo de MEI, prazo para corrigir o tipo, telefone formatado e gravar no banco (veio do EditarPerfil.jsx)) */
+/* PERFIL (lib) v3 — campos de 10-10 (resumo e data da consulta do CNPJ, tutorial visto, avisos no WhatsApp, forma de pagar o DAS) num grupo separado, lidos e gravados a parte (v2: campos novos do perfil (CNPJ, atualizacao do velocimetro, lembrete do DAS, nota automatica): ler e gravar SEM QUEBRAR se a coluna ainda nao existir no banco (v1: nomes do tipo de MEI, prazo para corrigir o tipo, telefone formatado e gravar no banco (veio do EditarPerfil.jsx))) */
 import { supabase } from "@/lib/supabase";
 
 /* Nome do tipo de MEI como aparece no perfil */
@@ -80,6 +80,30 @@ export const CAMPOS_PERFIL_NOVOS = {
 /* Para o select: "cnpj, cnae, ..." */
 export const COLUNAS_PERFIL_NOVAS = Object.values(CAMPOS_PERFIL_NOVOS).join(", ");
 
+/* ===================================================================
+   CAMPOS DE 10-10 (v3 — 10/10/2026, tarefa de 10-10)
+
+   Vem com o SQL de 10-10 (docs/SQL-PENDENTE-10-10.sql). Ficam num GRUPO
+   SEPARADO dos de 08-10 de proposito: se estivessem na mesma consulta,
+   enquanto o SQL de 10-10 nao roda o Supabase recusaria a consulta
+   inteira e o CNPJ, o lembrete do DAS etc. (que JA existem no banco)
+   deixariam de carregar. Mesma regra: leitura separada, gravacao
+   tolerante, valor guardado no aparelho ate a coluna existir.
+     cnpjDados          resumo da ultima consulta do CNPJ (BrasilAPI)
+     cnpjConsultadoEm   quando foi essa consulta
+     tutorialVisto      ja viu o tutorial do primeiro acesso
+     avisosWhatsapp     aceita lembretes e avisos no WhatsApp (LGPD)
+     dasForma           "isa" (a Isa manda o boleto) | "sozinho"
+   =================================================================== */
+export const CAMPOS_PERFIL_10_10 = {
+  cnpjDados: "cnpj_dados",
+  cnpjConsultadoEm: "cnpj_consultado_em",
+  tutorialVisto: "tutorial_visto",
+  avisosWhatsapp: "avisos_whatsapp",
+  dasForma: "das_forma",
+};
+export const COLUNAS_PERFIL_10_10 = Object.values(CAMPOS_PERFIL_10_10).join(", ");
+
 /* O erro e de coluna que ainda nao existe?
    - leitura: Postgres 42703 ("column perfis.cnpj does not exist")
    - gravacao: PostgREST PGRST204 ("Could not find the 'cnpj' column") */
@@ -92,10 +116,10 @@ export function erroDeColunaFaltando(error) {
 
 /* Linha do banco (snake_case) -> objeto do app (camelCase), so com o
    que veio. */
-export function perfilNovoDoBanco(linha) {
+export function perfilNovoDoBanco(linha, campos = CAMPOS_PERFIL_NOVOS) {
   const saida = {};
   if (!linha) return saida;
-  for (const [app, coluna] of Object.entries(CAMPOS_PERFIL_NOVOS)) {
+  for (const [app, coluna] of Object.entries(campos)) {
     if (coluna in linha) saida[app] = linha[coluna];
   }
   return saida;
@@ -103,6 +127,8 @@ export function perfilNovoDoBanco(linha) {
 
 /**
  * Grava os campos novos do perfil (patch em camelCase, so os presentes).
+ * v3: os de 08-10 e os de 10-10 vao em DUAS gravacoes separadas (se a
+ * coluna de 10-10 ainda nao existe, a de 08-10 grava mesmo assim).
  * Nunca lanca. Devolve { ok } ou { ok: false, faltaColuna, visitante }.
  */
 export async function gravarPerfilNovo(patch = {}) {
@@ -110,15 +136,21 @@ export async function gravarPerfilNovo(patch = {}) {
     const { data } = await supabase.auth.getUser();
     if (!data?.user) return { ok: false, visitante: true };
 
-    const update = {};
-    for (const [app, coluna] of Object.entries(CAMPOS_PERFIL_NOVOS)) {
-      if (patch[app] !== undefined) update[coluna] = patch[app];
+    let ok = true;
+    let faltaColuna = false;
+    for (const campos of [CAMPOS_PERFIL_NOVOS, CAMPOS_PERFIL_10_10]) {
+      const update = {};
+      for (const [app, coluna] of Object.entries(campos)) {
+        if (patch[app] !== undefined) update[coluna] = patch[app];
+      }
+      if (Object.keys(update).length === 0) continue;
+      const { error } = await supabase.from("perfis").update(update).eq("id", data.user.id);
+      if (error) {
+        ok = false;
+        if (erroDeColunaFaltando(error)) faltaColuna = true;
+      }
     }
-    if (Object.keys(update).length === 0) return { ok: true };
-
-    const { error } = await supabase.from("perfis").update(update).eq("id", data.user.id);
-    if (error) return { ok: false, faltaColuna: erroDeColunaFaltando(error) };
-    return { ok: true };
+    return ok ? { ok: true } : { ok: false, faltaColuna };
   } catch {
     return { ok: false };
   }
