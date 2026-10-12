@@ -1,4 +1,4 @@
-/* DECLARACAO v4 — datas da declaracao em constantes com a fonte, para atualizar todo ano: PRAZO_DASN + TEXTO_PRAZO_DASN ("Pode ser feita desde o começo do ano até 31 de maio.") e PERIODO_IRPF + TEXTO_PERIODO_IRPF ("Abre em março e vai até o fim de maio...") (Bloco G) (v3: regras da isencao conferidas (tarefa de 10-10, Bloco F): parte isenta = receita x percentual da atividade MENOS o DAS devido no ano (LC 123, art. 14 §1o); atividade pelo CNAE PRINCIPAL (atividadeIrPeloCnae, infoAtividadeIr com o aviso de atividade mista); dasDevidoNoAno; limites oficiais de quem precisa declarar com a fonte (LIMITE_DECLARAR_IR, LIMITE_RENDIMENTOS_ISENTOS_IR, LIMITE_BENS_IR, LIMITE_BOLSA_IR, LIMITE_RECEITA_RURAL_IR); simularAnoMei desconta o DAS; resumoDasDoAno (DAS do ano: ja venceram e falta vencer) (v2: simularAnoMei (Simulador do MEI: previsto no ano, % do limite, mes em que passaria, quanto ainda pode por mes, DAS do ano e IR estimado) e atividadeDoIr (pelo tipo e CNAE) (v1: regras e contas da Declaracao anual (DASN-SIMEI do MEI e o Imposto de Renda da pessoa), num lugar so para atualizar todo ano))) */
+/* DECLARACAO v5 — sem "Receita" nos textos da tela (decisao do Fernando, 12/10): TEXTO_PERIODO_IRPF "(o governo divulga as datas todo ano)" e FONTE_LIMITES_IR "regras do Imposto de Renda 2026 (ano de 2025)" (antes "a Receita divulga" e "Receita Federal, regras do IRPF 2026") (v4: datas da declaracao em constantes com a fonte, para atualizar todo ano: PRAZO_DASN + TEXTO_PRAZO_DASN ("Pode ser feita desde o começo do ano até 31 de maio.") e PERIODO_IRPF + TEXTO_PERIODO_IRPF ("Abre em março e vai até o fim de maio...") (Bloco G) (v3: regras da isencao conferidas (tarefa de 10-10, Bloco F): parte isenta = receita x percentual da atividade MENOS o DAS devido no ano (LC 123, art. 14 §1o); atividade pelo CNAE PRINCIPAL (atividadeIrPeloCnae, infoAtividadeIr com o aviso de atividade mista); dasDevidoNoAno; limites oficiais de quem precisa declarar com a fonte (LIMITE_DECLARAR_IR, LIMITE_RENDIMENTOS_ISENTOS_IR, LIMITE_BENS_IR, LIMITE_BOLSA_IR, LIMITE_RECEITA_RURAL_IR); simularAnoMei desconta o DAS; resumoDasDoAno (DAS do ano: ja venceram e falta vencer) (v2: simularAnoMei (Simulador do MEI: previsto no ano, % do limite, mes em que passaria, quanto ainda pode por mes, DAS do ano e IR estimado) e atividadeDoIr (pelo tipo e CNAE) (v1: regras e contas da Declaracao anual (DASN-SIMEI do MEI e o Imposto de Renda da pessoa), num lugar so para atualizar todo ano)))) */
 import {
   LIMITES_ANUAIS, limiteProporcional, valorDasMensal,
 } from "./fiscal.js";
@@ -62,7 +62,7 @@ export const PERIODO_IRPF = {
   inicio: "2026-03-23",
   fim: "2026-05-29",
 };
-export const TEXTO_PERIODO_IRPF = "Abre em março e vai até o fim de maio (a Receita divulga as datas todo ano).";
+export const TEXTO_PERIODO_IRPF = "Abre em março e vai até o fim de maio (o governo divulga as datas todo ano).";
 export const TEXTO_TACERTO_DECLARACAO = "Quando você quiser, dentro do prazo, a Isa faz com você.";
 export const MULTA_MINIMA_DASN = 50;
 export const LINK_DASN_SIMEI =
@@ -89,7 +89,9 @@ export const LIMITE_BENS_IR = 800000;
 export const LIMITE_BOLSA_IR = 40000;
 /* Receita bruta de atividade rural acima disso */
 export const LIMITE_RECEITA_RURAL_IR = 177920;
-export const FONTE_LIMITES_IR = "Receita Federal, regras do IRPF 2026 (ano de 2025)";
+/* v5: aparece na tela como "Estimativa pelas {FONTE_LIMITES_IR}." (CalcularDeclaracao):
+   comecar com "regras ..." e nunca citar "Receita" */
+export const FONTE_LIMITES_IR = "regras do Imposto de Renda 2026 (ano de 2025)";
 
 /* Lei 15.270/2025: isento ate R$ 5 mil por mes (desde 2026) */
 export const ISENCAO_MENSAL_IR = 5000;

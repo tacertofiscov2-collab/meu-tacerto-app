@@ -1,4 +1,4 @@
-/* CALCULARDECLARACAO v3 — vira "Calcular > Imposto de Renda" (/calcular/imposto-de-renda; Bloco F): com CNPJ a atividade vem do CNAE principal (pula a pergunta; aviso se for atividade mista); "Você teve outra renda no ano?" Sim/Não + valor; a parte isenta desconta o DAS do ano (LC 123, art. 14 §1o) e mostra "Pode ser maior com contabilidade completa."; os outros motivos que obrigam a declarar com os limites oficiais e a fonte; barra "Calculado com seus dados até" (v2: os gastos ja vem com a soma dos gastos do negocio COM NOTA guardados no app ("Meu lucro"); a pessoa ainda pode ajustar (v1: "Calcular meu Imposto de Renda": uma pergunta por janela (atividade, faturamento, gastos, outras rendas, funcionario) e o resultado (parte isenta, se precisa declarar, o que vai na declaracao do MEI))) */
+/* CALCULARDECLARACAO v4 — rodape do resultado sem "Receita" (decisao do Fernando, 12/10): "Estimativa pelas regras do Imposto de Renda 2026 (ano de 2025)." (antes "Estimativa com as regras de hoje. Limites: Receita Federal, regras do IRPF 2026 (ano de 2025).") (v3: vira "Calcular > Imposto de Renda" (/calcular/imposto-de-renda; Bloco F): com CNPJ a atividade vem do CNAE principal (pula a pergunta; aviso se for atividade mista); "Você teve outra renda no ano?" Sim/Não + valor; a parte isenta desconta o DAS do ano (LC 123, art. 14 §1o) e mostra "Pode ser maior com contabilidade completa."; os outros motivos que obrigam a declarar com os limites oficiais e a fonte; barra "Calculado com seus dados até" (v2: os gastos ja vem com a soma dos gastos do negocio COM NOTA guardados no app ("Meu lucro"); a pessoa ainda pode ajustar (v1: "Calcular meu Imposto de Renda": uma pergunta por janela (atividade, faturamento, gastos, outras rendas, funcionario) e o resultado (parte isenta, se precisa declarar, o que vai na declaracao do MEI)))) */
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { somarGastosComNota } from "@/lib/lucro";
@@ -351,7 +351,7 @@ export default function CalcularDeclaracao() {
         </SecaoLista>
 
         <p style={{ fontSize: 13, lineHeight: 1.45, color: "var(--text-tertiary)", marginTop: 22 }}>
-          Estimativa com as regras de hoje. Limites: {FONTE_LIMITES_IR}.
+          Estimativa pelas {FONTE_LIMITES_IR}.
         </p>
       </>
     );

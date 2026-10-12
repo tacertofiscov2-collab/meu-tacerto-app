@@ -1,4 +1,4 @@
-/* FLUXOCNPJ v2 — PassoDigitarCnpj com semTitulo (a pagina do CNPJ do Perfil mostra as vantagens no lugar do titulo) (v1: "Qual o CNPJ do seu MEI?" (digitar com mascara, validar e buscar os dados publicos na BrasilAPI) e "Achei você" (nome, tipo de MEI e "MEI desde"); usado no Onboarding e no Perfil (/perfil/cnpj)) */
+/* FLUXOCNPJ v3 — aviso do "Achei você" sem "Receita" (decisao do Fernando, 12/10): "Não aparece como MEI nos dados públicos" (curto para caber em 1 linha no iPhone; antes "Esse CNPJ não aparece como MEI na Receita") (v2: PassoDigitarCnpj com semTitulo (a pagina do CNPJ do Perfil mostra as vantagens no lugar do titulo) (v1: "Qual o CNPJ do seu MEI?" (digitar com mascara, validar e buscar os dados publicos na BrasilAPI) e "Achei você" (nome, tipo de MEI e "MEI desde"); usado no Onboarding e no Perfil (/perfil/cnpj))) */
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Loader2, AlertTriangle } from "lucide-react";
 import {
@@ -231,7 +231,7 @@ export function PassoAcheiVoce({
           style={{ gap: 6, color: AMARELO, fontSize: 14, marginTop: 14 }}
         >
           <AlertTriangle size={15} strokeWidth={2.2} className="shrink-0" />
-          Esse CNPJ não aparece como MEI na Receita
+          Não aparece como MEI nos dados públicos
         </p>
       )}
 

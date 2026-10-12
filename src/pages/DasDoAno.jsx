@@ -1,4 +1,4 @@
-/* DASDOANO v1 — Calcular > "DAS do ano": quanto e o DAS do ano, quantos ja venceram e quanto falta vencer (com o proximo vencimento) e os pagos que a pessoa guardou no Historico do DAS; nunca diz que um DAS esta "em aberto" */
+/* DASDOANO v2 — sem "Receita" (decisao do Fernando, 12/10): "Quem confirma o que já foi pago é o governo." (antes "é a Receita") (v1: Calcular > "DAS do ano": quanto e o DAS do ano, quantos ja venceram e quanto falta vencer (com o proximo vencimento) e os pagos que a pessoa guardou no Historico do DAS; nunca diz que um DAS esta "em aberto") */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Receipt, CalendarCheck, CalendarClock, FolderCheck } from "lucide-react";
@@ -105,7 +105,7 @@ export default function DasDoAno() {
         </SecaoLista>
 
         <p style={{ fontSize: 13, lineHeight: 1.45, color: "var(--text-tertiary)", marginTop: 20 }}>
-          Valor pela sua atividade, com os valores de {r.ano}. Quem confirma o que já foi pago é a Receita.
+          Valor pela sua atividade, com os valores de {r.ano}. Quem confirma o que já foi pago é o governo.
         </p>
       </div>
     </div>

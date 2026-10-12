@@ -1,4 +1,4 @@
-/* FAQFISCO v3 — chat da Isa no app: responderPergunta (pergunta pronta exata ou palavra-chave; sem resposta = achou false, o chat mostra o botao do WhatsApp) e FRASE_NAO_SEI; respostas alinhadas as regras de 08-10 e 10-10 (nota fiscal do caminhoneiro, prazo da DASN desde o comeco do ano ate 31 de maio, Calcular no Perfil) (v2: vencimento do DAS certo: dia 20, prorroga para o proximo dia util (antes dizia "antecipa") */
+/* FAQFISCO v4 — nada fala "Receita" (decisao do Fernando, 12/10): "pro limite do MEI, o que conta é o valor recebido", "Preciso avisar o governo?", "você passa a ser tratado como Microempresa o ano inteiro", "Posso levar multa?" e "Se o governo descobrir antes de você comunicar"; as perguntas trocadas guardam o texto antigo em "antes" e responderPergunta continua achando a MESMA resposta por ele (v3: chat da Isa no app: responderPergunta (pergunta pronta exata ou palavra-chave; sem resposta = achou false, o chat mostra o botao do WhatsApp) e FRASE_NAO_SEI; respostas alinhadas as regras de 08-10 e 10-10 (nota fiscal do caminhoneiro, prazo da DASN desde o comeco do ano ate 31 de maio, Calcular no Perfil) (v2: vencimento do DAS certo: dia 20, prorroga para o proximo dia util (antes dizia "antecipa")) */
 import { LIMITES_ANUAIS, limiteAte20Percent } from "./fiscal.js";
 
 const fmt = (v) =>
@@ -47,7 +47,7 @@ const POR_FAIXA = {
       pergunta: "Como eu sei se estou no caminho certo?",
       resposta: (c) => {
         const v = V(c);
-        return `Pelo velocímetro. Ele compara tudo que você já registrou este ano (${fmt(c.faturado)}) com o seu limite anual (${fmt(c.limite)}). Enquanto o ponteiro estiver na faixa verde, você tem folga.\n\nO segredo é registrar todos ${v.oQueEntra}: dinheiro, Pix, cartão, transferência. Não importa se você emitiu nota ou não — pra Receita, o que conta é o valor recebido.`;
+        return `Pelo velocímetro. Ele compara tudo que você já registrou este ano (${fmt(c.faturado)}) com o seu limite anual (${fmt(c.limite)}). Enquanto o ponteiro estiver na faixa verde, você tem folga.\n\nO segredo é registrar todos ${v.oQueEntra}: dinheiro, Pix, cartão, transferência. Não importa se você emitiu nota ou não — pro limite do MEI, o que conta é o valor recebido.`;
       },
     },
     {
@@ -172,7 +172,13 @@ const POR_FAIXA = {
     },
     {
       id: "p3",
-      pergunta: "Preciso avisar a Receita?",
+      pergunta: "Preciso avisar o governo?",
+      /* v4: texto antigo (e o da lista do Inicio, antes e agora), para achar a mesma resposta */
+      antes: [
+        "Preciso avisar a Receita?",
+        "Preciso avisar a Receita de alguma coisa?",
+        "Preciso avisar o governo de alguma coisa?",
+      ],
       resposta: (c) =>
         `Se você passar até 20% do limite (até ${fmt(c.teto20)}), a própria declaração anual cuida disso.\n\nSe passar de mais de 20%, aí sim você precisa comunicar o desenquadramento no Portal do Simples Nacional. Um contador faz isso rapidinho.`,
     },
@@ -235,7 +241,7 @@ const POR_FAIXA = {
       id: "c1",
       pergunta: "Passei de 20%. O que muda?",
       resposta: (c) =>
-        `Muda bastante, e por isso vale agir rápido.\n\nComo você passou de ${fmt(c.teto20)}, o desenquadramento é retroativo a 1º de janeiro deste ano. Na prática, a Receita passa a considerar que você foi Microempresa o ano inteiro, e os impostos são recalculados por esse regime.`,
+        `Muda bastante, e por isso vale agir rápido.\n\nComo você passou de ${fmt(c.teto20)}, o desenquadramento é retroativo a 1º de janeiro deste ano. Na prática, você passa a ser tratado como Microempresa o ano inteiro, e os impostos são recalculados por esse regime.`,
     },
     {
       id: "c2",
@@ -253,9 +259,11 @@ const POR_FAIXA = {
     },
     {
       id: "c4",
-      pergunta: "Posso ser multado pela Receita?",
+      pergunta: "Posso levar multa?",
+      /* v4: texto antigo, para achar a mesma resposta */
+      antes: ["Posso ser multado pela Receita?"],
       resposta: () =>
-        `Existe multa e juros sobre os impostos que ficaram em atraso, sim.\n\nSe a própria Receita identificar antes de você comunicar, a situação piora — por isso regularizar por conta própria é sempre melhor do que esperar.`,
+        `Existe multa e juros sobre os impostos que ficaram em atraso, sim.\n\nSe o governo descobrir antes de você comunicar, a situação piora — por isso regularizar por conta própria é sempre melhor do que esperar.`,
     },
     {
       id: "c5",
@@ -442,11 +450,15 @@ function todasAsPerguntas() {
   return [...Object.values(POR_FAIXA).flat(), ...GERAIS];
 }
 
+/* v4: a pergunta pronta casa pelo texto de hoje OU por um texto antigo
+   dela ("antes"), para quem tocou/digitou a pergunta como era antes. */
 export function responderPergunta(texto, ctx) {
   const t = normalizar(texto).replace(/[?!.]+$/, "");
   if (!t) return { texto: FRASE_NAO_SEI, achou: false };
-  const exata = todasAsPerguntas().find(
-    (item) => normalizar(textoPergunta(item, ctx)).replace(/[?!.]+$/, "") === t,
+  const exata = todasAsPerguntas().find((item) =>
+    [textoPergunta(item, ctx), ...(item.antes || [])].some(
+      (p) => normalizar(p).replace(/[?!.]+$/, "") === t,
+    ),
   );
   const item = exata || buscarRespostaPorTexto(texto);
   if (!item) return { texto: FRASE_NAO_SEI, achou: false };

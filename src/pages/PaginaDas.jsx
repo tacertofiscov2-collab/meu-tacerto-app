@@ -1,4 +1,4 @@
-/* PAGINADAS v1 — pagina propria do DAS ("o imposto mensal do MEI"), aberta pelo Perfil (Meu MEI > DAS) e pelo atalho DAS do Inicio: proximo vencimento real e valor pela atividade; "Como você quer pagar seu DAS?" (A Isa me manda o boleto, recomendado, exige CNPJ e liga os lembretes | Pago sozinho, passo a passo curto); "A Isa me ajuda agora" e o historico do DAS. Substitui a folha do Inicio (FolhaPagarDas) e o "Como pagar o DAS" */
+/* PAGINADAS v2 — sem "Receita" (decisao do Fernando, 12/10): passo 1 do "Pago sozinho" diz "O App MEI é o aplicativo oficial do governo." (antes "da Receita Federal") (v1: pagina propria do DAS ("o imposto mensal do MEI"), aberta pelo Perfil (Meu MEI > DAS) e pelo atalho DAS do Inicio: proximo vencimento real e valor pela atividade; "Como você quer pagar seu DAS?" (A Isa me manda o boleto, recomendado, exige CNPJ e liga os lembretes | Pago sozinho, passo a passo curto); "A Isa me ajuda agora" e o historico do DAS. Substitui a folha do Inicio (FolhaPagarDas) e o "Como pagar o DAS") */
 import { useLocation, useNavigate } from "react-router-dom";
 import { Check, Bell, ExternalLink, CalendarCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -246,7 +246,7 @@ export default function PaginaDas() {
             <LinhaLista
               Icon={numeroDoPasso(1)}
               rotulo="Abra o App MEI ou o Portal do Simples"
-              detalhe="O App MEI é o aplicativo da Receita Federal."
+              detalhe="O App MEI é o aplicativo oficial do governo."
             />
             <LinhaLista
               Icon={numeroDoPasso(2)}

@@ -1,4 +1,4 @@
-/* PERFILCNPJ v3 — vindo do DAS ("A Isa me manda o boleto" sem CNPJ): uma frase do porque no topo e, confirmado o CNPJ, volta para o DAS (v2: pagina do CNPJ com 2 estados: SEM CNPJ, as vantagens em lista curta + o campo de busca; COM CNPJ, situacao cadastral, MEI desde, atividades, municipio, "Consultado em" (guarda o resumo e a data da consulta), "Atualizar dados do CNPJ", "Remover CNPJ" e o destaque "Pedir pra Isa conferir meu CNPJ" (WhatsApp com o CNPJ) (v1: Perfil > Meu MEI > CNPJ: o mesmo fluxo do cadastro ("Qual o CNPJ do seu MEI?" -> "Achei você"); grava CNPJ, CNAE e MEI desde, sem mudar o tipo de MEI (travado))) */
+/* PERFILCNPJ v4 — sem "Receita" (decisao do Fernando, 12/10): "Nos dados públicos, o CNPJ aparece como “...”." (antes "A Receita mostra o CNPJ como") e "Ela confere se tem DAS atrasado ou alguma pendência no CNPJ e te avisa." (antes "pendência na Receita") (v3: vindo do DAS ("A Isa me manda o boleto" sem CNPJ): uma frase do porque no topo e, confirmado o CNPJ, volta para o DAS (v2: pagina do CNPJ com 2 estados: SEM CNPJ, as vantagens em lista curta + o campo de busca; COM CNPJ, situacao cadastral, MEI desde, atividades, municipio, "Consultado em" (guarda o resumo e a data da consulta), "Atualizar dados do CNPJ", "Remover CNPJ" e o destaque "Pedir pra Isa conferir meu CNPJ" (WhatsApp com o CNPJ) (v1: Perfil > Meu MEI > CNPJ: o mesmo fluxo do cadastro ("Qual o CNPJ do seu MEI?" -> "Achei você"); grava CNPJ, CNAE e MEI desde, sem mudar o tipo de MEI (travado)))) */
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -218,7 +218,7 @@ export default function PerfilCnpj() {
           </p>
           {ativa === false && (
             <p style={{ color: AMARELO, fontSize: 14, marginTop: 8, lineHeight: 1.45 }}>
-              A Receita mostra o CNPJ como “{situacaoTexto(d.situacao)}”.
+              Nos dados públicos, o CNPJ aparece como “{situacaoTexto(d.situacao)}”.
             </p>
           )}
           {tipoDoCnpj && tipoDoCnpj !== tipoMEI && (
@@ -240,7 +240,7 @@ export default function PerfilCnpj() {
                 Pedir pra Isa conferir meu CNPJ
               </span>
               <span className="block leading-snug" style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 3 }}>
-                Ela confere se tem DAS atrasado ou pendência na Receita e te avisa.
+                Ela confere se tem DAS atrasado ou alguma pendência no CNPJ e te avisa.
               </span>
             </span>
           </button>
