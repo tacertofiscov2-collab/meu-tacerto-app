@@ -1,8 +1,8 @@
-/* HISTORICO v7 — menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v6: descricao quebra em ate 2 linhas (antes cortava "Transportes Al..." no iPhone) (v5:padrao do Perfil: mes, total e Lancar entrada sem cartoes; entradas em lista com risca fina e titulo por mes; letras maiores (v4: piloto: cartao "Comece com o velocimetro certo" escondido (MOSTRAR_INACABADOS); o resto igual a v3) */
+/* HISTORICO v8 — o ANO todo (Bloco H): no seletor, tocar no ano (ou em "Ano todo") mostra o total do ano e o resumo por mes (tocar num mes abre ele); "No ano de 2026" tambem leva ao ano todo; o mes a mes continua igual (v7: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v6: descricao quebra em ate 2 linhas (antes cortava "Transportes Al..." no iPhone) (v5:padrao do Perfil: mes, total e Lancar entrada sem cartoes; entradas em lista com risca fina e titulo por mes; letras maiores (v4: piloto: cartao "Comece com o velocimetro certo" escondido (MOSTRAR_INACABADOS); o resto igual a v3)) */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Search, TrendingUp, ChevronDown, Plus, Pencil, Trash2, BarChart3, Calendar,
+  Search, TrendingUp, ChevronDown, ChevronRight, Plus, Pencil, Trash2, BarChart3, Calendar,
 } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 import SeletorMesAno from "../components/SeletorMesAno.jsx";
@@ -111,10 +111,30 @@ export default function Historico() {
   );
   const totalAno = useMemo(() => doAno.reduce((s, l) => s + (Number(l.valor) || 0), 0), [doAno]);
 
+  /* v8: ANO TODO (mesIdx = null): o total de cada mes que teve entrada
+     (mais recente primeiro) */
+  const anoTodo = mesIdx === null;
+  const porMes = useMemo(() => {
+    const somas = Array(12).fill(0);
+    const tem = Array(12).fill(false);
+    for (const l of doAno) {
+      const m = new Date(l.data).getMonth();
+      somas[m] += Number(l.valor) || 0;
+      tem[m] = true;
+    }
+    return somas.map((total, mes) => ({ mes, total })).filter((x) => tem[x.mes]).reverse();
+  }, [doAno]);
+
+  function verAnoTodo() {
+    setMesIdx(null);
+    setPularPara("topo");
+  }
+
   /* Depois de escolher no calendario, desce ate o mes */
   useEffect(() => {
     if (pularPara === null) return;
-    const alvo = mesesRef.current[pularPara];
+    // v8: ano todo volta para o topo da tela
+    const alvo = pularPara === "topo" ? mesesRef.current.topo : mesesRef.current[pularPara];
     if (alvo) alvo.scrollIntoView({ behavior: "smooth", block: "start" });
     setPularPara(null);
   }, [pularPara, grupos]);
@@ -128,6 +148,7 @@ export default function Historico() {
         className="conteudo-rolavel hide-scrollbar px-5"
         style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
       >
+        <div ref={(el) => { mesesRef.current.topo = el; }} />
         <TopoRolavel titulo="Histórico de entradas" onVoltar={() => navigate(-1)} />
 
         {MOSTRAR_INACABADOS && mostrarFaturamento && (
@@ -187,8 +208,8 @@ export default function Historico() {
         <SecaoLista style={{ marginTop: 10 }}>
           <LinhaLista
             Icon={Calendar}
-            rotulo={`${MESES[mesIdx]} de ${anoNum}`}
-            detalhe="Ir para o mês"
+            rotulo={anoTodo ? `Ano todo de ${anoNum}` : `${MESES[mesIdx]} de ${anoNum}`}
+            detalhe="Ir para o mês ou o ano"
             semSeta
             valor={<ChevronDown size={18} style={{ color: "var(--text-tertiary)" }} />}
             onClick={() => setSeletorAberto(true)}
@@ -196,7 +217,35 @@ export default function Historico() {
           <LinhaLista Icon={Plus} rotulo="Lançar entrada" onClick={() => navigate("/lancar")} />
         </SecaoLista>
 
+        {/* v8: ano todo: total do ano + resumo por mes */}
+        {anoTodo && (
+          <div style={{ marginTop: 26 }}>
+            <p
+              className="font-semibold uppercase"
+              style={{ color: "var(--text-tertiary)", fontSize: 12.5, letterSpacing: "0.08em" }}
+            >
+              Total de {anoNum}
+            </p>
+            <div style={{ marginTop: 6 }}>
+              <Valor tamanho="xl" autoAjustar>{totalAno}</Valor>
+            </div>
+            {porMes.length > 0 && (
+              <SecaoLista titulo="Por mês" style={{ marginTop: 22 }}>
+                {porMes.map((x) => (
+                  <LinhaLista
+                    key={x.mes}
+                    rotulo={MESES[x.mes]}
+                    valor={<Valor px={15} cor="var(--text-secondary)">{x.total}</Valor>}
+                    onClick={() => { setMesIdx(x.mes); setPularPara(x.mes); }}
+                  />
+                ))}
+              </SecaoLista>
+            )}
+          </div>
+        )}
+
         {/* v5: total do mes (e do ano), sem cartao */}
+        {!anoTodo && (
         <div style={{ marginTop: 26 }}>
           <p
             className="font-semibold uppercase"
@@ -207,11 +256,19 @@ export default function Historico() {
           <div style={{ marginTop: 6 }}>
             <Valor tamanho="xl" autoAjustar>{totalMes}</Valor>
           </div>
-          <div className="flex items-center gap-1.5" style={{ color: "var(--text-tertiary)", marginTop: 6 }}>
+          {/* v8: tocar leva ao ano todo */}
+          <button
+            type="button"
+            onClick={verAnoTodo}
+            className="toque flex items-center gap-1.5"
+            style={{ color: "var(--text-tertiary)", marginTop: 6, background: "none", padding: 0 }}
+          >
             <span style={{ fontSize: 14 }}>No ano de {anoNum}:</span>
             <Valor px={14.5} cor="var(--text-secondary)">{totalAno}</Valor>
-          </div>
+            <ChevronRight size={15} style={{ color: "var(--text-tertiary)" }} />
+          </button>
         </div>
+        )}
 
         {/* v5: lista do ano, um titulo por mes, linhas com risca fina */}
         {grupos.length === 0 ? (
@@ -262,15 +319,20 @@ export default function Historico() {
 
       <SeletorMesAno
         aberto={seletorAberto}
-        titulo="Ir para o mês"
-        mes={mesIdx + 1}
+        titulo="Ir para o mês ou o ano"
+        mes={anoTodo ? null : mesIdx + 1}
         ano={anoNum}
         anoMinimo={anoInicio}
+        permitirAnoTodo
         onFechar={() => setSeletorAberto(false)}
         onSelecionar={(m, a) => {
-          setMesIdx(m - 1);
           setAnoNum(a);
           setSeletorAberto(false);
+          if (m === null) {
+            verAnoTodo();
+            return;
+          }
+          setMesIdx(m - 1);
           setPularPara(m - 1);
         }}
       />

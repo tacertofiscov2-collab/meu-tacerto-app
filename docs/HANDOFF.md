@@ -503,3 +503,11 @@ G1. Textos novos (constantes em `src/lib/declaracao.js`, para atualizar
     prazo, a Isa faz com você." Saiu o "em maio" da Declaração anual e
     do Suporte. Em 2026 o IR foi de 23/03 a 29/05 (guardado em
     `PERIODO_IRPF`, sem aparecer na tela).
+
+**Bloco H (histórico por ano)**
+
+H1. No "Histórico de entradas", o seletor ganhou **"Ano todo"**, e tocar
+    no **ano** já escolhe o ano inteiro. No ano todo: "Total de 2026" +
+    "Por mês" (só os meses com entrada; tocar abre o mês) + a lista de
+    sempre. No mês, a linha "No ano de 2026: R$ X ›" também leva ao ano
+    todo. Mostrar também os meses sem entrada (R$ 0,00)? (não mostrei)
