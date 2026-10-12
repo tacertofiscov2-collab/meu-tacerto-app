@@ -1,4 +1,4 @@
-/* CONCILIACAO v3 — o extrato SUBSTITUI o total do ano digitado quando cobre o ano ate o dia do total e tudo foi conferido (resposta 1 do Fernando): extratoCobreOAno (v2: o ajuste do total do ano so absorve recebimento ate o DIA do ajuste (horario de Brasilia) e do mesmo ano; diaBR (v1:o que e ESTIMADO no velocimetro (total digitado) e o que e CONFERIDO (extrato confirmado), selo do velocimetro e a regra para nunca contar duas vezes (total do ano + extrato, lancamento a mao + extrato) */
+/* CONCILIACAO v4 — nota fiscal ou comprovante guardado: acharLancamentoParecido (mesmo valor +-1% em +-15 dias) e o lancamento que veio de nota/comprovante casa com a entrada do extrato na mesma folga (Bloco E: nao duplicar quando o extrato chegar depois) (v3: o extrato SUBSTITUI o total do ano digitado quando cobre o ano ate o dia do total e tudo foi conferido (resposta 1 do Fernando): extratoCobreOAno (v2: o ajuste do total do ano so absorve recebimento ate o DIA do ajuste (horario de Brasilia) e do mesmo ano; diaBR (v1:o que e ESTIMADO no velocimetro (total digitado) e o que e CONFERIDO (extrato confirmado), selo do velocimetro e a regra para nunca contar duas vezes (total do ano + extrato, lancamento a mao + extrato)) */
 
 /* ===================================================================
    NADA CONTADO DUAS VEZES (decisao do Fernando, HANDOFF-08-10)
@@ -153,7 +153,10 @@ export function lancamentosAMao(lancamentos = [], entradasConferidas = []) {
 }
 
 /* Para cada entrada, o lancamento a mao igual (mesmo valor, ate 3 dias),
-   sem usar o mesmo lancamento duas vezes. Devolve Map(entradaId -> lancamento). */
+   sem usar o mesmo lancamento duas vezes. Devolve Map(entradaId -> lancamento).
+   v4: lancamento que veio de NOTA ou COMPROVANTE guardado (veioDeComprovante)
+   casa com folga maior (valor +-1%, ate 15 dias): o pagamento costuma cair
+   dias depois da nota, e as vezes com centavos de diferenca. */
 export function casarComLancamentosAMao(entradas = [], candidatos = [], dias = 3) {
   const usados = new Set();
   const casados = new Map();
@@ -164,9 +167,12 @@ export function casarComLancamentosAMao(entradas = [], candidatos = [], dias = 3
     let melhor = null;
     let melhorDist = Infinity;
     for (const l of candidatos) {
-      if (usados.has(l.id) || centavos(l.valor) !== ce) continue;
+      if (usados.has(l.id)) continue;
+      const deComprovante = veioDeComprovante(l);
+      if (deComprovante ? !valoresParecidos(l.valor, e.valor) : centavos(l.valor) !== ce) continue;
+      const limite = (deComprovante ? JANELA_DIAS_COMPROVANTE : dias) * DIA_MS;
       const dist = Math.abs(new Date(l.data).getTime() - te);
-      if (dist <= dias * DIA_MS && dist < melhorDist) {
+      if (dist <= limite && dist < melhorDist) {
         melhor = l;
         melhorDist = dist;
       }
@@ -177,6 +183,64 @@ export function casarComLancamentosAMao(entradas = [], candidatos = [], dias = 3
     }
   }
   return casados;
+}
+
+/* ===================================================================
+   NOTA FISCAL OU COMPROVANTE GUARDADO (v4 — 12/10/2026, Bloco E; o
+   Bloco J, "+" com foto, usa a mesma regra)
+
+   Guardou uma nota de recebimento (ou um comprovante) e a pessoa disse
+   "Sim, pode somar no velocimetro": ANTES de criar o lancamento, procura
+   um recebimento PARECIDO que ja esta no velocimetro — mesmo valor
+   (+-1%) e data ate 15 dias antes ou depois. Achou: o app pergunta "E o
+   mesmo de 03/10, R$ 1.500,00?" e, se for, so LIGA a nota a ele (vira o
+   comprovante dele, nao conta de novo). Nao achou (ou "e outro"): cria
+   o lancamento com a descricao "Nota fiscal..." / "Comprovante...".
+   Esse prefixo marca o lancamento como "veio de comprovante": quando o
+   extrato chegar depois, ele casa com a entrada na mesma folga
+   (casarComLancamentosAMao, acima) e nao entra duas vezes.
+   =================================================================== */
+export const TOLERANCIA_VALOR_COMPROVANTE = 0.01; // 1%
+export const JANELA_DIAS_COMPROVANTE = 15;
+export const PREFIXOS_DE_COMPROVANTE = ["Nota fiscal", "Comprovante"];
+
+/* O lancamento foi criado a partir de uma nota ou comprovante guardado? */
+export function veioDeComprovante(l) {
+  const d = String(l?.descricao || "").trim();
+  return PREFIXOS_DE_COMPROVANTE.some((p) => d.startsWith(p));
+}
+
+/* Valores iguais com folga de 1% (no minimo 1 centavo) */
+export function valoresParecidos(a, b, tolerancia = TOLERANCIA_VALOR_COMPROVANTE) {
+  const ca = centavos(a);
+  const cb = centavos(b);
+  if (ca <= 0 || cb <= 0) return false;
+  return Math.abs(ca - cb) <= Math.max(1, Math.round(Math.max(ca, cb) * tolerancia));
+}
+
+/**
+ * O recebimento do velocimetro mais parecido com { valor, data }, ou
+ * null. Nao olha ajustes do total do ano. Entre os parecidos, o de data
+ * mais perto (empate: o de valor mais perto).
+ */
+export function acharLancamentoParecido(lancamentos = [], { valor, data } = {}, { dias = JANELA_DIAS_COMPROVANTE } = {}) {
+  const alvo = new Date(data).getTime();
+  if (!Number.isFinite(alvo) || !(Number(valor) > 0)) return null;
+  let melhor = null;
+  let melhorDist = Infinity;
+  let melhorDifValor = Infinity;
+  for (const l of lancamentos) {
+    if (!l || ehAjuste(l) || !valoresParecidos(l.valor, valor)) continue;
+    const dist = Math.abs(new Date(l.data).getTime() - alvo);
+    if (!(dist <= dias * DIA_MS)) continue;
+    const difValor = Math.abs(centavos(l.valor) - centavos(valor));
+    if (dist < melhorDist || (dist === melhorDist && difValor < melhorDifValor)) {
+      melhor = l;
+      melhorDist = dist;
+      melhorDifValor = difValor;
+    }
+  }
+  return melhor;
 }
 
 /* ===================================================================

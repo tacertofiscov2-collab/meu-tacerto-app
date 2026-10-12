@@ -71,7 +71,7 @@
 | **Seus gastos** | `/conferir-saidas` | **Novo.** Só os gastos do extrato em dúvida: "É gasto do caminhão?" com a categoria, ou "Não, é pessoal"; "O resto é pessoal" encerra. Grava na hora e lembra pelo fornecedor. **Desde 10/10 (tarde):** o grupo "Pode ser repetido" primeiro (Sim, é repetido / Não é repetido), igual às entradas. |
 | **Meu lucro** | `/meu-lucro` | **Novo** (o Resumo do ano evoluído). Mês \| Ano. Recebido · Gastos · Sobrou (%). Ano com gráfico por mês. Gastos → por categoria → cada gasto com "com nota"/"sem nota"; tocar: anexar nota (foto/PDF), trocar categoria, "Não é do negócio". Sem extrato: só Recebido + "Envie o extrato para ver quanto sobrou." **Desde 10/10 (tarde):** linha **"Lançar gasto"** (dinheiro vivo: valor, data, categoria, "o que foi"; entra já como gasto do negócio; aparece como "Gasto em dinheiro" e pode ser apagado) e, no fim de Gastos, **"Gastos pessoais"** (os que não contam, inclusive os "repetido"; tocar → "É do negócio" → escolhe a categoria e volta para o lucro). |
 | **Simulador** | `/simulador` | **Novo.** Quanto recebe por mês (já vem a média) e gasta (opcional) → previsto no ano, % do limite, mês em que passa, quanto ainda pode por mês, DAS do ano, Imposto de Renda estimado. |
-| **Notas fiscais** | `/notas-fiscais` | **Novo.** Sem certificado: quando emitir (NFS-e só frete na mesma cidade; CT-e entre cidades contratado direto; agregado sem IE em MG hoje não emite; 2027 em todo serviço), como o TaCerto ajuda, Certificado A1 (**R$ 100,34**, preço de custo; videochamada) e "Tenho interesse no certificado" (WhatsApp). Com `perfis.nota_automatica_ativa = true` (o Fernando liga à mão): vira **"Minhas notas"**. |
+| **Notas fiscais** | `/notas-fiscais` | **Novo.** Sem certificado: quando emitir (NFS-e só frete na mesma cidade; CT-e entre cidades contratado direto; agregado sem IE em MG hoje não emite; 2027 em todo serviço), como o TaCerto ajuda, Certificado A1 (**R$ 100,34**, preço de custo; videochamada) e "Tenho interesse no certificado" (WhatsApp). Com `perfis.nota_automatica_ativa = true` (o Fernando liga à mão): vira **"Minhas notas"**. | **Desde 12/10 (Bloco E):** fica no Perfil > **Meu MEI** (logo abaixo do DAS; saiu da Ajuda). Topo: "Emita suas notas grátis pelo TaCerto" + "Para emitir é preciso o Certificado Digital A1 (R$ 100,34, pago à certificadora; o TaCerto não ganha nada)." (CDC). **Emitir nota** (sem A1: folha com O que é / Por que precisa / Como tira + "Tenho interesse no certificado" e, embaixo, "Sem certificado, hoje": a Isa monta a nota com você ou fazer sozinho; com A1: WhatsApp com a Isa) · **Guardar uma nota** (foto ou PDF primeiro, valor, data, número, cliente...) · **Minhas notas** (`/notas-fiscais/minhas`, grade por mês sem verde). Nota guardada deste ano: **"Essa nota é de um frete que você recebeu? Posso somar R$ X no velocímetro?"** Sim → procura recebimento parecido (±1%, ±15 dias): achou, "Achei um recebimento parecido: 03/10, R$ 1.500,00. É o mesmo?" (só liga a nota a ele); não achou ou "é outro": cria o lançamento "Nota fiscal nº 77 · Cliente". O extrato que chegar depois casa com esse lançamento na mesma folga (não conta duas vezes). Nota ligada mostra "No velocímetro: Sim". |
 | **Preferências** | `/preferencias` | **Religada, só com o Lembrete do DAS:** dias antes (7, 5, 3, 2, 1, no dia; padrão 7, 2 e no dia), horário (padrão 9:00), "Não quero lembretes". Grava no perfil. |
 | **Painel do DAS** | (DAS no Início) | Agora mostra no topo "Vence 20/10 · R$ 195,52" (data real com feriados; valor pelo CNAE). |
 | **DAS** | `/das` | **Novo (12/10, Bloco D).** Abre pelo Perfil (Meu MEI > **DAS**, "Vence 20/10") e pelo "Emitir boleto" do card Próximo DAS do Início (antes abria a folha). Título "DAS" + "o imposto mensal do MEI". Topo: próximo vencimento real ("terça, 20/10", feriado prorroga) e o valor pela atividade (com CNPJ: "Valor pela sua atividade (frete entre cidades)"; sem: "o mais comum"). **"Como você quer pagar seu DAS?"**: **A Isa me manda o boleto** (selo Recomendado; "Todo mês, antes do dia 20, no seu WhatsApp."; sem CNPJ abre a página do CNPJ com "Para a Isa gerar seu boleto do DAS, preciso do seu CNPJ." e volta; com CNPJ: guarda a escolha, religa lembretes e avisos no WhatsApp e abre o WhatsApp pedindo o boleto; escolhida, mostra "Lembretes no WhatsApp · 7 e 2 dias antes e no dia · 9:00" → Preferências) ou **Pago sozinho** (4 passos: App MEI ou Portal do Simples, CNPJ com toque para copiar, gerar, pagar; "Abrir o Portal do Simples"). Mais: **A Isa me ajuda agora** (boleto deste mês ou atrasado) e **Histórico do DAS** (`/das/historico`, a grade de 12 meses com o comprovante, agora sem verde e sem a barra de baixo). Chave `MOSTRAR_PAGINA_DAS`; `/como-pagar-das` abre `/das`. Nunca fala em débito automático. |
@@ -442,3 +442,27 @@ D5. Os nomes dos botões do Portal do Simples/App MEI ("Emitir Guia de
 D6. O Histórico do DAS (12 janelinhas) existia escondido desde 28/09
     (`MOSTRAR_HISTORICO_DAS = false`); agora abre pela página do DAS.
     Tirei o verde (mês pago = borda clara e ✓). Ok?
+
+**Bloco E (Notas fiscais)**
+
+E1. A pergunta "Posso somar no velocímetro?" só aparece para nota **deste
+    ano** (o velocímetro é do ano). Nota de ano passado só fica guardada.
+    Ok?
+E2. **Apagar uma nota** que foi somada **não** tira o lançamento do
+    velocímetro (o dinheiro continua recebido). Tirar junto? (não tira)
+E3. "Guardar uma nota" é para nota que **você emitiu** (recebimento).
+    Nota de **gasto** (compra) continua no Meu lucro > gasto > anexar
+    nota. Ok?
+E4. O lançamento criado pela nota se chama "Nota fiscal nº 77 ·
+    Cliente". Esse começo "Nota fiscal" é o que faz o extrato que chegar
+    depois casar com ele com folga maior (±1%, ±15 dias); lançamento à
+    mão comum continua com a regra antiga (mesmo valor, até 3 dias).
+E5. Com o certificado ativo, "Emitir nota" abre o WhatsApp da Isa (não
+    tem provedor de nota ligado, como pedido). Antes, com o certificado
+    ativo, a página virava só "Minhas notas"; agora a página continua e
+    "Minhas notas" é uma das opções. Ok?
+E6. A ligação nota ↔ lançamento vai para `notas_fiscais.lancamento_id`
+    (SQL de 10-10, ainda não rodado). Até lá fica guardada no aparelho
+    (`tacerto_notas_ligadas`) e NÃO sobe sozinha depois do SQL (só as
+    novas vão para o banco). No piloto ninguém guardou nota ainda, então
+    não perde nada.

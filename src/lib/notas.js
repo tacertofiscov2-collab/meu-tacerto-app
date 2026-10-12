@@ -1,4 +1,4 @@
-/* NOTAS v1 — notas fiscais lancadas a mao (e, no futuro, as emitidas pelo app) */
+/* NOTAS v2 — nota ligada ao lancamento do velocimetro (ligarNotaAoLancamento, lancamentoDaNota; notas_fiscais.lancamento_id, com copia no aparelho ate o SQL de 10-10) e descricaoDoLancamentoDaNota ("Nota fiscal nº 12 · Cliente") (v1: notas fiscais lancadas a mao (e, no futuro, as emitidas pelo app)) */
 import { supabase } from "@/lib/supabase";
 
 /* ===================================================================
@@ -148,4 +148,57 @@ export async function apagarNota(userId, nota) {
     .eq("user_id", userId)
     .eq("origem", "manual");
   if (error) throw error;
+}
+/* ===================================================================
+   NOTA LIGADA AO LANCAMENTO DO VELOCIMETRO (v2 — 12/10/2026, Bloco E)
+
+   Guardou a nota e disse "Sim, pode somar": a nota fica LIGADA ao
+   lancamento (o que ja existia, se era o mesmo dinheiro, ou o novo).
+   No banco: notas_fiscais.lancamento_id (SQL de 10-10,
+   docs/SQL-PENDENTE-10-10.sql). ANTES do SQL a coluna nao existe: a
+   gravacao falha sozinha (sem quebrar) e a ligacao fica guardada no
+   aparelho (localStorage "tacerto_notas_ligadas", { idDaNota: idDoLancamento }).
+   =================================================================== */
+const CHAVE_LIGADAS = "tacerto_notas_ligadas";
+
+function lerLigadas() {
+  try {
+    return JSON.parse(localStorage.getItem(CHAVE_LIGADAS) || "{}") || {};
+  } catch {
+    return {};
+  }
+}
+
+/* "Nota fiscal nº 12 · Transportes Silva" (o prefixo "Nota fiscal" marca
+   o lancamento como vindo de nota: src/lib/conciliacao.js) */
+export function descricaoDoLancamentoDaNota(nota = {}) {
+  const numero = String(nota.numero || "").trim();
+  const cliente = String(nota.tomador_nome || "").trim();
+  return `Nota fiscal${numero ? ` nº ${numero}` : ""}${cliente ? ` · ${cliente}` : ""}`.slice(0, 80);
+}
+
+/* Liga a nota ao lancamento. Nunca lanca. { noBanco } diz se gravou no banco. */
+export async function ligarNotaAoLancamento(userId, notaId, lancamentoId) {
+  if (!notaId || !lancamentoId) return { noBanco: false };
+  try {
+    const ligadas = lerLigadas();
+    ligadas[notaId] = lancamentoId;
+    localStorage.setItem(CHAVE_LIGADAS, JSON.stringify(ligadas));
+  } catch { /* aparelho sem espaco: segue */ }
+  try {
+    const { error } = await supabase
+      .from("notas_fiscais")
+      .update({ lancamento_id: lancamentoId })
+      .eq("id", notaId)
+      .eq("user_id", userId);
+    return { noBanco: !error };
+  } catch {
+    return { noBanco: false };
+  }
+}
+
+/* Id do lancamento ligado a nota (banco ou aparelho), ou null */
+export function lancamentoDaNota(nota) {
+  if (!nota) return null;
+  return nota.lancamento_id || lerLigadas()[nota.id] || null;
 }
