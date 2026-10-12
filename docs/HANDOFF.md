@@ -1,4 +1,4 @@
-# TaCerto! — Resumo de passagem (sessões de 05 a 10/10/2026)
+# TaCerto! — Resumo de passagem (sessões de 05 a 12/10/2026)
 
 > **Para o Claude do chat novo:** leia este arquivo primeiro. Depois:
 > **`CLAUDE.md`** (regras de trabalho e quem é o Fernando),
@@ -42,6 +42,19 @@
   (Notas fiscais), `a9abf2b` (DAS e lembretes), `391165f` (Simulador),
   `eb47665` (Termos e Privacidade) e os de fechamento (revisão e este
   resumo).
+- **Tarefa de 10-10** (`docs/PROMPT-CODE-10-10.md`, blocos A a M), toda
+  **enviada ao GitHub** (pedido do Fernando: push no fim de cada bloco).
+  PR em rascunho só para acompanhar o branch (não juntar na `main`):
+  https://github.com/tacertofiscov2-collab/meu-tacerto-app/pull/1.
+  Commits: `e9825b9` (A, Isa), `78ff2cc` (B, Início de antes), `52cf571`
+  e `e715a59` (C, CNPJ), `f37e476` (D, DAS), `f8a1d8a` (E, Notas),
+  `7a0216d` (F, Calcular), `376f188` (G, datas), `cefe5a9` (H, histórico
+  por ano), `31a9480` (I, selo Recomendado), `99b65c0` (J, comprovante
+  por IA), `fea33d9` (K, Permissões), `91b48c9` (L, tutorial),
+  `3f1a195` (M, Termos/slides) e o fechamento.
+- **12/10 foi na nuvem** (Claude Code na web): sem `.env` e sem acesso ao
+  Supabase. **Nenhum SQL rodou e nenhuma função foi publicada**; tudo
+  testado num "banco de mentira" (seção 7).
 - Servidor local: o `npm run dev` costuma rodar no terminal do Cursor
   (`localhost:8080`; iPhone em `192.168.1.224:8080`). Nas sessões de
   08-10 o Claude ligou pelo app (configuração `tacerto-dev` em
@@ -70,15 +83,15 @@
 | **Conferência "É faturamento?"** | `/conferir-entradas` | **Novo:** 6 respostas curtas: É frete/serviço ✓ · Reembolso de despesa ✓ · Vale-pedágio ✕ · Empréstimo ✕ · Estorno/devolução ✕ · Dinheiro meu/família ✕ (MEI comum: "É venda/serviço" e sem vale-pedágio). Quando o extrato já diz o que é (vale-pedágio, estorno, resgate...), vem num grupo próprio com a resposta sugerida (borda verde fina). O que conta vira regra do pagador. **Nada contado duas vezes**: recebimento já lançado à mão (mesmo valor, até 3 dias) não é lançado de novo; o que já estava no "total do ano" digitado diminui o ajuste. A tela final avisa os dois casos. Vindo do extrato, segue para os gastos. **Desde 10/10 (tarde):** (a) os possíveis repetidos vêm num grupo só, primeiro: "Pode ser repetido · N entradas iguais às de outro extrato" → **Sim, é repetido** (não conta) ou **Não é repetido** (vira as perguntas normais, por pagador); (b) **o extrato substitui o total digitado** quando os extratos cobrem do começo do ano (ou da abertura) até o dia do total e nada ficou sem resposta: o ajuste sai e a tela final diz "Agora o velocímetro usa o extrato no lugar do total que você digitou." (selo vira Conferido). Extrato de só alguns meses não substitui (só desconta o que já estava no total). |
 | **Seus gastos** | `/conferir-saidas` | **Novo.** Só os gastos do extrato em dúvida: "É gasto do caminhão?" com a categoria, ou "Não, é pessoal"; "O resto é pessoal" encerra. Grava na hora e lembra pelo fornecedor. **Desde 10/10 (tarde):** o grupo "Pode ser repetido" primeiro (Sim, é repetido / Não é repetido), igual às entradas. |
 | **Meu lucro** | `/meu-lucro` | **Novo** (o Resumo do ano evoluído). Mês \| Ano. Recebido · Gastos · Sobrou (%). Ano com gráfico por mês. Gastos → por categoria → cada gasto com "com nota"/"sem nota"; tocar: anexar nota (foto/PDF), trocar categoria, "Não é do negócio". Sem extrato: só Recebido + "Envie o extrato para ver quanto sobrou." **Desde 10/10 (tarde):** linha **"Lançar gasto"** (dinheiro vivo: valor, data, categoria, "o que foi"; entra já como gasto do negócio; aparece como "Gasto em dinheiro" e pode ser apagado) e, no fim de Gastos, **"Gastos pessoais"** (os que não contam, inclusive os "repetido"; tocar → "É do negócio" → escolhe a categoria e volta para o lucro). |
-| **Simulador** | `/simulador` | **Novo.** Quanto recebe por mês (já vem a média) e gasta (opcional) → previsto no ano, % do limite, mês em que passa, quanto ainda pode por mês, DAS do ano, Imposto de Renda estimado. | **Desde 12/10 (Bloco F):** virou **"Quanto ainda posso faturar"**, uma das contas do **Calcular** (sem o "quanto gasta", sem DAS e IR, que têm conta própria).
+| **Simulador** | `/simulador` | **Novo.** Quanto recebe por mês (já vem a média) e gasta (opcional) → previsto no ano, % do limite, mês em que passa, quanto ainda pode por mês, DAS do ano, Imposto de Renda estimado. **Desde 12/10 (Bloco F):** virou **"Quanto ainda posso faturar"**, uma das contas do **Calcular** (sem o "quanto gasta", sem DAS e IR, que têm conta própria). |
 | **Calcular** | `/calcular` | **Novo (12/10, Bloco F).** Perfil > Meu MEI > **Calcular** (no lugar do Simulador). Topo: barra **"Calculado com seus dados até 09/10 (há 3 dias)."** + "Enviar extrato" com selo Recomendado (sem recebimentos no ano: "Para calcular, comece pelo extrato do banco..." e o botão vira o destaque). "O que você quer calcular?": **Quanto ainda posso faturar** (`/simulador`) · **Imposto de Renda** (`/calcular/imposto-de-renda`, a calculadora que estava na Declaração anual; o endereço antigo leva para cá) · **DAS do ano** (`/calcular/das-do-ano`: DAS do ano, já venceram, falta vencer com o próximo dia, pagos que você guardou) · **Meu lucro**. A barra aparece no topo de todas as contas. |
-| **Notas fiscais** | `/notas-fiscais` | **Novo.** Sem certificado: quando emitir (NFS-e só frete na mesma cidade; CT-e entre cidades contratado direto; agregado sem IE em MG hoje não emite; 2027 em todo serviço), como o TaCerto ajuda, Certificado A1 (**R$ 100,34**, preço de custo; videochamada) e "Tenho interesse no certificado" (WhatsApp). Com `perfis.nota_automatica_ativa = true` (o Fernando liga à mão): vira **"Minhas notas"**. | **Desde 12/10 (Bloco E):** fica no Perfil > **Meu MEI** (logo abaixo do DAS; saiu da Ajuda). Topo: "Emita suas notas grátis pelo TaCerto" + "Para emitir é preciso o Certificado Digital A1 (R$ 100,34, pago à certificadora; o TaCerto não ganha nada)." (CDC). **Emitir nota** (sem A1: folha com O que é / Por que precisa / Como tira + "Tenho interesse no certificado" e, embaixo, "Sem certificado, hoje": a Isa monta a nota com você ou fazer sozinho; com A1: WhatsApp com a Isa) · **Guardar uma nota** (foto ou PDF primeiro, valor, data, número, cliente...) · **Minhas notas** (`/notas-fiscais/minhas`, grade por mês sem verde). Nota guardada deste ano: **"Essa nota é de um frete que você recebeu? Posso somar R$ X no velocímetro?"** Sim → procura recebimento parecido (±1%, ±15 dias): achou, "Achei um recebimento parecido: 03/10, R$ 1.500,00. É o mesmo?" (só liga a nota a ele); não achou ou "é outro": cria o lançamento "Nota fiscal nº 77 · Cliente". O extrato que chegar depois casa com esse lançamento na mesma folga (não conta duas vezes). Nota ligada mostra "No velocímetro: Sim". |
+| **Notas fiscais** | `/notas-fiscais` | **Novo.** Sem certificado: quando emitir (NFS-e só frete na mesma cidade; CT-e entre cidades contratado direto; agregado sem IE em MG hoje não emite; 2027 em todo serviço), como o TaCerto ajuda, Certificado A1 (**R$ 100,34**, preço de custo; videochamada) e "Tenho interesse no certificado" (WhatsApp). Com `perfis.nota_automatica_ativa = true` (o Fernando liga à mão): vira **"Minhas notas"**. **Desde 12/10 (Bloco E):** fica no Perfil > **Meu MEI** (logo abaixo do DAS; saiu da Ajuda). Topo: "Emita suas notas grátis pelo TaCerto" + "Para emitir é preciso o Certificado Digital A1 (R$ 100,34, pago à certificadora; o TaCerto não ganha nada)." (CDC). **Emitir nota** (sem A1: folha com O que é / Por que precisa / Como tira + "Tenho interesse no certificado" e, embaixo, "Sem certificado, hoje": a Isa monta a nota com você ou fazer sozinho; com A1: WhatsApp com a Isa) · **Guardar uma nota** (foto ou PDF primeiro, valor, data, número, cliente...) · **Minhas notas** (`/notas-fiscais/minhas`, grade por mês sem verde). Nota guardada deste ano: **"Essa nota é de um frete que você recebeu? Posso somar R$ X no velocímetro?"** Sim → procura recebimento parecido (±1%, ±15 dias): achou, "Achei um recebimento parecido: 03/10, R$ 1.500,00. É o mesmo?" (só liga a nota a ele); não achou ou "é outro": cria o lançamento "Nota fiscal nº 77 · Cliente". O extrato que chegar depois casa com esse lançamento na mesma folga (não conta duas vezes). Nota ligada mostra "No velocímetro: Sim". |
 | **Preferências** | `/preferencias` | **Religada, só com o Lembrete do DAS:** dias antes (7, 5, 3, 2, 1, no dia; padrão 7, 2 e no dia), horário (padrão 9:00), "Não quero lembretes". Grava no perfil. |
 | **Painel do DAS** | (DAS no Início) | Agora mostra no topo "Vence 20/10 · R$ 195,52" (data real com feriados; valor pelo CNAE). |
 | **DAS** | `/das` | **Novo (12/10, Bloco D).** Abre pelo Perfil (Meu MEI > **DAS**, "Vence 20/10") e pelo "Emitir boleto" do card Próximo DAS do Início (antes abria a folha). Título "DAS" + "o imposto mensal do MEI". Topo: próximo vencimento real ("terça, 20/10", feriado prorroga) e o valor pela atividade (com CNPJ: "Valor pela sua atividade (frete entre cidades)"; sem: "o mais comum"). **"Como você quer pagar seu DAS?"**: **A Isa me manda o boleto** (selo Recomendado; "Todo mês, antes do dia 20, no seu WhatsApp."; sem CNPJ abre a página do CNPJ com "Para a Isa gerar seu boleto do DAS, preciso do seu CNPJ." e volta; com CNPJ: guarda a escolha, religa lembretes e avisos no WhatsApp e abre o WhatsApp pedindo o boleto; escolhida, mostra "Lembretes no WhatsApp · 7 e 2 dias antes e no dia · 9:00" → Preferências) ou **Pago sozinho** (4 passos: App MEI ou Portal do Simples, CNPJ com toque para copiar, gerar, pagar; "Abrir o Portal do Simples"). Mais: **A Isa me ajuda agora** (boleto deste mês ou atrasado) e **Histórico do DAS** (`/das/historico`, a grade de 12 meses com o comprovante, agora sem verde e sem a barra de baixo). Chave `MOSTRAR_PAGINA_DAS`; `/como-pagar-das` abre `/das`. Nunca fala em débito automático. |
-| **Perfil** | `/perfil` | Meu MEI: **CNPJ** (12.345.•••/••01-90 ou "Não preenchido" + pontinho amarelo; abre `/perfil/cnpj`), Tipo, Abertura, Limite, Já faturado, Limite restante, **Meu lucro**, **Simulador**, Histórico. Conta: **Preferências** (Lembrete do DAS). Ajuda: Suporte, **Notas fiscais**, Declaração anual. **Desde 12/10:** Meu MEI ganha **DAS** (abre `/das`); sai o "Como pagar o DAS" da Ajuda. |
+| **Perfil** | `/perfil` | Meu MEI: **CNPJ** (12.345.•••/••01-90 ou "Não preenchido" + pontinho amarelo; abre `/perfil/cnpj`), Tipo, Abertura, Limite, Já faturado, Limite restante, **Meu lucro**, **Simulador**, Histórico. Conta: **Preferências** (Lembrete do DAS). Ajuda: Suporte, **Notas fiscais**, Declaração anual. **Desde 12/10:** Meu MEI ganha **DAS** (abre `/das`) e **Notas fiscais** (saiu da Ajuda); **Simulador** virou **Calcular**; sai o "Como pagar o DAS" da Ajuda; Conta ganha **Permissões e integrações**; Ajuda ganha **Tutorial do app**. |
 | **CNPJ pelo Perfil** | `/perfil/cnpj` | **Desde 12/10 (Bloco C):** **sem CNPJ**, "Com o seu CNPJ" com 5 vantagens curtas + o campo de busca → "Achei você". **Com CNPJ**, só para ler: CNPJ mascarado, Nome, Situação (Ativa; outra situação com pontinho e aviso amarelo), MEI desde, Município, Atividades (nome + código, "principal"), "🔒 Veio do seu CNPJ · Consultado em 12/10 às 14:53"; destaque **"Pedir pra Isa conferir meu CNPJ"** (WhatsApp com o CNPJ; quem confere hoje é a equipe, a tela não promete consulta automática); **"Atualizar dados do CNPJ"** (busca de novo) e **"Remover CNPJ"** (folha de confirmação; apaga o CNPJ e o que veio dele). Não muda o tipo de MEI (só avisa se o CNPJ sugere outro). Se virou MEI este ano, acerta a abertura. No **Perfil**, Tipo de MEI (quando bate com o CNPJ) e Abertura (com a data do CNPJ) ficam **travados**: cadeado pequeno + "Veio do seu CNPJ"; tocar abre esta página. Removeu o CNPJ: voltam a ser editáveis. |
-| **Calcular IR** | `/declaracao-anual/calcular` | Os gastos já vêm com a soma dos **gastos com nota** guardados no app (dá para ajustar). | **Desde 12/10 (Bloco F):** mora em `/calcular/imposto-de-renda`. Com CNPJ, a atividade vem do **CNAE principal** e a 1ª pergunta some (4 perguntas); atividade mista avisa "usei o da principal". "Você teve outra renda no ano?" **Sim/Não** + valor. Parte isenta = faturamento × % **menos o DAS do ano** (LC 123, art. 14 §1º), com "Pode ser maior com contabilidade completa." No fim, "Também precisa declarar quem teve": bens > R$ 800 mil, rendimentos isentos > R$ 200 mil, bolsa > R$ 40 mil, rural > R$ 177.920 (fonte: regras do IRPF 2026, em `src/lib/declaracao.js`). A Declaração anual ficou só com a explicação + botão "Calcular meu Imposto de Renda". |
+| **Calcular IR** | `/declaracao-anual/calcular` | Os gastos já vêm com a soma dos **gastos com nota** guardados no app (dá para ajustar). **Desde 12/10 (Bloco F):** mora em `/calcular/imposto-de-renda`. Com CNPJ, a atividade vem do **CNAE principal** e a 1ª pergunta some (4 perguntas); atividade mista avisa "usei o da principal". "Você teve outra renda no ano?" **Sim/Não** + valor. Parte isenta = faturamento × % **menos o DAS do ano** (LC 123, art. 14 §1º), com "Pode ser maior com contabilidade completa." No fim, "Também precisa declarar quem teve": bens > R$ 800 mil, rendimentos isentos > R$ 200 mil, bolsa > R$ 40 mil, rural > R$ 177.920 (fonte: regras do IRPF 2026, em `src/lib/declaracao.js`). A Declaração anual ficou só com a explicação + botão "Calcular meu Imposto de Renda". |
 | **Como emitir nota / Como pagar o DAS / Suporte / Termos / Privacidade** | | Textos corrigidos (ver seção 4). |
 
 ### Escondido por chave (nada foi apagado)
@@ -96,7 +109,8 @@ volta para o Início.
 | **`MODO_TESTE_LOGIN`** | **`true`** ⚠️ desligar antes de gente real |
 | `MOSTRAR_CARD_DAS`, `MOSTRAR_TUTORIAL_DAS`, `MOSTRAR_TUTORIAL_NOTA`, `MOSTRAR_NOTIFICACOES`, `MOSTRAR_SUPORTE`, `MOSTRAR_DECLARACAO_ANUAL` | `true` |
 | **Novas de 08-10:** `MOSTRAR_ENVIAR_EXTRATO` (`/enviar-extrato`, `/conferir-saidas`), `MOSTRAR_MEU_LUCRO` (`/meu-lucro`), `MOSTRAR_JANELA_NOTAS` (`/notas-fiscais` nova), `MOSTRAR_SIMULADOR` (`/simulador`), `MOSTRAR_PREFERENCIAS` (religada) | `true` |
-| `MOSTRAR_SELETOR_VISUAL_INICIO` / `VISUAL_INICIO_PADRAO` | `false` / `"f"` |
+| `MOSTRAR_SELETOR_VISUAL_INICIO` / `VISUAL_INICIO_PADRAO` | `false` / `"atual"` (Início de antes, Bloco B; `"f"` volta o F) |
+| **Novas de 10-10:** `MOSTRAR_PAGINA_DAS` (`/das`, `/das/historico`), `MOSTRAR_CALCULAR` (`/calcular`...), `MOSTRAR_COMPROVANTE_FOTO` ("+" com foto/PDF), `MOSTRAR_PERMISSOES` (`/perfil/permissoes`); `MOSTRAR_ANEXOS_CHAT` fica `false` (botões do chat sem função) | `true` |
 | `WHATSAPP_FISCO` | `"5537991999373"` — (37) 99199-9373 |
 
 Fora do `piloto.js`: `PLUGGY_ATIVO = false` (`src/lib/openfinance.js`).
@@ -187,6 +201,38 @@ categorias de gasto).
 6. Simulador, Notas fiscais, Preferências (lembrete), painel do DAS
    ("Vence ..."), Termos e Privacidade.
 
+**Novos da tarefa de 10-10 (testar em lote):**
+
+7. **Primeira vez no Início:** abre o "Como funciona" (4 telas). "Pular
+   tutorial" e o "Enviar extrato" do fim. Depois não abre mais; rever em
+   Perfil > Ajuda > **Tutorial do app**.
+8. **Perfil > CNPJ:** sem CNPJ, as 5 vantagens + busca; com CNPJ, os
+   dados só para ler, "Consultado em", "Pedir pra Isa conferir meu
+   CNPJ" (abre o WhatsApp), "Atualizar dados do CNPJ" e "Remover CNPJ".
+   No Perfil, Tipo de MEI e Abertura com o cadeado "Veio do seu CNPJ".
+9. **DAS** (Perfil > Meu MEI > DAS, ou "Emitir boleto" no Início):
+   vencimento e valor; "A Isa me manda o boleto" (sem CNPJ pede o CNPJ e
+   volta) e "Pago sozinho" (passo a passo); Histórico do DAS.
+10. **Notas fiscais** (Perfil > Meu MEI): o aviso do A1 pago; "Emitir
+    nota" (folha do A1); **"Guardar uma nota"** de um frete que já está
+    no velocímetro → tem que perguntar "É o mesmo?"; outra nova → soma.
+11. **Calcular** (Perfil > Meu MEI): a barra "Calculado com seus dados
+    até..."; Quanto ainda posso faturar; **Imposto de Renda** (com CNPJ
+    pula a atividade; "Teve outra renda?" Sim/Não; a parte isenta
+    desconta o DAS); DAS do ano; Meu lucro.
+12. **Declaração anual:** só a explicação, datas novas e o botão
+    "Calcular meu Imposto de Renda".
+13. **Histórico de entradas:** no seletor, tocar no **ano** (ou em "Ano
+    todo") → total do ano e o resumo por mês.
+14. **"+" → "Foto ou PDF do comprovante":** hoje (sem a função
+    publicada) tem que dizer "Não consegui ler sozinho. Preencha você" e
+    salvar normal. Depois da chave e do "pode": a leitura preenche os
+    campos.
+15. **Perfil > Permissões e integrações:** desligar e religar "Lembretes
+    e avisos no WhatsApp"; Extratos enviados → apagar um.
+16. Selo **Recomendado** em todo "Enviar extrato"; Termos e Privacidade
+    novos; slide da nota ("Automática com o A1.").
+
 ---
 
 ## 6. Supabase — situação
@@ -271,6 +317,22 @@ categorias de gasto).
 | `src/pages/PerfilCnpj.jsx`, `ConferirSaidas.jsx`, `GastosDoLucro.jsx`, `NotasFiscais.jsx`, `Simulador.jsx` | Telas novas |
 | `docs/SQL-PENDENTE-08-10.sql` | O SQL de 08-10 (rodado) explicado |
 | `docs/PLANO-AUTOMACAO-DAS.md` | Plano do DAS no automático (estados, mensagens, Serpro, 3 fases) |
+
+**Arquivos novos da tarefa de 10-10:**
+
+| Arquivo | Para quê |
+|---|---|
+| `src/components/FotoIsa.jsx`, `public/isa/` | Foto da Isa (webp 96/256/512) |
+| `src/components/SeloRecomendado.jsx` | Selo "Recomendado" (um só, em todo lugar) |
+| `src/components/BarraDadosAte.jsx` | Barra "Calculado com seus dados até..." do Calcular |
+| `src/components/FolhaSomarNoVelocimetro.jsx` | "Posso somar no velocímetro?" / "É o mesmo?" (nota e comprovante) |
+| `src/lib/comprovantes.js` | Comprovante do "+": arquivo, leitura pela IA, ligação ao lançamento |
+| `src/pages/PaginaDas.jsx` | Página do DAS (`/das`) |
+| `src/pages/Calcular.jsx`, `DasDoAno.jsx` | Calcular (`/calcular`) e DAS do ano |
+| `src/pages/PerfilPermissoes.jsx` | Permissões e integrações (`/perfil/permissoes`) |
+| `supabase/functions/ler-comprovante/index.ts` | Função da IA do comprovante (**não publicada**) |
+| `docs/SQL-PENDENTE-10-10.sql` | SQL de 10-10 (**não rodado**) explicado |
+| `docs/IA-COMPROVANTE.md` | Passo a passo da chave da IA e custo por leitura |
 
 ---
 

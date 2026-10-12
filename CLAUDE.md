@@ -174,6 +174,22 @@ O projeto **não tem backup automático**. Por isso:
 
 ## Onde estamos (atualizar ao fim de cada sessão)
 
+- **12/10: tarefa de `docs/PROMPT-CODE-10-10.md` CONCLUÍDA (blocos A a M),
+  feita no Claude Code na NUVEM** (sem `.env` e sem Supabase: nada rodou
+  no banco). Tudo **enviado ao GitHub** (push no fim de cada bloco, a
+  pedido) e um PR em rascunho só para acompanhar o branch (não juntar na
+  `main`). **Falta o Fernando:** dar o "pode" para o
+  **`docs/SQL-PENDENTE-10-10.sql`** (perfis: resumo do CNPJ, tutorial,
+  avisos no WhatsApp, forma de pagar o DAS; nota/comprovante ligados ao
+  lançamento) e para publicar a função **`ler-comprovante`** (antes, criar
+  a chave da Anthropic: `docs/IA-COMPROVANTE.md`). O app funciona antes
+  dos dois. Novos: página do **DAS** (`/das`), **Notas fiscais** no Meu MEI
+  (guardar nota soma no velocímetro sem duplicar), **Calcular** (no lugar
+  do Simulador; IR desconta o DAS), datas da declaração, histórico por
+  ano, selo **Recomendado**, **"+" com foto/PDF**, **Permissões e
+  integrações**, **tutorial do primeiro acesso**, Termos/Privacidade. O
+  que testar e as perguntas (A1 a M6): `docs/HANDOFF.md`. Para testar na
+  nuvem sem login: "banco de mentira" (HANDOFF seção 7).
 - **10/10 (noite): tarefa de `docs/PROMPT-CODE-10-10.md` (blocos A a M).**
   **O Fisco morreu; o nome é Isa**, assistente virtual com IA (foto gerada
   por IA, de uma pessoa que não existe: `public/isa/`, webp de 96/256/512
