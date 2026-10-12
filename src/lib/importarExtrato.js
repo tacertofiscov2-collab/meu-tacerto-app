@@ -1,4 +1,4 @@
-/* IMPORTAREXTRATO v3 — o que tem o mesmo dia e valor de outro extrato ja guardado NAO fica mais de fora sozinho: entra marcado "repetido" e a pessoa confirma na conferencia (resposta 11 do Fernando); o extrato substitui o total do ano digitado quando cobre o ano ate o dia do total e tudo foi conferido (resposta 1) (v2: o mesmo periodo mandado em outro formato (OFX depois CSV) nao conta duas vezes (dia + valor ja guardados); memoria por fornecedor pelos gastos mais recentes; o lancamento das confirmadas le os lancamentos do banco e nao casa com "lancado a mao" se nao conseguir ler as conferidas (v1: o extrato enviado pelo app vai para o banco: OFX/CSV lidos no aparelho, corte do periodo ANTES de guardar, entradas para a conferencia "É faturamento?", saidas com categoria sugerida, nada duplicado; PDF guardado no Storage "em analise"; e o lancamento das entradas confirmadas sem contar duas vezes */
+/* IMPORTAREXTRATO v4 — listarExtratosEnviados e apagarExtratoEnviado (Permissoes e integracoes: "Extratos enviados", ver e apagar o arquivo e o registro; o que ja foi confirmado continua no velocimetro) (v3: o que tem o mesmo dia e valor de outro extrato ja guardado NAO fica mais de fora sozinho: entra marcado "repetido" e a pessoa confirma na conferencia (resposta 11 do Fernando); o extrato substitui o total do ano digitado quando cobre o ano ate o dia do total e tudo foi conferido (resposta 1) (v2: o mesmo periodo mandado em outro formato (OFX depois CSV) nao conta duas vezes (dia + valor ja guardados); memoria por fornecedor pelos gastos mais recentes; o lancamento das confirmadas le os lancamentos do banco e nao casa com "lancado a mao" se nao conseguir ler as conferidas (v1: o extrato enviado pelo app vai para o banco: OFX/CSV lidos no aparelho, corte do periodo ANTES de guardar, entradas para a conferencia "É faturamento?", saidas com categoria sugerida, nada duplicado; PDF guardado no Storage "em analise"; e o lancamento das entradas confirmadas sem contar duas vezes) */
 import { supabase } from "@/lib/supabase";
 import {
   detectarTipoArquivo, lerArquivoComoTexto, lerExtrato, cortarPeriodo, gerarChaves,
@@ -527,4 +527,39 @@ function nomeParaDescricaoSimples(nome) {
     .map((p) => (p.length <= 2 ? p : p[0].toUpperCase() + p.slice(1)))
     .join(" ")
     .slice(0, 40) || "Recebimento";
+}
+
+/* ===================================================================
+   EXTRATOS ENVIADOS — VER E APAGAR (v4 — 12/10/2026, tarefa de 10-10,
+   Bloco K, pagina "Permissoes e integracoes")
+
+   Apagar tira o REGISTRO do extrato (extratos_enviados) e o ARQUIVO
+   guardado (so o PDF fica guardado). O que a pessoa ja confirmou na
+   conferencia continua no velocimetro: as entradas e saidas nao tem o
+   id do extrato, entao nao da para separar "o que veio deste arquivo".
+   Nunca lancam.
+   =================================================================== */
+export async function listarExtratosEnviados(userId) {
+  if (!userId) return [];
+  try {
+    const { data, error } = await supabase
+      .from("extratos_enviados")
+      .select("id, nome_arquivo, tipo, status, periodo_inicio, periodo_fim, qtd_entradas, qtd_saidas, arquivo_path, criado_em")
+      .eq("user_id", userId)
+      .order("criado_em", { ascending: false });
+    return error ? [] : data || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function apagarExtratoEnviado(userId, extrato) {
+  if (!userId || !extrato?.id) return false;
+  try {
+    if (extrato.arquivo_path) await supabase.storage.from("comprovantes").remove([extrato.arquivo_path]);
+    const { error } = await supabase.from("extratos_enviados").delete().eq("id", extrato.id).eq("user_id", userId);
+    return !error;
+  } catch {
+    return false;
+  }
 }

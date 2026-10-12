@@ -547,3 +547,19 @@ J4. Se a pessoa escolhe a foto e desiste (sai sem salvar), o arquivo fica
 J5. Lançar sem comprovante continua igual (sem a pergunta "É o mesmo?").
     Com comprovante, a pergunta aparece quando há recebimento parecido
     (±1%, ±15 dias). Ok?
+
+**Bloco K (Permissões e integrações)**
+
+K1. Página nova **Perfil > Conta > "Permissões e integrações"**
+    (`/perfil/permissoes`). WhatsApp "Conectado" (sem remover) + chave
+    **"Lembretes e avisos no WhatsApp"** (desligada: "a Isa só responde
+    quando você chamar"). ⚠️ No piloto quem manda os lembretes é você:
+    antes de mandar, olhe `perfis.avisos_whatsapp` (depois do SQL de
+    10-10; antes dele a escolha fica só no celular da pessoa).
+K2. "Extratos enviados → Ver e apagar": apagar tira o **arquivo e o
+    registro**, mas o que a pessoa já confirmou **continua no velocímetro**
+    (as entradas não guardam de qual extrato vieram). Ok, ou apagar também
+    as entradas daquele período? (deixei assim)
+K3. "Notificações do celular" só mostra o status (Ligadas / Bloqueadas /
+    Não pedidas): o app ainda não manda notificação no celular. Pedir a
+    permissão quando existir notificação de verdade.

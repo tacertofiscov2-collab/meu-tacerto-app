@@ -1,4 +1,4 @@
-﻿/* APP v22 — Calcular (MOSTRAR_CALCULAR): /calcular, /calcular/imposto-de-renda (a calculadora do IR, que saiu da Declaracao anual; /declaracao-anual/calcular leva para la) e /calcular/das-do-ano (v21: rota /notas-fiscais/minhas ("Minhas notas", MOSTRAR_JANELA_NOTAS) (v20: pagina do DAS: /das (PaginaDas) e /das/historico (o Historico de DAS), atras de MOSTRAR_PAGINA_DAS; /como-pagar-das agora abre /das (v19: rota /simulador (MOSTRAR_SIMULADOR) (v18: /notas-fiscais abre a janela "Notas fiscais" (MOSTRAR_JANELA_NOTAS) (v17: rotas /meu-lucro e /meu-lucro/gastos (MOSTRAR_MEU_LUCRO) (v16: rotas /enviar-extrato (OFX/CSV/PDF dentro do app) e /conferir-saidas (gastos em duvida), atras de MOSTRAR_ENVIAR_EXTRATO (v15: rota /perfil/cnpj (CNPJ pelo Perfil: buscar e confirmar) (v14: rotas /suporte (chat de suporte), /declaracao-anual e /declaracao-anual/calcular, atras das chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL (v13: login so pelo WhatsApp: /login e /cadastro abrem EntrarWhatsApp; /entrar-email (plano B) abre o Login antigo; esqueci/alterar senha e alterar-whatsapp atras de MOSTRAR_LOGIN_EMAIL (v12: rota /como-pagar-das; v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard)))) */
+﻿/* APP v23 — rota /perfil/permissoes (Permissões e integrações, MOSTRAR_PERMISSOES) (v22: Calcular (MOSTRAR_CALCULAR): /calcular, /calcular/imposto-de-renda (a calculadora do IR, que saiu da Declaracao anual; /declaracao-anual/calcular leva para la) e /calcular/das-do-ano (v21: rota /notas-fiscais/minhas ("Minhas notas", MOSTRAR_JANELA_NOTAS) (v20: pagina do DAS: /das (PaginaDas) e /das/historico (o Historico de DAS), atras de MOSTRAR_PAGINA_DAS; /como-pagar-das agora abre /das (v19: rota /simulador (MOSTRAR_SIMULADOR) (v18: /notas-fiscais abre a janela "Notas fiscais" (MOSTRAR_JANELA_NOTAS) (v17: rotas /meu-lucro e /meu-lucro/gastos (MOSTRAR_MEU_LUCRO) (v16: rotas /enviar-extrato (OFX/CSV/PDF dentro do app) e /conferir-saidas (gastos em duvida), atras de MOSTRAR_ENVIAR_EXTRATO (v15: rota /perfil/cnpj (CNPJ pelo Perfil: buscar e confirmar) (v14: rotas /suporte (chat de suporte), /declaracao-anual e /declaracao-anual/calcular, atras das chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL (v13: login so pelo WhatsApp: /login e /cadastro abrem EntrarWhatsApp; /entrar-email (plano B) abre o Login antigo; esqueci/alterar senha e alterar-whatsapp atras de MOSTRAR_LOGIN_EMAIL (v12: rota /como-pagar-das; v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard))))) */
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
@@ -54,6 +54,7 @@ import Suporte from "./pages/Suporte.jsx";
 import DeclaracaoAnual from "./pages/DeclaracaoAnual.jsx";
 import CalcularDeclaracao from "./pages/CalcularDeclaracao.jsx";
 import PerfilCnpj from "./pages/PerfilCnpj.jsx";
+import PerfilPermissoes from "./pages/PerfilPermissoes.jsx";
 import ConferirSaidas from "./pages/ConferirSaidas.jsx";
 import GastosDoLucro from "./pages/GastosDoLucro.jsx";
 import NotasFiscais from "./pages/NotasFiscais.jsx";
@@ -66,7 +67,7 @@ import {
   MOSTRAR_RESUMO_ANO, MOSTRAR_PREFERENCIAS, MOSTRAR_SOBRE, MOSTRAR_INACABADOS,
   MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS, MOSTRAR_LOGIN_EMAIL,
   MOSTRAR_SUPORTE, MOSTRAR_DECLARACAO_ANUAL, MOSTRAR_ENVIAR_EXTRATO, MOSTRAR_MEU_LUCRO,
-  MOSTRAR_JANELA_NOTAS, MOSTRAR_SIMULADOR, MOSTRAR_CALCULAR,
+  MOSTRAR_JANELA_NOTAS, MOSTRAR_SIMULADOR, MOSTRAR_CALCULAR, MOSTRAR_PERMISSOES,
 } from "./config/piloto.js";
 
 /* ===================================================================
@@ -166,6 +167,8 @@ export default function App() {
           <Route path="/perfil" element={<Perfil />} />
           {/* v15: CNPJ pelo Perfil (mesmo fluxo do cadastro) */}
           <Route path="/perfil/cnpj" element={<PerfilCnpj />} />
+          {/* v23: Permissoes e integracoes */}
+          <Route path="/perfil/permissoes" element={<RotaComChave ligada={MOSTRAR_PERMISSOES}><PerfilPermissoes /></RotaComChave>} />
 
           <Route path="/editar-perfil" element={<EditarPerfil />} />
           <Route path="/preferencias" element={<RotaComChave ligada={MOSTRAR_PREFERENCIAS}><Preferencias /></RotaComChave>} />
