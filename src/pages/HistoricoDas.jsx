@@ -1,4 +1,4 @@
-/* HISTORICODAS v3 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v2: padrao do Historico de notas: 12 janelinhas dos meses; pagas acesas, a pagar apagadas; sem texto) */
+/* HISTORICODAS v4 — vira o "Historico do DAS" dentro da pagina do DAS (/das/historico): visual de hoje (sem verde: mes pago com borda clara e ✓, ano escolhido so mais claro, Guardar em contorno), sem a barra de baixo; aberta direto volta para /das (v3: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v2: padrao do Historico de notas: 12 janelinhas dos meses; pagas acesas, a pagar apagadas; sem texto)) */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import BottomNav from "../components/BottomNav.jsx";
 import { supabase } from "@/lib/supabase";
 import { useAppState } from "@/context/AppStateContext";
 import useAnoInicio from "@/hooks/useAnoInicio";
@@ -81,7 +80,8 @@ function ehImagem(r) {
 
 /* Como cada janelinha aparece */
 const VISUAL = {
-  paga: { opacidade: 1, fundo: "rgba(34,197,94,0.12)", borda: "rgba(34,197,94,0.55)", cor: "var(--primary)", Icone: Check },
+  /* v4: sem verde (padrao do app): borda clara e o ✓ */
+  paga: { opacidade: 1, fundo: null, borda: "var(--text-secondary)", cor: "var(--text)", Icone: Check },
   achada: { opacidade: 0.85, fundo: "rgba(245,158,11,0.08)", borda: "rgba(245,158,11,0.45)", cor: "#f59e0b", Icone: Landmark },
   a_pagar: { opacidade: 0.45, fundo: null, borda: null, cor: "var(--text-tertiary)", Icone: Clock },
   futuro: { opacidade: 0.22, fundo: null, borda: null, cor: "var(--text-tertiary)", Icone: Clock },
@@ -170,7 +170,7 @@ export default function HistoricoDas() {
     >
       <header className="px-5 pt-6 pb-2 flex items-center gap-3 shrink-0">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => ((window.history.state?.idx ?? 0) > 0 ? navigate(-1) : navigate("/das", { replace: true }))}
           aria-label="Voltar"
           className="w-[46px] h-[46px] rounded-full flex items-center justify-center hover:opacity-80"
           style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
@@ -178,7 +178,7 @@ export default function HistoricoDas() {
           <ArrowLeft size={24} style={{ color: "var(--text)" }} />
         </button>
         <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-          Histórico de DAS
+          Histórico do DAS
         </h1>
       </header>
 
@@ -192,8 +192,9 @@ export default function HistoricoDas() {
                 onClick={() => setAno(a)}
                 className="px-3 py-1.5 rounded-lg text-[13px] shrink-0"
                 style={{
-                  backgroundColor: a === ano ? "var(--primary)" : "var(--field)",
-                  color: a === ano ? "var(--primary-contrast)" : "var(--text)",
+                  background: "none",
+                  border: `1px solid ${a === ano ? "var(--text-secondary)" : "var(--border)"}`,
+                  color: a === ano ? "var(--text)" : "var(--text-tertiary)",
                   fontWeight: a === ano ? 700 : 400,
                 }}
               >
@@ -211,7 +212,7 @@ export default function HistoricoDas() {
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center shrink-0 active:opacity-70"
-          style={{ gap: 5, color: "var(--primary)", fontSize: 13, fontWeight: 600 }}
+          style={{ gap: 5, color: "var(--text-secondary)", fontSize: 13, fontWeight: 600 }}
         >
           Portal do Simples
           <ExternalLink size={13} />
@@ -221,7 +222,7 @@ export default function HistoricoDas() {
       {/* GRADE 3x4 — igual a do Historico de notas */}
       <div
         className="flex-1 px-5 grid grid-cols-3 grid-rows-4 gap-2.5"
-        style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
       >
         {MESES_CURTO.map((curto, i) => {
           const m = i + 1;
@@ -248,7 +249,7 @@ export default function HistoricoDas() {
                 {curto}
               </span>
               {estado === "paga" && registros[comp]?.valor ? (
-                <span className="text-[11.5px] font-semibold" style={{ color: "var(--primary)" }}>
+                <span className="text-[11.5px] font-semibold" style={{ color: "var(--text-secondary)" }}>
                   {reais(registros[comp].valor)}
                 </span>
               ) : null}
@@ -299,7 +300,6 @@ export default function HistoricoDas() {
         </div>
       )}
 
-      <BottomNav ativo="perfil" />
     </div>
   );
 }
@@ -567,7 +567,7 @@ function FolhaMes({ userId, competencia, registro, achada, onFechar, onGuardou, 
                   </>
                 ) : (
                   <>
-                    <Camera size={28} style={{ color: "var(--primary)" }} />
+                    <Camera size={28} style={{ color: "var(--text-secondary)" }} />
                     <span className="font-semibold" style={{ fontSize: 15, marginTop: 6 }}>
                       Tirar foto ou escolher arquivo
                     </span>
@@ -663,7 +663,7 @@ function FolhaMes({ userId, competencia, registro, achada, onFechar, onGuardou, 
             <button
               onClick={salvar}
               disabled={!podeSalvar}
-              className="w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center transition active:scale-[0.99] disabled:opacity-40"
+              className="botao-confirmar w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center transition active:scale-[0.99] disabled:opacity-40"
               style={{
                 gap: 8,
                 backgroundColor: "var(--primary)",

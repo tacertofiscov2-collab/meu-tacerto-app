@@ -1,4 +1,4 @@
-/* PILOTO v25 — mensagem pronta conferirCnpj ("Pedir pra Isa conferir meu CNPJ") (v24: Inicio de antes (visual "atual", com o chat da Isa embaixo) volta a ser o padrao: VISUAL_INICIO_PADRAO = "atual" e MOSTRAR_CHAT_FISCO = true; MOSTRAR_ANEXOS_CHAT (botoes sem funcao escondidos); mensagem pronta duvidaDoChat (v23: Fisco vira Isa (assistente virtual com IA): mensagens prontas comecam com "Oi Isa!"; FRASE_APRESENTACAO_ISA e NOME_ASSISTENTE; nomes internos (WHATSAPP_FISCO, abrirWhatsAppFisco...) ficam iguais (v22: chave MOSTRAR_SIMULADOR (/simulador) (v21: MOSTRAR_PREFERENCIAS ligada (so o Lembrete do DAS) (v20: chave MOSTRAR_JANELA_NOTAS (/notas-fiscais); mensagem do certificado A1 com R$ 100,34 e o CNPJ (v19: chave MOSTRAR_MEU_LUCRO (/meu-lucro) (v18: chave MOSTRAR_ENVIAR_EXTRATO (/enviar-extrato e /conferir-saidas) (v17: o CNPJ do perfil entra nas mensagens prontas (formatado 12.345.678/0001-90); sem CNPJ, "Meu CNPJ: " continua em branco para a pessoa completar (v16: numero REAL do WhatsApp do Fisco (37 99199-9373), o mesmo do suporte; mensagem do suporte comeca com "Oi Fisco!" e pede suporte (v15: chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP))) */
+/* PILOTO v26 — chave MOSTRAR_PAGINA_DAS (pagina /das com o historico em /das/historico); o card Proximo DAS e o "Como pagar o DAS" levam para ela (v25: mensagem pronta conferirCnpj ("Pedir pra Isa conferir meu CNPJ") (v24: Inicio de antes (visual "atual", com o chat da Isa embaixo) volta a ser o padrao: VISUAL_INICIO_PADRAO = "atual" e MOSTRAR_CHAT_FISCO = true; MOSTRAR_ANEXOS_CHAT (botoes sem funcao escondidos); mensagem pronta duvidaDoChat (v23: Fisco vira Isa (assistente virtual com IA): mensagens prontas comecam com "Oi Isa!"; FRASE_APRESENTACAO_ISA e NOME_ASSISTENTE; nomes internos (WHATSAPP_FISCO, abrirWhatsAppFisco...) ficam iguais (v22: chave MOSTRAR_SIMULADOR (/simulador) (v21: MOSTRAR_PREFERENCIAS ligada (so o Lembrete do DAS) (v20: chave MOSTRAR_JANELA_NOTAS (/notas-fiscais); mensagem do certificado A1 com R$ 100,34 e o CNPJ (v19: chave MOSTRAR_MEU_LUCRO (/meu-lucro) (v18: chave MOSTRAR_ENVIAR_EXTRATO (/enviar-extrato e /conferir-saidas) (v17: o CNPJ do perfil entra nas mensagens prontas (formatado 12.345.678/0001-90); sem CNPJ, "Meu CNPJ: " continua em branco para a pessoa completar (v16: numero REAL do WhatsApp do Fisco (37 99199-9373), o mesmo do suporte; mensagem do suporte comeca com "Oi Fisco!" e pede suporte (v15: chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP)))) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 import { formatarCnpj, soDigitosCnpj } from "@/lib/cnpj";
 
@@ -255,8 +255,8 @@ export function contaDoNumeroTeste(numero) {
 /* -------------------------------------------------------------------
    EXTRA A — CARD "PROXIMO DAS" NO DASHBOARD
    true mostra, abaixo do velocimetro: "Proximo DAS: 20/MM" + valor
-   (DAS_2026 de src/lib/fiscal.js) + botao "Emitir boleto", que abre o
-   painel "Como voce quer pagar seu DAS?" (FolhaPagarDas). Tambem
+   (DAS_2026 de src/lib/fiscal.js) + botao "Emitir boleto", que abre a
+   pagina do DAS (v26, MOSTRAR_PAGINA_DAS; antes a folha FolhaPagarDas). Tambem
    controla o slide do DAS nas boas-vindas. Nao grava nada no banco.
    ------------------------------------------------------------------- */
 export const MOSTRAR_CARD_DAS = true;
@@ -313,6 +313,18 @@ export const MOSTRAR_NOTIFICACOES = true;
    DAS" do Perfil.
    ------------------------------------------------------------------- */
 export const MOSTRAR_TUTORIAL_DAS = true;
+
+/* -------------------------------------------------------------------
+   PAGINA DO DAS (v26 — 12/10/2026, tarefa de 10-10, Bloco D)
+   true libera /das ("DAS, o imposto mensal do MEI": proximo vencimento,
+   "Como voce quer pagar seu DAS?", "A Isa me ajuda agora") e
+   /das/historico (o Historico de DAS, comprovante de cada mes). Abre
+   pelo Perfil (Meu MEI > DAS) e pelo "Emitir boleto" do card Proximo
+   DAS do Inicio (antes abria a folha FolhaPagarDas, que nao e mais
+   usada). /como-pagar-das tambem abre /das. false: o card do Inicio
+   volta a abrir a folha e o Perfil volta ao "Como pagar o DAS".
+   ------------------------------------------------------------------- */
+export const MOSTRAR_PAGINA_DAS = true;
 
 /* Site do governo para gerar o boleto do DAS (PGMEI) */
 export const LINK_PGMEI =

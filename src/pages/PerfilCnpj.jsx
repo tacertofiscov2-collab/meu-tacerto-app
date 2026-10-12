@@ -1,6 +1,6 @@
-/* PERFILCNPJ v2 — pagina do CNPJ com 2 estados: SEM CNPJ, as vantagens em lista curta + o campo de busca; COM CNPJ, situacao cadastral, MEI desde, atividades, municipio, "Consultado em" (guarda o resumo e a data da consulta), "Atualizar dados do CNPJ", "Remover CNPJ" e o destaque "Pedir pra Isa conferir meu CNPJ" (WhatsApp com o CNPJ) (v1: Perfil > Meu MEI > CNPJ: o mesmo fluxo do cadastro ("Qual o CNPJ do seu MEI?" -> "Achei você"); grava CNPJ, CNAE e MEI desde, sem mudar o tipo de MEI (travado)) */
+/* PERFILCNPJ v3 — vindo do DAS ("A Isa me manda o boleto" sem CNPJ): uma frase do porque no topo e, confirmado o CNPJ, volta para o DAS (v2: pagina do CNPJ com 2 estados: SEM CNPJ, as vantagens em lista curta + o campo de busca; COM CNPJ, situacao cadastral, MEI desde, atividades, municipio, "Consultado em" (guarda o resumo e a data da consulta), "Atualizar dados do CNPJ", "Remover CNPJ" e o destaque "Pedir pra Isa conferir meu CNPJ" (WhatsApp com o CNPJ) (v1: Perfil > Meu MEI > CNPJ: o mesmo fluxo do cadastro ("Qual o CNPJ do seu MEI?" -> "Achei você"); grava CNPJ, CNAE e MEI desde, sem mudar o tipo de MEI (travado))) */
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Check, Building2, User, ShieldCheck, CalendarDays, MapPin, Briefcase, RefreshCw, Trash2, Lock, Loader2,
@@ -81,6 +81,9 @@ function camposDoCnpj(dados) {
 
 export default function PerfilCnpj() {
   const navigate = useNavigate();
+  const location = useLocation();
+  /* v3: veio da pagina do DAS ("A Isa me manda o boleto" pede o CNPJ) */
+  const vindoDoDas = location.state?.motivo === "das";
   const app = useAppState();
   const {
     cnpj, cnpjConfirmado, cnae, cnaesSecundarios, dataOpcaoMei, cnpjDados, cnpjConsultadoEm,
@@ -105,6 +108,8 @@ export default function PerfilCnpj() {
     setSalvando(false);
     setDados(null);
     toast.success("CNPJ confirmado");
+    // v3: volta para o DAS (la a pessoa toca de novo e o WhatsApp abre)
+    if (vindoDoDas && (window.history.state?.idx ?? 0) > 0) navigate(-1);
   }
 
   async function aoFalhar(digitos) {
@@ -288,7 +293,12 @@ export default function PerfilCnpj() {
         <TopoRolavel titulo={dados ? "" : "CNPJ"} onVoltar={dados ? () => setDados(null) : voltar} />
         {!dados ? (
           <>
-            <SecaoLista titulo="Com o seu CNPJ" style={{ marginTop: 8 }}>
+            {vindoDoDas && (
+              <p style={{ fontSize: 15.5, lineHeight: 1.45, color: "var(--text)", marginTop: 10 }}>
+                Para a Isa gerar seu boleto do DAS, preciso do seu CNPJ.
+              </p>
+            )}
+            <SecaoLista titulo="Com o seu CNPJ" style={{ marginTop: vindoDoDas ? 22 : 8 }}>
               {VANTAGENS.map((v) => (
                 <LinhaLista key={v} Icon={Check} rotulo={v} />
               ))}

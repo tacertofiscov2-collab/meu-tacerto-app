@@ -1,4 +1,4 @@
-﻿/* PERFIL v25 — Abertura travada mostra a data do CNPJ (opcao pelo MEI), nao a do app (v24: dados que vieram do CNPJ ficam TRAVADOS: Tipo de MEI (quando bate com o CNPJ) e Abertura mostram um cadeado pequeno e "Veio do seu CNPJ"; tocar abre a pagina do CNPJ (Atualizar / Remover CNPJ) (v23: Meu MEI: linha "Simulador" (/simulador) (v22: Preferencias com o detalhe "Lembrete do DAS" (a tela voltou so com ele) (v21: Ajuda: "Notas fiscais" abre a janela nova (/notas-fiscais) (v20: Meu MEI: linha "Meu lucro" (/meu-lucro) (v19: Meu MEI: linha "CNPJ" (mascarado 12.345.•••/••01-90; sem CNPJ, "Não preenchido" com pontinho de aviso) que abre a busca/confirmacao (/perfil/cnpj) (v18: "Excluir conta" em branco (como as outras linhas); vermelho so no "Sair da conta" (pedido do Fernando) (v17: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes))))) */
+﻿/* PERFIL v26 — Meu MEI: linha "DAS" (o imposto mensal do MEI, "Vence dd/mm") que abre a pagina do DAS (/das); sai o "Como pagar o DAS" da Ajuda (MOSTRAR_PAGINA_DAS) (v25: Abertura travada mostra a data do CNPJ (opcao pelo MEI), nao a do app (v24: dados que vieram do CNPJ ficam TRAVADOS: Tipo de MEI (quando bate com o CNPJ) e Abertura mostram um cadeado pequeno e "Veio do seu CNPJ"; tocar abre a pagina do CNPJ (Atualizar / Remover CNPJ) (v23: Meu MEI: linha "Simulador" (/simulador) (v22: Preferencias com o detalhe "Lembrete do DAS" (a tela voltou so com ele) (v21: Ajuda: "Notas fiscais" abre a janela nova (/notas-fiscais) (v20: Meu MEI: linha "Meu lucro" (/meu-lucro) (v19: Meu MEI: linha "CNPJ" (mascarado 12.345.•••/••01-90; sem CNPJ, "Não preenchido" com pontinho de aviso) que abre a busca/confirmacao (/perfil/cnpj) (v18: "Excluir conta" em branco (como as outras linhas); vermelho so no "Sair da conta" (pedido do Fernando) (v17: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes)))))) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
@@ -32,8 +32,9 @@ import {
   MOSTRAR_ADICIONAR_MOVIMENTACOES, MOSTRAR_RESUMO_ANO, MOSTRAR_SOBRE,
   MOSTRAR_AVATAR, MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS, MOSTRAR_LOGIN_EMAIL,
   MOSTRAR_SUPORTE, MOSTRAR_DECLARACAO_ANUAL, MOSTRAR_MEU_LUCRO, MOSTRAR_JANELA_NOTAS, MOSTRAR_SIMULADOR,
-  MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
+  MOSTRAR_PAGINA_DAS, MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
 } from "@/config/piloto";
+import { proximoVencimentoDas, formatarDiaMes } from "@/lib/vencimentoDas";
 
 /* ===================================================================
    PERFIL v14 (05/10/2026) — pedido do Fernando: "o Editar perfil ta
@@ -591,6 +592,16 @@ export default function Perfil() {
                   valor={<Valor px={15} cor="var(--danger)">{situacao.valor}</Valor>}
                 />
               )}
+              {/* v26: pagina do DAS (vencimento, como pagar, historico) */}
+              {MOSTRAR_PAGINA_DAS && (
+                <LinhaLista
+                  Icon={CalendarCheck}
+                  rotulo="DAS"
+                  detalhe="O imposto mensal do MEI"
+                  valor={`Vence ${formatarDiaMes(proximoVencimentoDas())}`}
+                  onClick={() => navigate("/das", DE_PERFIL)}
+                />
+              )}
               {/* v20: Meu lucro (recebido x gastos) */}
               {MOSTRAR_MEU_LUCRO && (
                 <LinhaLista Icon={Wallet} rotulo="Meu lucro" onClick={() => navigate("/meu-lucro", DE_PERFIL)} />
@@ -606,7 +617,7 @@ export default function Perfil() {
                 <LinhaLista Icon={ArrowUpRight} rotulo="Histórico de saídas" onClick={() => navigate("/saidas", DE_PERFIL)} />
               )}
               {MOSTRAR_HISTORICO_DAS && (
-                <LinhaLista Icon={CalendarCheck} rotulo="Histórico de DAS" onClick={() => navigate("/das", DE_PERFIL)} />
+                <LinhaLista Icon={CalendarCheck} rotulo="Histórico de DAS" onClick={() => navigate("/das/historico", DE_PERFIL)} />
               )}
               {MOSTRAR_NOTAS_FISCAIS && (
                 <LinhaLista Icon={FileText} rotulo="Histórico de notas fiscais" onClick={() => navigate("/notas-fiscais", DE_PERFIL)} />
@@ -641,7 +652,8 @@ export default function Perfil() {
                 onClick={() => navigate(MOSTRAR_JANELA_NOTAS ? "/notas-fiscais" : "/como-emitir-nota", DE_PERFIL)}
               />
             )}
-            {MOSTRAR_TUTORIAL_DAS && (
+            {/* v26: com a pagina do DAS, o "Como pagar o DAS" sai daqui (fica no Meu MEI > DAS) */}
+            {MOSTRAR_TUTORIAL_DAS && !MOSTRAR_PAGINA_DAS && (
               <LinhaLista Icon={CalendarCheck} rotulo="Como pagar o DAS" onClick={() => navigate("/como-pagar-das", DE_PERFIL)} />
             )}
             {MOSTRAR_DECLARACAO_ANUAL && (

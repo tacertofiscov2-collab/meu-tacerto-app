@@ -1,4 +1,4 @@
-﻿/* APP v19 — rota /simulador (MOSTRAR_SIMULADOR) (v18: /notas-fiscais abre a janela "Notas fiscais" (MOSTRAR_JANELA_NOTAS) (v17: rotas /meu-lucro e /meu-lucro/gastos (MOSTRAR_MEU_LUCRO) (v16: rotas /enviar-extrato (OFX/CSV/PDF dentro do app) e /conferir-saidas (gastos em duvida), atras de MOSTRAR_ENVIAR_EXTRATO (v15: rota /perfil/cnpj (CNPJ pelo Perfil: buscar e confirmar) (v14: rotas /suporte (chat de suporte), /declaracao-anual e /declaracao-anual/calcular, atras das chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL (v13: login so pelo WhatsApp: /login e /cadastro abrem EntrarWhatsApp; /entrar-email (plano B) abre o Login antigo; esqueci/alterar senha e alterar-whatsapp atras de MOSTRAR_LOGIN_EMAIL (v12: rota /como-pagar-das; v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard) */
+﻿/* APP v20 — pagina do DAS: /das (PaginaDas) e /das/historico (o Historico de DAS), atras de MOSTRAR_PAGINA_DAS; /como-pagar-das agora abre /das (v19: rota /simulador (MOSTRAR_SIMULADOR) (v18: /notas-fiscais abre a janela "Notas fiscais" (MOSTRAR_JANELA_NOTAS) (v17: rotas /meu-lucro e /meu-lucro/gastos (MOSTRAR_MEU_LUCRO) (v16: rotas /enviar-extrato (OFX/CSV/PDF dentro do app) e /conferir-saidas (gastos em duvida), atras de MOSTRAR_ENVIAR_EXTRATO (v15: rota /perfil/cnpj (CNPJ pelo Perfil: buscar e confirmar) (v14: rotas /suporte (chat de suporte), /declaracao-anual e /declaracao-anual/calcular, atras das chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL (v13: login so pelo WhatsApp: /login e /cadastro abrem EntrarWhatsApp; /entrar-email (plano B) abre o Login antigo; esqueci/alterar senha e alterar-whatsapp atras de MOSTRAR_LOGIN_EMAIL (v12: rota /como-pagar-das; v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard)) */
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
@@ -49,6 +49,7 @@ import Privacidade from "./pages/Privacidade.jsx";
 import TermosDeUso from "./pages/TermosDeUso.jsx";
 import ComoEmitirNota from "./pages/ComoEmitirNota.jsx";
 import ComoPagarDas from "./pages/ComoPagarDas.jsx";
+import PaginaDas from "./pages/PaginaDas.jsx";
 import Suporte from "./pages/Suporte.jsx";
 import DeclaracaoAnual from "./pages/DeclaracaoAnual.jsx";
 import CalcularDeclaracao from "./pages/CalcularDeclaracao.jsx";
@@ -59,7 +60,7 @@ import NotasFiscais from "./pages/NotasFiscais.jsx";
 import Simulador from "./pages/Simulador.jsx";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_NOTAS_FISCAIS,
-  MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_ADICIONAR_MOVIMENTACOES,
+  MOSTRAR_SAIDAS, MOSTRAR_PAGINA_DAS, MOSTRAR_ADICIONAR_MOVIMENTACOES,
   MOSTRAR_RESUMO_ANO, MOSTRAR_PREFERENCIAS, MOSTRAR_SOBRE, MOSTRAR_INACABADOS,
   MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS, MOSTRAR_LOGIN_EMAIL,
   MOSTRAR_SUPORTE, MOSTRAR_DECLARACAO_ANUAL, MOSTRAR_ENVIAR_EXTRATO, MOSTRAR_MEU_LUCRO,
@@ -169,7 +170,9 @@ export default function App() {
           <Route path="/enviar-extrato" element={<RotaComChave ligada={MOSTRAR_ENVIAR_EXTRATO}><AdicionarFaturamentoEnviar /></RotaComChave>} />
           <Route path="/conferir-saidas" element={<RotaComChave ligada={MOSTRAR_ENVIAR_EXTRATO}><ConferirSaidas /></RotaComChave>} />
           <Route path="/saidas" element={<RotaComChave ligada={MOSTRAR_SAIDAS}><Saidas /></RotaComChave>} />
-          <Route path="/das" element={<RotaComChave ligada={MOSTRAR_HISTORICO_DAS}><HistoricoDas /></RotaComChave>} />
+          {/* v20: pagina do DAS (Perfil > Meu MEI e o atalho DAS do Inicio) e o historico dentro dela */}
+          <Route path="/das" element={<RotaComChave ligada={MOSTRAR_PAGINA_DAS}><PaginaDas /></RotaComChave>} />
+          <Route path="/das/historico" element={<RotaComChave ligada={MOSTRAR_PAGINA_DAS}><HistoricoDas /></RotaComChave>} />
           <Route path="/faq" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><Faq /></RotaComChave>} />
           <Route path="/sobre" element={<RotaComChave ligada={MOSTRAR_SOBRE}><Sobre /></RotaComChave>} />
           <Route path="/termos" element={<Termos />} />
@@ -178,7 +181,8 @@ export default function App() {
           <Route path="/privacidade" element={<Privacidade />} />
           <Route path="/como-emitir-nota" element={<RotaComChave ligada={MOSTRAR_TUTORIAL_NOTA}><ComoEmitirNota /></RotaComChave>} />
           {/* Piloto (v12): passo a passo do boleto do DAS */}
-          <Route path="/como-pagar-das" element={<RotaComChave ligada={MOSTRAR_TUTORIAL_DAS}><ComoPagarDas /></RotaComChave>} />
+          {/* v20: o "Como pagar o DAS" virou a pagina do DAS */}
+          <Route path="/como-pagar-das" element={MOSTRAR_PAGINA_DAS ? <Navigate to="/das" replace /> : <RotaComChave ligada={MOSTRAR_TUTORIAL_DAS}><ComoPagarDas /></RotaComChave>} />
           {/* v14: suporte (chat com perguntas prontas) e declaracao anual */}
           <Route path="/suporte" element={<RotaComChave ligada={MOSTRAR_SUPORTE}><Suporte /></RotaComChave>} />
           <Route path="/declaracao-anual" element={<RotaComChave ligada={MOSTRAR_DECLARACAO_ANUAL}><DeclaracaoAnual /></RotaComChave>} />

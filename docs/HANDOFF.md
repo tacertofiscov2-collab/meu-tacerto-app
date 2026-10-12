@@ -74,7 +74,8 @@
 | **Notas fiscais** | `/notas-fiscais` | **Novo.** Sem certificado: quando emitir (NFS-e só frete na mesma cidade; CT-e entre cidades contratado direto; agregado sem IE em MG hoje não emite; 2027 em todo serviço), como o TaCerto ajuda, Certificado A1 (**R$ 100,34**, preço de custo; videochamada) e "Tenho interesse no certificado" (WhatsApp). Com `perfis.nota_automatica_ativa = true` (o Fernando liga à mão): vira **"Minhas notas"**. |
 | **Preferências** | `/preferencias` | **Religada, só com o Lembrete do DAS:** dias antes (7, 5, 3, 2, 1, no dia; padrão 7, 2 e no dia), horário (padrão 9:00), "Não quero lembretes". Grava no perfil. |
 | **Painel do DAS** | (DAS no Início) | Agora mostra no topo "Vence 20/10 · R$ 195,52" (data real com feriados; valor pelo CNAE). |
-| **Perfil** | `/perfil` | Meu MEI: **CNPJ** (12.345.•••/••01-90 ou "Não preenchido" + pontinho amarelo; abre `/perfil/cnpj`), Tipo, Abertura, Limite, Já faturado, Limite restante, **Meu lucro**, **Simulador**, Histórico. Conta: **Preferências** (Lembrete do DAS). Ajuda: Suporte, **Notas fiscais**, Como pagar o DAS, Declaração anual. |
+| **DAS** | `/das` | **Novo (12/10, Bloco D).** Abre pelo Perfil (Meu MEI > **DAS**, "Vence 20/10") e pelo "Emitir boleto" do card Próximo DAS do Início (antes abria a folha). Título "DAS" + "o imposto mensal do MEI". Topo: próximo vencimento real ("terça, 20/10", feriado prorroga) e o valor pela atividade (com CNPJ: "Valor pela sua atividade (frete entre cidades)"; sem: "o mais comum"). **"Como você quer pagar seu DAS?"**: **A Isa me manda o boleto** (selo Recomendado; "Todo mês, antes do dia 20, no seu WhatsApp."; sem CNPJ abre a página do CNPJ com "Para a Isa gerar seu boleto do DAS, preciso do seu CNPJ." e volta; com CNPJ: guarda a escolha, religa lembretes e avisos no WhatsApp e abre o WhatsApp pedindo o boleto; escolhida, mostra "Lembretes no WhatsApp · 7 e 2 dias antes e no dia · 9:00" → Preferências) ou **Pago sozinho** (4 passos: App MEI ou Portal do Simples, CNPJ com toque para copiar, gerar, pagar; "Abrir o Portal do Simples"). Mais: **A Isa me ajuda agora** (boleto deste mês ou atrasado) e **Histórico do DAS** (`/das/historico`, a grade de 12 meses com o comprovante, agora sem verde e sem a barra de baixo). Chave `MOSTRAR_PAGINA_DAS`; `/como-pagar-das` abre `/das`. Nunca fala em débito automático. |
+| **Perfil** | `/perfil` | Meu MEI: **CNPJ** (12.345.•••/••01-90 ou "Não preenchido" + pontinho amarelo; abre `/perfil/cnpj`), Tipo, Abertura, Limite, Já faturado, Limite restante, **Meu lucro**, **Simulador**, Histórico. Conta: **Preferências** (Lembrete do DAS). Ajuda: Suporte, **Notas fiscais**, Declaração anual. **Desde 12/10:** Meu MEI ganha **DAS** (abre `/das`); sai o "Como pagar o DAS" da Ajuda. |
 | **CNPJ pelo Perfil** | `/perfil/cnpj` | **Desde 12/10 (Bloco C):** **sem CNPJ**, "Com o seu CNPJ" com 5 vantagens curtas + o campo de busca → "Achei você". **Com CNPJ**, só para ler: CNPJ mascarado, Nome, Situação (Ativa; outra situação com pontinho e aviso amarelo), MEI desde, Município, Atividades (nome + código, "principal"), "🔒 Veio do seu CNPJ · Consultado em 12/10 às 14:53"; destaque **"Pedir pra Isa conferir meu CNPJ"** (WhatsApp com o CNPJ; quem confere hoje é a equipe, a tela não promete consulta automática); **"Atualizar dados do CNPJ"** (busca de novo) e **"Remover CNPJ"** (folha de confirmação; apaga o CNPJ e o que veio dele). Não muda o tipo de MEI (só avisa se o CNPJ sugere outro). Se virou MEI este ano, acerta a abertura. No **Perfil**, Tipo de MEI (quando bate com o CNPJ) e Abertura (com a data do CNPJ) ficam **travados**: cadeado pequeno + "Veio do seu CNPJ"; tocar abre esta página. Removeu o CNPJ: voltam a ser editáveis. |
 | **Calcular IR** | `/declaracao-anual/calcular` | Os gastos já vêm com a soma dos **gastos com nota** guardados no app (dá para ajustar). |
 | **Como emitir nota / Como pagar o DAS / Suporte / Termos / Privacidade** | | Textos corrigidos (ver seção 4). |
@@ -421,3 +422,23 @@ C5. Dois aparelhos: se a pessoa remove o CNPJ num celular e abre o app
     em OUTRO celular que ainda tinha o CNPJ guardado, ele pode voltar
     (o app sobe para o banco o que só estava no aparelho; regra de
     08-10). No piloto cada um usa um iPhone; deixei assim e anotei.
+
+**Bloco D (DAS)**
+
+D1. O botão do card do Início continua escrito **"Emitir boleto"**, mas
+    agora abre a página do DAS (e não a folha). Trocar o texto para
+    "Ver DAS" ou "Pagar DAS"? (mantive)
+D2. Escolher "A Isa me manda o boleto" **religa** os lembretes (se a
+    pessoa tinha desligado, voltam 7 e 2 dias antes e no dia) e os
+    avisos no WhatsApp. Ok? (assim: escolher a Isa é aceitar a mensagem)
+D3. A escolha fica marcada (✓) e dá para trocar a qualquer hora.
+    Escolher "Pago sozinho" **não** desliga os lembretes do DAS. Ok?
+D4. "A Isa me ajuda agora" e "Histórico do DAS" ficaram embaixo, em
+    "Mais". O "Abrir o site do governo" da folha antiga virou "Abrir o
+    Portal do Simples" dentro do "Pago sozinho". Ok?
+D5. Os nomes dos botões do Portal do Simples/App MEI ("Emitir Guia de
+    Pagamento (DAS)") foram escritos de memória, como no passo a passo
+    antigo: conferir no site real.
+D6. O Histórico do DAS (12 janelinhas) existia escondido desde 28/09
+    (`MOSTRAR_HISTORICO_DAS = false`); agora abre pela página do DAS.
+    Tirei o verde (mês pago = borda clara e ✓). Ok?
