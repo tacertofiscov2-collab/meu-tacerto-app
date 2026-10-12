@@ -1,10 +1,9 @@
-/* SIMULADOR v1 — Simulador do MEI (Perfil > Meu MEI): a pessoa diz quanto recebe por mes (ja vem a media real) e, se quiser, quanto gasta; mostra o previsto no ano, % do limite, o mes em que passaria, quanto ainda pode faturar por mes ate dezembro, o DAS do ano e o Imposto de Renda estimado (contas em src/lib/declaracao.js) */
+/* SIMULADOR v2 — vira "Quanto ainda posso faturar" dentro do Calcular (Bloco F): so previsto no ano, % do limite, mes em que passa e quanto ainda pode por mes; o DAS do ano e o Imposto de Renda foram para contas proprias (sai o "quanto gasta"); barra "Calculado com seus dados até" no topo (v1: Simulador do MEI (Perfil > Meu MEI): a pessoa diz quanto recebe por mes (ja vem a media real) e, se quiser, quanto gasta; mostra o previsto no ano, % do limite, o mes em que passaria, quanto ainda pode faturar por mes ate dezembro, o DAS do ano e o Imposto de Renda estimado (contas em src/lib/declaracao.js)) */
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  TrendingUp, Gauge, AlertTriangle, CalendarRange, Receipt, Landmark,
-} from "lucide-react";
+import { TrendingUp, Gauge, AlertTriangle, CalendarRange } from "lucide-react";
 import TopoRolavel from "../components/TopoRolavel.jsx";
+import BarraDadosAte from "../components/BarraDadosAte.jsx";
 import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
 import Valor from "../components/Valor.jsx";
 import { useAppState } from "@/context/AppStateContext";
@@ -12,6 +11,9 @@ import { simularAnoMei } from "@/lib/declaracao";
 
 /* ===================================================================
    SIMULADOR DO MEI (10/10/2026 — tarefa de 08-10, Etapa 7)
+   v2 (12/10/2026, tarefa de 10-10, Bloco F): "Quanto ainda posso
+   faturar", aberto pelo Calcular. Ficam so as contas do limite; o DAS
+   do ano e o Imposto de Renda tem tela propria (Calcular).
 
    Duas perguntas no topo (campos de 16px, so numeros):
      - Quanto você recebe por mês? (ja vem a media real do ano, que e o
@@ -62,7 +64,6 @@ export default function Simulador() {
   const navigate = useNavigate();
   const { tipoMEI, cnae, cnaesSecundarios, mesAnoAbertura, faturamentoAtual, mediaMensal } = useAppState();
   const [recebe, setRecebe] = useState(() => Math.round(Number(mediaMensal) || 0));
-  const [gasta, setGasta] = useState(0);
 
   const s = useMemo(
     () => simularAnoMei({
@@ -72,14 +73,13 @@ export default function Simulador() {
       anoAbertura: mesAnoAbertura?.ano,
       faturadoAteAgora: faturamentoAtual,
       recebeMes: recebe,
-      gastaMes: gasta,
     }),
-    [tipoMEI, cnae, cnaesSecundarios, mesAnoAbertura, faturamentoAtual, recebe, gasta],
+    [tipoMEI, cnae, cnaesSecundarios, mesAnoAbertura, faturamentoAtual, recebe],
   );
 
   function voltar() {
     if ((window.history.state?.idx ?? 0) > 0) navigate(-1);
-    else navigate("/perfil", { replace: true });
+    else navigate("/calcular", { replace: true });
   }
 
   const v = (n, cor) => <Valor px={15.5} peso={600} cor={cor || "var(--text)"}>{n}</Valor>;
@@ -88,10 +88,11 @@ export default function Simulador() {
   return (
     <div className="tela-rolavel w-full flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <div className="conteudo-rolavel hide-scrollbar px-5" style={{ paddingBottom: "calc(40px + env(safe-area-inset-bottom))" }}>
-        <TopoRolavel titulo="Simulador" onVoltar={voltar} />
+        <TopoRolavel titulo="Quanto ainda posso faturar" onVoltar={voltar} />
+
+        <BarraDadosAte style={{ marginTop: 10 }} />
 
         <CampoReais rotulo="Quanto você recebe por mês" valor={recebe} onMudar={setRecebe} />
-        <CampoReais rotulo="Quanto gasta por mês (opcional)" valor={gasta} onMudar={setGasta} />
 
         <SecaoLista titulo={`Em ${s.ano}`}>
           <LinhaLista Icon={TrendingUp} rotulo="Faturamento previsto" valor={v(s.previsto)} />
@@ -111,13 +112,6 @@ export default function Simulador() {
             rotulo="Ainda pode faturar por mês"
             detalhe="Até dezembro, sem passar do limite"
             valor={v(s.podePorMes)}
-          />
-          <LinhaLista Icon={Receipt} rotulo="DAS do ano" valor={v(s.dasDoAno)} />
-          <LinhaLista
-            Icon={Landmark}
-            rotulo="Imposto de Renda"
-            detalhe={<span>Parte isenta <Valor px={13.5} cor="var(--text-tertiary)">{s.ir.isenta}</Valor></span>}
-            valor={s.ir.dentroDaIsencaoNova ? "Provavelmente zero" : "Pode ter imposto"}
           />
         </SecaoLista>
 

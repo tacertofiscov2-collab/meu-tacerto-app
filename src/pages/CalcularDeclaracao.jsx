@@ -1,15 +1,18 @@
-/* CALCULARDECLARACAO v2 — os gastos ja vem com a soma dos gastos do negocio COM NOTA guardados no app ("Meu lucro"); a pessoa ainda pode ajustar (v1: "Calcular meu Imposto de Renda": uma pergunta por janela (atividade, faturamento, gastos, outras rendas, funcionario) e o resultado (parte isenta, se precisa declarar, o que vai na declaracao do MEI)) */
+/* CALCULARDECLARACAO v3 — vira "Calcular > Imposto de Renda" (/calcular/imposto-de-renda; Bloco F): com CNPJ a atividade vem do CNAE principal (pula a pergunta; aviso se for atividade mista); "Você teve outra renda no ano?" Sim/Não + valor; a parte isenta desconta o DAS do ano (LC 123, art. 14 §1o) e mostra "Pode ser maior com contabilidade completa."; os outros motivos que obrigam a declarar com os limites oficiais e a fonte; barra "Calculado com seus dados até" (v2: os gastos ja vem com a soma dos gastos do negocio COM NOTA guardados no app ("Meu lucro"); a pessoa ainda pode ajustar (v1: "Calcular meu Imposto de Renda": uma pergunta por janela (atividade, faturamento, gastos, outras rendas, funcionario) e o resultado (parte isenta, se precisa declarar, o que vai na declaracao do MEI))) */
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { somarGastosComNota } from "@/lib/lucro";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Check, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Check, ShieldCheck, Info } from "lucide-react";
 import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
+import BarraDadosAte from "../components/BarraDadosAte.jsx";
 import Valor from "../components/Valor.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import { MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco } from "@/config/piloto";
 import {
   ATIVIDADES, calcularIR, proximaDeclaracao, LIMITE_DECLARAR_IR, ANO_DO_LIMITE_IR, ISENCAO_MENSAL_IR,
+  ANO_INICIO_ISENCAO_5MIL, infoAtividadeIr, dasDevidoNoAno, LIMITE_BENS_IR, LIMITE_RENDIMENTOS_ISENTOS_IR,
+  LIMITE_BOLSA_IR, LIMITE_RECEITA_RURAL_IR, FONTE_LIMITES_IR,
 } from "@/lib/declaracao";
 
 /* ===================================================================
@@ -37,6 +40,10 @@ function gravarRespostas(r) {
 }
 const TOTAL_PERGUNTAS = 5;
 const MAX_CENTAVOS = 99999999999;
+/* v3: o endereco novo (Calcular > Imposto de Renda). O antigo
+   /declaracao-anual/calcular leva para ca (App.jsx). */
+const ROTA_IR = "/calcular/imposto-de-renda";
+const reaisInteiros = (v) => `R$ ${Number(v || 0).toLocaleString("pt-BR", { maximumFractionDigits: 0 })}`;
 
 function formatar(centavos) {
   const r = Math.floor(centavos / 100);
@@ -109,17 +116,24 @@ export default function CalcularDeclaracao() {
   const app = useAppState();
   const { anoEntrega, anoDeclarado } = proximaDeclaracao();
   const anoAtual = new Date().getFullYear();
-  const passo = Math.min(6, Math.max(1, Number(params.get("passo")) || 1));
+  /* v3: com CNPJ a atividade vem do CNAE principal e a 1a pergunta some */
+  const cnaes = [app.cnae, ...(app.cnaesSecundarios || [])].filter(Boolean);
+  const infoAtiv = infoAtividadeIr(app.tipoMEI, cnaes);
+  const primeiroPasso = infoAtiv.doCnpj ? 2 : 1;
+  const totalPerguntas = TOTAL_PERGUNTAS - (primeiroPasso - 1);
+  const passo = Math.min(6, Math.max(primeiroPasso, Number(params.get("passo")) || 1));
 
   const [r, setR] = useState(() => {
     const salvas = location.state?.novo ? null : lerRespostas();
     const inicio = salvas || {
-      atividade: app.tipoMEI === "MEI_CAMINHONEIRO" ? "cargas" : null,
+      atividade: infoAtiv.atividade,
       fatCent: anoDeclarado === anoAtual ? Math.round((Number(app.faturamentoAtual) || 0) * 100) : 0,
       gastosCent: 0,
       outrasCent: 0,
+      outraRenda: null,
       funcionario: null,
     };
+    if (infoAtiv.doCnpj) inicio.atividade = infoAtiv.atividade;
     gravarRespostas(inicio);
     return inicio;
   });
@@ -129,7 +143,7 @@ export default function CalcularDeclaracao() {
       gravarRespostas(novo);
       return novo;
     });
-  const { atividade, fatCent, gastosCent, outrasCent, funcionario, gastosDoApp } = r;
+  const { atividade, fatCent, gastosCent, outrasCent, outraRenda, funcionario, gastosDoApp } = r;
   const setAtividade = mudar("atividade");
   const setFatCent = mudar("fatCent");
   /* v2: mexeu nos gastos = a pessoa manda (o app nao troca mais) */
@@ -163,6 +177,7 @@ export default function CalcularDeclaracao() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const setOutrasCent = mudar("outrasCent");
+  const setOutraRenda = mudar("outraRenda");
   const setFuncionario = mudar("funcionario");
 
   /* "Comecar do zero" vale uma vez so: tira a marca do historico, senao
@@ -173,27 +188,39 @@ export default function CalcularDeclaracao() {
 
   /* Recarregou no meio sem as respostas: volta ao passo 1 */
   useEffect(() => {
-    if (passo > 1 && !atividade) navigate("/declaracao-anual/calcular?passo=1", { replace: true });
+    if (passo > 1 && !atividade) navigate(`${ROTA_IR}?passo=1`, { replace: true });
   }, [passo, atividade, navigate]);
 
-  const irPara = (n) => navigate(`/declaracao-anual/calcular?passo=${n}`);
+  const irPara = (n) => navigate(`${ROTA_IR}?passo=${n}`);
   const voltar = () => navigate(-1);
 
   const podeSeguir = {
     1: !!atividade,
     2: fatCent > 0,
     3: true,
-    4: true,
+    4: outraRenda === false || (outraRenda === true && outrasCent > 0),
     5: funcionario !== null,
   }[passo];
 
+  /* v3: o DAS devido no ano declarado sai da parte isenta */
+  const dasDoAno = dasDevidoNoAno({
+    tipo: app.tipoMEI,
+    cnaes,
+    ano: anoDeclarado,
+    mesAbertura: app.mesAnoAbertura?.mes,
+    anoAbertura: app.mesAnoAbertura?.ano,
+  });
   const conta = calcularIR({
     atividade,
     faturamento: fatCent / 100,
     gastos: gastosCent / 100,
-    outrasRendas: outrasCent / 100,
+    outrasRendas: outraRenda ? outrasCent / 100 : 0,
+    dasDevido: dasDoAno,
   });
   const pct = Math.round(conta.percentual * 100);
+  const rotuloAtividade = (ATIVIDADES.find((a) => a.id === atividade) || {}).rotulo || "";
+  /* Isencao de ate R$ 5 mil por mes: so para a renda de 2026 em diante */
+  const valeIsencaoNova = anoDeclarado >= ANO_INICIO_ISENCAO_5MIL;
 
   let conteudo;
   if (passo === 1) {
@@ -232,8 +259,17 @@ export default function CalcularDeclaracao() {
   } else if (passo === 4) {
     conteudo = (
       <>
-        <Pergunta titulo="Teve outra renda no ano?" ajuda="Salário, aposentadoria ou aluguel. Some o ano todo. Se não teve, deixe em branco." />
-        <CampoDinheiro centavos={outrasCent} onMudar={setOutrasCent} />
+        <Pergunta titulo="Você teve outra renda no ano?" ajuda="Salário, aposentadoria ou aluguel, fora o MEI." />
+        <div className="flex flex-col" style={{ gap: 10, marginTop: 22 }}>
+          <Opcao rotulo="Não" escolhida={outraRenda === false} onClick={() => setOutraRenda(false)} />
+          <Opcao rotulo="Sim" escolhida={outraRenda === true} onClick={() => setOutraRenda(true)} />
+        </div>
+        {outraRenda === true && (
+          <>
+            <p style={{ fontSize: 15, lineHeight: 1.45, color: "var(--text-secondary)", marginTop: 18 }}>Quanto, somando o ano todo?</p>
+            <CampoDinheiro centavos={outrasCent} onMudar={setOutrasCent} />
+          </>
+        )}
       </>
     );
   } else if (passo === 5) {
@@ -259,20 +295,43 @@ export default function CalcularDeclaracao() {
             : `O que conta como renda ficou abaixo de ${limite} (limite de ${ANO_DO_LIMITE_IR}).`}
         </p>
 
+        <BarraDadosAte style={{ marginTop: 18 }} />
+
         <SecaoLista titulo="A conta">
           <LinhaLista rotulo="Faturamento" valor={<Valor px={15} cor="var(--text-secondary)">{fatCent / 100}</Valor>} />
-          <LinhaLista rotulo={`Parte isenta (${pct}%)`} valor={<Valor px={15} cor="var(--text-secondary)">{conta.isenta}</Valor>} />
+          <LinhaLista
+            rotulo={`Parte isenta (${pct}%)`}
+            detalhe={
+              <>
+                <span className="block">
+                  {pct}% do faturamento (<Valor px={13.5} cor="var(--text-tertiary)">{conta.isentaBruta}</Valor>) menos o DAS do ano (<Valor px={13.5} cor="var(--text-tertiary)">{conta.das}</Valor>).
+                </span>
+                <span className="block" style={{ marginTop: 3 }}>Pode ser maior com contabilidade completa.</span>
+              </>
+            }
+            valor={<Valor px={15} cor="var(--text-secondary)">{conta.isenta}</Valor>}
+          />
           {gastosCent > 0 && <LinhaLista rotulo="Gastos com comprovante" valor={<Valor px={15} cor="var(--text-secondary)">{gastosCent / 100}</Valor>} />}
-          <LinhaLista rotulo="Conta como renda (do MEI)" valor={<Valor px={15} cor="var(--text-secondary)">{conta.tributavelMei}</Valor>} />
-          {outrasCent > 0 && <LinhaLista rotulo="Outras rendas" valor={<Valor px={15} cor="var(--text-secondary)">{outrasCent / 100}</Valor>} />}
+          <LinhaLista rotulo="Conta como renda (do MEI)" detalhe="Faturamento, menos gastos, menos a parte isenta." valor={<Valor px={15} cor="var(--text-secondary)">{conta.tributavelMei}</Valor>} />
+          {outraRenda && outrasCent > 0 && <LinhaLista rotulo="Outras rendas" valor={<Valor px={15} cor="var(--text-secondary)">{outrasCent / 100}</Valor>} />}
           <LinhaLista rotulo="Renda do ano" valor={<Valor px={15.5} peso={700}>{conta.rendaTributavel}</Valor>} />
         </SecaoLista>
+
+        {infoAtiv.doCnpj && (
+          <p className="flex" style={{ gap: 8, fontSize: 13.5, lineHeight: 1.45, color: "var(--text-tertiary)", marginTop: 12 }}>
+            <Info size={15} className="shrink-0" style={{ marginTop: 2 }} />
+            <span>
+              Atividade do seu CNPJ: {rotuloAtividade} ({pct}%).
+              {infoAtiv.mista ? " Você tem atividades com percentuais diferentes: usei o da principal." : ""}
+            </span>
+          </p>
+        )}
 
         <SecaoLista titulo="Imposto">
           <LinhaLista
             Icon={ShieldCheck}
-            rotulo={conta.dentroDaIsencaoNova ? "Imposto: provavelmente zero" : "Pode ter imposto a pagar"}
-            detalhe={conta.dentroDaIsencaoNova
+            rotulo={valeIsencaoNova && conta.dentroDaIsencaoNova ? "Imposto: provavelmente zero" : "Pode ter imposto a pagar"}
+            detalhe={valeIsencaoNova && conta.dentroDaIsencaoNova
               ? `Até R$ ${(ISENCAO_MENSAL_IR * 12).toLocaleString("pt-BR")} de renda no ano fica isento (lei nova, desde 2026).`
               : "A gente confere com você e te ajuda a declarar."}
           />
@@ -283,8 +342,16 @@ export default function CalcularDeclaracao() {
           <LinhaLista rotulo="Teve funcionário" valor={funcionario ? "Sim" : "Não"} />
         </SecaoLista>
 
+        {/* v3: os outros motivos que obrigam a declarar (so aviso; o app nao calcula) */}
+        <SecaoLista titulo="Também precisa declarar quem teve">
+          <LinhaLista rotulo={`Bens acima de ${reaisInteiros(LIMITE_BENS_IR)}`} detalhe="Casa, caminhão, carro... somados, em 31 de dezembro." />
+          <LinhaLista rotulo={`Rendimentos isentos acima de ${reaisInteiros(LIMITE_RENDIMENTOS_ISENTOS_IR)}`} detalhe="A parte isenta do MEI, FGTS, poupança..." />
+          <LinhaLista rotulo={`Bolsa de valores acima de ${reaisInteiros(LIMITE_BOLSA_IR)}`} detalhe="Ou lucro com ações." />
+          <LinhaLista rotulo={`Atividade rural acima de ${reaisInteiros(LIMITE_RECEITA_RURAL_IR)}`} />
+        </SecaoLista>
+
         <p style={{ fontSize: 13, lineHeight: 1.45, color: "var(--text-tertiary)", marginTop: 22 }}>
-          Estimativa com as regras de hoje. Bens acima de R$ 800 mil e investimentos também podem obrigar a declarar.
+          Estimativa com as regras de hoje. Limites: {FONTE_LIMITES_IR}.
         </p>
       </>
     );
@@ -305,11 +372,11 @@ export default function CalcularDeclaracao() {
           <ArrowLeft size={24} style={{ color: "var(--text)" }} />
         </button>
         <h1 className="font-bold" style={{ color: "var(--text)", fontSize: 20 }}>
-          {ehResultado ? "Resultado" : "Calcular"}
+          {ehResultado ? "Resultado" : "Imposto de Renda"}
         </h1>
         {!ehResultado && (
           <span className="ml-auto" style={{ fontSize: 14, color: "var(--text-tertiary)", paddingRight: 4 }}>
-            {passo} de {TOTAL_PERGUNTAS}
+            {passo - (primeiroPasso - 1)} de {totalPerguntas}
           </span>
         )}
       </header>
@@ -335,7 +402,7 @@ export default function CalcularDeclaracao() {
           {ehResultado && (
             <button
               type="button"
-              onClick={() => navigate(-(TOTAL_PERGUNTAS))}
+              onClick={() => navigate(-(6 - primeiroPasso))}
               className="w-full font-semibold"
               style={{ marginTop: 10, padding: "10px 0", fontSize: 15, color: "var(--text-secondary)" }}
             >

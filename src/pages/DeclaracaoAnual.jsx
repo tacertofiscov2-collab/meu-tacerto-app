@@ -1,21 +1,18 @@
-/* DECLARACAOANUAL v1 — pagina nova (Perfil > Ajuda): prazo, "Calcular meu Imposto de Renda", como o TaCerto ajuda hoje, explicacao sem juridiques e o passo a passo da DASN-SIMEI */
+/* DECLARACAOANUAL v2 — fica SO a explicacao (o que e, prazo, como o TaCerto ajuda) + o botao "Calcular meu Imposto de Renda", que leva ao Calcular > Imposto de Renda (/calcular/imposto-de-renda); sairam o percentual isento, "declarar nao e pagar" e o faturado do ano (estao na conta do IR); o passo a passo da DASN continua, fechado (Bloco F) (v1: pagina nova (Perfil > Ajuda): prazo, "Calcular meu Imposto de Renda", como o TaCerto ajuda hoje, explicacao sem juridiques e o passo a passo da DASN-SIMEI) */
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  CalendarClock, Calculator, CheckCircle2, Briefcase, User, Percent, ShieldCheck,
-  AlertTriangle, Gauge, ListChecks, ChevronDown, ExternalLink,
+  CalendarClock, Calculator, CheckCircle2, Briefcase, User, ListChecks, ChevronDown, ExternalLink,
 } from "lucide-react";
 import IconeWhatsApp from "../components/IconeWhatsApp.jsx";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { SecaoLista, LinhaLista, numeroDoPasso } from "../components/ListaSimples.jsx";
-import Valor from "../components/Valor.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import {
   MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
 } from "@/config/piloto";
 import {
-  proximaDeclaracao, LINK_DASN_SIMEI, LIMITE_DECLARAR_IR, ANO_DO_LIMITE_IR,
-  MULTA_MINIMA_DASN, ISENCAO_MENSAL_IR,
+  proximaDeclaracao, LINK_DASN_SIMEI, LIMITE_DECLARAR_IR, ANO_DO_LIMITE_IR, MULTA_MINIMA_DASN,
 } from "@/lib/declaracao";
 
 /* ===================================================================
@@ -32,6 +29,10 @@ import {
    5. O faturamento do ano no app (o numero da declaracao).
    6. Fazer sozinho: passo a passo da DASN-SIMEI (abre e fecha).
    Regras e numeros: src/lib/declaracao.js (atualizar todo ano).
+   v2 (12/10/2026, tarefa de 10-10, Bloco F): fica SO a explicacao
+   (prazo, o que e, como o TaCerto ajuda) e o botao "Calcular meu Imposto
+   de Renda" (-> Calcular > Imposto de Renda). O resto (parte isenta,
+   declarar nao e pagar, faturado do ano) esta na conta do IR.
    ⚠️ Passos do site escritos de memoria: conferir no site real.
    =================================================================== */
 
@@ -51,8 +52,6 @@ export default function DeclaracaoAnual() {
   const location = useLocation();
   const app = useAppState();
   const { anoEntrega, anoDeclarado } = proximaDeclaracao();
-  const anoAtual = new Date().getFullYear();
-  const caminhoneiro = app.tipoMEI === "MEI_CAMINHONEIRO";
   const [sozinhoAberto, setSozinhoAberto] = useState(false);
   const sozinhoRef = useRef(null);
 
@@ -89,16 +88,20 @@ export default function DeclaracaoAnual() {
           <LinhaLista
             Icon={CalendarClock}
             rotulo={`Entregue até 31 de maio de ${anoEntrega}`}
-            detalhe={`Sobre o que você faturou em ${anoDeclarado}. Mesmo se não faturou nada.`}
+            detalhe={`Sobre o que você faturou em ${anoDeclarado}. Mesmo se não faturou nada. Atrasou: ainda dá, com multa a partir de R$ ${MULTA_MINIMA_DASN}.`}
           />
         </SecaoLista>
 
-        <SecaoLista titulo="Calcular">
+        <SecaoLista titulo="O que é">
           <LinhaLista
-            Icon={Calculator}
-            rotulo="Calcular meu Imposto de Renda"
-            detalhe="Quanto é isento e se você precisa declarar. Leva 1 minuto."
-            onClick={() => navigate("/declaracao-anual/calcular?passo=1", { state: { novo: true } })}
+            Icon={Briefcase}
+            rotulo="A do MEI (DASN-SIMEI)"
+            detalhe="Você conta ao governo quanto o MEI faturou no ano e se teve funcionário. É rápida."
+          />
+          <LinhaLista
+            Icon={User}
+            rotulo="A sua, de Imposto de Renda"
+            detalhe={`É a da pessoa, não a do MEI. Só é obrigatória se o que conta como renda passar de R$ ${reais(LIMITE_DECLARAR_IR)} no ano (limite de ${ANO_DO_LIMITE_IR}).`}
           />
         </SecaoLista>
 
@@ -116,44 +119,16 @@ export default function DeclaracaoAnual() {
           <LinhaLista Icon={IconeWhatsApp} rotulo="Quero ajuda com a minha declaração" onClick={pedirAjuda} />
         </SecaoLista>
 
-        <SecaoLista titulo="Entenda">
-          <LinhaLista
-            Icon={Briefcase}
-            rotulo="A do MEI (DASN-SIMEI)"
-            detalhe="Você conta ao governo quanto o MEI faturou no ano e se teve funcionário. É rápida."
-          />
-          <LinhaLista
-            Icon={User}
-            rotulo="A sua, de Imposto de Renda"
-            detalhe={`É a da pessoa, não a do MEI. Só é obrigatória se o que conta como renda passar de R$ ${reais(LIMITE_DECLARAR_IR)} no ano (limite de ${ANO_DO_LIMITE_IR}).`}
-          />
-          <LinhaLista
-            Icon={Percent}
-            rotulo="Parte do faturamento é isenta"
-            detalhe={caminhoneiro
-              ? "No transporte de cargas, 8% do que você fatura não conta como renda. Gastos com nota ou recibo também abatem."
-              : "De 8% a 32% do que você fatura não conta como renda, conforme a atividade. Gastos com nota ou recibo também abatem."}
-          />
-          <LinhaLista
-            Icon={ShieldCheck}
-            rotulo="Declarar não é pagar"
-            detalhe={`Desde 2026, quem tem até R$ ${reais(ISENCAO_MENSAL_IR)} por mês de renda fica isento do imposto. Muita gente declara e não paga nada.`}
-          />
-          <LinhaLista
-            Icon={AlertTriangle}
-            rotulo="Se atrasar"
-            detalhe={`A do MEI ainda pode ser entregue, com multa a partir de R$ ${MULTA_MINIMA_DASN}. Quanto antes, menor.`}
-          />
-        </SecaoLista>
-
-        <SecaoLista titulo={`Seu ${anoAtual} até agora`}>
-          <LinhaLista
-            Icon={Gauge}
-            rotulo="Faturado no ano"
-            detalhe="É esse número que vai na declaração."
-            valor={<Valor px={15} cor="var(--text-secondary)">{app.faturamentoAtual}</Valor>}
-          />
-        </SecaoLista>
+        {/* v2: a conta do IR mora no Calcular */}
+        <button
+          type="button"
+          onClick={() => navigate("/calcular/imposto-de-renda?passo=1", { state: { novo: true, de: "declaracao" } })}
+          className="botao-confirmar toque w-full rounded-2xl font-semibold flex items-center justify-center"
+          style={{ marginTop: 24, padding: "15px 0", fontSize: 16, gap: 8 }}
+        >
+          <Calculator size={19} strokeWidth={2} />
+          Calcular meu Imposto de Renda
+        </button>
 
         <SecaoLista titulo="Fazer sozinho">
           <LinhaLista

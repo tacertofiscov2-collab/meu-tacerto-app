@@ -1,5 +1,5 @@
-﻿/* APP v21 — rota /notas-fiscais/minhas ("Minhas notas", MOSTRAR_JANELA_NOTAS) (v20: pagina do DAS: /das (PaginaDas) e /das/historico (o Historico de DAS), atras de MOSTRAR_PAGINA_DAS; /como-pagar-das agora abre /das (v19: rota /simulador (MOSTRAR_SIMULADOR) (v18: /notas-fiscais abre a janela "Notas fiscais" (MOSTRAR_JANELA_NOTAS) (v17: rotas /meu-lucro e /meu-lucro/gastos (MOSTRAR_MEU_LUCRO) (v16: rotas /enviar-extrato (OFX/CSV/PDF dentro do app) e /conferir-saidas (gastos em duvida), atras de MOSTRAR_ENVIAR_EXTRATO (v15: rota /perfil/cnpj (CNPJ pelo Perfil: buscar e confirmar) (v14: rotas /suporte (chat de suporte), /declaracao-anual e /declaracao-anual/calcular, atras das chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL (v13: login so pelo WhatsApp: /login e /cadastro abrem EntrarWhatsApp; /entrar-email (plano B) abre o Login antigo; esqueci/alterar senha e alterar-whatsapp atras de MOSTRAR_LOGIN_EMAIL (v12: rota /como-pagar-das; v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard))) */
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+﻿/* APP v22 — Calcular (MOSTRAR_CALCULAR): /calcular, /calcular/imposto-de-renda (a calculadora do IR, que saiu da Declaracao anual; /declaracao-anual/calcular leva para la) e /calcular/das-do-ano (v21: rota /notas-fiscais/minhas ("Minhas notas", MOSTRAR_JANELA_NOTAS) (v20: pagina do DAS: /das (PaginaDas) e /das/historico (o Historico de DAS), atras de MOSTRAR_PAGINA_DAS; /como-pagar-das agora abre /das (v19: rota /simulador (MOSTRAR_SIMULADOR) (v18: /notas-fiscais abre a janela "Notas fiscais" (MOSTRAR_JANELA_NOTAS) (v17: rotas /meu-lucro e /meu-lucro/gastos (MOSTRAR_MEU_LUCRO) (v16: rotas /enviar-extrato (OFX/CSV/PDF dentro do app) e /conferir-saidas (gastos em duvida), atras de MOSTRAR_ENVIAR_EXTRATO (v15: rota /perfil/cnpj (CNPJ pelo Perfil: buscar e confirmar) (v14: rotas /suporte (chat de suporte), /declaracao-anual e /declaracao-anual/calcular, atras das chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL (v13: login so pelo WhatsApp: /login e /cadastro abrem EntrarWhatsApp; /entrar-email (plano B) abre o Login antigo; esqueci/alterar senha e alterar-whatsapp atras de MOSTRAR_LOGIN_EMAIL (v12: rota /como-pagar-das; v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard)))) */
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
 import TecladoVisivel from "./components/TecladoVisivel.jsx";
@@ -58,13 +58,15 @@ import ConferirSaidas from "./pages/ConferirSaidas.jsx";
 import GastosDoLucro from "./pages/GastosDoLucro.jsx";
 import NotasFiscais from "./pages/NotasFiscais.jsx";
 import Simulador from "./pages/Simulador.jsx";
+import Calcular from "./pages/Calcular.jsx";
+import DasDoAno from "./pages/DasDoAno.jsx";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_CHAT_FISCO, MOSTRAR_NOTAS_FISCAIS,
   MOSTRAR_SAIDAS, MOSTRAR_PAGINA_DAS, MOSTRAR_ADICIONAR_MOVIMENTACOES,
   MOSTRAR_RESUMO_ANO, MOSTRAR_PREFERENCIAS, MOSTRAR_SOBRE, MOSTRAR_INACABADOS,
   MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS, MOSTRAR_LOGIN_EMAIL,
   MOSTRAR_SUPORTE, MOSTRAR_DECLARACAO_ANUAL, MOSTRAR_ENVIAR_EXTRATO, MOSTRAR_MEU_LUCRO,
-  MOSTRAR_JANELA_NOTAS, MOSTRAR_SIMULADOR,
+  MOSTRAR_JANELA_NOTAS, MOSTRAR_SIMULADOR, MOSTRAR_CALCULAR,
 } from "./config/piloto.js";
 
 /* ===================================================================
@@ -77,6 +79,13 @@ import {
    =================================================================== */
 function RotaComChave({ ligada, children }) {
   return ligada ? children : <Navigate to="/dashboard" replace />;
+}
+
+/* v22: o endereco antigo da calculadora do IR leva para o novo, com o
+   mesmo passo (?passo=) e o mesmo "comecar do zero" (state) */
+function ParaCalcularIr() {
+  const local = useLocation();
+  return <Navigate to={`/calcular/imposto-de-renda${local.search}`} replace state={local.state} />;
 }
 
 /* ===================================================================
@@ -186,7 +195,11 @@ export default function App() {
           {/* v14: suporte (chat com perguntas prontas) e declaracao anual */}
           <Route path="/suporte" element={<RotaComChave ligada={MOSTRAR_SUPORTE}><Suporte /></RotaComChave>} />
           <Route path="/declaracao-anual" element={<RotaComChave ligada={MOSTRAR_DECLARACAO_ANUAL}><DeclaracaoAnual /></RotaComChave>} />
-          <Route path="/declaracao-anual/calcular" element={<RotaComChave ligada={MOSTRAR_DECLARACAO_ANUAL}><CalcularDeclaracao /></RotaComChave>} />
+          {/* v22: a calculadora do IR mora no Calcular */}
+          <Route path="/declaracao-anual/calcular" element={<RotaComChave ligada={MOSTRAR_DECLARACAO_ANUAL || MOSTRAR_CALCULAR}><ParaCalcularIr /></RotaComChave>} />
+          <Route path="/calcular" element={<RotaComChave ligada={MOSTRAR_CALCULAR}><Calcular /></RotaComChave>} />
+          <Route path="/calcular/imposto-de-renda" element={<RotaComChave ligada={MOSTRAR_DECLARACAO_ANUAL || MOSTRAR_CALCULAR}><CalcularDeclaracao /></RotaComChave>} />
+          <Route path="/calcular/das-do-ano" element={<RotaComChave ligada={MOSTRAR_CALCULAR}><DasDoAno /></RotaComChave>} />
           <Route path="/excluir-conta" element={<ExcluirConta />} />
           <Route path="/perfil/informacoes-fiscais" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><InformacoesFiscais /></RotaComChave>} />
           <Route path="/historico" element={<Historico />} />
@@ -201,7 +214,7 @@ export default function App() {
           {/* v17: "Meu lucro" (o Resumo do ano evoluido) e os gastos */}
           <Route path="/meu-lucro" element={<RotaComChave ligada={MOSTRAR_MEU_LUCRO}><ResumoPerfil /></RotaComChave>} />
           {/* v19: Simulador do MEI */}
-          <Route path="/simulador" element={<RotaComChave ligada={MOSTRAR_SIMULADOR}><Simulador /></RotaComChave>} />
+          <Route path="/simulador" element={<RotaComChave ligada={MOSTRAR_SIMULADOR || MOSTRAR_CALCULAR}><Simulador /></RotaComChave>} />
           <Route path="/meu-lucro/gastos" element={<RotaComChave ligada={MOSTRAR_MEU_LUCRO}><GastosDoLucro /></RotaComChave>} />
           <Route path="/alertas" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><Alertas /></RotaComChave>} />
           <Route path="/regra-vinte" element={<RegraVinte />} />
