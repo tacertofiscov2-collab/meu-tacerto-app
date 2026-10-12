@@ -1,4 +1,4 @@
-/* PILOTO v30 — chave MOSTRAR_PERMISSOES (Perfil > Conta > Permissões e integrações) (v29: chave MOSTRAR_COMPROVANTE_FOTO ("+": Foto ou PDF do comprovante, lido pela IA) (v28: chave MOSTRAR_CALCULAR (Perfil > Meu MEI > Calcular, no lugar do Simulador) (v27: MOSTRAR_JANELA_NOTAS: Notas fiscais no Perfil > Meu MEI (saiu da Ajuda), com Minhas notas em /notas-fiscais/minhas (v26: chave MOSTRAR_PAGINA_DAS (pagina /das com o historico em /das/historico); o card Proximo DAS e o "Como pagar o DAS" levam para ela (v25: mensagem pronta conferirCnpj ("Pedir pra Isa conferir meu CNPJ") (v24: Inicio de antes (visual "atual", com o chat da Isa embaixo) volta a ser o padrao: VISUAL_INICIO_PADRAO = "atual" e MOSTRAR_CHAT_FISCO = true; MOSTRAR_ANEXOS_CHAT (botoes sem funcao escondidos); mensagem pronta duvidaDoChat (v23: Fisco vira Isa (assistente virtual com IA): mensagens prontas comecam com "Oi Isa!"; FRASE_APRESENTACAO_ISA e NOME_ASSISTENTE; nomes internos (WHATSAPP_FISCO, abrirWhatsAppFisco...) ficam iguais (v22: chave MOSTRAR_SIMULADOR (/simulador) (v21: MOSTRAR_PREFERENCIAS ligada (so o Lembrete do DAS) (v20: chave MOSTRAR_JANELA_NOTAS (/notas-fiscais); mensagem do certificado A1 com R$ 100,34 e o CNPJ (v19: chave MOSTRAR_MEU_LUCRO (/meu-lucro) (v18: chave MOSTRAR_ENVIAR_EXTRATO (/enviar-extrato e /conferir-saidas) (v17: o CNPJ do perfil entra nas mensagens prontas (formatado 12.345.678/0001-90); sem CNPJ, "Meu CNPJ: " continua em branco para a pessoa completar (v16: numero REAL do WhatsApp do Fisco (37 99199-9373), o mesmo do suporte; mensagem do suporte comeca com "Oi Fisco!" e pede suporte (v15: chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP)))))))) */
+/* PILOTO v31 — Inicio novo (12/10, prints do Fernando): chaves MOSTRAR_DAS_NO_INICIO e MOSTRAR_NOTA_NO_INICIO (false: o card Proximo DAS e o "Como emitir nota" saem do Inicio; o DAS e as notas ficam no Perfil); MOSTRAR_ANEXOS_CHAT ligado (foto, galeria e documento vao para o "+" com o comprovante; o microfone abre o WhatsApp da Isa); mensagem pronta "audio" (v30: chave MOSTRAR_PERMISSOES (Perfil > Conta > Permissões e integrações) (v29: chave MOSTRAR_COMPROVANTE_FOTO ("+": Foto ou PDF do comprovante, lido pela IA) (v28: chave MOSTRAR_CALCULAR (Perfil > Meu MEI > Calcular, no lugar do Simulador) (v27: MOSTRAR_JANELA_NOTAS: Notas fiscais no Perfil > Meu MEI (saiu da Ajuda), com Minhas notas em /notas-fiscais/minhas (v26: chave MOSTRAR_PAGINA_DAS (pagina /das com o historico em /das/historico); o card Proximo DAS e o "Como pagar o DAS" levam para ela (v25: mensagem pronta conferirCnpj ("Pedir pra Isa conferir meu CNPJ") (v24: Inicio de antes (visual "atual", com o chat da Isa embaixo) volta a ser o padrao: VISUAL_INICIO_PADRAO = "atual" e MOSTRAR_CHAT_FISCO = true; MOSTRAR_ANEXOS_CHAT (botoes sem funcao escondidos); mensagem pronta duvidaDoChat (v23: Fisco vira Isa (assistente virtual com IA): mensagens prontas comecam com "Oi Isa!"; FRASE_APRESENTACAO_ISA e NOME_ASSISTENTE; nomes internos (WHATSAPP_FISCO, abrirWhatsAppFisco...) ficam iguais (v22: chave MOSTRAR_SIMULADOR (/simulador) (v21: MOSTRAR_PREFERENCIAS ligada (so o Lembrete do DAS) (v20: chave MOSTRAR_JANELA_NOTAS (/notas-fiscais); mensagem do certificado A1 com R$ 100,34 e o CNPJ (v19: chave MOSTRAR_MEU_LUCRO (/meu-lucro) (v18: chave MOSTRAR_ENVIAR_EXTRATO (/enviar-extrato e /conferir-saidas) (v17: o CNPJ do perfil entra nas mensagens prontas (formatado 12.345.678/0001-90); sem CNPJ, "Meu CNPJ: " continua em branco para a pessoa completar (v16: numero REAL do WhatsApp do Fisco (37 99199-9373), o mesmo do suporte; mensagem do suporte comeca com "Oi Fisco!" e pede suporte (v15: chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP))))))))) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 import { formatarCnpj, soDigitosCnpj } from "@/lib/cnpj";
 
@@ -57,9 +57,19 @@ export const MOSTRAR_CHAT_FISCO = true;
    ANEXOS E AUDIO NO CHAT (v24 — 10/10/2026)
    Os botoes de foto, galeria, documento, extrato ("+") e microfone do
    chat e da caixinha do Inicio NUNCA fizeram nada. false esconde (o app
-   nao promete o que nao faz). true mostra de novo, ainda sem funcao.
+   nao promete o que nao faz).
+   v31 (12/10/2026, pedido do Fernando: "o chat ta sem a opcao de mandar
+   foto, audio, anexar doc... corrija"): LIGADO, agora com funcao:
+     - camera, galeria e documento: o arquivo vai para o "+" (Lancar) ja
+       como "Foto ou PDF do comprovante" (lido pela IA quando a funcao
+       ler-comprovante estiver no ar; sem ela, a pessoa preenche e o
+       arquivo fica guardado). Precisa de MOSTRAR_COMPROVANTE_FOTO.
+       Passa pela memoria (src/lib/arquivoPendente.js), nao pela URL.
+     - extrato (so no "+" da pagina /fisco): abre o Enviar extrato.
+     - microfone: abre o WhatsApp da Isa (mensagem pronta "audio"); o
+       audio e gravado la. O app nao grava nem transcreve audio.
    ------------------------------------------------------------------- */
-export const MOSTRAR_ANEXOS_CHAT = false;
+export const MOSTRAR_ANEXOS_CHAT = true;
 
 /* -------------------------------------------------------------------
    NOTAS FISCAIS (historico e lancar nota)
@@ -298,6 +308,13 @@ export function contaDoNumeroTeste(numero) {
    ------------------------------------------------------------------- */
 export const MOSTRAR_CARD_DAS = true;
 
+/* v31 (12/10/2026, pedido do Fernando): o card "Proximo DAS" SAI do
+   Inicio ("pro usuario ver vai ser somente no Perfil, onde ja esta o
+   DAS": Perfil > Meu MEI > DAS). true volta com ele. MOSTRAR_CARD_DAS
+   continua valendo para o resto (slide do DAS nas boas-vindas, folha
+   do DAS). */
+export const MOSTRAR_DAS_NO_INICIO = false;
+
 /* -------------------------------------------------------------------
    VARIACOES DO INICIO (v8 — 05/10/2026, para o Fernando escolher)
    MOSTRAR_SELETOR_VISUAL_INICIO = true mostra, no topo do Inicio, o
@@ -329,6 +346,12 @@ export const MOSTRAR_CARD_DAS = true;
      foto de 96px; commits ed94504 e ce6128a). Novo nele: "Atualizado em"
      + "Atualizar velocimetro" EM CIMA do velocimetro e o selo
      Estimado/Conferido. Para voltar ao F: troque "atual" por "f".
+   v31 (12/10/2026, print do Fernando: "muito mal enquadrado"): o
+     "atual" ficou mais limpo: so o sininho no topo, o card do
+     velocimetro MAIOR com "Atualizar velocimetro" pequeno no canto de
+     cima (e "Atualizado em" embaixo dele), sem "Falta informar", sem o
+     card Proximo DAS (MOSTRAR_DAS_NO_INICIO) e o chat da Isa menor (foto
+     68, barra 44) com camera, clipe e microfone.
    ------------------------------------------------------------------- */
 export const MOSTRAR_SELETOR_VISUAL_INICIO = false;
 export const VISUAL_INICIO_PADRAO = "atual";
@@ -373,6 +396,11 @@ export const LINK_PGMEI =
    a pagina /como-emitir-nota.
    ------------------------------------------------------------------- */
 export const MOSTRAR_TUTORIAL_NOTA = true;
+
+/* v31 (12/10/2026, pedido do Fernando): o botao "Como emitir nota" SAI
+   do topo do Inicio (fica so o sininho). As notas ficam no Perfil >
+   Meu MEI > Notas fiscais. true volta com ele. */
+export const MOSTRAR_NOTA_NO_INICIO = false;
 
 /* -------------------------------------------------------------------
    SUPORTE E DECLARACAO ANUAL (v15 — 06/10/2026)
@@ -547,4 +575,9 @@ export const MENSAGENS_WHATSAPP = {
 
   atualizarVelocimetro: (d) =>
     `Oi Isa! Quero atualizar meu velocimetro. Vou te mandar os valores que recebi (ou o extrato do banco). ${quemSou(d)}`,
+
+  /* v31: microfone do chat da Isa (Inicio e /fisco). O app nao grava
+     audio: abre o WhatsApp e a pessoa grava la. */
+  audio: (d) =>
+    `Oi Isa! Vou te mandar um audio. ${quemSou(d)}`,
 };

@@ -1,4 +1,4 @@
-/* LANCAR v11 — "Foto ou PDF do comprovante" no Recebimento (Bloco J): guarda o arquivo, a IA le (funcao ler-comprovante) e preenche valor, data e quem pagou para a pessoa CONFERIR; parece gasto: "Lançar como gasto" (Meu lucro, com nota); ao salvar com comprovante, procura recebimento parecido (+-1%, +-15 dias) e pergunta "É o mesmo?" (so liga o comprovante); sem a funcao ou sem a chave, segue no lancamento a mao com o arquivo anexado (v10: as descricoes dos lancamentos de ajuste (Total do ano) vem de src/lib/conciliacao.js, a mesma fonte do selo Estimado/Conferido e da conferencia do extrato (v9: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v8: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v7: modo "Total do ano": digitar so o faturamento do ano e o velocimetro fica igual a ele (um lancamento de ajuste, sem contar em dobro); /lancar?modo=total abre direto nele (v6: padrao do Perfil: rotulos em cinza maiusculo, campos com 16px (sem zoom no iPhone), "Ultimo lancamento" em linha simples, letras maiores, botao em contorno (botao-confirmar))))) */
+/* LANCAR v12 — abre ja lendo o comprovante quando a foto ou o PDF veio do chat da Isa (camera, galeria ou documento no Inicio e no /fisco; src/lib/arquivoPendente.js) (v11: "Foto ou PDF do comprovante" no Recebimento (Bloco J): guarda o arquivo, a IA le (funcao ler-comprovante) e preenche valor, data e quem pagou para a pessoa CONFERIR; parece gasto: "Lançar como gasto" (Meu lucro, com nota); ao salvar com comprovante, procura recebimento parecido (+-1%, +-15 dias) e pergunta "É o mesmo?" (so liga o comprovante); sem a funcao ou sem a chave, segue no lancamento a mao com o arquivo anexado (v10: as descricoes dos lancamentos de ajuste (Total do ano) vem de src/lib/conciliacao.js, a mesma fonte do selo Estimado/Conferido e da conferencia do extrato (v9: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v8: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v7: modo "Total do ano": digitar so o faturamento do ano e o velocimetro fica igual a ele (um lancamento de ajuste, sem contar em dobro); /lancar?modo=total abre direto nele (v6: padrao do Perfil: rotulos em cinza maiusculo, campos com 16px (sem zoom no iPhone), "Ultimo lancamento" em linha simples, letras maiores, botao em contorno (botao-confirmar)))))) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { ArrowLeft, Calendar as CalendarIcon, TrendingUp, Camera, FileText, X, Loader2 } from "lucide-react";
@@ -15,6 +15,7 @@ import {
   enviarArquivoComprovante, lerComprovante, guardarComprovante, ligarComprovanteAoLancamento,
 } from "@/lib/comprovantes";
 import { lancarGastoAMao } from "@/lib/lucro";
+import { pegarArquivoPendente } from "@/lib/arquivoPendente";
 import { MOSTRAR_COMPROVANTE_FOTO, MOSTRAR_MEU_LUCRO } from "@/config/piloto";
 
 /* ===================================================================
@@ -303,10 +304,23 @@ export default function Lancar() {
   }
 
   /* v11: escolheu a foto ou o PDF do comprovante */
-  async function escolherComprovante(e) {
+  function escolherComprovante(e) {
     const arquivo = e.target.files?.[0];
     e.target.value = "";
-    if (!arquivo) return;
+    if (arquivo) processarComprovante(arquivo);
+  }
+
+  /* v12: a foto ou o PDF que a pessoa mandou no chat da Isa chega aqui
+     (so num lancamento novo de recebimento). A caixinha esvazia ao
+     pegar: no modo de teste do React o efeito roda duas vezes e a
+     segunda ja acha vazio. */
+  useEffect(() => {
+    const arquivo = pegarArquivoPendente();
+    if (arquivo && MOSTRAR_COMPROVANTE_FOTO && !editId && modo !== "total") processarComprovante(arquivo);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function processarComprovante(arquivo) {
     const { data: sessao } = await supabase.auth.getUser().catch(() => ({ data: null }));
     const user = sessao?.user;
     if (!user) {

@@ -1,4 +1,4 @@
-/* VELOCIMETROANIMADO v4 — prop semBalao: esconde o balao (card B depois de ler a explicacao da media) (v3: modo "so interrogacao" (card B) + letra do "+N%" que cabe no balao) */
+/* VELOCIMETROANIMADO v5 — prop tamanhoBalao (o Inicio novo usa 44: o "?" nao invade o rotulo; padrao 52, as outras telas nao mudam) (v4: prop semBalao: esconde o balao (card B depois de ler a explicacao da media) (v3: modo "so interrogacao" (card B) + letra do "+N%" que cabe no balao)) */
 import { useEffect, useState, useId } from "react";
 import { AlertTriangle } from "lucide-react";
 import { FAIXA_INFO, faixaDoVelocimetro } from "@/lib/fiscal";
@@ -51,6 +51,8 @@ export default function VelocimetroAnimado({
   descricao,
   /* v4: true = nunca mostra o balao */
   semBalao = false,
+  /* v5: lado do balao, em px (as letras acompanham) */
+  tamanhoBalao = 52,
 }) {
   const uid = useId().replace(/:/g, "");
   const gradId = `velGrad-${uid}`;
@@ -130,6 +132,8 @@ export default function VelocimetroAnimado({
   const corBalao = mostrarInterrogacao ? corFaixa : corAlerta;
   const aoTocarBalao = sempreMostrarBalao ? onClickBalao : onClickExcedente;
   const excessoTexto = Math.min(999, Math.round(excesso));
+  /* v5: letras do balao na mesma proporcao do tamanho (52 = 100%) */
+  const k = tamanhoBalao / 52;
 
   let rotuloBalao;
   if (mostrarInterrogacao) rotuloBalao = "Tirar dúvidas sobre a sua situação";
@@ -213,26 +217,26 @@ export default function VelocimetroAnimado({
             aria-label={rotuloBalao}
             className="rounded-full flex items-center justify-center shrink-0 active:scale-95 transition"
             style={{
-              width: 52,
-              height: 52,
+              width: tamanhoBalao,
+              height: tamanhoBalao,
               backgroundColor: `${corBalao}33`,
               border: `1.5px solid ${corBalao}80`,
             }}
           >
             {mostrarInterrogacao ? (
               <span
-                style={{ color: corBalao, fontSize: 24, fontWeight: 800, lineHeight: 1 }}
+                style={{ color: corBalao, fontSize: 24 * k, fontWeight: 800, lineHeight: 1 }}
               >
                 ?
               </span>
             ) : passouDos20 ? (
-              <AlertTriangle size={24} strokeWidth={2.4} style={{ color: corBalao }} />
+              <AlertTriangle size={24 * k} strokeWidth={2.4} style={{ color: corBalao }} />
             ) : (
               <span
                 style={{
                   color: corBalao,
                   // 1 digito: 15 | 2 digitos: 14 | 3 digitos: 12,5
-                  fontSize: excessoTexto >= 100 ? 12.5 : excessoTexto >= 10 ? 14 : 15,
+                  fontSize: (excessoTexto >= 100 ? 12.5 : excessoTexto >= 10 ? 14 : 15) * k,
                   fontWeight: 800,
                   lineHeight: 1,
                 }}

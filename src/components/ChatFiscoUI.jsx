@@ -1,4 +1,4 @@
-/* CHATFISCOUI v4 — chat da Isa: botao "Falar com a Isa no WhatsApp" abaixo da resposta que a Isa nao soube (fora da bolha, por causa do segurar = menu); perguntas comuns em botoes na conversa que nao comecou; "+" de anexos e microfone escondidos (MOSTRAR_ANEXOS_CHAT: nunca fizeram nada); campo com 16px (o iPhone nao da zoom) (v3: Fisco vira Isa: foto da Isa (webp) e nome "Isa" no cabecalho, "assistente virtual" no lugar de "Online" (v2: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026)))) */
+/* CHATFISCOUI v5 — "+" de anexos e microfone de volta, agora funcionando (MOSTRAR_ANEXOS_CHAT): Foto (camera), Galeria e Documento escolhem o arquivo aqui e chamam onAnexo(tipo, arquivo); Extrato e o microfone chamam onAnexo("extrato" | "audio") (v4: chat da Isa: botao "Falar com a Isa no WhatsApp" abaixo da resposta que a Isa nao soube (fora da bolha, por causa do segurar = menu); perguntas comuns em botoes na conversa que nao comecou; "+" de anexos e microfone escondidos (MOSTRAR_ANEXOS_CHAT: nunca fizeram nada); campo com 16px (o iPhone nao da zoom) (v3: Fisco vira Isa: foto da Isa (webp) e nome "Isa" no cabecalho, "assistente virtual" no lugar de "Online" (v2: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026))))) */
 import { useRef, useState, useEffect } from "react";
 import {
   Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList,
@@ -480,8 +480,18 @@ export default function ChatFiscoUI({
   conversas, idAtual, onAbrirConversa, onNovaConversa, onApagarConversa,
   /* v4: botao do WhatsApp (resposta sem resposta pronta) e perguntas comuns */
   onWhatsApp, perguntasProntas = [], onPerguntaPronta,
+  /* v5: anexos — onAnexo("foto" | "galeria" | "documento", arquivo),
+     onAnexo("extrato") e onAnexo("audio") */
+  onAnexo,
 }) {
   const temaClaro = useTemaClaro();
+  /* v5: campos de arquivo (o seletor do iPhone so abre dentro do toque) */
+  const inputsAnexo = { foto: useRef(null), galeria: useRef(null), documento: useRef(null) };
+  function escolheuArquivo(tipo, e) {
+    const arquivo = e.target.files?.[0];
+    e.target.value = "";
+    if (arquivo) onAnexo?.(tipo, arquivo);
+  }
   const [rascunho, setRascunho] = useState("");
   const [menuAnexo, setMenuAnexo] = useState(false);
   const [historicoAberto, setHistoricoAberto] = useState(false);
@@ -903,15 +913,21 @@ export default function ChatFiscoUI({
               }}
             >
               {[
-                { Icon: Camera, label: "Foto" },
-                { Icon: ImageIcon, label: "Galeria" },
-                { Icon: FileText, label: "Documento" },
-                { Icon: ClipboardList, label: "Extrato" },
-              ].map(({ Icon, label }) => (
+                { Icon: Camera, label: "Foto", tipo: "foto" },
+                { Icon: ImageIcon, label: "Galeria", tipo: "galeria" },
+                { Icon: FileText, label: "Documento", tipo: "documento" },
+                { Icon: ClipboardList, label: "Extrato", tipo: "extrato" },
+              ].map(({ Icon, label, tipo }) => (
                 <button
                   key={label}
                   type="button"
-                  onClick={() => setMenuAnexo(false)}
+                  onClick={() => {
+                    setMenuAnexo(false);
+                    /* v5: foto, galeria e documento abrem o seletor aqui;
+                       o extrato vai para o Enviar extrato */
+                    if (inputsAnexo[tipo]) inputsAnexo[tipo].current?.click();
+                    else onAnexo?.(tipo);
+                  }}
                   className="toque w-full flex items-center rounded-xl"
                   style={{ gap: 11, padding: "10px 12px" }}
                 >
@@ -920,6 +936,15 @@ export default function ChatFiscoUI({
                 </button>
               ))}
             </div>
+          </>
+        )}
+
+        {/* v5: campos de arquivo dos anexos (escondidos) */}
+        {MOSTRAR_ANEXOS_CHAT && (
+          <>
+            <input ref={inputsAnexo.foto} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => escolheuArquivo("foto", e)} />
+            <input ref={inputsAnexo.galeria} type="file" accept="image/*" className="hidden" onChange={(e) => escolheuArquivo("galeria", e)} />
+            <input ref={inputsAnexo.documento} type="file" accept="application/pdf" className="hidden" onChange={(e) => escolheuArquivo("documento", e)} />
           </>
         )}
 
@@ -1015,7 +1040,8 @@ export default function ChatFiscoUI({
             ) : (
               <button
                 type="button"
-                aria-label="Gravar audio"
+                aria-label="Mandar áudio para a Isa no WhatsApp"
+                onClick={() => onAnexo?.("audio")}
                 className="toque rounded-full flex items-center justify-center shrink-0"
                 style={{ width: 40, height: 40 }}
               >

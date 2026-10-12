@@ -1,7 +1,8 @@
-/* CHATFISCOPAGINA v1 — chat da Isa no app: responde com o motor de respostas prontas que ja existia (faqFisco, sem IA nova); o que nao souber mostra o botao "Falar com a Isa no WhatsApp" (com a pergunta); toda conversa comeca com "Oi, sou a Isa, a assistente com IA do TaCerto." e as perguntas comuns (antes respondia sempre "Ainda estou aprendendo...") */
+/* CHATFISCOPAGINA v2 — anexos do chat funcionando (pedido do Fernando): foto, galeria e documento vao para o "+" ja lendo o comprovante (arquivoPendente), Extrato abre o Enviar extrato e o microfone abre o WhatsApp da Isa (v1: chat da Isa no app: responde com o motor de respostas prontas que ja existia (faqFisco, sem IA nova); o que nao souber mostra o botao "Falar com a Isa no WhatsApp" (com a pergunta); toda conversa comeca com "Oi, sou a Isa, a assistente com IA do TaCerto." e as perguntas comuns (antes respondia sempre "Ainda estou aprendendo...")) */
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ChatFiscoUI from "../components/ChatFiscoUI.jsx";
+import { deixarArquivoPendente } from "@/lib/arquivoPendente";
 import { useAppState } from "@/context/AppStateContext";
 import { contextoFaq, responderPergunta, perguntasGerais, textoPergunta } from "@/lib/faqFisco";
 import {
@@ -164,6 +165,17 @@ export default function ChatFiscoPagina() {
     }
   }
 
+  /* v2: anexos do chat (MOSTRAR_ANEXOS_CHAT). O arquivo escolhido vai
+     para o "+" (Lancar), que abre lendo o comprovante; o app nao grava
+     audio: o microfone abre o WhatsApp da Isa. */
+  function receberAnexo(tipo, arquivo) {
+    if (tipo === "extrato") return navigate("/enviar-extrato", { state: { de: "fisco" } });
+    if (tipo === "audio") return abrirWhatsAppFisco(MENSAGENS_WHATSAPP.audio(dadosParaWhatsApp(appRef.current)));
+    if (!arquivo) return;
+    deixarArquivoPendente(arquivo);
+    navigate("/lancar", { state: { de: "fisco" } });
+  }
+
   return (
     <ChatFiscoUI
       mensagens={mensagens}
@@ -179,6 +191,7 @@ export default function ChatFiscoPagina() {
       onWhatsApp={falarNoWhatsApp}
       perguntasProntas={mensagens.some((m) => m.autor === "user") ? [] : perguntasProntas}
       onPerguntaPronta={(texto) => enviarMensagem(texto)}
+      onAnexo={receberAnexo}
     />
   );
 }

@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v39 — tutorial do primeiro acesso (Bloco L): na primeira vez no Inicio abre o "Como funciona" (4 telas, Pular tutorial); ao fechar ou ao tocar em Enviar extrato, guarda que ja viu (perfis.tutorial_visto; antes do SQL de 10-10, no aparelho) (v38: o atalho DAS ("Emitir boleto" do card Proximo DAS) abre a pagina do DAS (/das, MOSTRAR_PAGINA_DAS) em vez da folha (v37: Inicio de ANTES de volta como padrao (visual "atual": cartao de vidro, Proximo DAS, Como emitir nota e o chat da Isa embaixo, mesmas dimensoes); "Atualizado em" + "Atualizar velocimetro" EM CIMA do velocimetro, selo Estimado/Conferido tambem nele; o "?" do ano e o Tirar duvidas usam as perguntas do faqFisco (que tem resposta); DAS e NF do Inicio pelas acoes do Inicio (DAS e Notas); caixinha do chat com 16px e sem os botoes que nao faziam nada (MOSTRAR_ANEXOS_CHAT) (v36: Fisco vira Isa: foto da Isa (FotoIsa, webp) na barra DAS | Isa | NF, no botao do WhatsApp e no chat; textos "Isa" e "Pergunte à Isa..." (v35: o portao, quando as regras do pagador resolvem tudo sozinhas, tambem confere se o extrato ja pode substituir o total do ano digitado (substituirTotalPeloExtrato) (v34: proximo DAS com feriados nacionais (vencimentoDas.js: dia 20 ou o proximo dia util) (v33: o atalho NF abre a janela "Notas fiscais" (/notas-fiscais) (v32: o portao das entradas confirma pelas regras do pagador SEM contar duas vezes (lancarEntradasConfirmadas: casa com lancamento a mao e diminui o ajuste do total do ano) (v31: visual F: "Atualizado em 08/10 às 14:32" + botao "Atualizar velocimetro" abaixo do velocimetro (zerado: "Falta informar" e o botao em destaque) e selo Estimado/Conferido no velocimetro do ano; a folha de atualizar abre sempre (v30: valor do DAS pelo CNAE do perfil (fiscal.js) e o CNPJ nas mensagens do WhatsApp (v29: velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp)))) */
+﻿/* DASHBOARD v40 — Inicio novo (12/10, print do Fernando "muito mal enquadrado"): topo so com o sininho (sem "Como emitir nota", MOSTRAR_NOTA_NO_INICIO), sem "Falta informar" e sem o card Proximo DAS (MOSTRAR_DAS_NO_INICIO); card do velocimetro MAIOR (arco ate 280, numero 48, "?" de 44 que nao invade o rotulo, altura maxima 440) com "Atualizar velocímetro" pequeno no canto de cima (e "Atualizado em" embaixo, so depois da primeira atualizacao); chat da Isa menor (foto 68, barra 44) com camera, clipe e microfone FUNCIONANDO: a foto ou o PDF vai para o "+" ja lendo o comprovante, o microfone abre o WhatsApp da Isa; pecas e medidas em src/components/InicioPartes.jsx (as mesmas do tutorial) (v39: tutorial do primeiro acesso (Bloco L): na primeira vez no Inicio abre o "Como funciona" (4 telas, Pular tutorial); ao fechar ou ao tocar em Enviar extrato, guarda que ja viu (perfis.tutorial_visto; antes do SQL de 10-10, no aparelho) (v38: o atalho DAS ("Emitir boleto" do card Proximo DAS) abre a pagina do DAS (/das, MOSTRAR_PAGINA_DAS) em vez da folha (v37: Inicio de ANTES de volta como padrao (visual "atual": cartao de vidro, Proximo DAS, Como emitir nota e o chat da Isa embaixo, mesmas dimensoes); "Atualizado em" + "Atualizar velocimetro" EM CIMA do velocimetro, selo Estimado/Conferido tambem nele; o "?" do ano e o Tirar duvidas usam as perguntas do faqFisco (que tem resposta); DAS e NF do Inicio pelas acoes do Inicio (DAS e Notas); caixinha do chat com 16px e sem os botoes que nao faziam nada (MOSTRAR_ANEXOS_CHAT) (v36: Fisco vira Isa: foto da Isa (FotoIsa, webp) na barra DAS | Isa | NF, no botao do WhatsApp e no chat; textos "Isa" e "Pergunte à Isa..." (v35: o portao, quando as regras do pagador resolvem tudo sozinhas, tambem confere se o extrato ja pode substituir o total do ano digitado (substituirTotalPeloExtrato) (v34: proximo DAS com feriados nacionais (vencimentoDas.js: dia 20 ou o proximo dia util) (v33: o atalho NF abre a janela "Notas fiscais" (/notas-fiscais) (v32: o portao das entradas confirma pelas regras do pagador SEM contar duas vezes (lancarEntradasConfirmadas: casa com lancamento a mao e diminui o ajuste do total do ano) (v31: visual F: "Atualizado em 08/10 às 14:32" + botao "Atualizar velocimetro" abaixo do velocimetro (zerado: "Falta informar" e o botao em destaque) e selo Estimado/Conferido no velocimetro do ano; a folha de atualizar abre sempre (v30: valor do DAS pelo CNAE do perfil (fiscal.js) e o CNPJ nas mensagens do WhatsApp (v29: velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp))))) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -14,8 +14,12 @@ import SimboloPluggy from "../components/SimboloPluggy.jsx";
 import FolhaPagarDas from "../components/FolhaPagarDas.jsx";
 import BotaoNotificacoes from "../components/Notificacoes.jsx";
 import ApresentacaoFisco from "../components/ApresentacaoFisco.jsx";
-import FotoIsa, { FOTO_ISA_256 } from "../components/FotoIsa.jsx";
+import FotoIsa from "../components/FotoIsa.jsx";
 import FolhaAtualizarVelocimetro from "../components/FolhaAtualizarVelocimetro.jsx";
+import {
+  MEDIDAS_INICIO, VIDRO, VIDRO_SUAVE, BordaCorrendo, textoAtualizadoEm, BotaoAtualizarCanto, BarraIsaInicio,
+} from "../components/InicioPartes.jsx";
+import { deixarArquivoPendente } from "@/lib/arquivoPendente";
 import { useMarcaDaConta } from "@/lib/marcasDaConta";
 import { useAppState } from "@/context/AppStateContext";
 import {
@@ -33,6 +37,7 @@ import {
   MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA,
   MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO, MOSTRAR_NOTIFICACOES, MOSTRAR_JANELA_NOTAS,
   MOSTRAR_ANEXOS_CHAT, MOSTRAR_PAGINA_DAS,
+  MOSTRAR_DAS_NO_INICIO, MOSTRAR_NOTA_NO_INICIO, MOSTRAR_COMPROVANTE_FOTO,
 } from "@/config/piloto";
 import { contextoFaq, perguntasDaFaixa, textoPergunta } from "@/lib/faqFisco";
 
@@ -110,34 +115,8 @@ const DE_DASHBOARD = { state: { de: "dashboard" } };
    visivel. ~150px da umas 6 linhas. */
 const MAX_ALTURA_CAIXA_FISCO = 150;
 
-/* ===================================================================
-   VIDRO — os valores vêm do index.css e mudam com o tema.
-
-   No tema escuro o fundo é quase preto com brilhos brancos; no tema
-   claro, fundo quase branco com brilhos suaves. Ver as variáveis
-   --vidro-* em src/index.css.
-   =================================================================== */
-const VIDRO = {
-  background:
-    "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
-  backdropFilter: "blur(24px) saturate(160%)",
-  WebkitBackdropFilter: "blur(24px) saturate(160%)",
-  border: "1px solid var(--vidro-borda)",
-  boxShadow:
-    "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
-};
-
-/* Reflexo reduzido: um pouco mais forte que o dos cards A/B.
-   Usado nas barras do chat e na caixa expandida. */
-const VIDRO_SUAVE = {
-  background:
-    "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
-  backdropFilter: "blur(24px) saturate(160%)",
-  WebkitBackdropFilter: "blur(24px) saturate(160%)",
-  border: "1px solid var(--vidro-borda)",
-  boxShadow:
-    "inset 0 1px 0 0 var(--vidro-topo-medio), inset 0 7px 16px -8px var(--vidro-topo-fraco), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
-};
+/* VIDRO e VIDRO_SUAVE (v40): agora em src/components/InicioPartes.jsx,
+   para o tutorial usar os mesmos. */
 
 const VIDRO_CHAT = {
   background:
@@ -347,10 +326,20 @@ function PaginaVelocimetro({
   grande = false,
   /* v31: selo "Estimado" | "Conferido" ao lado do rotulo (so o ano, visual F) */
   selo = null,
+  /* v40: Inicio novo — medidas de MEDIDAS_INICIO.velocimetro e o espaco
+     reservado em cima (botao do canto) e embaixo (MEDIDAS_INICIO.card) */
+  medidas = null,
+  espacoTopo = 0,
+  espacoBase = 0,
 }) {
   const areaRef = useRef(null);
-  const larguraMax = grande ? VELOCIMETRO_GRANDE.larguraMax : LARGURA_MAX_VELOCIMETRO;
-  const alturaNumero = grande ? VELOCIMETRO_GRANDE.alturaNumero : ALTURA_NUMERO_E_BALAO;
+  const larguraMax = medidas ? medidas.larguraMax : grande ? VELOCIMETRO_GRANDE.larguraMax : LARGURA_MAX_VELOCIMETRO;
+  const alturaNumero = medidas ? medidas.alturaNumero : grande ? VELOCIMETRO_GRANDE.alturaNumero : ALTURA_NUMERO_E_BALAO;
+  /* v40: no Inicio novo, em tela muito baixa o arco fica menor (ate 100)
+     em vez de passar por cima do rotulo */
+  const larguraMin = medidas ? medidas.larguraMin : LARGURA_MIN_VELOCIMETRO;
+  const valorPx = medidas ? medidas.valorPx : grande ? VELOCIMETRO_GRANDE.valorPx : null;
+  const rotuloValorPx = medidas ? medidas.rotuloValorPx : grande ? VELOCIMETRO_GRANDE.rotuloValorPx : null;
   const [larguraVel, setLarguraVel] = useState(larguraMax);
 
   useEffect(() => {
@@ -361,25 +350,30 @@ function PaginaVelocimetro({
       if (!altura) return;
       const cabe = Math.floor((altura - alturaNumero) / 0.6);
       setLarguraVel(
-        Math.max(LARGURA_MIN_VELOCIMETRO, Math.min(larguraMax, cabe)),
+        Math.max(larguraMin, Math.min(larguraMax, cabe)),
       );
     };
     medir();
     const ro = new ResizeObserver(medir);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [larguraMax, alturaNumero]);
+  }, [larguraMax, alturaNumero, larguraMin]);
 
   return (
     <div
       className="h-full flex flex-col px-5 pb-1 min-h-0"
-      style={{ flex: "0 0 50%", width: "50%" }}
+      style={{
+        flex: "0 0 50%",
+        width: "50%",
+        ...(medidas ? { paddingTop: espacoTopo, paddingBottom: espacoBase } : null),
+      }}
     >
       <div ref={areaRef} className="flex-1 min-h-0 flex items-center justify-center">
         <VelocimetroAnimado
           percentual={percentual}
           maxWidth={larguraVel}
-          numeroClasse={grande ? VELOCIMETRO_GRANDE.numeroClasse : "text-4xl font-bold"}
+          numeroClasse={medidas ? medidas.numeroClasse : grande ? VELOCIMETRO_GRANDE.numeroClasse : "text-4xl font-bold"}
+          {...(medidas ? { tamanhoBalao: medidas.balao } : null)}
           sempreMostrarBalao={sempreMostrarBalao}
           onClickBalao={onBalao}
           onClickExcedente={onExcedente}
@@ -393,7 +387,7 @@ function PaginaVelocimetro({
       {rotulo && (
         <p
           className="text-center shrink-0 flex items-center justify-center"
-          style={{ color: "var(--text-tertiary)", fontSize: TAMANHO_ROTULO_CARD, marginBottom: 2, gap: 7 }}
+          style={{ color: "var(--text-tertiary)", fontSize: TAMANHO_ROTULO_CARD, marginBottom: 2, gap: 7, marginTop: medidas ? 6 : 0 }}
         >
           {rotulo}
           {selo && <SeloVelocimetro tipo={selo} />}
@@ -409,10 +403,10 @@ function PaginaVelocimetro({
           className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0"
           style={{ paddingLeft: 12, paddingRight: 12 }}
         >
-          <Valor {...(grande ? { px: VELOCIMETRO_GRANDE.valorPx } : { tamanho: "md" })} autoAjustar>{valorEsquerda}</Valor>
+          <Valor {...(valorPx ? { px: valorPx } : { tamanho: "md" })} autoAjustar>{valorEsquerda}</Valor>
           <span
             className="text-xs mt-1"
-            style={{ color: "var(--text-secondary)", ...(grande ? { fontSize: VELOCIMETRO_GRANDE.rotuloValorPx } : null) }}
+            style={{ color: "var(--text-secondary)", ...(rotuloValorPx ? { fontSize: rotuloValorPx } : null) }}
           >
             {rotuloEsquerda}
           </span>
@@ -429,10 +423,10 @@ function PaginaVelocimetro({
           className="toque rounded-xl flex-1 flex flex-col items-center text-center min-w-0"
           style={{ paddingLeft: 12, paddingRight: 12 }}
         >
-          <Valor {...(grande ? { px: VELOCIMETRO_GRANDE.valorPx } : { tamanho: "md" })} autoAjustar>{valorDireita}</Valor>
+          <Valor {...(valorPx ? { px: valorPx } : { tamanho: "md" })} autoAjustar>{valorDireita}</Valor>
           <span
             className="text-xs mt-1"
-            style={{ color: "var(--text-secondary)", ...(grande ? { fontSize: VELOCIMETRO_GRANDE.rotuloValorPx } : null) }}
+            style={{ color: "var(--text-secondary)", ...(rotuloValorPx ? { fontSize: rotuloValorPx } : null) }}
           >
             {rotuloDireita}
           </span>
@@ -457,6 +451,11 @@ function CardVelocimetroCarrossel({
   selo = null,
   /* v37: "?" do ano sempre visivel (abre o Tirar duvidas) */
   duvidasNoAno = MOSTRAR_CHAT_FISCO,
+  /* v40: Inicio novo — medidas (MEDIDAS_INICIO), o botao do canto
+     ("Atualizar velocímetro", fica parado ao deslizar) e o card com
+     altura maxima, centrado no espaco que sobra */
+  medidas = null,
+  canto = null,
 }) {
   const [pagina, setPagina] = useState(0);
   const [dragPx, setDragPx] = useState(0);
@@ -565,8 +564,16 @@ function CardVelocimetroCarrossel({
   const dragPct = (dragPx / larg) * 50;
   const translatePct = base + dragPct;
 
+  const medidasVel = medidas ? medidas.velocimetro : null;
+  const espacos = medidas ? { espacoTopo: medidas.card.topo, espacoBase: medidas.card.base } : null;
+
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div
+      className="flex flex-col flex-1 min-h-0"
+      /* v40: em tela alta o card para na altura maxima e o que sobra fica
+         em volta (margens automaticas), em vez de um card vazio enorme */
+      style={medidas ? { maxHeight: medidas.card.alturaMax + 21, marginTop: "auto", marginBottom: "auto" } : undefined}
+    >
     <div
       ref={containerRef}
       data-carrossel-velocimetro
@@ -602,6 +609,9 @@ function CardVelocimetroCarrossel({
         </div>
       )}
 
+      {/* v40: "Atualizar velocímetro" no canto de cima, fora da faixa que desliza */}
+      {canto}
+
       <div className="flex-1 min-h-0 overflow-hidden">
         <div
           className="flex h-full"
@@ -627,6 +637,8 @@ function CardVelocimetroCarrossel({
             onExcedente={seNaoArrastou(onExcedente)}
             grande={grande}
             selo={selo}
+            medidas={medidasVel}
+            {...espacos}
           />
 
           <PaginaVelocimetro
@@ -643,6 +655,8 @@ function CardVelocimetroCarrossel({
             onValores={seNaoArrastou(onResumo)}
             semBalao={mediaExplicada}
             grande={grande}
+            medidas={medidasVel}
+            {...espacos}
           />
         </div>
       </div>
@@ -1499,12 +1513,7 @@ function SeloVelocimetro({ tipo }) {
   );
 }
 
-const pad2 = (n) => String(n).padStart(2, "0");
-function textoAtualizadoEm(iso) {
-  const d = iso ? new Date(iso) : null;
-  if (!d || isNaN(d.getTime())) return "";
-  return `Atualizado em ${pad2(d.getDate())}/${pad2(d.getMonth() + 1)} às ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
-}
+/* textoAtualizadoEm (v40): em src/components/InicioPartes.jsx */
 
 /* v37: emCima = em cima do cartao do velocimetro (Inicio de antes):
    texto e botao na MESMA linha quando cabem (senao, um embaixo do outro) */
@@ -1624,55 +1633,13 @@ function BordaLuminosa({ raio = 28, cor = "34,197,94", corClara = "74,222,128" }
   );
 }
 
-/** Luz verde correndo em volta da borda. Usada na barra fechada do
-    Fisco no dashboard, para chamar atenção. Fica girando o tempo todo,
-    mas o elemento é pequeno — o custo de repintura é baixo. */
-function BordaCorrendo({ raio = 999, espessura = 1.6 }) {
-  return (
-    <>
-      <style>{`
-        @property --anguloLuz {
-          syntax: '<angle>';
-          initial-value: 0deg;
-          inherits: false;
-        }
-        @keyframes girarLuz {
-          to { --anguloLuz: 360deg; }
-        }
-        .borda-correndo {
-          animation: girarLuz 3.2s linear infinite;
-        }
-        /* Safari antigo não suporta @property: a luz não gira, então
-           some — a borda normal do elemento continua ali. */
-        @supports not (background: conic-gradient(from 0deg, red, blue)) {
-          .borda-correndo { display: none; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .borda-correndo { animation: none; opacity: 0.5; }
-        }
-      `}</style>
-      <span
-        aria-hidden
-        className="borda-correndo pointer-events-none absolute"
-        style={{
-          inset: 0,
-          borderRadius: raio,
-          padding: espessura,
-          background:
-            "conic-gradient(from var(--anguloLuz), transparent 0%, transparent 62%, rgba(34,197,94,0.35) 74%, #4ade80 86%, rgba(134,239,172,0.9) 92%, transparent 100%)",
-          WebkitMask:
-            "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-          WebkitMaskComposite: "xor",
-          mask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-          maskComposite: "exclude",
-          zIndex: 2,
-        }}
-      />
-    </>
-  );
-}
+/* BordaCorrendo (v40): em src/components/InicioPartes.jsx */
 
-function CaixaFiscoExpandida({ onEnviarPrimeira }) {
+/* v40: os botoes da caixa funcionam (MOSTRAR_ANEXOS_CHAT): camera,
+   galeria e documento chamam onFoto/onGaleria/onDocumento (os campos de
+   arquivo ficam no Dashboard, fora da caixa, que fecha quando o campo
+   perde o foco); o microfone (campo vazio) chama onAudio (WhatsApp). */
+function CaixaFiscoExpandida({ onEnviarPrimeira, onFoto, onGaleria, onDocumento, onAudio }) {
   const [rascunho, setRascunho] = useState("");
   const inputRef = useRef(null);
 
@@ -1740,11 +1707,12 @@ function CaixaFiscoExpandida({ onEnviarPrimeira }) {
 
       <div className="flex items-center justify-between">
         {/* v37: foto, galeria e documento nunca fizeram nada: escondidos
-            (MOSTRAR_ANEXOS_CHAT). O espaco fica, para a caixa nao mudar. */}
-        <div className="flex items-center" style={{ gap: 6, minHeight: 38, visibility: MOSTRAR_ANEXOS_CHAT ? "visible" : "hidden" }}>
+            (MOSTRAR_ANEXOS_CHAT). O espaco fica, para a caixa nao mudar.
+            v40: agora funcionam (o arquivo vai para o "+" com o comprovante) */}
+        <div className="flex items-center" style={{ gap: 6, minHeight: 38, visibility: MOSTRAR_ANEXOS_CHAT && MOSTRAR_COMPROVANTE_FOTO ? "visible" : "hidden" }}>
           <button
             type="button"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); onFoto?.(); }}
             aria-label="Tirar foto"
             className="toque rounded-full flex items-center justify-center"
             style={{
@@ -1758,7 +1726,7 @@ function CaixaFiscoExpandida({ onEnviarPrimeira }) {
           </button>
           <button
             type="button"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); onGaleria?.(); }}
             aria-label="Galeria"
             className="toque rounded-full flex items-center justify-center"
             style={{
@@ -1772,7 +1740,7 @@ function CaixaFiscoExpandida({ onEnviarPrimeira }) {
           </button>
           <button
             type="button"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); onDocumento?.(); }}
             aria-label="Documento"
             className="toque rounded-full flex items-center justify-center"
             style={{
@@ -1799,8 +1767,8 @@ function CaixaFiscoExpandida({ onEnviarPrimeira }) {
         ) : (
           <button
             type="button"
-            onClick={(e) => e.stopPropagation()}
-            aria-label="Gravar áudio"
+            onClick={(e) => { e.stopPropagation(); onAudio?.(); }}
+            aria-label="Mandar áudio para a Isa no WhatsApp"
             className="toque rounded-full flex items-center justify-center shrink-0"
             style={{ width: 38, height: 38 }}
           >
@@ -1822,7 +1790,7 @@ function CaixaFiscoExpandida({ onEnviarPrimeira }) {
    do teclado) e colocamos a caixa no fim dele. Assim ela fica acima do
    teclado por construcao - sem calcular posicao, entao nao tem como errar
    e ficar escondida. Vive num portal, fora da arvore do dashboard. */
-function CaixaFiscoFlutuante({ onFechar, onEnviarPrimeira }) {
+function CaixaFiscoFlutuante({ onFechar, onEnviarPrimeira, ...anexos }) {
   const areaRef = useRef(null);
   // Enquanto "fechando", roda a animacao de saida; so depois disso o
   // componente e removido de verdade (senao sumia do nada).
@@ -1949,7 +1917,7 @@ function CaixaFiscoFlutuante({ onFechar, onEnviarPrimeira }) {
               : "caixaFiscoEntra 240ms cubic-bezier(0.22,0.61,0.36,1)",
           }}
         >
-          <CaixaFiscoExpandida onEnviarPrimeira={onEnviarPrimeira} />
+          <CaixaFiscoExpandida onEnviarPrimeira={onEnviarPrimeira} {...anexos} />
         </div>
       </div>
     </>,
@@ -2264,6 +2232,35 @@ export default function Dashboard() {
     navigate("/fisco", { state: { primeiraMensagem: texto } });
   }
 
+  /* v40: ANEXOS DO CHAT DA ISA (barra do Inicio e caixinha aberta).
+     Os campos de arquivo ficam aqui, fora da caixinha (ela fecha quando
+     o campo de texto perde o foco, e o arquivo escolhido se perderia).
+     O arquivo vai para o "+" pela memoria (arquivoPendente) e a Lancar
+     abre ja lendo o comprovante. */
+  const inputCameraRef = useRef(null);
+  const inputAnexoRef = useRef(null);
+  const inputGaleriaRef = useRef(null);
+  const inputDocumentoRef = useRef(null);
+  const anexosLigados = MOSTRAR_ANEXOS_CHAT && MOSTRAR_COMPROVANTE_FOTO;
+  function receberArquivoDoChat(e) {
+    const arquivo = e.target.files?.[0];
+    e.target.value = "";
+    if (!arquivo) return;
+    setCaixaExpandida(false);
+    deixarArquivoPendente(arquivo);
+    navigate("/lancar", DE_DASHBOARD);
+  }
+  /* O app nao grava audio: o microfone abre o WhatsApp da Isa */
+  function mandarAudio() {
+    abrirWhatsAppFisco(MENSAGENS_WHATSAPP.audio(dadosWhats));
+  }
+  const anexosDaCaixa = {
+    onFoto: () => inputCameraRef.current?.click(),
+    onGaleria: () => inputGaleriaRef.current?.click(),
+    onDocumento: () => inputDocumentoRef.current?.click(),
+    onAudio: mandarAudio,
+  };
+
   return (
     <div
       className="tela-fixa w-full flex flex-col"
@@ -2307,7 +2304,8 @@ export default function Dashboard() {
               o botao pequeno do tutorial da nota (v19) */}
           <div className="flex items-center shrink-0" style={{ gap: 8 }}>
             {/* v23: nas variacoes, "Como emitir nota" vai para baixo */}
-            {MOSTRAR_TUTORIAL_NOTA && visual === "atual" && <BotaoComoEmitirNota onClick={acoesInicio.onNota} />}
+            {/* v40: saiu do Inicio novo (fica so o sininho; MOSTRAR_NOTA_NO_INICIO) */}
+            {MOSTRAR_TUTORIAL_NOTA && MOSTRAR_NOTA_NO_INICIO && visual === "atual" && <BotaoComoEmitirNota onClick={acoesInicio.onNota} />}
             {MOSTRAR_OPEN_FINANCE && <BotaoBanco onSincronizou={verificarEntradas} />}
             {/* v26: sininho discreto das notificacoes */}
             {MOSTRAR_NOTIFICACOES && (
@@ -2320,15 +2318,8 @@ export default function Dashboard() {
           {/* v27: "tela B" (G) — os 3 atalhos em cima do velocimetro */}
           {visual === "g" && <InicioBarra {...acoesInicio} emCima />}
 
-          {/* v37: Inicio de antes: "Atualizado em" + botao EM CIMA */}
-          {visual === "atual" && (
-            <LinhaAtualizacao
-              emCima
-              quando={ultimaAtualizacaoVelocimetro}
-              faltaInformar={faltaInformar}
-              onAtualizar={() => setFolhaAtualizar(true)}
-            />
-          )}
+          {/* v37: Inicio de antes: "Atualizado em" + botao EM CIMA.
+              v40: sai daqui; o botao vai para o canto do card (abaixo) */}
 
           <CardVelocimetroCarrossel
             rotuloPerfil={rotuloPerfil}
@@ -2348,6 +2339,17 @@ export default function Dashboard() {
             grande={visual === "f"}
             selo={visual === "f" || visual === "atual" ? seloVelocimetro : null}
             duvidasNoAno={MOSTRAR_CHAT_FISCO && visual === "atual"}
+            /* v40: Inicio novo (card maior, botao no canto) */
+            medidas={visual === "atual" ? MEDIDAS_INICIO : null}
+            canto={
+              visual === "atual" ? (
+                <BotaoAtualizarCanto
+                  quando={ultimaAtualizacaoVelocimetro}
+                  faltaInformar={faltaInformar}
+                  onAtualizar={() => setFolhaAtualizar(true)}
+                />
+              ) : null
+            }
           />
 
           {/* v31: "Atualizado em..." + "Atualizar velocímetro" (so no F) */}
@@ -2359,8 +2361,9 @@ export default function Dashboard() {
             />
           )}
 
-          {/* Piloto (v19): proximo DAS, logo abaixo do velocimetro */}
-          {MOSTRAR_CARD_DAS && visual === "atual" && (
+          {/* Piloto (v19): proximo DAS, logo abaixo do velocimetro.
+              v40: saiu do Inicio (o DAS fica no Perfil; MOSTRAR_DAS_NO_INICIO) */}
+          {MOSTRAR_CARD_DAS && MOSTRAR_DAS_NO_INICIO && visual === "atual" && (
             <CardProximoDas tipoMEI={tipoMEI} cnaes={cnaesPerfil} onEmitirBoleto={acoesInicio.onDas} />
           )}
 
@@ -2384,87 +2387,31 @@ export default function Dashboard() {
             <CaixaFiscoFlutuante
               onFechar={() => setCaixaExpandida(false)}
               onEnviarPrimeira={enviarPrimeiraMensagem}
+              {...(MOSTRAR_ANEXOS_CHAT ? anexosDaCaixa : null)}
             />
           )}
 
-          {/* v37: o chat da Isa embaixo, so no Inicio de antes */}
+          {/* v37: o chat da Isa embaixo, so no Inicio de antes.
+              v40: menor (foto 68, barra 44) e com camera, clipe e microfone */}
           {MOSTRAR_CHAT_FISCO && visual === "atual" && (
-          <button
-            onClick={() => setCaixaExpandida(true)}
-            className="shrink-0 w-full flex items-start gap-2"
-            style={{
-              background: "none",
-              border: "none",
-              padding: 0,
-              marginTop: 4,
-              marginBottom: 12,
-            }}
-          >
-              <span
-                className="relative shrink-0 rounded-full flex items-center justify-center"
-                style={{
-                  width: 96,
-                  height: 96,
-                  ...VIDRO,
-                  border: "1.5px solid rgba(34,197,94,0.45)",
-                }}
-              >
-                <span className="rounded-full overflow-hidden flex items-center justify-center" style={{ width: "100%", height: "100%" }}>
-                  <img
-                    src={FOTO_ISA_256}
-                    alt="Isa, assistente virtual"
-                    decoding="async"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                </span>
-                <span
-                  className="absolute rounded-full"
-                  style={{
-                    width: 26,
-                    height: 26,
-                    backgroundColor: "var(--primary)",
-                    border: "4px solid var(--bg)",
-                    bottom: 2,
-                    right: 2,
-                  }}
-                />
-              </span>
+            <BarraIsaInicio
+              onAbrir={() => setCaixaExpandida(true)}
+              onCamera={() => inputCameraRef.current?.click()}
+              onAnexo={() => inputAnexoRef.current?.click()}
+              onAudio={mandarAudio}
+              anexos={anexosLigados}
+              barraEscondida={caixaExpandida}
+            />
+          )}
 
-              <span
-                className="toque relative flex-1 flex items-center gap-2 text-left min-w-0 rounded-full"
-                style={{
-                  ...VIDRO_SUAVE,
-                  height: 48,
-                  paddingLeft: 18,
-                  paddingRight: 12,
-                  marginTop: 24,
-                  // So a barrinha some quando a caixa expandida esta aberta.
-                  // A foto da Isa fica fixa, inclusive durante o fecho.
-                  visibility: caixaExpandida ? "hidden" : "visible",
-                }}
-              >
-                <BordaCorrendo />
-
-                <span
-                  className="flex-1 truncate"
-                  style={{
-                    color: "var(--text-tertiary)",
-                    fontSize: 15,
-                    fontStyle: "italic",
-                    fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive',
-                  }}
-                >
-                  Pergunte à Isa...
-                </span>
-
-                <Send
-                  size={22}
-                  strokeWidth={2.2}
-                  className="shrink-0"
-                  style={{ color: "var(--primary)" }}
-                />
-              </span>
-            </button>
+          {/* v40: campos de arquivo dos anexos do chat (escondidos) */}
+          {anexosLigados && (
+            <>
+              <input ref={inputCameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={receberArquivoDoChat} />
+              <input ref={inputAnexoRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={receberArquivoDoChat} />
+              <input ref={inputGaleriaRef} type="file" accept="image/*" className="hidden" onChange={receberArquivoDoChat} />
+              <input ref={inputDocumentoRef} type="file" accept="application/pdf" className="hidden" onChange={receberArquivoDoChat} />
+            </>
           )}
         </div>
       </div>
