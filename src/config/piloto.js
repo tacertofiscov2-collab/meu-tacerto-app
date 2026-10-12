@@ -170,8 +170,10 @@ export const MOSTRAR_COMPROVANTE_FOTO = true;
    PERMISSOES E INTEGRACOES (v30 — 12/10/2026, tarefa de 10-10, Bloco K)
    true mostra no Perfil > Conta a linha "Permissões e integrações"
    (/perfil/permissoes): WhatsApp (e liga/desliga "Lembretes e avisos no
-   WhatsApp"), CNPJ, extratos enviados (ver e apagar), Receita Federal e
-   Banco (Em breve), Certificado A1 e notificacoes do celular.
+   WhatsApp"), CNPJ e a notificacao da semana no celular.
+   v31 (12/10/2026, pedido do Fernando: "so o que tem no app hoje"): sairam
+   extratos enviados, os "Em breve" (governo e banco), o Certificado A1
+   (ele fica com a plataforma de notas, nao com o TaCerto) e o rodape.
    ------------------------------------------------------------------- */
 export const MOSTRAR_PERMISSOES = true;
 
@@ -564,9 +566,10 @@ export const MENSAGENS_WHATSAPP = {
     `Oi Isa! Quero ajuda com a minha declaracao anual do MEI e o Imposto de Renda. ${quemSouComCnpj(d)}`,
 
   /* v25: pagina do CNPJ, botao "Pedir pra Isa conferir meu CNPJ".
-     Hoje a equipe confere a mao (DAS atrasado, pendencia na Receita). */
+     Hoje a equipe confere a mao (DAS atrasado, pendencia no CNPJ).
+     v31: sem citar o orgao (regra do Fernando: o app nao fala o nome). */
   conferirCnpj: (d) =>
-    `Oi Isa! Quero que voce confira meu CNPJ: se tem DAS atrasado ou alguma pendencia na Receita. ${quemSouComCnpj(d)}`,
+    `Oi Isa! Quero que voce confira meu CNPJ: se tem DAS atrasado ou alguma pendencia no meu CNPJ. ${quemSouComCnpj(d)}`,
 
   /* v24: chat da Isa no app, quando a resposta pronta nao existe.
      Vai com a pergunta que a pessoa fez. */

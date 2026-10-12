@@ -1,10 +1,8 @@
-/* PERFILPERMISSOES v1 — Perfil > "Permissões e integrações": o que o TaCerto usa, com status e acao: WhatsApp (Conectado; liga/desliga "Lembretes e avisos no WhatsApp"), CNPJ (e Remover CNPJ), Extratos enviados (ver e apagar), Receita Federal e Banco (Em breve), Certificado A1 e Notificacoes do celular (status); rodape com Privacidade e Excluir conta */
+/* PERFILPERMISSOES v2 — so o que o app tem hoje (pedido do Fernando, 12/10): WhatsApp (Conectado + liga/desliga dos lembretes e avisos), CNPJ (e Remover CNPJ) e a Notificacao da semana no celular (ativar, liga/desliga; no iPhone, como adicionar a Tela de Inicio); sairam Extratos enviados, Receita Federal, Certificado A1 (fica com a plataforma de notas, nao com o TaCerto), Banco (Open Finance) e o rodape com Privacidade e Excluir conta (ja estao no Perfil) (v1: o que o TaCerto usa, com status e acao: WhatsApp, CNPJ, Extratos enviados (ver e apagar), Receita Federal e Banco (Em breve), Certificado A1 e Notificacoes do celular (status); rodape com Privacidade e Excluir conta) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import {
-  Building2, FileUp, Landmark, ShieldCheck, Banknote, Bell, Trash2, ChevronDown, MessageSquareOff, MessageSquare,
-} from "lucide-react";
+import { Building2, Bell, BellOff, Trash2, MessageSquareOff, MessageSquare, Share, SquarePlus } from "lucide-react";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import FolhaDeBaixo from "../components/FolhaDeBaixo.jsx";
 import IconeWhatsApp from "../components/IconeWhatsApp.jsx";
@@ -12,10 +10,14 @@ import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
 import { supabase } from "@/lib/supabase";
 import { useAppState } from "@/context/AppStateContext";
 import { mascararCnpj } from "@/lib/cnpj";
-import { listarExtratosEnviados, apagarExtratoEnviado } from "@/lib/importarExtrato";
+import {
+  estadoNotificacoes, ativarNotificacoes, desligarNotificacoes, garantirInscricaoPush,
+} from "@/lib/notificacoesCelular";
 
 /* ===================================================================
-   PERMISSOES E INTEGRACOES (12/10/2026 — tarefa de 10-10, Bloco K)
+   PERMISSOES E INTEGRACOES (12/10/2026 — v1 na tarefa de 10-10, Bloco
+   K; v2 pelo print do Fernando: "falar so sobre o que tem no aplicativo,
+   nada do que esta por vir")
 
    - WhatsApp: "Conectado", SEM botao de remover (e o login e a Isa).
      Logo abaixo, "Lembretes e avisos no WhatsApp" liga/desliga
@@ -25,44 +27,29 @@ import { listarExtratosEnviados, apagarExtratoEnviado } from "@/lib/importarExtr
      esse campo antes de mandar.
    - CNPJ: o numero mascarado (ou "Não conectado") -> pagina do CNPJ; e
      "Remover CNPJ" (a mesma acao da pagina do CNPJ).
-   - Extratos enviados: quantos; "Ver e apagar" abre a lista. Apagar tira
-     o arquivo e o registro; o que ja foi confirmado continua no
-     velocimetro (a frase avisa).
-   - Receita Federal (boleto e consultas automaticas): "Em breve".
-   - Certificado A1 / nota automatica: perfis.nota_automatica_ativa.
-   - Banco (Open Finance): "Em breve" (PLUGGY_ATIVO continua false).
-   - Notificacoes do celular: o status do navegador (o app ainda nao manda
-     notificacao no celular; so mostra).
-   Rodape: Politica de privacidade e Excluir conta.
+   - Notificacoes: "Notificação da semana" (1 por semana, como esta o
+     velocimetro; src/lib/notificacoesCelular.js). No iPhone so funciona
+     com o TaCerto adicionado a Tela de Inicio (iOS 16.4+): no Safari
+     normal a linha explica como. A permissao so e pedida no toque em
+     "Ativar". O envio semanal comeca quando o SQL e a funcao
+     aviso-semanal estiverem no ar (docs/NOTIFICACOES.md); antes disso a
+     pessoa ja pode ativar.
+   v2 tirou: Extratos enviados (o extrato vira entradas e saidas no app e
+   o arquivo fica guardado; se a pessoa pedir, a equipe manda pelo
+   WhatsApp), Receita Federal e Banco (Em breve), Certificado A1 (quem
+   guarda o A1 e a plataforma de emissao de notas, nao o TaCerto) e o
+   rodape (Politica de privacidade e Excluir conta ja estao no Perfil).
    =================================================================== */
 
-function nomeDoTipo(tipo) {
-  return { ofx: "OFX", csv: "CSV", pdf: "PDF" }[String(tipo || "").toLowerCase()] || "Extrato";
-}
-
-/* "03/10/2026" */
-function dataCurta(iso) {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const p = (n) => String(n).padStart(2, "0");
-  return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
-}
-
-/* Status das notificacoes do navegador */
-function statusNotificacoes() {
-  if (typeof window === "undefined" || !("Notification" in window)) return "Não disponível";
-  const p = window.Notification.permission;
-  return p === "granted" ? "Ligadas" : p === "denied" ? "Bloqueadas" : "Não pedidas";
-}
-
 /* Liga/desliga, sem verde (padrao do app: ligado = claro) */
-function Chave({ ligada, onMudar, rotulo }) {
+function Chave({ ligada, onMudar, rotulo, desativada = false }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={ligada}
       aria-label={rotulo}
+      disabled={desativada}
       onClick={() => onMudar(!ligada)}
       className="toque shrink-0 rounded-full relative"
       style={{
@@ -71,6 +58,7 @@ function Chave({ ligada, onMudar, rotulo }) {
         border: `1px solid ${ligada ? "var(--text)" : "var(--border)"}`,
         backgroundColor: ligada ? "var(--text)" : "transparent",
         transition: "background-color 180ms ease, border-color 180ms ease",
+        opacity: desativada ? 0.5 : 1,
       }}
     >
       <span
@@ -89,16 +77,50 @@ function Chave({ ligada, onMudar, rotulo }) {
   );
 }
 
+/* Linha com icone, titulo, frase e a chave (WhatsApp e notificacoes) */
+function LinhaComChave({ Icon, titulo, frase, ligada, onMudar, desativada }) {
+  return (
+    <div className="w-full flex items-center text-left" style={{ gap: 14, padding: "14px 0", minHeight: 54 }}>
+      <Icon size={20} strokeWidth={1.9} className="shrink-0" style={{ color: "var(--text-tertiary)" }} />
+      <span className="flex-1 min-w-0">
+        <span className="block font-medium leading-snug" style={{ fontSize: 16.5 }}>{titulo}</span>
+        <span className="block" style={{ color: "var(--text-tertiary)", fontSize: 13.5, marginTop: 1 }}>{frase}</span>
+      </span>
+      <Chave ligada={ligada} onMudar={onMudar} rotulo={titulo} desativada={desativada} />
+    </div>
+  );
+}
+
+/* Um passo numerado da folha "Receber no iPhone" */
+function Passo({ n, Icon, children }) {
+  return (
+    <div className="flex items-start" style={{ gap: 12 }}>
+      <span
+        className="shrink-0 rounded-full flex items-center justify-center font-semibold"
+        style={{ width: 26, height: 26, fontSize: 13.5, border: "1px solid var(--border)", color: "var(--text-secondary)" }}
+      >
+        {n}
+      </span>
+      <span className="flex-1" style={{ fontSize: 15.5, lineHeight: 1.45, color: "var(--text)", paddingTop: 2 }}>
+        {children}
+        {Icon && <Icon size={17} strokeWidth={2} style={{ display: "inline", verticalAlign: "-3px", marginLeft: 6, color: "var(--text-secondary)" }} />}
+      </span>
+    </div>
+  );
+}
+
+const NOTIFICACAO = "Notificação da semana";
+const FRASE_NOTIFICACAO = "Uma por semana: como está seu velocímetro.";
+
 export default function PerfilPermissoes() {
   const navigate = useNavigate();
   const app = useAppState();
-  const { cnpj, cnpjConfirmado, avisosWhatsapp, notaAutomaticaAtiva, salvarExtras, removerCnpj, visitante } = app;
+  const { cnpj, cnpjConfirmado, avisosWhatsapp, salvarExtras, removerCnpj } = app;
   const [userId, setUserId] = useState(null);
-  const [extratos, setExtratos] = useState(null); // null = carregando
-  const [listaAberta, setListaAberta] = useState(false);
-  const [paraApagar, setParaApagar] = useState(null);
   const [confirmarRemoverCnpj, setConfirmarRemoverCnpj] = useState(false);
-  const [ocupado, setOcupado] = useState(false);
+  const [notificacoes, setNotificacoes] = useState(estadoNotificacoes);
+  const [ativando, setAtivando] = useState(false);
+  const [comoInstalar, setComoInstalar] = useState(false);
   const temCnpj = Boolean(cnpj);
 
   useEffect(() => {
@@ -108,8 +130,9 @@ export default function PerfilPermissoes() {
       const id = data?.user?.id || null;
       if (!ativo) return;
       setUserId(id);
-      const lista = id ? await listarExtratosEnviados(id) : [];
-      if (ativo) setExtratos(lista);
+      /* ja ligadas: garante a inscricao deste aparelho (ex.: ativou antes
+         da chave existir) */
+      if (id) garantirInscricaoPush(id);
     })();
     return () => { ativo = false; };
   }, []);
@@ -124,18 +147,22 @@ export default function PerfilPermissoes() {
     toast(ligar ? "Lembretes e avisos no WhatsApp ligados" : "Pronto: a Isa não manda mais lembretes nem avisos");
   }
 
-  async function apagar() {
-    if (!paraApagar || ocupado) return;
-    setOcupado(true);
-    const ok = await apagarExtratoEnviado(userId, paraApagar);
-    setOcupado(false);
-    if (ok) {
-      setExtratos((l) => (l || []).filter((x) => x.id !== paraApagar.id));
-      toast("Extrato apagado");
-    } else {
-      toast.error("Não consegui apagar agora. Tente de novo.");
-    }
-    setParaApagar(null);
+  /* Ativar: o pedido de permissao tem que sair DENTRO do toque (iPhone) */
+  async function ativar() {
+    if (ativando) return;
+    setAtivando(true);
+    const novo = await ativarNotificacoes(userId);
+    setAtivando(false);
+    setNotificacoes(novo);
+    if (novo === "ligadas") toast("Pronto: toda semana chega um resumo do seu velocímetro");
+    else if (novo === "bloqueadas") toast("O celular bloqueou. Libere em Ajustes > Notificações > TaCerto.");
+  }
+
+  async function mudarNotificacoes(ligar) {
+    if (ligar) return ativar();
+    const novo = await desligarNotificacoes(userId);
+    setNotificacoes(novo);
+    toast("Notificação da semana desligada");
   }
 
   async function removerOCnpj() {
@@ -143,8 +170,6 @@ export default function PerfilPermissoes() {
     await removerCnpj();
     toast("CNPJ removido");
   }
-
-  const qtdExtratos = extratos ? extratos.length : null;
 
   return (
     <div className="tela-rolavel w-full flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
@@ -156,20 +181,13 @@ export default function PerfilPermissoes() {
 
         <SecaoLista titulo="WhatsApp" style={{ marginTop: 8 }}>
           <LinhaLista Icon={IconeWhatsApp} rotulo="WhatsApp" detalhe="Seu login e o canal da Isa" valor="Conectado" />
-          <div className="w-full flex items-center text-left" style={{ gap: 14, padding: "14px 0", minHeight: 54 }}>
-            {avisosWhatsapp ? (
-              <MessageSquare size={20} strokeWidth={1.9} className="shrink-0" style={{ color: "var(--text-tertiary)" }} />
-            ) : (
-              <MessageSquareOff size={20} strokeWidth={1.9} className="shrink-0" style={{ color: "var(--text-tertiary)" }} />
-            )}
-            <span className="flex-1 min-w-0">
-              <span className="block font-medium leading-snug" style={{ fontSize: 16.5 }}>Lembretes e avisos no WhatsApp</span>
-              <span className="block" style={{ color: "var(--text-tertiary)", fontSize: 13.5, marginTop: 1 }}>
-                {avisosWhatsapp ? "Desligue quando quiser parar as mensagens." : "Desligados: a Isa só responde quando você chamar."}
-              </span>
-            </span>
-            <Chave ligada={Boolean(avisosWhatsapp)} onMudar={mudarAvisos} rotulo="Lembretes e avisos no WhatsApp" />
-          </div>
+          <LinhaComChave
+            Icon={avisosWhatsapp ? MessageSquare : MessageSquareOff}
+            titulo="Lembretes e avisos no WhatsApp"
+            frase={avisosWhatsapp ? "Desligue quando quiser parar as mensagens." : "Desligados: a Isa só responde quando você chamar."}
+            ligada={Boolean(avisosWhatsapp)}
+            onMudar={mudarAvisos}
+          />
         </SecaoLista>
 
         <SecaoLista titulo="Seus dados">
@@ -183,87 +201,51 @@ export default function PerfilPermissoes() {
           {temCnpj && (
             <LinhaLista Icon={Trash2} rotulo="Remover CNPJ" semSeta onClick={() => setConfirmarRemoverCnpj(true)} />
           )}
-          {!visitante && (
+        </SecaoLista>
+
+        <SecaoLista titulo="Notificações">
+          {notificacoes === "ligadas" || notificacoes === "desligadas" ? (
+            <LinhaComChave
+              Icon={notificacoes === "ligadas" ? Bell : BellOff}
+              titulo={NOTIFICACAO}
+              frase={notificacoes === "ligadas" ? FRASE_NOTIFICACAO : "Desligada: o app não manda notificação."}
+              ligada={notificacoes === "ligadas"}
+              onMudar={mudarNotificacoes}
+              desativada={ativando}
+            />
+          ) : notificacoes === "ativar" ? (
             <LinhaLista
-              Icon={FileUp}
-              rotulo="Extratos enviados"
-              detalhe={qtdExtratos ? "Ver e apagar" : null}
+              Icon={Bell}
+              rotulo={NOTIFICACAO}
+              detalhe={FRASE_NOTIFICACAO}
               semSeta
               valor={
-                <span className="inline-flex items-center" style={{ gap: 6 }}>
-                  {qtdExtratos === null ? "..." : qtdExtratos === 0 ? "Nenhum" : qtdExtratos}
-                  {qtdExtratos > 0 && (
-                    <ChevronDown size={17} style={{ color: "var(--text-tertiary)", transform: listaAberta ? "rotate(180deg)" : "none", transition: "transform 200ms ease" }} />
-                  )}
+                <span className="font-semibold" style={{ color: "var(--primary)" }}>
+                  {ativando ? "Ativando..." : "Ativar"}
                 </span>
               }
-              onClick={qtdExtratos > 0 ? () => setListaAberta((a) => !a) : undefined}
+              onClick={ativar}
             />
+          ) : notificacoes === "instalar" ? (
+            <LinhaLista
+              Icon={Bell}
+              rotulo={NOTIFICACAO}
+              detalhe="No iPhone, adicione o TaCerto à Tela de Início"
+              valor="Como fazer"
+              onClick={() => setComoInstalar(true)}
+            />
+          ) : notificacoes === "bloqueadas" ? (
+            <LinhaLista
+              Icon={BellOff}
+              rotulo={NOTIFICACAO}
+              detalhe="Para liberar: Ajustes > Notificações > TaCerto"
+              valor="Bloqueada"
+            />
+          ) : (
+            <LinhaLista Icon={BellOff} rotulo={NOTIFICACAO} detalhe="Este celular não recebe notificação do app" valor="Não disponível" />
           )}
         </SecaoLista>
-
-        {listaAberta && qtdExtratos > 0 && (
-          <>
-            <SecaoLista style={{ marginTop: 4 }}>
-              {extratos.map((x) => (
-                <LinhaLista
-                  key={x.id}
-                  rotulo={x.nome_arquivo || `Extrato ${nomeDoTipo(x.tipo)}`}
-                  umaLinha
-                  detalhe={`${nomeDoTipo(x.tipo)} · enviado em ${dataCurta(x.criado_em)}${x.status === "em_analise" ? " · em análise" : ""}`}
-                  semSeta
-                  valor={<Trash2 size={17} style={{ color: "var(--text-tertiary)" }} />}
-                  onClick={() => setParaApagar(x)}
-                />
-              ))}
-            </SecaoLista>
-            <p style={{ fontSize: 13, lineHeight: 1.45, color: "var(--text-tertiary)", marginTop: 6 }}>
-              Apagar tira o arquivo e o registro. O que você já confirmou continua no velocímetro.
-            </p>
-          </>
-        )}
-
-        <SecaoLista titulo="Integrações">
-          <LinhaLista Icon={Landmark} rotulo="Receita Federal" detalhe="Boleto do DAS e consultas automáticas" valor="Em breve" />
-          <LinhaLista
-            Icon={ShieldCheck}
-            rotulo="Certificado A1"
-            detalhe="Nota fiscal automática"
-            valor={notaAutomaticaAtiva ? "Ativo" : "Não tem"}
-            onClick={() => navigate("/notas-fiscais", { state: { de: "permissoes" } })}
-          />
-          <LinhaLista Icon={Banknote} rotulo="Banco (Open Finance)" detalhe="Extrato chegando sozinho" valor="Em breve" />
-          <LinhaLista Icon={Bell} rotulo="Notificações do celular" valor={statusNotificacoes()} />
-        </SecaoLista>
-
-        <div className="flex items-center justify-center" style={{ gap: 18, marginTop: 30 }}>
-          <button
-            type="button"
-            onClick={() => navigate("/privacidade", { state: { de: "permissoes" } })}
-            className="toque font-medium"
-            style={{ fontSize: 14, color: "var(--text-secondary)", background: "none" }}
-          >
-            Política de privacidade
-          </button>
-          {!visitante && (
-            <button
-              type="button"
-              onClick={() => navigate("/excluir-conta", { state: { de: "permissoes" } })}
-              className="toque font-medium"
-              style={{ fontSize: 14, color: "var(--text-secondary)", background: "none" }}
-            >
-              Excluir conta
-            </button>
-          )}
-        </div>
       </div>
-
-      <FolhaDeBaixo aberto={Boolean(paraApagar)} onFechar={() => !ocupado && setParaApagar(null)} titulo="Apagar este extrato?">
-        <p className="text-center" style={{ color: "var(--text-secondary)", fontSize: 15, lineHeight: 1.45, marginTop: -4 }}>
-          O arquivo e o registro saem do app. O que você já confirmou continua no velocímetro.
-        </p>
-        <BotoesConfirmar ocupado={ocupado} rotulo="Apagar" onCancelar={() => setParaApagar(null)} onConfirmar={apagar} />
-      </FolhaDeBaixo>
 
       <FolhaDeBaixo aberto={confirmarRemoverCnpj} onFechar={() => setConfirmarRemoverCnpj(false)} titulo="Remover o CNPJ?">
         <p className="text-center" style={{ color: "var(--text-secondary)", fontSize: 15, lineHeight: 1.45, marginTop: -4 }}>
@@ -271,17 +253,33 @@ export default function PerfilPermissoes() {
         </p>
         <BotoesConfirmar rotulo="Remover" onCancelar={() => setConfirmarRemoverCnpj(false)} onConfirmar={removerOCnpj} />
       </FolhaDeBaixo>
+
+      {/* No iPhone, a notificacao do app so existe com ele na Tela de Inicio */}
+      <FolhaDeBaixo aberto={comoInstalar} onFechar={() => setComoInstalar(false)} titulo="Notificação no iPhone">
+        <div className="flex flex-col" style={{ gap: 14, marginTop: 2, paddingBottom: 6 }}>
+          <Passo n={1} Icon={Share}>Abra no Safari e toque em Compartilhar</Passo>
+          <Passo n={2} Icon={SquarePlus}>Toque em Adicionar à Tela de Início</Passo>
+          <Passo n={3}>Abra o TaCerto pelo ícone, entre e volte aqui para ativar</Passo>
+        </div>
+        <button
+          type="button"
+          onClick={() => setComoInstalar(false)}
+          className="botao-confirmar toque w-full rounded-2xl font-semibold"
+          style={{ marginTop: 18, marginBottom: 8, padding: "13px 0", fontSize: 15.5 }}
+        >
+          Entendi
+        </button>
+      </FolhaDeBaixo>
     </div>
   );
 }
 
-function BotoesConfirmar({ ocupado = false, rotulo, onCancelar, onConfirmar }) {
+function BotoesConfirmar({ rotulo, onCancelar, onConfirmar }) {
   return (
     <div className="flex" style={{ gap: 10, marginTop: 18, paddingBottom: 8 }}>
       <button
         type="button"
         onClick={onCancelar}
-        disabled={ocupado}
         className="toque flex-1 rounded-2xl font-semibold"
         style={{ padding: "13px 0", fontSize: 15.5, border: "1px solid var(--border)", color: "var(--text)", background: "none" }}
       >
@@ -290,7 +288,6 @@ function BotoesConfirmar({ ocupado = false, rotulo, onCancelar, onConfirmar }) {
       <button
         type="button"
         onClick={onConfirmar}
-        disabled={ocupado}
         className="botao-perigo toque flex-1 rounded-2xl font-semibold"
         style={{ padding: "13px 0", fontSize: 15.5 }}
       >

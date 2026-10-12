@@ -1,4 +1,4 @@
-/* WELCOME v16 — slide da nota: "Pode ser automática." vira "Automática com o A1." (o mesmo tamanho: cabe nas 2 linhas) (o certificado e pago: nao esconder; Bloco M) (v15: Fisco vira Isa: foto da Isa (webp) nos desenhos, textos "a Isa" nos slides e no WhatsApp de exemplo ("Isa · TaCerto!" / "assistente virtual"); so nome, foto e texto: nenhum desenho mudou de tamanho (escala comum) (v14: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v13: slide 5: WhatsApp claro (original) e conversa nova (soma no velocimetro + "Devo emitir a nota fiscal?" Sim/Nao); slide 4: "Emissão de nota fiscal" e "Fisco.ia 24h para te ajudar" (v12: textos com destaque em facilidades (titulos e frases novos), slide 3 nota por audio/mensagem/automatica/sozinho, slide 4 itens de facilidade (v11: letras maiores (zoom de 10% igual em todos os desenhos; moldura ocupa o espaco ate o card de baixo), destaques verdes discretos (so borda, sem fundo nem selo), slide 2 "Boleto automático no WhatsApp" e "te lembra" (v10: correcao: o slide 3 (nota) fica FORA da conta da escala comum, entao os slides 1, 2, 4 e 5 voltam a ser como antes da v9 (v9: slide 3 preenchido, sem "Gratis"; v8: Fisco.ia; v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos)))) */
+/* WELCOME v17 — app instalado na Tela de Inicio (PWA) com a pessoa ja logada: pula os slides e vai direto para o Inicio (no Safari normal nada muda) (v16: slide da nota: "Pode ser automática." vira "Automática com o A1." (o mesmo tamanho: cabe nas 2 linhas) (o certificado e pago: nao esconder; Bloco M) (v15: Fisco vira Isa: foto da Isa (webp) nos desenhos, textos "a Isa" nos slides e no WhatsApp de exemplo ("Isa · TaCerto!" / "assistente virtual"); so nome, foto e texto: nenhum desenho mudou de tamanho (escala comum) (v14: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v13: slide 5: WhatsApp claro (original) e conversa nova (soma no velocimetro + "Devo emitir a nota fiscal?" Sim/Nao); slide 4: "Emissão de nota fiscal" e "Fisco.ia 24h para te ajudar" (v12: textos com destaque em facilidades (titulos e frases novos), slide 3 nota por audio/mensagem/automatica/sozinho, slide 4 itens de facilidade (v11: letras maiores (zoom de 10% igual em todos os desenhos; moldura ocupa o espaco ate o card de baixo), destaques verdes discretos (so borda, sem fundo nem selo), slide 2 "Boleto automático no WhatsApp" e "te lembra" (v10: correcao: o slide 3 (nota) fica FORA da conta da escala comum, entao os slides 1, 2, 4 e 5 voltam a ser como antes da v9 (v9: slide 3 preenchido, sem "Gratis"; v8: Fisco.ia; v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos))))) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -80,6 +80,8 @@ import {
   MessageCircle, Headphones, ListChecks, Globe, Zap, CheckCircle2,
 } from "lucide-react";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
+import { supabase } from "@/lib/supabase";
+import { estaInstalado } from "@/lib/notificacoesCelular";
 import { FOTO_ISA_256 } from "@/components/FotoIsa";
 import SimboloPluggy from "@/components/SimboloPluggy";
 import {
@@ -817,6 +819,19 @@ export default function Welcome() {
   const molduraRef = useRef(null);
   const caixasRef = useRef([]);
   const ajuste = useEscalaComum(molduraRef, caixasRef, SLIDES.length);
+
+  /* v17: o app instalado na Tela de Inicio sempre abre em "/" (manifesto).
+     Quem ja entrou nele vai direto para o Inicio, sem ver os slides de
+     novo. No Safari normal fica como sempre foi. */
+  useEffect(() => {
+    if (!estaInstalado()) return undefined;
+    let ativo = true;
+    Promise.resolve()
+      .then(() => supabase.auth.getSession())
+      .then(({ data }) => { if (ativo && data?.session) navigate("/dashboard", { replace: true }); })
+      .catch(() => { /* sem sessao: mostra os slides */ });
+    return () => { ativo = false; };
+  }, [navigate]);
 
   useEffect(() => {
     const el = scrollerRef.current;
