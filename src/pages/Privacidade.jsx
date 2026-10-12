@@ -1,4 +1,4 @@
-/* PRIVACIDADE v10 — Fisco vira Isa: "A Isa usa inteligência artificial" (assistente virtual, não é pessoa nem contadora) (v9: textos de 08-10: CNPJ e dados publicos, extrato (so o ano atual; PDF numa pasta so da pessoa ate ser lido), gastos, notas e comprovantes, lembrete do DAS; caminho certo do Excluir conta (Perfil > Excluir conta) (v8: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v7: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v6: secao "Fale com a gente" inteira escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v5: so o botao; v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta)))) */
+/* PRIVACIDADE v11 — Bloco M (12/10/2026): conversas do chat da Isa (no celular e no servidor), comprovante lido por IA (empresa da IA so para ler, sem treinar), escolhas novas (forma de pagar o DAS, avisos no WhatsApp, tutorial), como parar as mensagens e a pagina Permissoes e integracoes; data atualizada (v10: Fisco vira Isa: "A Isa usa inteligência artificial" (assistente virtual, não é pessoa nem contadora) (v9: textos de 08-10: CNPJ e dados publicos, extrato (so o ano atual; PDF numa pasta so da pessoa ate ser lido), gastos, notas e comprovantes, lembrete do DAS; caminho certo do Excluir conta (Perfil > Excluir conta) (v8: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v7: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v6: secao "Fale com a gente" inteira escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v5: so o botao; v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta))))) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp, MOSTRAR_WHATSAPP_DOCUMENTOS } from "@/config/piloto";
@@ -36,8 +36,9 @@ const SECOES = [
       "O seu MEI: CNPJ, tipo (MEI ou MEI Caminhoneiro), atividade, desde quando é MEI e, se você abriu o MEI este ano, o mês de abertura.",
       "Os lançamentos do seu faturamento: valor, data e descrição. Isso inclui o que você lança no app, o total do ano que você digita e o que você conta à Isa no WhatsApp.",
       "Do extrato que você envia: só as movimentações deste ano (data, valor, descrição e, quando o banco informa, o nome e o CPF ou CNPJ de quem pagou ou recebeu). O resto do arquivo é descartado. Extrato em PDF fica guardado numa pasta só sua até ser lido.",
-      "Seus gastos, e as notas e comprovantes que você anexar, para a sua gestão: lucro e Imposto de Renda.",
-      "Suas escolhas no app, como os dias do lembrete do DAS.",
+      "Seus gastos, e as notas e comprovantes que você anexar ou mandar pelo \"+\" (foto ou PDF), para a sua gestão: lucro e Imposto de Renda.",
+      "As conversas com a Isa no chat do app: ficam no seu celular e no nosso servidor, para você não perder o que perguntou.",
+      "Suas escolhas no app: os dias do lembrete do DAS, como você quer pagar o DAS, se quer lembretes e avisos no WhatsApp e se já viu o tutorial.",
     ],
   },
   {
@@ -60,6 +61,7 @@ const SECOES = [
     titulo: "Quem mais tem acesso",
     paragrafos: [
       "Só as empresas que fazem o app funcionar, como o servidor que guarda os dados, o login, o WhatsApp e a consulta pública de CNPJ (BrasilAPI). Elas usam seus dados só para isso.",
+      "Quando você manda um comprovante pelo \"+\", o arquivo vai para a empresa da inteligência artificial que faz a leitura (Anthropic), só para ler o valor, a data e quem pagou. Pelos termos dela, o arquivo não é usado para treinar a IA.",
     ],
   },
   {
@@ -69,9 +71,17 @@ const SECOES = [
     ],
   },
   {
+    titulo: "Mensagens no WhatsApp",
+    paragrafos: [
+      "Usamos o seu WhatsApp para o login, para os lembretes e avisos do seu MEI e para as respostas da Isa.",
+      "Para parar os lembretes e avisos quando quiser: Perfil → Permissões e integrações → Lembretes e avisos no WhatsApp. Ou peça para a Isa no próprio WhatsApp.",
+    ],
+  },
+  {
     titulo: "Você manda nos seus dados",
     paragrafos: [
       "Você pode ver e corrigir seus dados no app, em Perfil.",
+      "Em Perfil → Permissões e integrações você vê o que o app usa, desliga os lembretes no WhatsApp, remove o CNPJ e apaga os extratos enviados.",
       "Você pode excluir sua conta e todos os seus dados pelo próprio app, quando quiser: Perfil → Excluir conta. Depois de excluídos, os dados não voltam.",
       "Guardamos seus dados enquanto sua conta existir.",
     ],
@@ -102,7 +112,7 @@ export default function Privacidade() {
         <TopoRolavel titulo="Política de privacidade" onVoltar={voltar} />
 
         <p className="mt-1" style={{ color: "var(--text-tertiary)", fontSize: 13 }}>
-          Atualizada em 10 de outubro de 2026
+          Atualizada em 12 de outubro de 2026
         </p>
 
         <p className="leading-relaxed mt-3" style={{ color: "var(--text)", fontSize: 16.5 }}>

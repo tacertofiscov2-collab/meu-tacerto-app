@@ -579,3 +579,28 @@ L3. ⚠️ O celular de exemplo (da Apresentação e do tutorial) ainda mostra
     o **Início F** (barra DAS | Isa | NF), mas o Início de verdade voltou
     ao de antes (Bloco B). Redesenhar o exemplo igual ao Início de
     agora? (não mexi: é o mesmo desenho dos slides)
+
+**Bloco M (slides, FAQ, Termos e Privacidade)**
+
+M1. Termos e Privacidade novos (12/10): seção "Leitura do comprovante
+    por IA", "Mensagens no WhatsApp" (como parar: Perfil → Permissões e
+    integrações → Lembretes e avisos, ou pedir para a Isa), a página
+    Permissões, as conversas do chat (no celular e no servidor; era a
+    B7) e a empresa da IA (Anthropic) só para ler o comprovante.
+M2. ⚠️ Os textos dizem "a Isa é baseada em IA", mas no piloto quem
+    responde o WhatsApp é **você** e o chat do app usa **respostas
+    prontas** (ver A1 e B6). Para ficar 100% honesto (CDC), escrever
+    "quem responde pode ser a IA ou a equipe do TaCerto"? (não troquei)
+M3. Quando alguém pedir no WhatsApp para parar as mensagens, é você quem
+    desliga (o app não lê o WhatsApp). Depois do SQL de 10-10, o campo é
+    `perfis.avisos_whatsapp = false`.
+M4. Slide da nota: "Pode ser automática." virou **"Automática com o
+    A1."** (o certificado é pago; mesmo tamanho, 2 linhas). O slide
+    "Tudo isso, grátis" ainda lista "Emissão de nota fiscal": acrescentar
+    "(certificado à parte)"? (não mexi; mudaria a altura do slide)
+M5. "Pelos termos da Anthropic, o arquivo não é usado para treinar a IA":
+    conferir no contrato da Anthropic quando criar a conta (e com o
+    advogado, junto com o resto dos Termos).
+M6. A FAQ do chat (`src/lib/faqFisco.js`) já estava em dia (o "Perfil >
+    Calcular" entrou no Bloco B); a FAQ antiga (`/faq`) está escondida
+    e só teve a data da DASN corrigida (Bloco G).

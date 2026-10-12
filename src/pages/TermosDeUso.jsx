@@ -1,4 +1,4 @@
-/* TERMOSDEUSO v10 — Fisco vira Isa: "A Isa é uma assistente virtual com IA" (não é pessoa nem contadora, pode errar) (v9: diz que o extrato em PDF fica guardado ate ser lido (v8: textos de 08-10: app de gestao do MEI, o CNPJ (dados publicos e, no futuro, o DAS), o extrato (so o ano atual fica, o resto e descartado) e a pessoa confirma o que e faturamento; sem chamar o TaCerto de contabilidade/contador (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v5: secao "Fale com a gente" (botao do WhatsApp) escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("fase de testes"); v2: botao do WhatsApp com mensagem pronta)))) */
+/* TERMOSDEUSO v11 — Bloco M (12/10/2026): leitura do comprovante por IA (voce confere antes de salvar), "Permissoes e integracoes" e como parar os lembretes e avisos no WhatsApp; data atualizada (v10: Fisco vira Isa: "A Isa é uma assistente virtual com IA" (não é pessoa nem contadora, pode errar) (v9: diz que o extrato em PDF fica guardado ate ser lido (v8: textos de 08-10: app de gestao do MEI, o CNPJ (dados publicos e, no futuro, o DAS), o extrato (so o ano atual fica, o resto e descartado) e a pessoa confirma o que e faturamento; sem chamar o TaCerto de contabilidade/contador (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v5: secao "Fale com a gente" (botao do WhatsApp) escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("fase de testes"); v2: botao do WhatsApp com mensagem pronta))))) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp, MOSTRAR_WHATSAPP_DOCUMENTOS } from "@/config/piloto";
@@ -52,6 +52,13 @@ const SECOES = [
     ],
   },
   {
+    titulo: "Leitura do comprovante por IA",
+    paragrafos: [
+      "Quando você manda a foto ou o PDF de um comprovante, uma inteligência artificial lê o valor, a data e quem pagou ou recebeu. A leitura pode errar.",
+      "Você sempre confere e corrige antes de salvar: nada entra no velocímetro sem você confirmar.",
+    ],
+  },
+  {
     titulo: "O extrato e o que é faturamento",
     paragrafos: [
       "Quando você envia o extrato do banco, o app lê o arquivo e guarda só o que é deste ano (ou da abertura do MEI em diante). O resto é descartado. Extrato em PDF fica guardado numa pasta só sua até ser lido.",
@@ -70,6 +77,14 @@ const SECOES = [
     paragrafos: [
       "Use dados verdadeiros e não passe sua senha para ninguém.",
       "Você pode sair da conta e excluir a conta, com todos os seus dados, pelo próprio app, quando quiser.",
+      "Em Perfil → Permissões e integrações você vê tudo o que o app usa e pode desligar o que não quiser.",
+    ],
+  },
+  {
+    titulo: "Mensagens no WhatsApp",
+    paragrafos: [
+      "A Isa manda lembretes (como o do DAS) e avisos sobre o seu MEI pelo WhatsApp.",
+      "Para parar quando quiser: Perfil → Permissões e integrações → Lembretes e avisos no WhatsApp. Ou peça para a Isa no próprio WhatsApp. Você continua podendo falar com ela quando quiser.",
     ],
   },
   {
@@ -111,7 +126,7 @@ export default function TermosDeUso() {
         <TopoRolavel titulo="Termos de uso" onVoltar={voltar} />
 
         <p className="mt-1" style={{ color: "var(--text-tertiary)", fontSize: 13 }}>
-          Atualizados em 10 de outubro de 2026
+          Atualizados em 12 de outubro de 2026
         </p>
 
         <p className="leading-relaxed mt-3" style={{ color: "var(--text)", fontSize: 16.5 }}>
