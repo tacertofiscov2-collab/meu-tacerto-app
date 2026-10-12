@@ -55,6 +55,12 @@
 - **12/10 foi na nuvem** (Claude Code na web): sem `.env` e sem acesso ao
   Supabase. **Nenhum SQL rodou e nenhuma função foi publicada**; tudo
   testado num "banco de mentira" (seção 7).
+- **12/10 (noite): ajustes pelos prints do Fernando**, também enviados ao
+  GitHub: `a33409a` (Início novo e chat da Isa com anexos), `071d9b6`
+  (tutorial igual ao Início e "Tudo pelo WhatsApp"), `6f20743` (sem
+  "Receita Federal" no app), `021c2ab` (Permissões só com o que existe,
+  notificação da semana, app instalável) e a revisão. Detalhes na seção
+  "Ajustes de 12/10 (noite)" no fim.
 - Servidor local: o `npm run dev` costuma rodar no terminal do Cursor
   (`localhost:8080`; iPhone em `192.168.1.224:8080`). Nas sessões de
   08-10 o Claude ligou pelo app (configuração `tacerto-dev` em
@@ -77,7 +83,8 @@
 
 | Tela | Endereço | Como está |
 |---|---|---|
-| **Início** | `/dashboard` | Visual F. **Novo:** embaixo do velocímetro, "Atualizado em 08/10 às 14:32" + botão "Atualizar velocímetro" (contorno). Zerado no ano: "Falta informar" e o botão em verde. **Selo** pequeno ao lado de "MEI Caminhoneiro · anual": "Estimado" (tem total do ano digitado) ou "Conferido" (veio de extrato e foi confirmado). A barra DAS \| Fisco \| NF não mudou de cara; o **NF** agora abre a janela "Notas fiscais". |
+| **Início** | `/dashboard` | **Desde 12/10 (noite):** topo só com o logo, a saudação e o **sininho** (saiu o "Como emitir nota"). **Card do velocímetro maior** (arco até 280, número 48, "?" de 44 que não encosta no "MEI Caminhoneiro · anual"; altura máxima 440, centrado em tela alta) com **"Atualizar velocímetro" pequeno no canto de cima, à direita, dentro do card** e, embaixo dele, em letra pequena, "Atualizado em 08/10 às 14:32" (só depois da primeira atualização; zerado, o botão fica com contorno verde e sem o texto). Saíram o "Falta informar" e o **card Próximo DAS** (o DAS fica no Perfil). Selo Estimado/Conferido ao lado do rótulo. **Chat da Isa menor** (foto 68, barra 44) com **câmera, clipe e microfone** (ver "Chat da Isa"). Peças e medidas em `src/components/InicioPartes.jsx` (as mesmas do tutorial). |
+| **Chat da Isa** | barra do Início, caixinha e `/fisco` | **Desde 12/10 (noite) os anexos funcionam** (`MOSTRAR_ANEXOS_CHAT = true`): **câmera**, **galeria**, **documento** (e o clipe da barra, que abre os três) levam a foto ou o PDF para o **"+" já lendo o comprovante** (sem a função `ler-comprovante`, a pessoa preenche e o arquivo fica guardado); **Extrato** (no "+" do `/fisco`) abre o Enviar extrato; o **microfone abre o WhatsApp da Isa** ("Oi Isa! Vou te mandar um audio..."): o app não grava áudio. |
 | **Folha "Atualize seu velocímetro"** | (botão do Início e sininho) | 3 jeitos, uma frase cada: **Enviar extrato** (recomendado, borda verde fina) · **Digitar** (o "+") · **Mandar pro Fisco no WhatsApp**. |
 | **Enviar extrato** | `/enviar-extrato` | **Novo.** "Escolher arquivo" (OFX, CSV ou PDF). OFX/CSV lidos no celular, sem IA; só fica o que é do ano (ou da abertura em diante); o mesmo arquivo não entra 2x. **Desde 10/10 (tarde):** o que bate no dia e no valor com outro extrato já enviado entra marcado "pode ser repetido" (a linha "X podem ser repetidas: você confirma na conferência."). Fim: "Encontrei 37 entradas e 52 saídas de jan a out. Vamos conferir?" → Conferir / Depois. Mesmo arquivo de novo: "Esse extrato já estava aqui. Nada novo." PDF: guardado (pasta privada) "em análise": "Recebi! Vou ler e te aviso quando estiver pronto." |
 | **Conferência "É faturamento?"** | `/conferir-entradas` | **Novo:** 6 respostas curtas: É frete/serviço ✓ · Reembolso de despesa ✓ · Vale-pedágio ✕ · Empréstimo ✕ · Estorno/devolução ✕ · Dinheiro meu/família ✕ (MEI comum: "É venda/serviço" e sem vale-pedágio). Quando o extrato já diz o que é (vale-pedágio, estorno, resgate...), vem num grupo próprio com a resposta sugerida (borda verde fina). O que conta vira regra do pagador. **Nada contado duas vezes**: recebimento já lançado à mão (mesmo valor, até 3 dias) não é lançado de novo; o que já estava no "total do ano" digitado diminui o ajuste. A tela final avisa os dois casos. Vindo do extrato, segue para os gastos. **Desde 10/10 (tarde):** (a) os possíveis repetidos vêm num grupo só, primeiro: "Pode ser repetido · N entradas iguais às de outro extrato" → **Sim, é repetido** (não conta) ou **Não é repetido** (vira as perguntas normais, por pagador); (b) **o extrato substitui o total digitado** quando os extratos cobrem do começo do ano (ou da abertura) até o dia do total e nada ficou sem resposta: o ajuste sai e a tela final diz "Agora o velocímetro usa o extrato no lugar do total que você digitou." (selo vira Conferido). Extrato de só alguns meses não substitui (só desconta o que já estava no total). |
@@ -110,7 +117,8 @@ volta para o Início.
 | `MOSTRAR_CARD_DAS`, `MOSTRAR_TUTORIAL_DAS`, `MOSTRAR_TUTORIAL_NOTA`, `MOSTRAR_NOTIFICACOES`, `MOSTRAR_SUPORTE`, `MOSTRAR_DECLARACAO_ANUAL` | `true` |
 | **Novas de 08-10:** `MOSTRAR_ENVIAR_EXTRATO` (`/enviar-extrato`, `/conferir-saidas`), `MOSTRAR_MEU_LUCRO` (`/meu-lucro`), `MOSTRAR_JANELA_NOTAS` (`/notas-fiscais` nova), `MOSTRAR_SIMULADOR` (`/simulador`), `MOSTRAR_PREFERENCIAS` (religada) | `true` |
 | `MOSTRAR_SELETOR_VISUAL_INICIO` / `VISUAL_INICIO_PADRAO` | `false` / `"atual"` (Início de antes, Bloco B; `"f"` volta o F) |
-| **Novas de 10-10:** `MOSTRAR_PAGINA_DAS` (`/das`, `/das/historico`), `MOSTRAR_CALCULAR` (`/calcular`...), `MOSTRAR_COMPROVANTE_FOTO` ("+" com foto/PDF), `MOSTRAR_PERMISSOES` (`/perfil/permissoes`); `MOSTRAR_ANEXOS_CHAT` fica `false` (botões do chat sem função) | `true` |
+| **Novas de 10-10:** `MOSTRAR_PAGINA_DAS` (`/das`, `/das/historico`), `MOSTRAR_CALCULAR` (`/calcular`...), `MOSTRAR_COMPROVANTE_FOTO` ("+" com foto/PDF), `MOSTRAR_PERMISSOES` (`/perfil/permissoes`); **`MOSTRAR_ANEXOS_CHAT` ligada em 12/10 (noite)**: os botões do chat agora funcionam | `true` |
+| **Novas de 12/10 (noite):** `MOSTRAR_DAS_NO_INICIO` (card Próximo DAS no Início) e `MOSTRAR_NOTA_NO_INICIO` ("Como emitir nota" no topo do Início). `MOSTRAR_CARD_DAS` e `MOSTRAR_TUTORIAL_NOTA` continuam `true` (valem para o resto) | `false` |
 | `WHATSAPP_FISCO` | `"5537991999373"` — (37) 99199-9373 |
 
 Fora do `piloto.js`: `PLUGGY_ATIVO = false` (`src/lib/openfinance.js`).
@@ -186,8 +194,9 @@ categorias de gasto).
 1. Cadastro: CNPJ (com e sem), "Achei você", "Trocar", "Não sou eu",
    "Preencher depois".
 2. Perfil > CNPJ (mascarado / "Não preenchido").
-3. Início: "Falta informar", botão "Atualizar velocímetro", folha com 3
-   jeitos; depois de lançar algo, "Atualizado em..." e o selo.
+3. Início: botão pequeno "Atualizar velocímetro" no canto do card (zerado:
+   contorno verde), folha com 3 jeitos; depois de lançar algo,
+   "Atualizado em..." embaixo do botão e o selo.
 4. Enviar extrato com um **OFX ou CSV de verdade** do seu banco: a
    contagem, a conferência das 6 respostas, os gastos em dúvida; mandar
    o mesmo arquivo de novo (não pode duplicar); um PDF.
@@ -229,9 +238,37 @@ categorias de gasto).
     salvar normal. Depois da chave e do "pode": a leitura preenche os
     campos.
 15. **Perfil > Permissões e integrações:** desligar e religar "Lembretes
-    e avisos no WhatsApp"; Extratos enviados → apagar um.
+    e avisos no WhatsApp" (Extratos enviados saiu em 12/10, noite).
 16. Selo **Recomendado** em todo "Enviar extrato"; Termos e Privacidade
     novos; slide da nota ("Automática com o A1.").
+
+**Novos de 12/10 (noite, pelos prints):**
+
+17. **Início:** só o sininho no topo; o card do velocímetro maior; o
+    "Atualizar velocímetro" pequeno no canto (e o "Atualizado em" embaixo
+    dele depois de lançar algo); sem "Falta informar" e sem Próximo DAS; o
+    "?" não encosta no "MEI Caminhoneiro · anual". Tema Preto e Branco.
+18. **Chat da Isa no Início:** foto e barra menores; tocar na **câmera**
+    (tira a foto de um comprovante de Pix) → abre o "+" com o arquivo; o
+    **clipe** (escolher foto ou PDF) → o mesmo; o **microfone** → abre o
+    WhatsApp da Isa. Tocar no texto abre a caixinha: câmera, galeria,
+    documento e o microfone também funcionam lá. No `/fisco`, o "+"
+    (Foto, Galeria, Documento, Extrato) e o microfone.
+19. **Tutorial** (Perfil > Ajuda > Tutorial do app): o celular de exemplo
+    igual ao Início de agora; a 3ª tela é a conversa do WhatsApp ("Tudo
+    pelo WhatsApp com a Isa"); o celular não muda de tamanho no último
+    passo. A **Apresentação da Isa** (sininho) também.
+20. **Perfil > Permissões e integrações:** só WhatsApp, CNPJ e
+    Notificações. No Safari: "Notificação da semana · Como fazer" (folha
+    com os 3 passos). Para testar a notificação de verdade: seguir
+    `docs/NOTIFICACOES.md` (precisa do "pode" para o SQL e a função).
+21. **App na Tela de Início** (Safari > Compartilhar > Adicionar à Tela
+    de Início): o ícone verde do TaCerto; abre sem a barra do Safari;
+    pede para entrar de novo (o app instalado guarda os dados à parte);
+    depois de entrar, abre direto no Início. **Conferir a barra de cima
+    do iPhone e o topo das telas** (print).
+22. Procurar "Receita" no app: não pode aparecer (CNPJ, chat da Isa,
+    DAS, Calcular IR, Declaração).
 
 ---
 
@@ -334,6 +371,19 @@ categorias de gasto).
 | `docs/SQL-PENDENTE-10-10.sql` | SQL de 10-10 (**não rodado**) explicado |
 | `docs/IA-COMPROVANTE.md` | Passo a passo da chave da IA e custo por leitura |
 
+**Arquivos novos de 12/10 (noite):**
+
+| Arquivo | Para quê |
+|---|---|
+| `src/components/InicioPartes.jsx` | Peças e medidas do Início (card, botão do canto, barra da Isa, vidro), usadas pelo Início **e** pelo tutorial |
+| `src/components/ConversaIsaExemplo.jsx` | Conversa de exemplo no WhatsApp (tutorial e Apresentação) |
+| `src/lib/arquivoPendente.js` | Leva a foto/PDF do chat até o "+" (na memória, não na URL) |
+| `src/lib/notificacoesCelular.js` | Notificação da semana no celular (estado, ativar, desligar, inscrição) |
+| `public/manifest.webmanifest`, `public/sw.js`, `public/icones/` | App instalável na Tela de Início e o "programinha" que mostra a notificação (sem cache) |
+| `supabase/functions/aviso-semanal/index.ts` | Função que manda a notificação da semana (**não publicada**) |
+| `docs/SQL-PENDENTE-NOTIFICACOES.sql` | SQL das notificações (**não rodado**): tabela, soma do ano e o agendamento |
+| `docs/NOTIFICACOES.md` | Passo a passo das notificações (chaves, SQL, função, teste no iPhone) |
+
 ---
 
 ## 9. Pendente / para o Fernando decidir
@@ -364,6 +414,20 @@ categorias de gasto).
    pôr como segredo `ANTHROPIC_API_KEY` no Supabase, e dar o "pode" para
    publicar. Passo a passo e custo: **`docs/IA-COMPROVANTE.md`**. Até lá o
    "+" segue no lançamento à mão com o arquivo guardado.
+9. **Notificação da semana: app pronto, servidor ESCRITO e NÃO
+   PUBLICADO** (12/10, noite). Falta, um passo por vez e cada um com o
+   "pode": gerar as chaves VAPID (a pública vai para a Vercel como
+   `VITE_VAPID_PUBLIC_KEY`), rodar a PARTE 1 de
+   **`docs/SQL-PENDENTE-NOTIFICACOES.sql`**, pôr 3 segredos no Supabase,
+   publicar a função `aviso-semanal` (com "Verify JWT" desligado; quem
+   chama é o agendador, com segredo próprio) e rodar a PARTE 2
+   (agendamento, toda segunda às 9h). Tudo em **`docs/NOTIFICACOES.md`**.
+   Até lá a pessoa já consegue ativar no celular; o envio só começa depois.
+10. **Erro no registro `src/supabase/migrations.sql`** (achado em 12/10):
+    na PARTE 4D está escrito `do $` / `end $;` com um cifrão só (o certo é
+    `$$`). Não estragou nada no banco (lá rodou certo), mas se alguém
+    rodar o arquivo de novo, essa parte dá erro. Corrigir só o texto do
+    registro (não roda nada).
 
 ---
 
@@ -456,6 +520,7 @@ B3. A luz verde girando na barra do chat e a bolinha verde na foto
     voltaram iguais (mesmas dimensões). Deixar mais discreto? (iguais)
 B4. Os botões de foto, galeria, documento, extrato e microfone do chat
     nunca fizeram nada: **escondi** (`MOSTRAR_ANEXOS_CHAT = false`). Ok?
+    → **Respondida em 12/10 (noite):** voltaram, agora funcionando (ver N3).
 B5. Quando a Isa não sabe: "Essa eu ainda não sei responder por aqui. Me
     chama no WhatsApp que eu te ajudo." + botão "Falar com a Isa no
     WhatsApp" (a mensagem leva a pergunta). Ok o texto?
@@ -618,11 +683,11 @@ K1. Página nova **Perfil > Conta > "Permissões e integrações"**
     quando você chamar"). ⚠️ No piloto quem manda os lembretes é você:
     antes de mandar, olhe `perfis.avisos_whatsapp` (depois do SQL de
     10-10; antes dele a escolha fica só no celular da pessoa).
-K2. "Extratos enviados → Ver e apagar": apagar tira o **arquivo e o
+K2. (**12/10, noite: a linha saiu**, pedido do Fernando) "Extratos enviados → Ver e apagar": apagar tira o **arquivo e o
     registro**, mas o que a pessoa já confirmou **continua no velocímetro**
     (as entradas não guardam de qual extrato vieram). Ok, ou apagar também
     as entradas daquele período? (deixei assim)
-K3. "Notificações do celular" só mostra o status (Ligadas / Bloqueadas /
+K3. (**12/10, noite: virou a "Notificação da semana"**, ver N6) "Notificações do celular" só mostra o status (Ligadas / Bloqueadas /
     Não pedidas): o app ainda não manda notificação no celular. Pedir a
     permissão quando existir notificação de verdade.
 
@@ -637,7 +702,7 @@ L1. Na **primeira vez no Início** abre o "Como funciona" (4 telas, o
     aparelho). Rever: **Perfil > Ajuda > Tutorial do app**.
 L2. Quem **já usa** o app vai ver o tutorial **uma vez** ao abrir esta
     versão (ninguém tem `tutorial_visto` ainda). Ok? (assim)
-L3. ⚠️ O celular de exemplo (da Apresentação e do tutorial) ainda mostra
+L3. (**Resolvida em 12/10, noite:** o exemplo agora é o Início de verdade.) ⚠️ O celular de exemplo (da Apresentação e do tutorial) ainda mostra
     o **Início F** (barra DAS | Isa | NF), mas o Início de verdade voltou
     ao de antes (Bloco B). Redesenhar o exemplo igual ao Início de
     agora? (não mexi: é o mesmo desenho dos slides)
@@ -666,3 +731,79 @@ M5. "Pelos termos da Anthropic, o arquivo não é usado para treinar a IA":
 M6. A FAQ do chat (`src/lib/faqFisco.js`) já estava em dia (o "Perfil >
     Calcular" entrou no Bloco B); a FAQ antiga (`/faq`) está escondida
     e só teve a data da DASN corrigida (Bloco G).
+
+---
+
+## Ajustes de 12/10 (noite) — pelos prints do Fernando
+
+**O que mudou** (tudo enviado ao GitHub; a prévia da Vercel mostra):
+
+- **Início** (print "muito mal enquadrado"): só o sininho no topo; card
+  do velocímetro maior com "Atualizar velocímetro" pequeno no canto e
+  "Atualizado em" embaixo; sem "Falta informar" e sem Próximo DAS; chat
+  da Isa menor (foto 68, barra 44) com câmera, clipe e microfone.
+- **Anexos do chat funcionando:** foto/galeria/documento → o "+" lendo o
+  comprovante; extrato → Enviar extrato; microfone → WhatsApp da Isa.
+- **Tutorial e Apresentação da Isa:** o celular de exemplo é o Início de
+  agora (mesmas peças, `InicioPartes.jsx`); tela nova com a conversa do
+  WhatsApp. Tutorial (4 telas): 1) Seu limite do ano; 2) **Seu MEI no
+  Perfil** (CNPJ, DAS e notas; boleto do DAS no WhatsApp); 3) **Tudo pelo
+  WhatsApp com a Isa** ("Nota fiscal, boleto do DAS, entradas e gastos,
+  dúvidas: é só mandar mensagem, áudio ou foto."); 4) **Comece pelo
+  extrato** (destaca o "Atualizar velocímetro"). A Apresentação perdeu os
+  passos do DAS e da NF do Início e ganhou o "Atualizar" e o WhatsApp.
+- **Permissões e integrações** (print): só o que existe — WhatsApp (com a
+  chave dos avisos), CNPJ e **Notificação da semana**. Saíram Extratos
+  enviados, Receita Federal, Certificado A1, Banco (Open Finance) e o
+  rodapé (Privacidade e Excluir conta já estão no Perfil).
+- **Notificação da semana:** a pessoa ativa (o celular pergunta se
+  aceita) e recebe 1 por semana: "Você já usou X% do limite do ano." +
+  uma frase curta da situação, sem valores e sem CNPJ (aparece na tela
+  bloqueada). No iPhone, só com o TaCerto **na Tela de Início** (iOS
+  16.4+): no Safari, a linha mostra "Como fazer" (3 passos). O app ficou
+  **instalável** (ícone, manifesto, programinha da notificação sem cache).
+  Servidor escrito, esperando o "pode" (pendência 9).
+- **"Receita Federal" sumiu do app** (CNPJ, chat da Isa, mensagem do
+  WhatsApp, Declaração, DAS do ano, página do DAS, Calcular IR). Ficaram
+  só comentários de código e o reconhecimento do DAS no extrato do banco.
+- **Certificado A1:** quem guarda o certificado é a **plataforma de
+  emissão de notas** (ela assina cada nota), não o TaCerto. Saiu de
+  Permissões; em Notas fiscais o "Por que precisa" diz isso.
+- **Privacidade e Termos:** sem "apagar extratos"; o extrato em PDF fica
+  guardado; gastos contados à Isa no WhatsApp; comprovante pelo chat; a
+  notificação da semana (só se ativar, como desligar, passa pelo serviço
+  de notificação do celular).
+- **Suporte:** "No Perfil, toque em DAS / Notas fiscais" (antes: Início).
+
+**Perguntas (decisões que tomei sem você; diga se quer diferente):**
+
+N1. Card do velocímetro com **altura máxima de 440** e centrado em tela
+    alta. No seu iPhone (≈ 644 de altura útil) ele ocupa todo o espaço;
+    no PC sobra espaço em volta. Ok? (o print do iPhone decide)
+N2. Zerado, o "Atualizar velocímetro" do canto fica com **contorno
+    verde** (chama a primeira atualização). Ok, ou cinza sempre?
+N3. O **microfone abre o WhatsApp** da Isa (o app não grava áudio). E a
+    câmera/galeria/documento vão para o "+" como **comprovante de
+    recebimento** (com "Lançar como gasto" se parecer gasto). Foto para
+    tirar dúvida (não é comprovante) vai pelo WhatsApp. Ok?
+N4. Tutorial ficou com **4 telas** (o pedido de 10-10 era no máximo 4).
+    O texto do WhatsApp lista o que dá para fazer em vez de dizer "tudo
+    do app" (o Imposto de Renda e o Enviar extrato são só no app). Ok?
+N5. Na conversa de exemplo a Isa diz "Nota emitida! Está aqui:" (igual ao
+    slide das boas-vindas). Sem o Certificado A1, hoje a Isa **monta a
+    nota com você** e guia no gov.br. Deixar assim?
+N6. **Notificação da semana:** toda **segunda às 9h**, com o título
+    "TaCerto!" e o texto acima; acima de 120% do limite: "Abra o app para
+    ver os próximos passos." Ok o dia, a hora e os textos?
+N7. **App na Tela de Início:** a barra de cima do iPhone fica escura
+    (combina com o tema Preto); no tema Branco pode ficar estranha.
+    Conferir no print do iPhone.
+N8. Notas fiscais: o topo ainda diz "Para emitir é preciso o Certificado
+    Digital A1", mas pelo gov.br dá para emitir **sem** A1 (basta a conta
+    gov.br prata ou ouro). Trocar para "Para a nota **automática** é
+    preciso..."? E o "Como o TaCerto ajuda hoje" (Como emitir nota) fala
+    em nota automática com o A1, que ainda não existe. (não mexi)
+N9. Extratos: do **PDF** o arquivo fica guardado; do **OFX/CSV** o app
+    guarda só as movimentações do ano (o arquivo original não). Se quiser
+    poder mandar o arquivo original pelo WhatsApp depois, precisa guardar
+    o OFX/CSV também. Guardar?

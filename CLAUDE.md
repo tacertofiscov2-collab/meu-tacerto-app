@@ -132,6 +132,8 @@ O projeto **não tem backup automático**. Por isso:
 - **Saídas** são guardadas sozinhas, sem perguntar nada; a tela de saídas
   é igual à de entradas.
 - O app **nunca diz que uma DAS está "em aberto"** (só o governo sabe).
+- **Nada no app cita "Receita Federal"** (nem "a Receita" como órgão):
+  usar "o governo", "dados públicos do CNPJ", "Portal do Simples" (12/10).
 - **Tipo de MEI** é travado (só muda pela folha "O que mudou?").
 - **Contador parceiro: é a ÚLTIMA coisa a construir** (pedido explícito).
 
@@ -174,6 +176,18 @@ O projeto **não tem backup automático**. Por isso:
 
 ## Onde estamos (atualizar ao fim de cada sessão)
 
+- **12/10 (noite): ajustes pelos prints do Fernando, na NUVEM, enviados
+  ao GitHub.** Início novo (só o sininho; card do velocímetro maior com
+  "Atualizar velocímetro" no canto; sem "Falta informar" e sem Próximo DAS;
+  chat da Isa menor com câmera, clipe e microfone FUNCIONANDO); tutorial
+  igual ao Início (peças em `src/components/InicioPartes.jsx`) + tela
+  "Tudo pelo WhatsApp com a Isa"; Permissões e integrações só com WhatsApp,
+  CNPJ e **Notificação da semana**; app instalável na Tela de Início;
+  **nada no app cita "Receita Federal"** (regra nova do Fernando); o A1 fica
+  com a plataforma de notas. **Falta o "pode"** para
+  `docs/SQL-PENDENTE-NOTIFICACOES.sql` e a função `aviso-semanal`
+  (`docs/NOTIFICACOES.md`), além dos de 10-10. Perguntas N1 a N9 no fim
+  do `docs/HANDOFF.md`.
 - **12/10: tarefa de `docs/PROMPT-CODE-10-10.md` CONCLUÍDA (blocos A a M),
   feita no Claude Code na NUVEM** (sem `.env` e sem Supabase: nada rodou
   no banco). Tudo **enviado ao GitHub** (push no fim de cada bloco, a
