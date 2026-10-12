@@ -1,4 +1,4 @@
-﻿/* PERFIL v24 — dados que vieram do CNPJ ficam TRAVADOS: Tipo de MEI (quando bate com o CNPJ) e Abertura mostram um cadeado pequeno e "Veio do seu CNPJ"; tocar abre a pagina do CNPJ (Atualizar / Remover CNPJ) (v23: Meu MEI: linha "Simulador" (/simulador) (v22: Preferencias com o detalhe "Lembrete do DAS" (a tela voltou so com ele) (v21: Ajuda: "Notas fiscais" abre a janela nova (/notas-fiscais) (v20: Meu MEI: linha "Meu lucro" (/meu-lucro) (v19: Meu MEI: linha "CNPJ" (mascarado 12.345.•••/••01-90; sem CNPJ, "Não preenchido" com pontinho de aviso) que abre a busca/confirmacao (/perfil/cnpj) (v18: "Excluir conta" em branco (como as outras linhas); vermelho so no "Sair da conta" (pedido do Fernando) (v17: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes)))) */
+﻿/* PERFIL v25 — Abertura travada mostra a data do CNPJ (opcao pelo MEI), nao a do app (v24: dados que vieram do CNPJ ficam TRAVADOS: Tipo de MEI (quando bate com o CNPJ) e Abertura mostram um cadeado pequeno e "Veio do seu CNPJ"; tocar abre a pagina do CNPJ (Atualizar / Remover CNPJ) (v23: Meu MEI: linha "Simulador" (/simulador) (v22: Preferencias com o detalhe "Lembrete do DAS" (a tela voltou so com ele) (v21: Ajuda: "Notas fiscais" abre a janela nova (/notas-fiscais) (v20: Meu MEI: linha "Meu lucro" (/meu-lucro) (v19: Meu MEI: linha "CNPJ" (mascarado 12.345.•••/••01-90; sem CNPJ, "Não preenchido" com pontinho de aviso) que abre a busca/confirmacao (/perfil/cnpj) (v18: "Excluir conta" em branco (como as outras linhas); vermelho so no "Sair da conta" (pedido do Fernando) (v17: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes))))) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav.jsx";
@@ -336,6 +336,12 @@ export default function Perfil() {
   const abertura = mesAnoAbertura?.mes && mesAnoAbertura?.ano
     ? `${MESES[Number(mesAnoAbertura.mes) - 1]} de ${mesAnoAbertura.ano}`
     : "";
+  /* v25: travada, a Abertura mostra a data do CNPJ (opcao pelo MEI), nao
+     a do app (antes: travada com "Veio do seu CNPJ" e outra data) */
+  const isoOpcaoMei = aberturaTravada ? String(app.dataOpcaoMei).slice(0, 10) : "";
+  const aberturaDoCnpj = /^\d{4}-\d{2}/.test(isoOpcaoMei)
+    ? `${MESES[Number(isoOpcaoMei.slice(5, 7)) - 1]} de ${isoOpcaoMei.slice(0, 4)}`
+    : "";
   // Limite proporcional: abriu este ano depois de janeiro (fiscal.js)
   const limiteEhProporcional =
     Number(mesAnoAbertura?.ano) === anoAtual && Number(mesAnoAbertura?.mes) > 1;
@@ -551,8 +557,8 @@ export default function Perfil() {
               ) : (
                 <LinhaLista Icon={Briefcase} rotulo="Tipo de MEI" valor={rotuloTipo} onClick={() => setFolhaTipoAberta(true)} />
               )}
-              {abertura && (aberturaTravada ? (
-                <LinhaLista Icon={CalendarDays} rotulo="Abertura" detalhe="Veio do seu CNPJ" valor={<ValorTravado>{abertura}</ValorTravado>} onClick={abrirCnpj} />
+              {(aberturaDoCnpj || abertura) && (aberturaDoCnpj ? (
+                <LinhaLista Icon={CalendarDays} rotulo="Abertura" detalhe="Veio do seu CNPJ" valor={<ValorTravado>{aberturaDoCnpj}</ValorTravado>} onClick={abrirCnpj} />
               ) : (
                 <LinhaLista
                   Icon={CalendarDays}

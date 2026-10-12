@@ -75,7 +75,7 @@
 | **Preferências** | `/preferencias` | **Religada, só com o Lembrete do DAS:** dias antes (7, 5, 3, 2, 1, no dia; padrão 7, 2 e no dia), horário (padrão 9:00), "Não quero lembretes". Grava no perfil. |
 | **Painel do DAS** | (DAS no Início) | Agora mostra no topo "Vence 20/10 · R$ 195,52" (data real com feriados; valor pelo CNAE). |
 | **Perfil** | `/perfil` | Meu MEI: **CNPJ** (12.345.•••/••01-90 ou "Não preenchido" + pontinho amarelo; abre `/perfil/cnpj`), Tipo, Abertura, Limite, Já faturado, Limite restante, **Meu lucro**, **Simulador**, Histórico. Conta: **Preferências** (Lembrete do DAS). Ajuda: Suporte, **Notas fiscais**, Como pagar o DAS, Declaração anual. |
-| **CNPJ pelo Perfil** | `/perfil/cnpj` | O mesmo fluxo do cadastro. Não muda o tipo de MEI (travado; só avisa se o CNPJ sugere outro). Se virou MEI este ano, acerta a abertura. |
+| **CNPJ pelo Perfil** | `/perfil/cnpj` | **Desde 12/10 (Bloco C):** **sem CNPJ**, "Com o seu CNPJ" com 5 vantagens curtas + o campo de busca → "Achei você". **Com CNPJ**, só para ler: CNPJ mascarado, Nome, Situação (Ativa; outra situação com pontinho e aviso amarelo), MEI desde, Município, Atividades (nome + código, "principal"), "🔒 Veio do seu CNPJ · Consultado em 12/10 às 14:53"; destaque **"Pedir pra Isa conferir meu CNPJ"** (WhatsApp com o CNPJ; quem confere hoje é a equipe, a tela não promete consulta automática); **"Atualizar dados do CNPJ"** (busca de novo) e **"Remover CNPJ"** (folha de confirmação; apaga o CNPJ e o que veio dele). Não muda o tipo de MEI (só avisa se o CNPJ sugere outro). Se virou MEI este ano, acerta a abertura. No **Perfil**, Tipo de MEI (quando bate com o CNPJ) e Abertura (com a data do CNPJ) ficam **travados**: cadeado pequeno + "Veio do seu CNPJ"; tocar abre esta página. Removeu o CNPJ: voltam a ser editáveis. |
 | **Calcular IR** | `/declaracao-anual/calcular` | Os gastos já vêm com a soma dos **gastos com nota** guardados no app (dá para ajustar). |
 | **Como emitir nota / Como pagar o DAS / Suporte / Termos / Privacidade** | | Textos corrigidos (ver seção 4). |
 
@@ -229,6 +229,16 @@ categorias de gasto).
   (`node_modules/.tacerto-teste/mock.js`, fora do Git; recriado a partir
   do scratchpad): troca o `supabase` do app por dados na memória e simula
   o "SIGNED_IN". Nada vai para o banco real.
+- **Sessão na nuvem (12/10):** não tem `.env` nem Supabase. O
+  `package-lock.json` tem 8 endereços antigos do Lovable que a nuvem não
+  acessa: com o ok do Fernando, os pacotes foram instalados numa cópia
+  (scratchpad) com o endereço trocado para o `registry.npmjs.org` e a
+  `node_modules` foi movida para o projeto (o lock do projeto não
+  mudou). O Vite roda com `VITE_SUPABASE_URL` de mentira, e o
+  Playwright serve o `node_modules/.tacerto-teste/mock.js` no lugar de
+  `/src/lib/supabase.js` (`page.route`). No mock, `localStorage`
+  `mock_sql_10_10 = "1"` simula o SQL de 10-10 já rodado (sem isso, as
+  colunas novas "não existem": leitura dá 42703 e gravação PGRST204).
 - **HMR** (atualização ao salvar) às vezes carrega duas cópias do
   AppStateContext e a tela fica branca com "useAppState precisa estar
   dentro de <AppStateProvider>": não é bug do app; recarregar a página.
@@ -277,6 +287,14 @@ categorias de gasto).
    construído (pedido). Os pendentes estão em `extratos_enviados`.
 6. DAS no automático: seguir `docs/PLANO-AUTOMACAO-DAS.md` (falta CNPJ do
    TaCerto, e-CNPJ A1, contrato Serpro e WhatsApp oficial da Meta).
+7. **SQL de 10-10 AINDA NÃO RODOU** (a sessão de 12/10 foi na nuvem, sem
+   acesso ao Supabase): **`docs/SQL-PENDENTE-10-10.sql`**, explicado em
+   português simples no topo. Precisa do "pode" do Fernando e da rotina
+   do CLAUDE.md (cópia antes, conferir depois, logs e advisors). Depois
+   de rodar, registrar no `src/supabase/migrations.sql` (PARTE 4E). Até
+   lá o app funciona: o que for desses campos fica no aparelho e sobe
+   sozinho depois (testado em 12/10 num banco de mentira sem as colunas).
+   O arquivo cresce a cada bloco da tarefa de 10-10 que precisar de banco.
 
 ---
 
@@ -383,3 +401,23 @@ B8. O botão "Como emitir nota" do topo agora abre a página **Notas
     fiscais**. Trocar o texto para "Notas fiscais"? (mantive)
 B9. O "?" ao lado do % (Tirar dúvidas) voltou junto com o Início de
     antes, agora com perguntas que têm resposta no chat. Ok?
+
+**Bloco C (CNPJ)**
+
+C1. Quem confirmou o CNPJ **antes** de 10/10 não tem o resumo guardado:
+    a página mostra só CNPJ, MEI desde e os códigos das atividades (sem
+    situação nem município) até tocar em "Atualizar dados do CNPJ".
+    Buscar sozinho na primeira vez que abrir a página? (deixei manual)
+C2. Se o CNPJ diz "MEI desde 2021" mas no app está "abriu este ano"
+    (limite proporcional), o limite continua proporcional (regra de
+    08-10: CNPJ de outro ano não mexe na abertura). A linha Abertura do
+    Perfil, travada, mostra a data do CNPJ. Trocar para o limite cheio
+    sozinho nesse caso? (não troquei)
+C3. "Remover CNPJ": Tipo de MEI e Abertura ficam como estão, só voltam a
+    ser editáveis. Ok? (assim)
+C4. O Tipo de MEI só fica travado quando bate com o CNPJ. Se a pessoa
+    trocou pela folha "O que mudou?", continua editável. Ok? (assim)
+C5. Dois aparelhos: se a pessoa remove o CNPJ num celular e abre o app
+    em OUTRO celular que ainda tinha o CNPJ guardado, ele pode voltar
+    (o app sobe para o banco o que só estava no aparelho; regra de
+    08-10). No piloto cada um usa um iPhone; deixei assim e anotei.
