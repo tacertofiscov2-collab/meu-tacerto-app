@@ -1,4 +1,4 @@
-/* SUPORTE v5 — resposta do Imposto de Renda aponta para Perfil > Calcular > Imposto de Renda (a calculadora saiu da Declaracao anual) (v4: Fisco vira Isa na resposta sobre nota fiscal (v3: "Preciso emitir nota?" com a regra do agregado (v2: correcoes de 08-10: DAS vence dia 20 e, se nao for dia util, no proximo dia util; NFS-e so para frete na mesma cidade (agregado sem IE em MG hoje nao emite); A1 a preco de custo (R$ 100,34) (v1: chat de suporte dentro do app (Perfil > Ajuda): perguntas prontas por assunto para afunilar; se nao resolver, a pessoa escreve e vai pro WhatsApp do suporte com tudo anotado)) */
+/* SUPORTE v6 — datas da declaracao (Bloco G): a do MEI "pode ser feita desde o começo do ano até 31 de maio" e "quando você quiser, dentro do prazo, a Isa faz com você" (sai o "em maio") (v5: resposta do Imposto de Renda aponta para Perfil > Calcular > Imposto de Renda (a calculadora saiu da Declaracao anual) (v4: Fisco vira Isa na resposta sobre nota fiscal (v3: "Preciso emitir nota?" com a regra do agregado (v2: correcoes de 08-10: DAS vence dia 20 e, se nao for dia util, no proximo dia util; NFS-e so para frete na mesma cidade (agregado sem IE em MG hoje nao emite); A1 a preco de custo (R$ 100,34) (v1: chat de suporte dentro do app (Perfil > Ajuda): perguntas prontas por assunto para afunilar; se nao resolver, a pessoa escreve e vai pro WhatsApp do suporte com tudo anotado))) */
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
@@ -96,7 +96,7 @@ const ASSUNTOS = [
     perguntas: [
       {
         p: "Quando entrego?",
-        r: "A do MEI vai até 31 de maio, sobre o ano anterior. Mesmo se não faturou nada.",
+        r: "A do MEI pode ser feita desde o começo do ano até 31 de maio, sobre o ano anterior. Mesmo se não faturou nada. O Imposto de Renda abre em março e vai até o fim de maio.",
       },
       {
         p: "Preciso declarar Imposto de Renda?",
@@ -104,7 +104,7 @@ const ASSUNTOS = [
       },
       {
         p: "Vocês fazem pra mim?",
-        r: "A do MEI, sim: em maio a gente faz com os valores do app e você só confirma. No Imposto de Renda, a gente te orienta.",
+        r: "A do MEI, sim: quando você quiser, dentro do prazo, a Isa faz com você com os valores do app, e você só confirma. No Imposto de Renda, a gente te orienta.",
       },
       {
         p: "Perdi o prazo",

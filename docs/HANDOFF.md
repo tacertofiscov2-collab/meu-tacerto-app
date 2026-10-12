@@ -493,3 +493,13 @@ F7. Na Declaração anual saíram "Parte do faturamento é isenta",
     "Declarar não é pagar" e "Faturado no ano" (estão na conta do IR).
     "Se atrasar" virou uma frase no prazo. O passo a passo da DASN ficou
     (fechado). Ok?
+
+**Bloco G (datas da declaração)**
+
+G1. Textos novos (constantes em `src/lib/declaracao.js`, para atualizar
+    todo ano): a do MEI "Pode ser feita desde o começo do ano até 31 de
+    maio."; o IR "Abre em março e vai até o fim de maio (a Receita
+    divulga as datas todo ano)."; e "Quando você quiser, dentro do
+    prazo, a Isa faz com você." Saiu o "em maio" da Declaração anual e
+    do Suporte. Em 2026 o IR foi de 23/03 a 29/05 (guardado em
+    `PERIODO_IRPF`, sem aparecer na tela).

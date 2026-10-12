@@ -1,4 +1,4 @@
-/* DECLARACAOANUAL v2 — fica SO a explicacao (o que e, prazo, como o TaCerto ajuda) + o botao "Calcular meu Imposto de Renda", que leva ao Calcular > Imposto de Renda (/calcular/imposto-de-renda); sairam o percentual isento, "declarar nao e pagar" e o faturado do ano (estao na conta do IR); o passo a passo da DASN continua, fechado (Bloco F) (v1: pagina nova (Perfil > Ajuda): prazo, "Calcular meu Imposto de Renda", como o TaCerto ajuda hoje, explicacao sem juridiques e o passo a passo da DASN-SIMEI) */
+/* DECLARACAOANUAL v3 — datas certas (Bloco G): a do MEI "Pode ser feita desde o começo do ano até 31 de maio.", o Imposto de Renda "Abre em março e vai até o fim de maio (a Receita divulga as datas todo ano)." e "Quando você quiser, dentro do prazo, a Isa faz com você." (sai o "em maio"); textos de src/lib/declaracao.js (v2: fica SO a explicacao (o que e, prazo, como o TaCerto ajuda) + o botao "Calcular meu Imposto de Renda", que leva ao Calcular > Imposto de Renda (/calcular/imposto-de-renda); sairam o percentual isento, "declarar nao e pagar" e o faturado do ano (estao na conta do IR); o passo a passo da DASN continua, fechado (Bloco F) (v1: pagina nova (Perfil > Ajuda): prazo, "Calcular meu Imposto de Renda", como o TaCerto ajuda hoje, explicacao sem juridiques e o passo a passo da DASN-SIMEI)) */
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/config/piloto";
 import {
   proximaDeclaracao, LINK_DASN_SIMEI, LIMITE_DECLARAR_IR, ANO_DO_LIMITE_IR, MULTA_MINIMA_DASN,
+  TEXTO_PRAZO_DASN, TEXTO_PERIODO_IRPF, TEXTO_TACERTO_DECLARACAO,
 } from "@/lib/declaracao";
 
 /* ===================================================================
@@ -87,8 +88,13 @@ export default function DeclaracaoAnual() {
         <SecaoLista style={{ marginTop: 4 }}>
           <LinhaLista
             Icon={CalendarClock}
-            rotulo={`Entregue até 31 de maio de ${anoEntrega}`}
-            detalhe={`Sobre o que você faturou em ${anoDeclarado}. Mesmo se não faturou nada. Atrasou: ainda dá, com multa a partir de R$ ${MULTA_MINIMA_DASN}.`}
+            rotulo={`Do MEI: até 31 de maio de ${anoEntrega}`}
+            detalhe={`${TEXTO_PRAZO_DASN} Sobre o que você faturou em ${anoDeclarado}, mesmo se não faturou nada. Atrasou: ainda dá, com multa a partir de R$ ${MULTA_MINIMA_DASN}.`}
+          />
+          <LinhaLista
+            Icon={CalendarClock}
+            rotulo="Imposto de Renda (pessoa física)"
+            detalhe={TEXTO_PERIODO_IRPF}
           />
         </SecaoLista>
 
@@ -108,8 +114,8 @@ export default function DeclaracaoAnual() {
         <SecaoLista titulo="Como o TaCerto ajuda hoje">
           <LinhaLista
             Icon={CheckCircle2}
-            rotulo="A do MEI, a gente faz por você"
-            detalhe="Em maio, com os valores que você lançou no app. Você só confirma no WhatsApp."
+            rotulo="A do MEI"
+            detalhe={`${TEXTO_TACERTO_DECLARACAO} Com os valores do app, você só confirma no WhatsApp.`}
           />
           <LinhaLista
             Icon={CheckCircle2}
