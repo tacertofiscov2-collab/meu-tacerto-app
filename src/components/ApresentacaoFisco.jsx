@@ -1,17 +1,15 @@
-/* APRESENTACAOFISCO v7 — o celular de exemplo mostra o Inicio NOVO igual ao de verdade (pecas e medidas de InicioPartes: so o sininho, card do velocimetro com "Atualizar velocímetro" no canto, chat da Isa com camera/clipe/microfone, barra de baixo de vidro; desenho 390 x 800) e ganha a tela da conversa no WhatsApp (ConversaIsaExemplo); tutorial: 3a tela "Tudo pelo WhatsApp com a Isa" (nota, DAS, entradas e gastos, duvidas), 2a "Seu MEI no Perfil" e a 4a destaca o Atualizar velocímetro; Apresentacao da Isa sem os passos do DAS e da NF do Inicio (agora no Perfil e no WhatsApp) (v6: modo "tutorial" (primeiro acesso, Bloco L): 4 telas (o velocimetro e o limite; integracoes e o que automatizam; tudo tambem pelo WhatsApp; comece pelo extrato, Recomendado), "Pular tutorial" no topo e, no fim, "Enviar extrato" + "Agora não"; o modo de sempre (Apresentacao da Isa) nao mudou (v5: Fisco vira Isa: "Oi, sou a Isa" (assistente com IA do TaCerto), foto da Isa (FotoIsa) no texto e na barra do celular de exemplo, titulo "Apresentação da Isa" (v4: celular MENOR, menos espaco vazio dentro dele (desenho mais justo: 340 x 715, mesma proporcao) e icones MAIORES (barra DAS/Fisco/NF, rodape e sininho); celular e texto do Fisco juntos, centrados na tela (pedido do Fernando) (v3: celular de exemplo com proporcao de celular de verdade (390 x 820) e igual ao Inicio novo: saudacao, velocimetro grande e a barra dos 3 atalhos centrada entre as bolinhas e o rodape (v2: celular de exemplo igual ao Inicio novo (DAS, Fisco com o simbolo do WhatsApp, NF; casinha cinza; velocimetro mais alto); textos do + e do Perfil (v1: tutorial "Apresentação do Fisco.ia": celular de exemplo do Inicio (visual F) com um circulo verde passando por cada funcao e o Fisco.ia explicando, em slides)) */
+/* APRESENTACAOFISCO v9 — celular de exemplo com o Inicio novo: sem o chat da Isa, com "Ultimos lancamentos" (mesma peca do Inicio); passos novos "Seus últimos lançamentos" e "Ficou com dúvida?" na aba Isa (ajuste do Bloco 3) (v8: celular de exemplo com o rodape de verdade de 5 itens (Inicio | Notas | + | Isa | Mais, a mesma peca BottomNav); "Perfil" vira "Mais" ("Seu MEI no Mais"; passo novo "Notas") (Bloco 3) (v7: o celular de exemplo mostra o Inicio NOVO igual ao de verdade (pecas e medidas de InicioPartes: so o sininho, card do velocimetro com "Atualizar velocímetro" no canto, chat da Isa com camera/clipe/microfone, barra de baixo de vidro; desenho 390 x 800) e ganha a tela da conversa no WhatsApp (ConversaIsaExemplo); tutorial: 3a tela "Tudo pelo WhatsApp com a Isa" (nota, DAS, entradas e gastos, duvidas), 2a "Seu MEI no Perfil" e a 4a destaca o Atualizar velocímetro; Apresentacao da Isa sem os passos do DAS e da NF do Inicio (agora no Perfil e no WhatsApp) (v6: modo "tutorial" (primeiro acesso, Bloco L): 4 telas (o velocimetro e o limite; integracoes e o que automatizam; tudo tambem pelo WhatsApp; comece pelo extrato, Recomendado), "Pular tutorial" no topo e, no fim, "Enviar extrato" + "Agora não"; o modo de sempre (Apresentacao da Isa) nao mudou (v5: Fisco vira Isa: "Oi, sou a Isa" (assistente com IA do TaCerto), foto da Isa (FotoIsa) no texto e na barra do celular de exemplo, titulo "Apresentação da Isa" (v4: celular MENOR, menos espaco vazio dentro dele (desenho mais justo: 340 x 715, mesma proporcao) e icones MAIORES (barra DAS/Fisco/NF, rodape e sininho); celular e texto do Fisco juntos, centrados na tela (pedido do Fernando) (v3: celular de exemplo com proporcao de celular de verdade (390 x 820) e igual ao Inicio novo: saudacao, velocimetro grande e a barra dos 3 atalhos centrada entre as bolinhas e o rodape (v2: celular de exemplo igual ao Inicio novo (DAS, Fisco com o simbolo do WhatsApp, NF; casinha cinza; velocimetro mais alto); textos do + e do Perfil (v1: tutorial "Apresentação do Fisco.ia": celular de exemplo do Inicio (visual F) com um circulo verde passando por cada funcao e o Fisco.ia explicando, em slides)))) */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import {
-  ArrowLeft, Gauge, Bell, Home, Plus, User,
-} from "lucide-react";
+import { ArrowLeft, Gauge, Bell } from "lucide-react";
+import BottomNav from "./BottomNav.jsx";
 import VelocimetroAnimado from "./VelocimetroAnimado.jsx";
 import FotoIsa from "./FotoIsa.jsx";
 import SeloRecomendado from "./SeloRecomendado.jsx";
 import ConversaIsaExemplo from "./ConversaIsaExemplo.jsx";
-import { MEDIDAS_INICIO, VIDRO, BotaoAtualizarCanto, BarraIsaInicio } from "./InicioPartes.jsx";
+import { MEDIDAS_INICIO, VIDRO, BotaoAtualizarCanto, UltimosLancamentos } from "./InicioPartes.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import { LABEL_TIPO } from "@/lib/fiscal";
-import { MOSTRAR_ANEXOS_CHAT, MOSTRAR_COMPROVANTE_FOTO } from "@/config/piloto";
 
 /* ===================================================================
    APRESENTACAO DA ISA (05/10/2026 — pedido do Fernando; ate 10/10 era
@@ -61,9 +59,14 @@ const PASSOS_ISA = [
     texto: "Toque no + para lançar o que recebeu, ou para atualizar o total do ano.",
   },
   {
-    alvo: "fisco",
+    alvo: "ultimos",
+    titulo: "Seus últimos lançamentos",
+    texto: "Os 3 mais recentes, com ou sem nota. Toque para ver todos.",
+  },
+  {
+    alvo: "isa",
     titulo: "Ficou com dúvida?",
-    texto: "Pergunte aqui, tire foto do comprovante ou mande um áudio no WhatsApp.",
+    texto: "Toque em Isa e pergunte. Dá para mandar foto do comprovante e falar em vez de digitar.",
   },
   {
     tela: "whatsapp",
@@ -71,7 +74,8 @@ const PASSOS_ISA = [
     titulo: "Tudo pelo WhatsApp",
     texto: "Nota fiscal, boleto do DAS, entradas e gastos, dúvidas: é só me mandar mensagem.",
   },
-  { alvo: "perfil", titulo: "Seu Perfil", texto: "Seus dados, o DAS, as notas fiscais, o limite restante e o histórico." },
+  { alvo: "notas", titulo: "Notas", texto: "Suas notas fiscais: emitir, guardar e ver todas." },
+  { alvo: "menu", titulo: "Mais", texto: "Seus dados, o CNPJ, o DAS, o Calcular e a ajuda." },
   {
     alvo: "sino",
     titulo: "Notificações",
@@ -94,9 +98,9 @@ const PASSOS_TUTORIAL = [
     texto: "O velocímetro mostra quanto você já faturou e quanto ainda cabe no limite do MEI.",
   },
   {
-    alvo: "perfil",
-    titulo: "Seu MEI no Perfil",
-    texto: "CNPJ, DAS e notas fiscais ficam no Perfil. O boleto do DAS chega no seu WhatsApp.",
+    alvo: "menu",
+    titulo: "Seu MEI no Mais",
+    texto: "CNPJ e DAS ficam no Mais. As notas fiscais, na aba Notas.",
   },
   {
     tela: "whatsapp",
@@ -113,7 +117,7 @@ const PASSOS_TUTORIAL = [
 ];
 
 /* Alvos redondos (icones soltos): o circulo vira circulo de verdade */
-const ALVOS_REDONDOS = ["mais", "perfil", "sino"];
+const ALVOS_REDONDOS = ["mais", "notas", "isa", "menu", "sino"];
 
 /* Tamanho do desenho (o Inicio de verdade) e o maximo na tela */
 /* v3: 390 x 820 (proporcao de um iPhone; antes 744 deixava o celular
@@ -219,37 +223,13 @@ function InicioDeExemplo() {
           </div>
         </div>
 
-        {/* chat da Isa no pe (a mesma barra do Inicio) */}
-        <BarraIsaInicio exemplo anexos={MOSTRAR_ANEXOS_CHAT && MOSTRAR_COMPROVANTE_FOTO} />
+        {/* v9: ultimos lancamentos no pe (a mesma peca do Inicio; a Isa
+            fica so na aba Isa do rodape) */}
+        <UltimosLancamentos exemplo />
       </div>
 
-      {/* barra de baixo (a de vidro do Inicio: casinha verde e o + no circulo) */}
-      <div
-        className="shrink-0 flex items-end justify-around"
-        style={{
-          padding: "10px 13px 18px",
-          background:
-            "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
-          borderTop: "1px solid var(--vidro-borda)",
-          boxShadow: "inset 0 1px 0 0 var(--vidro-topo-medio), inset 0 7px 16px -8px var(--vidro-topo-fraco)",
-        }}
-      >
-        <div className="flex flex-col items-center gap-1">
-          <Home size={26} strokeWidth={2.5} style={{ color: "var(--primary)" }} />
-          <span className="font-medium leading-none" style={{ fontSize: 11, color: "var(--primary)" }}>Início</span>
-        </div>
-        <span
-          data-alvo="mais"
-          className="flex items-center justify-center"
-          style={{ width: 48, height: 48, borderRadius: "50%", backgroundColor: "var(--primary)" }}
-        >
-          <Plus size={26} strokeWidth={2.8} style={{ color: "var(--primary-contrast)" }} />
-        </span>
-        <div data-alvo="perfil" className="flex flex-col items-center gap-1">
-          <User size={26} strokeWidth={2} style={{ color: "var(--text-secondary)" }} />
-          <span className="font-medium leading-none" style={{ fontSize: 11, color: "var(--text-secondary)" }}>Perfil</span>
-        </div>
-      </div>
+      {/* v8: o rodape de verdade (5 itens), a mesma peca do app */}
+      <BottomNav exemplo ativo="inicio" />
     </div>
   );
 }

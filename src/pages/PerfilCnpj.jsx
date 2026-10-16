@@ -1,4 +1,4 @@
-/* PERFILCNPJ v4 — sem "Receita" (decisao do Fernando, 12/10): "Nos dados públicos, o CNPJ aparece como “...”." (antes "A Receita mostra o CNPJ como") e "Ela confere se tem DAS atrasado ou alguma pendência no CNPJ e te avisa." (antes "pendência na Receita") (v3: vindo do DAS ("A Isa me manda o boleto" sem CNPJ): uma frase do porque no topo e, confirmado o CNPJ, volta para o DAS (v2: pagina do CNPJ com 2 estados: SEM CNPJ, as vantagens em lista curta + o campo de busca; COM CNPJ, situacao cadastral, MEI desde, atividades, municipio, "Consultado em" (guarda o resumo e a data da consulta), "Atualizar dados do CNPJ", "Remover CNPJ" e o destaque "Pedir pra Isa conferir meu CNPJ" (WhatsApp com o CNPJ) (v1: Perfil > Meu MEI > CNPJ: o mesmo fluxo do cadastro ("Qual o CNPJ do seu MEI?" -> "Achei você"); grava CNPJ, CNAE e MEI desde, sem mudar o tipo de MEI (travado)))) */
+/* PERFILCNPJ v5 — "Tipo de MEI no Perfil" vira "no Mais" (Bloco 3) (v4: sem "Receita" (decisao do Fernando, 12/10): "Nos dados públicos, o CNPJ aparece como “...”." (antes "A Receita mostra o CNPJ como") e "Ela confere se tem DAS atrasado ou alguma pendência no CNPJ e te avisa." (antes "pendência na Receita") (v3: vindo do DAS ("A Isa me manda o boleto" sem CNPJ): uma frase do porque no topo e, confirmado o CNPJ, volta para o DAS (v2: pagina do CNPJ com 2 estados: SEM CNPJ, as vantagens em lista curta + o campo de busca; COM CNPJ, situacao cadastral, MEI desde, atividades, municipio, "Consultado em" (guarda o resumo e a data da consulta), "Atualizar dados do CNPJ", "Remover CNPJ" e o destaque "Pedir pra Isa conferir meu CNPJ" (WhatsApp com o CNPJ) (v1: Perfil > Meu MEI > CNPJ: o mesmo fluxo do cadastro ("Qual o CNPJ do seu MEI?" -> "Achei você"); grava CNPJ, CNAE e MEI desde, sem mudar o tipo de MEI (travado))))) */
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -223,7 +223,7 @@ export default function PerfilCnpj() {
           )}
           {tipoDoCnpj && tipoDoCnpj !== tipoMEI && (
             <p style={{ color: "var(--text-tertiary)", fontSize: 13.5, marginTop: 8, lineHeight: 1.45 }}>
-              O CNPJ parece de {LABEL_PERFIL[tipoDoCnpj]}. No app você está como {LABEL_PERFIL[tipoMEI] || "MEI"}: para trocar, use “Tipo de MEI” no Perfil.
+              O CNPJ parece de {LABEL_PERFIL[tipoDoCnpj]}. No app você está como {LABEL_PERFIL[tipoMEI] || "MEI"}: para trocar, use “Tipo de MEI” no Mais.
             </p>
           )}
 

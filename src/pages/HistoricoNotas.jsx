@@ -1,4 +1,4 @@
-/* HISTORICONOTAS v5 — vira "Minhas notas" da pagina Notas fiscais (/notas-fiscais/minhas): "Guardar uma nota" (arquivo primeiro; a folha e exportada para a pagina usar) e, guardada uma nota deste ano, a pergunta "Posso somar no velocímetro?" sem contar duas vezes (FolhaSomarNoVelocimetro); nota somada mostra "No velocímetro"; visual de hoje (sem verde, Guardar em contorno, sem a barra de baixo) (v4: prop titulo (a janela Notas fiscais usa "Minhas notas" quando o certificado esta ativo) (v3: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v2: "Lançar nota" manual; meses com nota acesos; anos so desde o inicio do uso)) */
+/* HISTORICONOTAS v6 — voltar sem historico leva para a aba Notas (/notas) (v5: vira "Minhas notas" da pagina Notas fiscais (/notas-fiscais/minhas): "Guardar uma nota" (arquivo primeiro; a folha e exportada para a pagina usar) e, guardada uma nota deste ano, a pergunta "Posso somar no velocímetro?" sem contar duas vezes (FolhaSomarNoVelocimetro); nota somada mostra "No velocímetro"; visual de hoje (sem verde, Guardar em contorno, sem a barra de baixo) (v4: prop titulo (a janela Notas fiscais usa "Minhas notas" quando o certificado esta ativo) (v3: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v2: "Lançar nota" manual; meses com nota acesos; anos so desde o inicio do uso))) */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
@@ -214,7 +214,7 @@ export default function HistoricoNotas({ titulo = "Histórico de notas" } = {}) 
     >
       <header className="px-5 pt-6 pb-2 flex items-center gap-3 shrink-0">
         <button
-          onClick={() => ((window.history.state?.idx ?? 0) > 0 ? navigate(-1) : navigate("/notas-fiscais", { replace: true }))}
+          onClick={() => ((window.history.state?.idx ?? 0) > 0 ? navigate(-1) : navigate("/notas", { replace: true }))}
           aria-label="Voltar"
           className="w-[46px] h-[46px] rounded-full flex items-center justify-center hover:opacity-80"
           style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}

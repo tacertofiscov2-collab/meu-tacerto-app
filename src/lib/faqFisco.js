@@ -1,4 +1,4 @@
-/* FAQFISCO v4 — nada fala "Receita" (decisao do Fernando, 12/10): "pro limite do MEI, o que conta é o valor recebido", "Preciso avisar o governo?", "você passa a ser tratado como Microempresa o ano inteiro", "Posso levar multa?" e "Se o governo descobrir antes de você comunicar"; as perguntas trocadas guardam o texto antigo em "antes" e responderPergunta continua achando a MESMA resposta por ele (v3: chat da Isa no app: responderPergunta (pergunta pronta exata ou palavra-chave; sem resposta = achou false, o chat mostra o botao do WhatsApp) e FRASE_NAO_SEI; respostas alinhadas as regras de 08-10 e 10-10 (nota fiscal do caminhoneiro, prazo da DASN desde o comeco do ano ate 31 de maio, Calcular no Perfil) (v2: vencimento do DAS certo: dia 20, prorroga para o proximo dia util (antes dizia "antecipa")) */
+/* FAQFISCO v5 — "Perfil > Calcular" vira "Mais > Calcular" (Bloco 3) (v4: nada fala "Receita" (decisao do Fernando, 12/10): "pro limite do MEI, o que conta é o valor recebido", "Preciso avisar o governo?", "você passa a ser tratado como Microempresa o ano inteiro", "Posso levar multa?" e "Se o governo descobrir antes de você comunicar"; as perguntas trocadas guardam o texto antigo em "antes" e responderPergunta continua achando a MESMA resposta por ele (v3: chat da Isa no app: responderPergunta (pergunta pronta exata ou palavra-chave; sem resposta = achou false, o chat mostra o botao do WhatsApp) e FRASE_NAO_SEI; respostas alinhadas as regras de 08-10 e 10-10 (nota fiscal do caminhoneiro, prazo da DASN desde o comeco do ano ate 31 de maio, Calcular no Perfil) (v2: vencimento do DAS certo: dia 20, prorroga para o proximo dia util (antes dizia "antecipa"))) */
 import { LIMITES_ANUAIS, limiteAte20Percent } from "./fiscal.js";
 
 const fmt = (v) =>
@@ -89,7 +89,7 @@ const POR_FAIXA = {
       id: "f2",
       pergunta: "Como saber se vou estourar até dezembro?",
       resposta: () =>
-        `O app calcula isso pra você: em Perfil > Calcular > "Quanto ainda posso faturar" tem a projeção de quanto você fecha o ano se mantiver o ritmo, e o mês em que passaria do limite.\n\nSe a projeção passar do seu limite, dá tempo de se planejar com calma.`,
+        `O app calcula isso pra você: no Mais > Calcular > "Quanto ainda posso faturar" tem a projeção de quanto você fecha o ano se mantiver o ritmo, e o mês em que passaria do limite.\n\nSe a projeção passar do seu limite, dá tempo de se planejar com calma.`,
     },
     {
       id: "f3",

@@ -1,3 +1,4 @@
+/* VALOR v2 — autoAjustar desconta o recuo interno do pai (em 360 de largura o valor do card encostava na linha do meio) */
 /**
  * <Valor /> — formatação canônica de valores em R$ do TaCerto!.
  *
@@ -83,7 +84,11 @@ export default function Valor({
           : parseFloat(baseSize);
       let size = basePx;
       el.style.fontSize = size + "px";
-      const available = parent.clientWidth - 4;
+      /* v2: desconta o recuo interno do pai (antes o valor invadia o
+         recuo e encostava na linha do meio do card em 360 de largura) */
+      const cs = window.getComputedStyle(parent);
+      const recuo = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+      const available = parent.clientWidth - recuo - 4;
       let guard = 40;
       while (el.scrollWidth > available && size > 9 && guard-- > 0) {
         size -= 0.5;

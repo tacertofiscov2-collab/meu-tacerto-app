@@ -1,4 +1,4 @@
-/* TOPOROLAVEL v3 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v2: prop "simples": setinha sem circulo (telas de entrada: Cadastro)) */
+/* TOPOROLAVEL v4 — sem onVoltar (abas do rodape: Notas, Mais) nao desenha a setinha nem reserva o lugar dela: o titulo fica no canto (v3: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v2: prop "simples": setinha sem circulo (telas de entrada: Cadastro))) */
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
@@ -60,6 +60,7 @@ export default function TopoRolavel({ titulo, onVoltar, direita = null, recuo = 
   return (
     <>
       <div ref={ancoraRef} style={{ position: "sticky", top: 0, height: 0, zIndex: 30 }}>
+        {onVoltar && (
         <button
           onClick={onVoltar}
           aria-label="Voltar"
@@ -78,6 +79,7 @@ export default function TopoRolavel({ titulo, onVoltar, direita = null, recuo = 
         >
           <ArrowLeft size={simples ? 26 : 24} strokeWidth={2} style={{ color: "var(--text)" }} />
         </button>
+        )}
       </div>
 
       <header
@@ -85,7 +87,8 @@ export default function TopoRolavel({ titulo, onVoltar, direita = null, recuo = 
         style={{ gap: 12, paddingTop: 20, paddingBottom: 8, paddingLeft: recuo, paddingRight: recuo }}
       >
         {/* lugar reservado para a setinha, ao lado do titulo */}
-        <span aria-hidden style={{ width: 46, height: 46, flexShrink: 0 }} />
+        {/* v4: aba (sem voltar): sem o lugar, mas com a mesma altura */}
+        <span aria-hidden style={{ width: onVoltar ? 46 : 0, height: 46, flexShrink: 0, marginRight: onVoltar ? 0 : -12 }} />
         <h1 className="text-xl font-bold flex-1 min-w-0" style={{ color: "var(--text)" }}>
           {titulo}
         </h1>

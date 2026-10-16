@@ -1,4 +1,4 @@
-/* NOTASFISCAIS v5 — topo: "Para a nota automática é preciso o Certificado Digital A1" e, sem ele, emite pelo gov.br (conta prata ou ouro) (resposta N8) (v4: "Por que precisa" do A1 deixa claro que o certificado fica guardado na plataforma de notas, que assina cada nota (nao no TaCerto) (v3: pagina do Perfil (Meu MEI, junto do DAS) e do atalho NF do Inicio: destaque "Emita suas notas grátis pelo TaCerto" + aviso do Certificado A1 (R$ 100,34, pago a certificadora; obrigatorio pelo CDC); Emitir nota (sem A1: folha com o que e, por que precisa, videochamada e "Tenho interesse"), Guardar uma nota (foto ou PDF; nota deste ano pergunta "Posso somar no velocímetro?" sem contar duas vezes) e Minhas notas (/notas-fiscais/minhas); quando emitir; com A1 ativo a pagina continua (antes virava so "Minhas notas") (v2: Fisco vira Isa: "A Isa monta a nota com você" (v1: janela "Notas fiscais" (Perfil > Ajuda e o atalho NF do Inicio): sem certificado ativo, explica curto quando emitir (NFS-e so frete na mesma cidade; CT-e entre cidades contratado direto; agregado sem IE em MG hoje nao emite; 2027 em todo servico), como o TaCerto ajuda e o Certificado A1 (R$ 100,34, preco de custo; videochamada) com "Tenho interesse no certificado"; com certificado ativo vira "Minhas notas")))) */
+/* NOTASFISCAIS v6 — vira a aba "Notas" do rodape (/notas, prop aba: sem setinha, com o rodape); ordem Minhas notas, Emitir nota, Guardar uma nota (Bloco 3) (v5: topo: "Para a nota automática é preciso o Certificado Digital A1" e, sem ele, emite pelo gov.br (conta prata ou ouro) (resposta N8) (v4: "Por que precisa" do A1 deixa claro que o certificado fica guardado na plataforma de notas, que assina cada nota (nao no TaCerto) (v3: pagina do Perfil (Meu MEI, junto do DAS) e do atalho NF do Inicio: destaque "Emita suas notas grátis pelo TaCerto" + aviso do Certificado A1 (R$ 100,34, pago a certificadora; obrigatorio pelo CDC); Emitir nota (sem A1: folha com o que e, por que precisa, videochamada e "Tenho interesse"), Guardar uma nota (foto ou PDF; nota deste ano pergunta "Posso somar no velocímetro?" sem contar duas vezes) e Minhas notas (/notas-fiscais/minhas); quando emitir; com A1 ativo a pagina continua (antes virava so "Minhas notas") (v2: Fisco vira Isa: "A Isa monta a nota com você" (v1: janela "Notas fiscais" (Perfil > Ajuda e o atalho NF do Inicio): sem certificado ativo, explica curto quando emitir (NFS-e so frete na mesma cidade; CT-e entre cidades contratado direto; agregado sem IE em MG hoje nao emite; 2027 em todo servico), como o TaCerto ajuda e o Certificado A1 (R$ 100,34, preco de custo; videochamada) com "Tenho interesse no certificado"; com certificado ativo vira "Minhas notas"))))) */
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import IconeWhatsApp from "../components/IconeWhatsApp.jsx";
 import TopoRolavel from "../components/TopoRolavel.jsx";
+import BottomNav, { ALTURA_RODAPE } from "../components/BottomNav.jsx";
 import FolhaDeBaixo from "../components/FolhaDeBaixo.jsx";
 import FolhaSomarNoVelocimetro from "../components/FolhaSomarNoVelocimetro.jsx";
 import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
@@ -72,7 +73,7 @@ const QUANDO = {
 
 const PRECO_A1 = `R$ ${PRECO_CERTIFICADO_A1.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
-export default function NotasFiscais() {
+export default function NotasFiscais({ aba = false }) {
   const navigate = useNavigate();
   const location = useLocation();
   const app = useAppState();
@@ -115,9 +116,10 @@ export default function NotasFiscais() {
     <div className="tela-rolavel w-full flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <div
         className="conteudo-rolavel hide-scrollbar w-full max-w-md mx-auto px-5"
-        style={{ paddingBottom: "calc(40px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: aba ? `calc(${ALTURA_RODAPE + 40}px + env(safe-area-inset-bottom))` : "calc(40px + env(safe-area-inset-bottom))" }}
       >
-        <TopoRolavel titulo="Notas fiscais" onVoltar={voltar} />
+        {/* v6: como aba do rodape, sem a setinha de voltar */}
+        <TopoRolavel titulo="Notas fiscais" onVoltar={aba ? null : voltar} />
 
         {/* Destaque: emissao gratis + o A1 nao e gratis (CDC) */}
         <section
@@ -136,6 +138,12 @@ export default function NotasFiscais() {
 
         <SecaoLista style={{ marginTop: 14 }}>
           <LinhaLista
+            Icon={FolderOpen}
+            rotulo="Minhas notas"
+            detalhe="Por mês, com o PDF"
+            onClick={() => navigate("/notas-fiscais/minhas", { state: { de: "notas" } })}
+          />
+          <LinhaLista
             Icon={FilePlus2}
             rotulo="Emitir nota"
             detalhe={comCertificado ? "A Isa emite com você no WhatsApp" : "Pelo gov.br, ou automática com o A1"}
@@ -146,12 +154,6 @@ export default function NotasFiscais() {
             rotulo="Guardar uma nota"
             detalhe="Foto ou PDF de uma nota sua"
             onClick={() => (userId ? setGuardando(true) : toast("Entre na sua conta para guardar notas."))}
-          />
-          <LinhaLista
-            Icon={FolderOpen}
-            rotulo="Minhas notas"
-            detalhe="Por mês, com o PDF"
-            onClick={() => navigate("/notas-fiscais/minhas", { state: { de: "notas" } })}
           />
         </SecaoLista>
 
@@ -222,6 +224,8 @@ export default function NotasFiscais() {
         onLigar={(idLancamento) => ligarNotaAoLancamento(userId, somar.id, idLancamento)}
         onFechar={() => setSomar(null)}
       />
+
+      {aba && <BottomNav ativo="notas" />}
     </div>
   );
 }

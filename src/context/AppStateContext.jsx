@@ -1,4 +1,4 @@
-/* APPSTATE v6 — extras10Prontos (os campos de 10-10 desta conta ja foram lidos nesta sessao; o tutorial do primeiro acesso so decide depois disso, para nao piscar) (v5: campos de 10-10 (resumo e data da consulta do CNPJ, tutorial visto, avisos no WhatsApp, forma de pagar o DAS) numa leitura SEPARADA (dono proprio no aparelho, donoExtras10); salvarDadosCnpj grava tambem o resumo e a data da consulta; removerCnpj (apaga o CNPJ e o que veio dele); salvarExtras; adicionarLancamento devolve o id do banco (para ligar nota/comprovante ao lancamento) (v4: adicionarLancamento monta o lancamento ANTES do setState (com varios de uma vez o React adiava e a gravacao no banco saia vazia) (v3: campos novos do perfil (CNPJ, CNAE, MEI desde, CNPJ confirmado, atualizacao do velocimetro, lembrete do DAS, nota automatica) lidos numa consulta separada e guardados no aparelho ate o SQL de 08-10 rodar; "Atualizado em" do velocimetro marcado a cada lancamento (v2: mediaMensal vira o RITMO do ano (faturado / meses que passaram) + mediaLimite))) */
+/* APPSTATE v7 — lancamentosCarregados (os lancamentos desta conta ja foram lidos; o "Ultimos lancamentos" do Inicio espera por ele) (v6: extras10Prontos (os campos de 10-10 desta conta ja foram lidos nesta sessao; o tutorial do primeiro acesso so decide depois disso, para nao piscar) (v5: campos de 10-10 (resumo e data da consulta do CNPJ, tutorial visto, avisos no WhatsApp, forma de pagar o DAS) numa leitura SEPARADA (dono proprio no aparelho, donoExtras10); salvarDadosCnpj grava tambem o resumo e a data da consulta; removerCnpj (apaga o CNPJ e o que veio dele); salvarExtras; adicionarLancamento devolve o id do banco (para ligar nota/comprovante ao lancamento) (v4: adicionarLancamento monta o lancamento ANTES do setState (com varios de uma vez o React adiava e a gravacao no banco saia vazia) (v3: campos novos do perfil (CNPJ, CNAE, MEI desde, CNPJ confirmado, atualizacao do velocimetro, lembrete do DAS, nota automatica) lidos numa consulta separada e guardados no aparelho ate o SQL de 08-10 rodar; "Atualizado em" do velocimetro marcado a cada lancamento (v2: mediaMensal vira o RITMO do ano (faturado / meses que passaram) + mediaLimite)))) */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   LIMITES_ANUAIS,
@@ -190,6 +190,10 @@ export function AppStateProvider({ children }) {
   /* v6: os campos de 10-10 desta conta ja foram lidos nesta sessao (nao
      vai para o aparelho: comeca false a cada abertura do app) */
   const [extras10Prontos, setExtras10Prontos] = useState(false);
+  /* v7: os lancamentos desta conta ja foram lidos (ou e visitante): o
+     "Ultimos lancamentos" do Inicio so decide o que mostrar depois disso
+     (sem piscar "Comece pelo extrato" para quem ja tem lancamentos) */
+  const [lancamentosCarregados, setLancamentosCarregados] = useState(false);
 
   // ------------------------------------------------------------------
   // PONTE COM O SUPABASE AUTH
@@ -211,6 +215,7 @@ export function AppStateProvider({ children }) {
         if (!ativo) return;
         userIdRef.current = null;
         setState((s) => ({ ...s, visitante: true, email: null }));
+        setLancamentosCarregados(true);
         return;
       }
       userIdRef.current = user.id;
@@ -251,6 +256,7 @@ export function AppStateProvider({ children }) {
             ? lancs.map((l) => ({ ...l, valor: Number(l.valor) || 0 }))
             : s.lancamentos,
         }));
+        setLancamentosCarregados(true);
 
         // v3: campos novos do perfil, numa consulta SEPARADA (ver topo)
         await carregarExtras(user.id);
@@ -260,6 +266,7 @@ export function AppStateProvider({ children }) {
         // Falha ao buscar perfil não deve derrubar a sessão.
         if (!ativo) return;
         setState((s) => ({ ...s, visitante: false, email: user.email || s.email }));
+        setLancamentosCarregados(true);
       }
     }
 
@@ -749,6 +756,7 @@ export function AppStateProvider({ children }) {
     removerCnpj,
     salvarExtras,
     extras10Prontos,
+    lancamentosCarregados,
     salvarLembreteDas,
     ultimaAtualizacaoVelocimetro,
     adicionarLancamento,

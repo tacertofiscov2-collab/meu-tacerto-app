@@ -1,4 +1,4 @@
-/* SUPORTE v7 — o DAS e as notas sairam do Inicio: as respostas dizem "No Perfil, toque em DAS" / "Notas fiscais" (v6: datas da declaracao (Bloco G): a do MEI "pode ser feita desde o começo do ano até 31 de maio" e "quando você quiser, dentro do prazo, a Isa faz com você" (sai o "em maio") (v5: resposta do Imposto de Renda aponta para Perfil > Calcular > Imposto de Renda (a calculadora saiu da Declaracao anual) (v4: Fisco vira Isa na resposta sobre nota fiscal (v3: "Preciso emitir nota?" com a regra do agregado (v2: correcoes de 08-10: DAS vence dia 20 e, se nao for dia util, no proximo dia util; NFS-e so para frete na mesma cidade (agregado sem IE em MG hoje nao emite); A1 a preco de custo (R$ 100,34) (v1: chat de suporte dentro do app (Perfil > Ajuda): perguntas prontas por assunto para afunilar; se nao resolver, a pessoa escreve e vai pro WhatsApp do suporte com tudo anotado)))) */
+/* SUPORTE v8 — "Perfil" vira "Mais" nas respostas ("No Mais, toque em DAS"; notas "Na aba Notas") (Bloco 3) (v7: o DAS e as notas sairam do Inicio: as respostas dizem "No Perfil, toque em DAS" / "Notas fiscais" (v6: datas da declaracao (Bloco G): a do MEI "pode ser feita desde o começo do ano até 31 de maio" e "quando você quiser, dentro do prazo, a Isa faz com você" (sai o "em maio") (v5: resposta do Imposto de Renda aponta para Perfil > Calcular > Imposto de Renda (a calculadora saiu da Declaracao anual) (v4: Fisco vira Isa na resposta sobre nota fiscal (v3: "Preciso emitir nota?" com a regra do agregado (v2: correcoes de 08-10: DAS vence dia 20 e, se nao for dia util, no proximo dia util; NFS-e so para frete na mesma cidade (agregado sem IE em MG hoje nao emite); A1 a preco de custo (R$ 100,34) (v1: chat de suporte dentro do app (Perfil > Ajuda): perguntas prontas por assunto para afunilar; se nao resolver, a pessoa escreve e vai pro WhatsApp do suporte com tudo anotado))))) */
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
@@ -34,7 +34,7 @@ const ASSUNTOS = [
       },
       {
         p: "Lancei errado. Como corrijo?",
-        r: "No Perfil, toque em Histórico de lançamentos. Cada lançamento tem o lápis (editar) e a lixeira (apagar).",
+        r: "No Mais, toque em Histórico de lançamentos. Cada lançamento tem o lápis (editar) e a lixeira (apagar).",
       },
       {
         p: "Como atualizo o total do ano?",
@@ -56,11 +56,11 @@ const ASSUNTOS = [
       },
       {
         p: "Como recebo o boleto?",
-        r: "No Perfil, toque em DAS e escolha receber o boleto no WhatsApp. A gente manda pronto antes do vencimento.",
+        r: "No Mais, toque em DAS e escolha receber o boleto no WhatsApp. A gente manda pronto antes do vencimento.",
       },
       {
         p: "Atrasei. E agora?",
-        r: "Dá para pagar atrasado: o boleto novo já vem com multa e juros. Peça no DAS do Perfil que a gente gera pra você.",
+        r: "Dá para pagar atrasado: o boleto novo já vem com multa e juros. Peça na página do DAS, no Mais, que a gente gera pra você.",
       },
       {
         p: "Tenho meses antigos sem pagar",
@@ -78,7 +78,7 @@ const ASSUNTOS = [
       },
       {
         p: "Como emito?",
-        r: "No Perfil, toque em Notas fiscais. Lá diz quando você precisa emitir e como: com a Isa no WhatsApp, sozinho ou automática, com o Certificado A1.",
+        r: "Na aba Notas. Lá diz quando você precisa emitir e como: com a Isa no WhatsApp, sozinho ou automática, com o Certificado A1.",
       },
       {
         p: "O que é o Certificado A1?",
@@ -100,7 +100,7 @@ const ASSUNTOS = [
       },
       {
         p: "Preciso declarar Imposto de Renda?",
-        r: "Depende do que sobrou de lucro. No Perfil, toque em Calcular e depois em Imposto de Renda: o app te mostra em 1 minuto.",
+        r: "Depende do que sobrou de lucro. No Mais, toque em Calcular e depois em Imposto de Renda: o app te mostra em 1 minuto.",
       },
       {
         p: "Vocês fazem pra mim?",
@@ -122,15 +122,15 @@ const ASSUNTOS = [
       },
       {
         p: "Como mudo meu tipo de MEI?",
-        r: "No Perfil, toque em Tipo de MEI e diga o que mudou. A gente explica e atualiza quando valer no seu CNPJ.",
+        r: "No Mais, toque em Tipo de MEI e diga o que mudou. A gente explica e atualiza quando valer no seu CNPJ.",
       },
       {
         p: "Meus dados estão seguros?",
-        r: "Sim. Seus dados ficam protegidos e só você vê. Os detalhes estão na Política de privacidade, no Perfil.",
+        r: "Sim. Seus dados ficam protegidos e só você vê. Os detalhes estão na Privacidade, no Mais.",
       },
       {
         p: "Como excluo minha conta?",
-        r: "No Perfil, logo abaixo do Tema, em Excluir conta. Antes, o app pede para você confirmar.",
+        r: "No Mais, no fim da lista, em Excluir conta. Antes, o app pede para você confirmar.",
       },
     ],
   },

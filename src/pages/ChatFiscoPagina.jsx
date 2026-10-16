@@ -1,4 +1,4 @@
-/* CHATFISCOPAGINA v2 — anexos do chat funcionando (pedido do Fernando): foto, galeria e documento vao para o "+" ja lendo o comprovante (arquivoPendente), Extrato abre o Enviar extrato e o microfone abre o WhatsApp da Isa (v1: chat da Isa no app: responde com o motor de respostas prontas que ja existia (faqFisco, sem IA nova); o que nao souber mostra o botao "Falar com a Isa no WhatsApp" (com a pergunta); toda conversa comeca com "Oi, sou a Isa, a assistente com IA do TaCerto." e as perguntas comuns (antes respondia sempre "Ainda estou aprendendo...")) */
+/* CHATFISCOPAGINA v3 — vira a aba "Isa" do rodape (/isa, prop aba: sem o X, com o rodape); /fisco leva para ca com a mesma primeira mensagem (Bloco 3) (v2: anexos do chat funcionando (pedido do Fernando): foto, galeria e documento vao para o "+" ja lendo o comprovante (arquivoPendente), Extrato abre o Enviar extrato e o microfone abre o WhatsApp da Isa (v1: chat da Isa no app: responde com o motor de respostas prontas que ja existia (faqFisco, sem IA nova); o que nao souber mostra o botao "Falar com a Isa no WhatsApp" (com a pergunta); toda conversa comeca com "Oi, sou a Isa, a assistente com IA do TaCerto." e as perguntas comuns (antes respondia sempre "Ainda estou aprendendo..."))) */
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ChatFiscoUI from "../components/ChatFiscoUI.jsx";
@@ -31,7 +31,7 @@ import {
    Se abrir /fisco sem primeira mensagem (ex.: link direto), comeca uma
    conversa vazia — a pessoa digita na propria pagina.
    =================================================================== */
-export default function ChatFiscoPagina() {
+export default function ChatFiscoPagina({ aba = false }) {
   const navigate = useNavigate();
   const location = useLocation();
   const app = useAppState();
@@ -182,7 +182,8 @@ export default function ChatFiscoPagina() {
       digitando={digitando}
       onEnviar={enviarMensagem}
       onEditarMensagem={editarMensagem}
-      onFechar={() => navigate("/dashboard")}
+      onFechar={aba ? null : () => navigate("/dashboard")}
+      comRodape={aba}
       conversas={conversas}
       idAtual={idConversa}
       onAbrirConversa={abrirConversa}

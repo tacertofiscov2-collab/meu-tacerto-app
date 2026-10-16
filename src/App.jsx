@@ -1,4 +1,4 @@
-﻿/* APP v23 — rota /perfil/permissoes (Permissões e integrações, MOSTRAR_PERMISSOES) (v22: Calcular (MOSTRAR_CALCULAR): /calcular, /calcular/imposto-de-renda (a calculadora do IR, que saiu da Declaracao anual; /declaracao-anual/calcular leva para la) e /calcular/das-do-ano (v21: rota /notas-fiscais/minhas ("Minhas notas", MOSTRAR_JANELA_NOTAS) (v20: pagina do DAS: /das (PaginaDas) e /das/historico (o Historico de DAS), atras de MOSTRAR_PAGINA_DAS; /como-pagar-das agora abre /das (v19: rota /simulador (MOSTRAR_SIMULADOR) (v18: /notas-fiscais abre a janela "Notas fiscais" (MOSTRAR_JANELA_NOTAS) (v17: rotas /meu-lucro e /meu-lucro/gastos (MOSTRAR_MEU_LUCRO) (v16: rotas /enviar-extrato (OFX/CSV/PDF dentro do app) e /conferir-saidas (gastos em duvida), atras de MOSTRAR_ENVIAR_EXTRATO (v15: rota /perfil/cnpj (CNPJ pelo Perfil: buscar e confirmar) (v14: rotas /suporte (chat de suporte), /declaracao-anual e /declaracao-anual/calcular, atras das chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL (v13: login so pelo WhatsApp: /login e /cadastro abrem EntrarWhatsApp; /entrar-email (plano B) abre o Login antigo; esqueci/alterar senha e alterar-whatsapp atras de MOSTRAR_LOGIN_EMAIL (v12: rota /como-pagar-das; v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard))))) */
+﻿/* APP v24 — abas do rodape novo: /notas (Notas fiscais como aba), /isa (conversa da Isa como aba; /fisco leva para la com a mesma mensagem) e /mais (o antigo Perfil; /perfil continua abrindo a mesma tela); /notas-fiscais leva para /notas (v23: rota /perfil/permissoes (Permissões e integrações, MOSTRAR_PERMISSOES) (v22: Calcular (MOSTRAR_CALCULAR): /calcular, /calcular/imposto-de-renda (a calculadora do IR, que saiu da Declaracao anual; /declaracao-anual/calcular leva para la) e /calcular/das-do-ano (v21: rota /notas-fiscais/minhas ("Minhas notas", MOSTRAR_JANELA_NOTAS) (v20: pagina do DAS: /das (PaginaDas) e /das/historico (o Historico de DAS), atras de MOSTRAR_PAGINA_DAS; /como-pagar-das agora abre /das (v19: rota /simulador (MOSTRAR_SIMULADOR) (v18: /notas-fiscais abre a janela "Notas fiscais" (MOSTRAR_JANELA_NOTAS) (v17: rotas /meu-lucro e /meu-lucro/gastos (MOSTRAR_MEU_LUCRO) (v16: rotas /enviar-extrato (OFX/CSV/PDF dentro do app) e /conferir-saidas (gastos em duvida), atras de MOSTRAR_ENVIAR_EXTRATO (v15: rota /perfil/cnpj (CNPJ pelo Perfil: buscar e confirmar) (v14: rotas /suporte (chat de suporte), /declaracao-anual e /declaracao-anual/calcular, atras das chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL (v13: login so pelo WhatsApp: /login e /cadastro abrem EntrarWhatsApp; /entrar-email (plano B) abre o Login antigo; esqueci/alterar senha e alterar-whatsapp atras de MOSTRAR_LOGIN_EMAIL (v12: rota /como-pagar-das; v11: /privacidade, /termos-de-uso, /como-emitir-nota; v10: rotas escondidas voltam para o /dashboard)))))) */
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "sonner";
 import SwipeBack from "./components/SwipeBack.jsx";
@@ -84,6 +84,13 @@ function RotaComChave({ ligada, children }) {
 
 /* v22: o endereco antigo da calculadora do IR leva para o novo, com o
    mesmo passo (?passo=) e o mesmo "comecar do zero" (state) */
+/* v24: enderecos antigos que viraram abas: levam junto o "state"
+   (ex.: a primeira mensagem para a Isa) */
+function ParaAba({ para }) {
+  const local = useLocation();
+  return <Navigate to={`${para}${local.search}`} replace state={local.state} />;
+}
+
 function ParaCalcularIr() {
   const local = useLocation();
   return <Navigate to={`/calcular/imposto-de-renda${local.search}`} replace state={local.state} />;
@@ -164,7 +171,11 @@ export default function App() {
           <Route path="/cadastro-obrigatorio" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><CadastroObrigatorio /></RotaComChave>} />
 
           <Route path="/dashboard" element={<Dashboard />} />
+          {/* v24: abas do rodape (Inicio | Notas | + | Isa | Mais) */}
           <Route path="/perfil" element={<Perfil />} />
+          <Route path="/mais" element={<Perfil />} />
+          <Route path="/notas" element={MOSTRAR_JANELA_NOTAS ? <NotasFiscais aba /> : <Navigate to="/dashboard" replace />} />
+          <Route path="/isa" element={<RotaComChave ligada={MOSTRAR_CHAT_FISCO}><ChatFiscoPagina aba /></RotaComChave>} />
           {/* v15: CNPJ pelo Perfil (mesmo fluxo do cadastro) */}
           <Route path="/perfil/cnpj" element={<PerfilCnpj />} />
           {/* v23: Permissoes e integracoes */}
@@ -209,7 +220,7 @@ export default function App() {
           {/* v18: janela "Notas fiscais" (explicacao + A1, ou "Minhas notas") */}
           <Route
             path="/notas-fiscais"
-            element={MOSTRAR_JANELA_NOTAS ? <NotasFiscais /> : <RotaComChave ligada={MOSTRAR_NOTAS_FISCAIS}><HistoricoNotas /></RotaComChave>}
+            element={MOSTRAR_JANELA_NOTAS ? <ParaAba para="/notas" /> : <RotaComChave ligada={MOSTRAR_NOTAS_FISCAIS}><HistoricoNotas /></RotaComChave>}
           />
           {/* v21: "Minhas notas" (por mes, com o PDF), aberta pela pagina Notas fiscais */}
           <Route path="/notas-fiscais/minhas" element={<RotaComChave ligada={MOSTRAR_JANELA_NOTAS}><HistoricoNotas titulo="Minhas notas" /></RotaComChave>} />
@@ -221,7 +232,7 @@ export default function App() {
           <Route path="/meu-lucro/gastos" element={<RotaComChave ligada={MOSTRAR_MEU_LUCRO}><GastosDoLucro /></RotaComChave>} />
           <Route path="/alertas" element={<RotaComChave ligada={MOSTRAR_INACABADOS}><Alertas /></RotaComChave>} />
           <Route path="/regra-vinte" element={<RegraVinte />} />
-          <Route path="/fisco" element={<RotaComChave ligada={MOSTRAR_CHAT_FISCO}><ChatFiscoPagina /></RotaComChave>} />
+          <Route path="/fisco" element={<RotaComChave ligada={MOSTRAR_CHAT_FISCO}><ParaAba para="/isa" /></RotaComChave>} />
 
           <Route path="/lancar" element={<Lancar />} />
           <Route path="/lancar/limite-atingido" element={<LimiteAtingido />} />

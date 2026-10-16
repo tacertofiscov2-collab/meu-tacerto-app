@@ -1,4 +1,4 @@
-/* CHATFISCOUI v5 — "+" de anexos e microfone de volta, agora funcionando (MOSTRAR_ANEXOS_CHAT): Foto (camera), Galeria e Documento escolhem o arquivo aqui e chamam onAnexo(tipo, arquivo); Extrato e o microfone chamam onAnexo("extrato" | "audio") (v4: chat da Isa: botao "Falar com a Isa no WhatsApp" abaixo da resposta que a Isa nao soube (fora da bolha, por causa do segurar = menu); perguntas comuns em botoes na conversa que nao comecou; "+" de anexos e microfone escondidos (MOSTRAR_ANEXOS_CHAT: nunca fizeram nada); campo com 16px (o iPhone nao da zoom) (v3: Fisco vira Isa: foto da Isa (webp) e nome "Isa" no cabecalho, "assistente virtual" no lugar de "Online" (v2: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026))))) */
+/* CHATFISCOUI v6 — aba "Isa" (comRodape): o rodape de 5 itens embaixo da barra de digitar (sai com o teclado aberto) e sem o X (v5: "+" de anexos e microfone de volta, agora funcionando (MOSTRAR_ANEXOS_CHAT): Foto (camera), Galeria e Documento escolhem o arquivo aqui e chamam onAnexo(tipo, arquivo); Extrato e o microfone chamam onAnexo("extrato" | "audio") (v4: chat da Isa: botao "Falar com a Isa no WhatsApp" abaixo da resposta que a Isa nao soube (fora da bolha, por causa do segurar = menu); perguntas comuns em botoes na conversa que nao comecou; "+" de anexos e microfone escondidos (MOSTRAR_ANEXOS_CHAT: nunca fizeram nada); campo com 16px (o iPhone nao da zoom) (v3: Fisco vira Isa: foto da Isa (webp) e nome "Isa" no cabecalho, "assistente virtual" no lugar de "Online" (v2: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026)))))) */
 import { useRef, useState, useEffect } from "react";
 import {
   Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList,
@@ -8,6 +8,7 @@ import { rotuloData } from "@/lib/chatHistorico";
 import { FOTO_ISA_256 } from "./FotoIsa.jsx";
 import IconeWhatsApp from "./IconeWhatsApp.jsx";
 import { MOSTRAR_ANEXOS_CHAT } from "@/config/piloto";
+import BottomNav, { ALTURA_RODAPE } from "./BottomNav.jsx";
 
 /* ===================================================================
    CHAT DO FISCO — componentes compartilhados
@@ -483,6 +484,9 @@ export default function ChatFiscoUI({
   /* v5: anexos — onAnexo("foto" | "galeria" | "documento", arquivo),
      onAnexo("extrato") e onAnexo("audio") */
   onAnexo,
+  /* v6: aba "Isa" do rodape: o rodape de 5 itens fica embaixo da barra
+     de digitar (some so com o teclado aberto, que cobre essa area) */
+  comRodape = false,
 }) {
   const temaClaro = useTemaClaro();
   /* v5: campos de arquivo (o seletor do iPhone so abre dentro do toque) */
@@ -503,6 +507,9 @@ export default function ChatFiscoUI({
   const areaMensagensRef = useRef(null);
   const raizRef = useRef(null);
   const barraRef = useRef(null);
+  /* v6: com o teclado aberto o rodape sai (o teclado cobre essa area) */
+  const [tecladoVisivel, setTecladoVisivel] = useState(false);
+  const rodapeNaTela = comRodape && !tecladoVisivel;
 
   /* Veu e borda da barra de digitar e do "+". No escuro e um veu branco
      sobre fundo escuro; no claro precisa ser o contrario, senao o campo
@@ -568,6 +575,7 @@ export default function ChatFiscoUI({
       aplicar(aberto ? teclado : 0);
       if (aberto !== tecladoAberto) {
         tecladoAberto = aberto;
+        setTecladoVisivel(aberto);
         reaparecerBarra();
       }
     };
@@ -613,6 +621,7 @@ export default function ChatFiscoUI({
         if (!digitando) {
           aplicar(0);
           tecladoAberto = false;
+          setTecladoVisivel(false);
           reaparecerBarra();
           desligarSeguidor();
         }
@@ -746,6 +755,8 @@ export default function ChatFiscoUI({
         >
           <History size={23} style={{ color: "var(--text-secondary)" }} />
         </button>
+        {/* v6: na aba "Isa" nao tem X (sai pelo rodape) */}
+        {onFechar && (
         <button
           onClick={onFechar}
           aria-label="Fechar chat"
@@ -754,6 +765,7 @@ export default function ChatFiscoUI({
         >
           <X size={23} style={{ color: "var(--text-secondary)" }} />
         </button>
+        )}
       </div>
 
       <PainelHistorico
@@ -773,7 +785,9 @@ export default function ChatFiscoUI({
           padding: 16,
           // A barra de digitar flutua por cima; este respiro garante que a
           // ultima mensagem role acima dela em vez de ficar escondida.
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 88px)",
+          paddingBottom: rodapeNaTela
+            ? `calc(env(safe-area-inset-bottom, 0px) + ${ALTURA_RODAPE + 80}px)`
+            : "calc(env(safe-area-inset-bottom, 0px) + 88px)",
           display: "flex",
           flexDirection: "column",
           gap: 10,
@@ -848,9 +862,9 @@ export default function ChatFiscoUI({
           position: "absolute",
           left: 0,
           right: 0,
-          bottom: 0,
+          bottom: rodapeNaTela ? `calc(env(safe-area-inset-bottom, 0px) + ${ALTURA_RODAPE}px)` : 0,
           padding: 12,
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
+          paddingBottom: rodapeNaTela ? 8 : "calc(env(safe-area-inset-bottom, 0px) + 12px)",
           background: "transparent",
         }}
       >
@@ -1051,6 +1065,8 @@ export default function ChatFiscoUI({
           </div>
         </form>
       </div>
+
+      {rodapeNaTela && <BottomNav ativo="isa" />}
 
       <MenuMensagem
         msg={msgMenu}

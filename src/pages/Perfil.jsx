@@ -1,12 +1,12 @@
-﻿/* PERFIL v30 — Ajuda: "Tutorial do app" (rever o "Como funciona" do primeiro acesso; Bloco L) (v29: Conta: linha "Permissões e integrações" (/perfil/permissoes; MOSTRAR_PERMISSOES) (v28: Meu MEI: "Simulador" vira "Calcular" (/calcular: quanto ainda posso faturar, Imposto de Renda, DAS do ano, Meu lucro; MOSTRAR_CALCULAR) (v27: "Notas fiscais" sai da Ajuda e vai para o Meu MEI, logo abaixo do DAS (Bloco E) (v26: Meu MEI: linha "DAS" (o imposto mensal do MEI, "Vence dd/mm") que abre a pagina do DAS (/das); sai o "Como pagar o DAS" da Ajuda (MOSTRAR_PAGINA_DAS) (v25: Abertura travada mostra a data do CNPJ (opcao pelo MEI), nao a do app (v24: dados que vieram do CNPJ ficam TRAVADOS: Tipo de MEI (quando bate com o CNPJ) e Abertura mostram um cadeado pequeno e "Veio do seu CNPJ"; tocar abre a pagina do CNPJ (Atualizar / Remover CNPJ) (v23: Meu MEI: linha "Simulador" (/simulador) (v22: Preferencias com o detalhe "Lembrete do DAS" (a tela voltou so com ele) (v21: Ajuda: "Notas fiscais" abre a janela nova (/notas-fiscais) (v20: Meu MEI: linha "Meu lucro" (/meu-lucro) (v19: Meu MEI: linha "CNPJ" (mascarado 12.345.•••/••01-90; sem CNPJ, "Não preenchido" com pontinho de aviso) que abre a busca/confirmacao (/perfil/cnpj) (v18: "Excluir conta" em branco (como as outras linhas); vermelho so no "Sair da conta" (pedido do Fernando) (v17: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes)))))))))) */
+﻿/* PERFIL v31 — vira a aba "Mais" (/mais e /perfil): titulo "Mais" sem setinha, rodape de 5 itens; secoes Meu MEI (CNPJ, DAS, Calcular, Declaração anual, Histórico) | Minha conta (Nome, Tipo de MEI, Abertura, WhatsApp, Permissões e integrações, Tema) | Ajuda (Suporte, Rever tutorial, Termos, Privacidade) | Sair e Excluir conta; Notas sai (tem aba propria); Limite/Já faturado/Limite restante saem (estao no velocimetro); Meu lucro fica no Calcular (Bloco 3) (v30: Ajuda: "Tutorial do app" (rever o "Como funciona" do primeiro acesso; Bloco L) (v29: Conta: linha "Permissões e integrações" (/perfil/permissoes; MOSTRAR_PERMISSOES) (v28: Meu MEI: "Simulador" vira "Calcular" (/calcular: quanto ainda posso faturar, Imposto de Renda, DAS do ano, Meu lucro; MOSTRAR_CALCULAR) (v27: "Notas fiscais" sai da Ajuda e vai para o Meu MEI, logo abaixo do DAS (Bloco E) (v26: Meu MEI: linha "DAS" (o imposto mensal do MEI, "Vence dd/mm") que abre a pagina do DAS (/das); sai o "Como pagar o DAS" da Ajuda (MOSTRAR_PAGINA_DAS) (v25: Abertura travada mostra a data do CNPJ (opcao pelo MEI), nao a do app (v24: dados que vieram do CNPJ ficam TRAVADOS: Tipo de MEI (quando bate com o CNPJ) e Abertura mostram um cadeado pequeno e "Veio do seu CNPJ"; tocar abre a pagina do CNPJ (Atualizar / Remover CNPJ) (v23: Meu MEI: linha "Simulador" (/simulador) (v22: Preferencias com o detalhe "Lembrete do DAS" (a tela voltou so com ele) (v21: Ajuda: "Notas fiscais" abre a janela nova (/notas-fiscais) (v20: Meu MEI: linha "Meu lucro" (/meu-lucro) (v19: Meu MEI: linha "CNPJ" (mascarado 12.345.•••/••01-90; sem CNPJ, "Não preenchido" com pontinho de aviso) que abre a busca/confirmacao (/perfil/cnpj) (v18: "Excluir conta" em branco (como as outras linhas); vermelho so no "Sair da conta" (pedido do Fernando) (v17: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes))))))))))) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import BottomNav from "../components/BottomNav.jsx";
+import BottomNav, { ALTURA_RODAPE } from "../components/BottomNav.jsx";
 import {
   User, Settings, Info, Shield, Lock, LogOut,
   ChevronDown, UserPlus, X, Check, TrendingUp, BarChart3,
-  Trash2, FileText, ArrowUpRight, ArrowDownLeft, CalendarCheck,
-  Briefcase, CalendarDays, Gauge, Sun, Moon, History, Phone, Headphones, Landmark, Building2, Wallet, Calculator,
+  Trash2, ArrowUpRight, CalendarCheck,
+  Briefcase, CalendarDays, Sun, Moon, History, Phone, Headphones, Landmark, Building2, Wallet, Calculator,
 } from "lucide-react";
 import { Lock as Cadeado, ShieldCheck, PlayCircle } from "lucide-react";
 import { mascararCnpj, ehCnaeCaminhoneiro } from "@/lib/cnpj";
@@ -19,8 +19,7 @@ import {
 import { aplicarTema, temaEfetivo } from "./Preferencias.jsx";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
-import Valor from "../components/Valor.jsx";
-import { LABEL_TIPO, calcularFaltamOuExcedeu, LIMITE_NOME_INPUT } from "@/lib/fiscal";
+import { LABEL_TIPO, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 
 import { useUserState, setUserState } from "@/lib/userState";
 import {
@@ -29,10 +28,10 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useAppState } from "@/context/AppStateContext";
 import {
-  MOSTRAR_PREFERENCIAS, MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_NOTAS_FISCAIS,
+  MOSTRAR_PREFERENCIAS, MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS,
   MOSTRAR_ADICIONAR_MOVIMENTACOES, MOSTRAR_RESUMO_ANO, MOSTRAR_SOBRE,
-  MOSTRAR_AVATAR, MOSTRAR_TUTORIAL_NOTA, MOSTRAR_TUTORIAL_DAS, MOSTRAR_LOGIN_EMAIL,
-  MOSTRAR_SUPORTE, MOSTRAR_DECLARACAO_ANUAL, MOSTRAR_MEU_LUCRO, MOSTRAR_JANELA_NOTAS, MOSTRAR_SIMULADOR, MOSTRAR_CALCULAR,
+  MOSTRAR_AVATAR, MOSTRAR_LOGIN_EMAIL,
+  MOSTRAR_SUPORTE, MOSTRAR_DECLARACAO_ANUAL, MOSTRAR_MEU_LUCRO, MOSTRAR_SIMULADOR, MOSTRAR_CALCULAR,
   MOSTRAR_PAGINA_DAS, MOSTRAR_PERMISSOES, MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
 } from "@/config/piloto";
 import { proximoVencimentoDas, formatarDiaMes } from "@/lib/vencimentoDas";
@@ -70,7 +69,9 @@ const MOSTRAR_NOME_NO_TOPO = false;
 
 /* v12 (pedido do Fernando): a barra de baixo (Inicio, +, Perfil) some no
    Perfil. Volta-se ao Inicio pela setinha do topo ou pelo gesto. */
-const MOSTRAR_BARRA_NO_PERFIL = false;
+/* v31: o Perfil virou a aba "Mais": o rodape de 5 itens volta, igual
+   em todas as abas (a setinha de voltar saiu: e aba) */
+const MOSTRAR_BARRA_NO_PERFIL = true;
 
 /* v19: "Não preenchido" com um pontinho de aviso (amarelo apagado) */
 function NaoPreenchido() {
@@ -191,7 +192,7 @@ export default function Perfil() {
   const navigate = useNavigate();
   const { nome, visitante, setNome: salvarNome, setTipo } = useUserState();
   const app = useAppState();
-  const { resetarConta, tipoMEI, mesAnoAbertura, setMesAnoAbertura, limiteAtual, faturamentoAtual, email, cnpj } = app;
+  const { resetarConta, tipoMEI, mesAnoAbertura, setMesAnoAbertura, email, cnpj } = app;
 
   /* v24 (10/10/2026, Bloco C): o que veio do CNPJ nao se edita a mao.
      Travado = CNPJ confirmado. O Tipo de MEI so fica travado quando o
@@ -270,14 +271,6 @@ export default function Perfil() {
 
   const cardFolha = { backgroundColor: "var(--bg)", border: "1px solid var(--border)" };
 
-  /* v12: sem a barra de baixo, a setinha e o caminho de volta. Se o
-     Perfil foi aberto de dentro do app, volta uma tela; se foi aberto
-     direto (link/recarregou), vai para o Inicio. */
-  function voltarDoPerfil() {
-    if ((window.history.state?.idx ?? 0) > 0) navigate(-1);
-    else navigate("/dashboard", { replace: true });
-  }
-
   /* v11: tema Preto/Branco. "auto" (de versoes antigas) vira o que
      estiver valendo agora. */
   const [tema, setTema] = useState(() => {
@@ -346,10 +339,6 @@ export default function Perfil() {
   const aberturaDoCnpj = /^\d{4}-\d{2}/.test(isoOpcaoMei)
     ? `${MESES[Number(isoOpcaoMei.slice(5, 7)) - 1]} de ${isoOpcaoMei.slice(0, 4)}`
     : "";
-  // Limite proporcional: abriu este ano depois de janeiro (fiscal.js)
-  const limiteEhProporcional =
-    Number(mesAnoAbertura?.ano) === anoAtual && Number(mesAnoAbertura?.mes) > 1;
-  const situacao = calcularFaltamOuExcedeu(faturamentoAtual, limiteAtual);
 
   function trocarConta(id) {
     const conta = ativarConta(id);
@@ -408,10 +397,10 @@ export default function Perfil() {
     >
       <div
         className="conteudo-rolavel hide-scrollbar"
-        style={{ paddingBottom: MOSTRAR_BARRA_NO_PERFIL ? "calc(100px + env(safe-area-inset-bottom))" : "calc(32px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: MOSTRAR_BARRA_NO_PERFIL ? `calc(${ALTURA_RODAPE + 32}px + env(safe-area-inset-bottom))` : "calc(32px + env(safe-area-inset-bottom))" }}
       >
         {/* v6: titulo sobe com a rolagem, setinha fica (transparente) */}
-        <TopoRolavel titulo="Perfil" onVoltar={voltarDoPerfil} recuo={20} />
+        <TopoRolavel titulo="Mais" recuo={20} />
 
         {/* v8: bola com foto/inicial escondida (MOSTRAR_AVATAR) */}
         {MOSTRAR_AVATAR && (
@@ -453,10 +442,61 @@ export default function Perfil() {
         )}
 
         <div className="px-5">
-          {/* ===== v11: Conta PRIMEIRO (Editar perfil + Tema) ===== */}
-          <SecaoLista titulo="Conta" style={{ marginTop: 8 }}>
+          {/* ===== v31: MEU MEI (CNPJ, DAS, Calcular, Declaração anual) ===== */}
+          {!visitante && (
+            <SecaoLista titulo="Meu MEI" style={{ marginTop: 8 }}>
+              {/* v19: CNPJ. Sem CNPJ: "Não preenchido" + pontinho de aviso */}
+              <LinhaLista
+                Icon={Building2}
+                rotulo="CNPJ"
+                valor={cnpj ? mascararCnpj(cnpj) : <NaoPreenchido />}
+                onClick={() => navigate("/perfil/cnpj", DE_PERFIL)}
+              />
+              {/* v26: pagina do DAS (vencimento, como pagar, historico) */}
+              {MOSTRAR_PAGINA_DAS && (
+                <LinhaLista
+                  Icon={CalendarCheck}
+                  rotulo="DAS"
+                  detalhe="O imposto mensal do MEI"
+                  valor={`Vence ${formatarDiaMes(proximoVencimentoDas())}`}
+                  onClick={() => navigate("/das", DE_PERFIL)}
+                />
+              )}
+              {/* v28: Calcular (quanto ainda posso faturar, IR, DAS do ano, Meu lucro) */}
+              {MOSTRAR_CALCULAR ? (
+                <LinhaLista Icon={Calculator} rotulo="Calcular" onClick={() => navigate("/calcular", DE_PERFIL)} />
+              ) : MOSTRAR_SIMULADOR && (
+                <LinhaLista Icon={Calculator} rotulo="Simulador" onClick={() => navigate("/simulador", DE_PERFIL)} />
+              )}
+              {MOSTRAR_DECLARACAO_ANUAL && (
+                <LinhaLista Icon={Landmark} rotulo="Declaração anual" onClick={() => navigate("/declaracao-anual", DE_PERFIL)} />
+              )}
+              {/* v13: historico de lancamentos (entradas, com o selo da nota) */}
+              <LinhaLista Icon={History} rotulo="Histórico de lançamentos" onClick={() => navigate("/historico", DE_PERFIL)} />
+              {/* v20: Meu lucro so quando o Calcular esta desligado (com ele, fica la dentro) */}
+              {MOSTRAR_MEU_LUCRO && !MOSTRAR_CALCULAR && (
+                <LinhaLista Icon={Wallet} rotulo="Meu lucro" onClick={() => navigate("/meu-lucro", DE_PERFIL)} />
+              )}
+              {/* Telas escondidas no piloto (chaves em src/config/piloto.js) */}
+              {MOSTRAR_SAIDAS && (
+                <LinhaLista Icon={ArrowUpRight} rotulo="Histórico de saídas" onClick={() => navigate("/saidas", DE_PERFIL)} />
+              )}
+              {MOSTRAR_HISTORICO_DAS && (
+                <LinhaLista Icon={CalendarCheck} rotulo="Histórico de DAS" onClick={() => navigate("/das/historico", DE_PERFIL)} />
+              )}
+              {MOSTRAR_ADICIONAR_MOVIMENTACOES && (
+                <LinhaLista Icon={TrendingUp} rotulo="Adicionar movimentações" onClick={() => navigate("/adicionar-faturamento", DE_PERFIL)} />
+              )}
+              {MOSTRAR_RESUMO_ANO && (
+                <LinhaLista Icon={BarChart3} rotulo={`Resumo de ${anoAtual}`} onClick={() => navigate("/perfil/resumo", DE_PERFIL)} />
+              )}
+            </SecaoLista>
+          )}
+
+          {/* ===== v31: MINHA CONTA (meus dados, WhatsApp, Permissões, Tema) ===== */}
+          <SecaoLista titulo="Minha conta" style={visitante ? { marginTop: 8 } : undefined}>
             {contaItem && <LinhaLista Icon={contaItem.Icon} rotulo={contaItem.label} onClick={contaItem.onClick} />}
-            {/* v14: Nome e WhatsApp vieram do Editar perfil */}
+            {/* meus dados: Nome (digita na linha), Tipo de MEI e Abertura */}
             {!visitante && (
               <LinhaCampo Icon={User} rotulo="Nome">
                 <input
@@ -472,6 +512,22 @@ export default function Perfil() {
                 />
               </LinhaCampo>
             )}
+            {/* v24: o que veio do CNPJ fica travado (cadeado; toca e abre o CNPJ) */}
+            {!visitante && (tipoTravado ? (
+              <LinhaLista Icon={Briefcase} rotulo="Tipo de MEI" detalhe="Veio do seu CNPJ" valor={<ValorTravado>{rotuloTipo}</ValorTravado>} onClick={abrirCnpj} />
+            ) : (
+              <LinhaLista Icon={Briefcase} rotulo="Tipo de MEI" valor={rotuloTipo} onClick={() => setFolhaTipoAberta(true)} />
+            ))}
+            {!visitante && (aberturaDoCnpj || abertura) && (aberturaDoCnpj ? (
+              <LinhaLista Icon={CalendarDays} rotulo="Abertura" detalhe="Veio do seu CNPJ" valor={<ValorTravado>{aberturaDoCnpj}</ValorTravado>} onClick={abrirCnpj} />
+            ) : (
+              <LinhaLista
+                Icon={CalendarDays}
+                rotulo="Abertura"
+                valor={abertura}
+                onClick={Number(mesAnoAbertura?.ano) === anoAtual ? () => setCalendarioAberto(true) : undefined}
+              />
+            ))}
             {!visitante && (
               <LinhaLista
                 Icon={Phone}
@@ -480,33 +536,23 @@ export default function Perfil() {
                 onClick={() => setAvisoWhats(true)}
               />
             )}
+            {/* v10: so com o login por e-mail ligado (MOSTRAR_LOGIN_EMAIL) */}
+            {!visitante && MOSTRAR_LOGIN_EMAIL && (
+              <LinhaLista Icon={Lock} rotulo="Alterar senha" onClick={() => navigate("/alterar-senha", DE_PERFIL)} />
+            )}
+            {/* v29: o que o TaCerto usa (WhatsApp, CNPJ, notificacao) */}
+            {MOSTRAR_PERMISSOES && (
+              <LinhaLista Icon={ShieldCheck} rotulo="Permissões e integrações" onClick={() => navigate("/perfil/permissoes", DE_PERFIL)} />
+            )}
+            {/* v31: Preferencias (Lembrete do DAS) so sem a pagina do DAS (com ela, fica la dentro) */}
+            {MOSTRAR_PREFERENCIAS && !MOSTRAR_PAGINA_DAS && (
+              <LinhaLista Icon={Settings} rotulo="Preferências" detalhe="Lembrete do DAS" onClick={() => navigate("/preferencias", DE_PERFIL)} />
+            )}
             <LinhaLista
               Icon={tema === "claro" ? Sun : Moon}
               rotulo="Tema"
               valor={<SeletorTema tema={tema} onEscolher={escolherTema} />}
             />
-            {/* v16: Excluir conta logo abaixo do Tema (pedido do Fernando:
-                longe do "Sair da conta"). v18: branco como as outras
-                linhas; vermelho so no "Sair da conta" */}
-            {!visitante && (
-              <LinhaLista
-                Icon={Trash2}
-                rotulo="Excluir conta"
-                semSeta
-                onClick={() => navigate("/excluir-conta", DE_PERFIL)}
-              />
-            )}
-            {/* v10: so com o login por e-mail ligado (MOSTRAR_LOGIN_EMAIL) */}
-            {!visitante && MOSTRAR_LOGIN_EMAIL && (
-              <LinhaLista Icon={Lock} rotulo="Alterar senha" onClick={() => navigate("/alterar-senha", DE_PERFIL)} />
-            )}
-            {MOSTRAR_PREFERENCIAS && (
-              <LinhaLista Icon={Settings} rotulo="Preferências" detalhe="Lembrete do DAS" onClick={() => navigate("/preferencias", DE_PERFIL)} />
-            )}
-            {/* v29: o que o TaCerto usa (WhatsApp, CNPJ, extratos...) e como parar as mensagens */}
-            {MOSTRAR_PERMISSOES && (
-              <LinhaLista Icon={ShieldCheck} rotulo="Permissões e integrações" onClick={() => navigate("/perfil/permissoes", DE_PERFIL)} />
-            )}
           </SecaoLista>
 
           {/* v14: "Salvar" do nome, so quando o nome mudou */}
@@ -528,166 +574,21 @@ export default function Perfil() {
             </button>
           )}
 
-          {/* ===== Topo: SO o nome (v10). v11: escondido (MOSTRAR_NOME_NO_TOPO) ===== */}
-          {MOSTRAR_NOME_NO_TOPO && (
-          <div style={{ paddingTop: 6 }}>
-            <button
-              type="button"
-              disabled={!temMultiplas}
-              onClick={() => temMultiplas && setSeletorAberto(true)}
-              className="flex items-center gap-1.5 text-left max-w-full"
-            >
-              <span className="font-bold truncate" style={{ color: "var(--text)", fontSize: 26, lineHeight: 1.2 }}>
-                {nomeExibido}
-              </span>
-              {temMultiplas && (
-                <ChevronDown size={18} style={{ color: "var(--text-secondary)" }} className="shrink-0" />
-              )}
-            </button>
-          </div>
-          )}
-
-          {/* ===== Meu MEI: so informacao, sem setinha ===== */}
-          {!visitante && (
-            <SecaoLista titulo="Meu MEI">
-              {/* v19: CNPJ. Sem CNPJ: "Não preenchido" + pontinho de aviso
-                  discreto ("aparece so quando precisa": nao insiste). */}
-              <LinhaLista
-                Icon={Building2}
-                rotulo="CNPJ"
-                valor={cnpj ? mascararCnpj(cnpj) : <NaoPreenchido />}
-                onClick={() => navigate("/perfil/cnpj", DE_PERFIL)}
-              />
-              {/* v14: tocaveis (vieram do Editar perfil). A abertura so
-                  muda para quem abriu este ano (limite proporcional). */}
-              {tipoTravado ? (
-                <LinhaLista Icon={Briefcase} rotulo="Tipo de MEI" detalhe="Veio do seu CNPJ" valor={<ValorTravado>{rotuloTipo}</ValorTravado>} onClick={abrirCnpj} />
-              ) : (
-                <LinhaLista Icon={Briefcase} rotulo="Tipo de MEI" valor={rotuloTipo} onClick={() => setFolhaTipoAberta(true)} />
-              )}
-              {(aberturaDoCnpj || abertura) && (aberturaDoCnpj ? (
-                <LinhaLista Icon={CalendarDays} rotulo="Abertura" detalhe="Veio do seu CNPJ" valor={<ValorTravado>{aberturaDoCnpj}</ValorTravado>} onClick={abrirCnpj} />
-              ) : (
-                <LinhaLista
-                  Icon={CalendarDays}
-                  rotulo="Abertura"
-                  valor={abertura}
-                  onClick={Number(mesAnoAbertura?.ano) === anoAtual ? () => setCalendarioAberto(true) : undefined}
-                />
-              ))}
-              <LinhaLista
-                Icon={Gauge}
-                rotulo="Limite do ano"
-                detalhe={limiteEhProporcional ? "Proporcional" : null}
-                valor={<Valor px={15} cor="var(--text-secondary)">{limiteAtual}</Valor>}
-              />
-              <LinhaLista
-                Icon={ArrowDownLeft}
-                rotulo="Já faturado"
-                valor={<Valor px={15} cor="var(--text-secondary)">{faturamentoAtual}</Valor>}
-              />
-              {situacao.tipo === "faltam" ? (
-                <LinhaLista
-                  Icon={TrendingUp}
-                  rotulo="Limite restante"
-                  valor={<Valor px={15} cor="var(--text-secondary)">{situacao.valor}</Valor>}
-                />
-              ) : (
-                <LinhaLista
-                  Icon={TrendingUp}
-                  rotulo="Passou do limite"
-                  valor={<Valor px={15} cor="var(--danger)">{situacao.valor}</Valor>}
-                />
-              )}
-              {/* v26: pagina do DAS (vencimento, como pagar, historico) */}
-              {MOSTRAR_PAGINA_DAS && (
-                <LinhaLista
-                  Icon={CalendarCheck}
-                  rotulo="DAS"
-                  detalhe="O imposto mensal do MEI"
-                  valor={`Vence ${formatarDiaMes(proximoVencimentoDas())}`}
-                  onClick={() => navigate("/das", DE_PERFIL)}
-                />
-              )}
-              {/* v27: Notas fiscais (emitir, guardar, minhas notas), junto do DAS */}
-              {MOSTRAR_TUTORIAL_NOTA && MOSTRAR_JANELA_NOTAS && (
-                <LinhaLista Icon={FileText} rotulo="Notas fiscais" onClick={() => navigate("/notas-fiscais", DE_PERFIL)} />
-              )}
-              {/* v20: Meu lucro (recebido x gastos) */}
-              {MOSTRAR_MEU_LUCRO && (
-                <LinhaLista Icon={Wallet} rotulo="Meu lucro" onClick={() => navigate("/meu-lucro", DE_PERFIL)} />
-              )}
-              {/* v28: Calcular (o Simulador virou uma das contas dele) */}
-              {MOSTRAR_CALCULAR ? (
-                <LinhaLista Icon={Calculator} rotulo="Calcular" onClick={() => navigate("/calcular", DE_PERFIL)} />
-              ) : MOSTRAR_SIMULADOR && (
-                <LinhaLista Icon={Calculator} rotulo="Simulador" onClick={() => navigate("/simulador", DE_PERFIL)} />
-              )}
-              {/* v13: historico de lancamentos (entradas) */}
-              <LinhaLista Icon={History} rotulo="Histórico de lançamentos" onClick={() => navigate("/historico", DE_PERFIL)} />
-              {/* Telas escondidas no piloto (chaves em src/config/piloto.js) */}
-              {MOSTRAR_SAIDAS && (
-                <LinhaLista Icon={ArrowUpRight} rotulo="Histórico de saídas" onClick={() => navigate("/saidas", DE_PERFIL)} />
-              )}
-              {MOSTRAR_HISTORICO_DAS && (
-                <LinhaLista Icon={CalendarCheck} rotulo="Histórico de DAS" onClick={() => navigate("/das/historico", DE_PERFIL)} />
-              )}
-              {MOSTRAR_NOTAS_FISCAIS && (
-                <LinhaLista Icon={FileText} rotulo="Histórico de notas fiscais" onClick={() => navigate("/notas-fiscais", DE_PERFIL)} />
-              )}
-              {MOSTRAR_ADICIONAR_MOVIMENTACOES && (
-                <LinhaLista Icon={TrendingUp} rotulo="Adicionar movimentações" onClick={() => navigate("/adicionar-faturamento", DE_PERFIL)} />
-              )}
-              {MOSTRAR_RESUMO_ANO && (
-                <LinhaLista Icon={BarChart3} rotulo={`Resumo de ${anoAtual}`} onClick={() => navigate("/perfil/resumo", DE_PERFIL)} />
-              )}
-            </SecaoLista>
-          )}
-
-          {/* ===== Ajuda ===== */}
-          {/* v16: o suporte (atendimento humano) e um chat dentro do app,
-              com perguntas prontas para afunilar (/suporte) */}
+          {/* ===== v31: AJUDA (Suporte, Rever tutorial, Termos, Privacidade) ===== */}
           <SecaoLista titulo="Ajuda">
-            {MOSTRAR_SUPORTE ? (
-              <LinhaLista Icon={Headphones} rotulo="Falar com o suporte" onClick={() => navigate("/suporte", DE_PERFIL)} />
-            ) : (
-              <LinhaLista
-                Icon={Headphones}
-                rotulo="Falar com o suporte"
-                onClick={() => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.falarComFisco(dadosParaWhatsApp(app)))}
-              />
-            )}
-            {/* v27: com a janela nova, "Notas fiscais" fica no Meu MEI (acima) */}
-            {MOSTRAR_TUTORIAL_NOTA && !MOSTRAR_JANELA_NOTAS && (
-              /* v21: janela "Notas fiscais" (explicacao + A1, ou Minhas notas) */
-              <LinhaLista
-                Icon={FileText}
-                rotulo={MOSTRAR_JANELA_NOTAS ? "Notas fiscais" : "Como emitir nota"}
-                onClick={() => navigate(MOSTRAR_JANELA_NOTAS ? "/notas-fiscais" : "/como-emitir-nota", DE_PERFIL)}
-              />
-            )}
-            {/* v26: com a pagina do DAS, o "Como pagar o DAS" sai daqui (fica no Meu MEI > DAS) */}
-            {MOSTRAR_TUTORIAL_DAS && !MOSTRAR_PAGINA_DAS && (
-              <LinhaLista Icon={CalendarCheck} rotulo="Como pagar o DAS" onClick={() => navigate("/como-pagar-das", DE_PERFIL)} />
-            )}
-            {MOSTRAR_DECLARACAO_ANUAL && (
-              <LinhaLista Icon={Landmark} rotulo="Declaração anual" onClick={() => navigate("/declaracao-anual", DE_PERFIL)} />
+            {MOSTRAR_SUPORTE && (
+              <LinhaLista Icon={Headphones} rotulo="Suporte" onClick={() => navigate("/suporte", DE_PERFIL)} />
             )}
             {/* v30: o tutorial do primeiro acesso, de novo */}
-            <LinhaLista Icon={PlayCircle} rotulo="Tutorial do app" onClick={() => setTutorialAberto(true)} />
-          </SecaoLista>
-
-          {/* ===== Sobre ===== */}
-          <SecaoLista titulo="Sobre">
+            <LinhaLista Icon={PlayCircle} rotulo="Rever tutorial" onClick={() => setTutorialAberto(true)} />
             <LinhaLista Icon={Shield} rotulo="Termos de uso" onClick={() => navigate("/termos-de-uso", DE_PERFIL)} />
-            <LinhaLista Icon={Lock} rotulo="Política de privacidade" onClick={() => navigate("/privacidade", DE_PERFIL)} />
+            <LinhaLista Icon={Lock} rotulo="Privacidade" onClick={() => navigate("/privacidade", DE_PERFIL)} />
             {MOSTRAR_SOBRE && (
               <LinhaLista Icon={Info} rotulo="Sobre o TaCerto!" onClick={() => navigate("/sobre", DE_PERFIL)} />
             )}
           </SecaoLista>
 
-          {/* ===== Sair e Excluir conta (por ultimo, linhas simples).
-               v14: o "Excluir conta" voltou do Editar perfil. ===== */}
+          {/* ===== v31: Sair e Excluir conta, por ultimo (Sair em vermelho) ===== */}
           {!visitante && (
             <SecaoLista>
               <LinhaLista
@@ -696,6 +597,12 @@ export default function Perfil() {
                 cor="var(--danger)"
                 semSeta
                 onClick={() => setConfirmarSair(true)}
+              />
+              <LinhaLista
+                Icon={Trash2}
+                rotulo="Excluir conta"
+                semSeta
+                onClick={() => navigate("/excluir-conta", DE_PERFIL)}
               />
             </SecaoLista>
           )}
@@ -925,7 +832,7 @@ export default function Perfil() {
       />
 
       {/* v12: sem a barra de baixo no Perfil (MOSTRAR_BARRA_NO_PERFIL) */}
-      {MOSTRAR_BARRA_NO_PERFIL && <BottomNav ativo="perfil" />}
+      {MOSTRAR_BARRA_NO_PERFIL && <BottomNav ativo="mais" />}
     </div>
   );
 }

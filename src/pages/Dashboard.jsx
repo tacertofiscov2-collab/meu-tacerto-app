@@ -1,4 +1,4 @@
-﻿/* DASHBOARD v41 — ao abrir, garante a inscricao da notificacao da semana neste celular (quem ativou antes da chave existir; src/lib/notificacoesCelular.js); sugestoes antigas sem citar o orgao do governo (v40: Inicio novo (12/10, print do Fernando "muito mal enquadrado"): topo so com o sininho (sem "Como emitir nota", MOSTRAR_NOTA_NO_INICIO), sem "Falta informar" e sem o card Proximo DAS (MOSTRAR_DAS_NO_INICIO); card do velocimetro MAIOR (arco ate 280, numero 48, "?" de 44 que nao invade o rotulo, altura maxima 440) com "Atualizar velocímetro" pequeno no canto de cima (e "Atualizado em" embaixo, so depois da primeira atualizacao); chat da Isa menor (foto 68, barra 44) com camera, clipe e microfone FUNCIONANDO: a foto ou o PDF vai para o "+" ja lendo o comprovante, o microfone abre o WhatsApp da Isa; pecas e medidas em src/components/InicioPartes.jsx (as mesmas do tutorial) (v39: tutorial do primeiro acesso (Bloco L): na primeira vez no Inicio abre o "Como funciona" (4 telas, Pular tutorial); ao fechar ou ao tocar em Enviar extrato, guarda que ja viu (perfis.tutorial_visto; antes do SQL de 10-10, no aparelho) (v38: o atalho DAS ("Emitir boleto" do card Proximo DAS) abre a pagina do DAS (/das, MOSTRAR_PAGINA_DAS) em vez da folha (v37: Inicio de ANTES de volta como padrao (visual "atual": cartao de vidro, Proximo DAS, Como emitir nota e o chat da Isa embaixo, mesmas dimensoes); "Atualizado em" + "Atualizar velocimetro" EM CIMA do velocimetro, selo Estimado/Conferido tambem nele; o "?" do ano e o Tirar duvidas usam as perguntas do faqFisco (que tem resposta); DAS e NF do Inicio pelas acoes do Inicio (DAS e Notas); caixinha do chat com 16px e sem os botoes que nao faziam nada (MOSTRAR_ANEXOS_CHAT) (v36: Fisco vira Isa: foto da Isa (FotoIsa, webp) na barra DAS | Isa | NF, no botao do WhatsApp e no chat; textos "Isa" e "Pergunte à Isa..." (v35: o portao, quando as regras do pagador resolvem tudo sozinhas, tambem confere se o extrato ja pode substituir o total do ano digitado (substituirTotalPeloExtrato) (v34: proximo DAS com feriados nacionais (vencimentoDas.js: dia 20 ou o proximo dia util) (v33: o atalho NF abre a janela "Notas fiscais" (/notas-fiscais) (v32: o portao das entradas confirma pelas regras do pagador SEM contar duas vezes (lancarEntradasConfirmadas: casa com lancamento a mao e diminui o ajuste do total do ano) (v31: visual F: "Atualizado em 08/10 às 14:32" + botao "Atualizar velocimetro" abaixo do velocimetro (zerado: "Falta informar" e o botao em destaque) e selo Estimado/Conferido no velocimetro do ano; a folha de atualizar abre sempre (v30: valor do DAS pelo CNAE do perfil (fiscal.js) e o CNPJ nas mensagens do WhatsApp (v29: velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp)))))) */
+﻿/* DASHBOARD v43 — sai o chat da Isa do Inicio (a Isa fica so na aba Isa do rodape); no lugar, abaixo do card do velocimetro, "Ultimos lancamentos" (3 mais recentes, Ver todos -> Historico; sem lancamento: Comece pelo extrato) com altura fixa reservada; o rodape fica sempre; espaco de baixo = altura do rodape (ALTURA_RODAPE) (v42: rodape de 5 itens (Inicio | Notas | + | Isa | Mais): a pergunta do chat abre a aba Isa (/isa) e o NF a aba Notas (/notas) (v41: ao abrir, garante a inscricao da notificacao da semana neste celular (quem ativou antes da chave existir; src/lib/notificacoesCelular.js); sugestoes antigas sem citar o orgao do governo (v40: Inicio novo (12/10, print do Fernando "muito mal enquadrado"): topo so com o sininho (sem "Como emitir nota", MOSTRAR_NOTA_NO_INICIO), sem "Falta informar" e sem o card Proximo DAS (MOSTRAR_DAS_NO_INICIO); card do velocimetro MAIOR (arco ate 280, numero 48, "?" de 44 que nao invade o rotulo, altura maxima 440) com "Atualizar velocímetro" pequeno no canto de cima (e "Atualizado em" embaixo, so depois da primeira atualizacao); chat da Isa menor (foto 68, barra 44) com camera, clipe e microfone FUNCIONANDO: a foto ou o PDF vai para o "+" ja lendo o comprovante, o microfone abre o WhatsApp da Isa; pecas e medidas em src/components/InicioPartes.jsx (as mesmas do tutorial) (v39: tutorial do primeiro acesso (Bloco L): na primeira vez no Inicio abre o "Como funciona" (4 telas, Pular tutorial); ao fechar ou ao tocar em Enviar extrato, guarda que ja viu (perfis.tutorial_visto; antes do SQL de 10-10, no aparelho) (v38: o atalho DAS ("Emitir boleto" do card Proximo DAS) abre a pagina do DAS (/das, MOSTRAR_PAGINA_DAS) em vez da folha (v37: Inicio de ANTES de volta como padrao (visual "atual": cartao de vidro, Proximo DAS, Como emitir nota e o chat da Isa embaixo, mesmas dimensoes); "Atualizado em" + "Atualizar velocimetro" EM CIMA do velocimetro, selo Estimado/Conferido tambem nele; o "?" do ano e o Tirar duvidas usam as perguntas do faqFisco (que tem resposta); DAS e NF do Inicio pelas acoes do Inicio (DAS e Notas); caixinha do chat com 16px e sem os botoes que nao faziam nada (MOSTRAR_ANEXOS_CHAT) (v36: Fisco vira Isa: foto da Isa (FotoIsa, webp) na barra DAS | Isa | NF, no botao do WhatsApp e no chat; textos "Isa" e "Pergunte à Isa..." (v35: o portao, quando as regras do pagador resolvem tudo sozinhas, tambem confere se o extrato ja pode substituir o total do ano digitado (substituirTotalPeloExtrato) (v34: proximo DAS com feriados nacionais (vencimentoDas.js: dia 20 ou o proximo dia util) (v33: o atalho NF abre a janela "Notas fiscais" (/notas-fiscais) (v32: o portao das entradas confirma pelas regras do pagador SEM contar duas vezes (lancarEntradasConfirmadas: casa com lancamento a mao e diminui o ajuste do total do ano) (v31: visual F: "Atualizado em 08/10 às 14:32" + botao "Atualizar velocimetro" abaixo do velocimetro (zerado: "Falta informar" e o botao em destaque) e selo Estimado/Conferido no velocimetro do ano; a folha de atualizar abre sempre (v30: valor do DAS pelo CNAE do perfil (fiscal.js) e o CNPJ nas mensagens do WhatsApp (v29: velocimetro maior no visual F (arco, numero, valores, rotulos e bolinhas; o "MEI · anual" fica igual) e a barra dos 3 atalhos centrada entre as bolinhas e o rodape; "Fisco.ia" vira "Fisco" nos textos (v28: tela A (F) escolhida: 3 atalhos curtos (DAS, Fisco com o simbolo do WhatsApp, NF), velocimetro mais alto (respiro antes da barra), notificacao "Atualize seu velocimetro" (FolhaAtualizarVelocimetro) (v27: "tela B" para comparar (visual G = F invertido: 3 atalhos em cima, velocimetro embaixo); seletor A (F) / B (G) (v26: sininho de notificacoes no topo (BotaoNotificacoes) e a Apresentacao do Fisco.ia (tutorial); marca da media lida via useMarcaDaConta (v25: Inicio F com o "+" sem circulo; explicacao da media limite so com texto + "Entendi" e so UMA vez (o "?" do card B some depois de ler) (v24: 3 variacoes novas do Inicio (D cartoes, E DAS em destaque, F barra unica), sem bolinhas; seletor de teste mostra so C, D, E e F (v23: variacoes do visual para teste (Atual, A lista, B blocos, C atalhos), sem bordas de vidro; seletor no topo (MOSTRAR_SELETOR_VISUAL_INICIO) (v22: "Fisco" vira "Fisco.ia" nos textos da tela (v21: card do DAS: "Proximo DAS: 20/10" sem cortar + botao "Emitir boleto" que abre o painel de pagamento (FolhaPagarDas); v20: mensagens prontas do WhatsApp)))))))) */
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -6,7 +6,7 @@ import {
   Gauge, ChevronRight, Send, X, Mic, Image as ImageIcon, Camera, FileText, Sparkles, BookOpen,
   CalendarClock, MessageCircle, RefreshCw, Check,
 } from "lucide-react";
-import BottomNav from "../components/BottomNav.jsx";
+import BottomNav, { ALTURA_RODAPE } from "../components/BottomNav.jsx";
 import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
 import Valor from "../components/Valor.jsx";
 import VelocimetroAnimado from "../components/VelocimetroAnimado.jsx";
@@ -17,9 +17,8 @@ import ApresentacaoFisco from "../components/ApresentacaoFisco.jsx";
 import FotoIsa from "../components/FotoIsa.jsx";
 import FolhaAtualizarVelocimetro from "../components/FolhaAtualizarVelocimetro.jsx";
 import {
-  MEDIDAS_INICIO, VIDRO, VIDRO_SUAVE, BordaCorrendo, textoAtualizadoEm, BotaoAtualizarCanto, BarraIsaInicio,
+  MEDIDAS_INICIO, VIDRO, VIDRO_SUAVE, BordaCorrendo, textoAtualizadoEm, BotaoAtualizarCanto, UltimosLancamentos,
 } from "../components/InicioPartes.jsx";
-import { deixarArquivoPendente } from "@/lib/arquivoPendente";
 import { garantirInscricaoPush } from "@/lib/notificacoesCelular";
 import { useMarcaDaConta } from "@/lib/marcasDaConta";
 import { useAppState } from "@/context/AppStateContext";
@@ -37,8 +36,8 @@ import {
   MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
   MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA,
   MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO, MOSTRAR_NOTIFICACOES, MOSTRAR_JANELA_NOTAS,
-  MOSTRAR_ANEXOS_CHAT, MOSTRAR_PAGINA_DAS,
-  MOSTRAR_DAS_NO_INICIO, MOSTRAR_NOTA_NO_INICIO, MOSTRAR_COMPROVANTE_FOTO,
+  MOSTRAR_ENVIAR_EXTRATO, MOSTRAR_PAGINA_DAS,
+  MOSTRAR_DAS_NO_INICIO, MOSTRAR_NOTA_NO_INICIO,
 } from "@/config/piloto";
 import { contextoFaq, perguntasDaFaixa, textoPergunta } from "@/lib/faqFisco";
 
@@ -1636,295 +1635,8 @@ function BordaLuminosa({ raio = 28, cor = "34,197,94", corClara = "74,222,128" }
 
 /* BordaCorrendo (v40): em src/components/InicioPartes.jsx */
 
-/* v40: os botoes da caixa funcionam (MOSTRAR_ANEXOS_CHAT): camera,
-   galeria e documento chamam onFoto/onGaleria/onDocumento (os campos de
-   arquivo ficam no Dashboard, fora da caixa, que fecha quando o campo
-   perde o foco); o microfone (campo vazio) chama onAudio (WhatsApp). */
-function CaixaFiscoExpandida({ onEnviarPrimeira, onFoto, onGaleria, onDocumento, onAudio }) {
-  const [rascunho, setRascunho] = useState("");
-  const inputRef = useRef(null);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  function submeter(e) {
-    e.preventDefault();
-    const texto = rascunho.trim();
-    if (!texto) return;
-    onEnviarPrimeira(texto);
-    setRascunho("");
-    // Volta o campo pro tamanho inicial (ele cresceu enquanto digitava).
-    if (inputRef.current) inputRef.current.style.height = "auto";
-  }
-
-  return (
-    <form
-      onSubmit={submeter}
-      onClick={() => inputRef.current?.focus()}
-      className="rounded-3xl flex flex-col relative"
-      style={{
-        ...VIDRO_SUAVE,
-        background:
-          "linear-gradient(160deg, var(--vidro-brilho-2) 0%, var(--vidro-brilho-3) 24%, transparent 58%), var(--vidro-bg-transparente)",
-        padding: 14,
-        gap: 10,
-        cursor: "text",
-        // Avisa o navegador pra preparar a camada do vidro antes da
-        // animacao de entrada. Sem isso, o Safari pintava o backdrop-filter
-        // um frame depois e a caixinha aparecia so com a borda.
-        willChange: "backdrop-filter",
-      }}
-    >
-      <BordaLuminosa raio={24} />
-
-      <textarea
-        ref={inputRef}
-        value={rascunho}
-        rows={2}
-        placeholder="Pergunte à Isa..."
-        onChange={(e) => {
-          setRascunho(e.target.value);
-          // Cresce com o texto ate MAX_ALTURA_CAIXA_FISCO; passando disso,
-          // para de crescer e rola por dentro (barra de rolagem visivel).
-          const el = e.target;
-          el.style.height = "auto";
-          el.style.height = `${Math.min(el.scrollHeight, MAX_ALTURA_CAIXA_FISCO)}px`;
-        }}
-        className="w-full resize-none"
-        style={{
-          background: "none",
-          border: "none",
-          outline: "none",
-          color: "var(--text)",
-          caretColor: "var(--primary)",
-          fontSize: 16,
-          lineHeight: 1.4,
-          fontFamily: "inherit",
-          maxHeight: MAX_ALTURA_CAIXA_FISCO,
-          overflowY: "auto",
-        }}
-      />
-
-      <div className="flex items-center justify-between">
-        {/* v37: foto, galeria e documento nunca fizeram nada: escondidos
-            (MOSTRAR_ANEXOS_CHAT). O espaco fica, para a caixa nao mudar.
-            v40: agora funcionam (o arquivo vai para o "+" com o comprovante) */}
-        <div className="flex items-center" style={{ gap: 6, minHeight: 38, visibility: MOSTRAR_ANEXOS_CHAT && MOSTRAR_COMPROVANTE_FOTO ? "visible" : "hidden" }}>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onFoto?.(); }}
-            aria-label="Tirar foto"
-            className="toque rounded-full flex items-center justify-center"
-            style={{
-              width: 36,
-              height: 36,
-              backgroundColor: "var(--vidro-superficie)",
-              border: "1px solid var(--vidro-borda)",
-            }}
-          >
-            <Camera size={17} style={{ color: "var(--text)" }} />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onGaleria?.(); }}
-            aria-label="Galeria"
-            className="toque rounded-full flex items-center justify-center"
-            style={{
-              width: 36,
-              height: 36,
-              backgroundColor: "var(--vidro-superficie)",
-              border: "1px solid var(--vidro-borda)",
-            }}
-          >
-            <ImageIcon size={17} style={{ color: "var(--text)" }} />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onDocumento?.(); }}
-            aria-label="Documento"
-            className="toque rounded-full flex items-center justify-center"
-            style={{
-              width: 36,
-              height: 36,
-              backgroundColor: "var(--vidro-superficie)",
-              border: "1px solid var(--vidro-borda)",
-            }}
-          >
-            <FileText size={17} style={{ color: "var(--text)" }} />
-          </button>
-        </div>
-
-        {rascunho.trim() || !MOSTRAR_ANEXOS_CHAT ? (
-          <button
-            type="submit"
-            aria-label="Enviar"
-            disabled={!rascunho.trim()}
-            className="toque rounded-full flex items-center justify-center shrink-0"
-            style={{ width: 38, height: 38 }}
-          >
-            <Send size={21} strokeWidth={2.1} style={{ color: "var(--primary)", opacity: rascunho.trim() ? 1 : 0.4 }} />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onAudio?.(); }}
-            aria-label="Mandar áudio para a Isa no WhatsApp"
-            className="toque rounded-full flex items-center justify-center shrink-0"
-            style={{ width: 38, height: 38 }}
-          >
-            <Mic size={21} strokeWidth={2.1} style={{ color: "var(--primary)" }} />
-          </button>
-        )}
-      </div>
-    </form>
-  );
-}
-
-/* Caixa expandida do Fisco.
-
-   Em vez de "crescer" a partir da barra do dashboard, ela e criada como
-   um elemento novo que aparece suavemente ancorado ao teclado.
-
-   Como funciona o posicionamento (a parte que antes falhava): montamos um
-   container que ocupa EXATAMENTE a area visivel (o espaco que sobra acima
-   do teclado) e colocamos a caixa no fim dele. Assim ela fica acima do
-   teclado por construcao - sem calcular posicao, entao nao tem como errar
-   e ficar escondida. Vive num portal, fora da arvore do dashboard. */
-function CaixaFiscoFlutuante({ onFechar, onEnviarPrimeira, ...anexos }) {
-  const areaRef = useRef(null);
-  // Enquanto "fechando", roda a animacao de saida; so depois disso o
-  // componente e removido de verdade (senao sumia do nada).
-  const [fechando, setFechando] = useState(false);
-
-  function fecharSuave() {
-    if (fechando) return;
-    setFechando(true);
-    setTimeout(onFechar, 200);
-  }
-
-  useEffect(() => {
-    const vv = window.visualViewport;
-    const area = areaRef.current;
-    if (!vv || !area) return;
-
-    // TRAVA A ROLAGEM DO DASHBOARD enquanto a caixinha esta aberta. Com o
-    // teclado aberto o iOS libera o scroll da pagina (pra "revelar" o que
-    // esta atras do teclado) e dava pra rolar o dashboard inteiro por
-    // tras. Aqui: overflow travado + bloqueio do arrasto fora do campo.
-    const htmlEl = document.documentElement;
-    const bodyEl = document.body;
-    const overflowHtmlAntes = htmlEl.style.overflow;
-    const overflowBodyAntes = bodyEl.style.overflow;
-    htmlEl.style.overflow = "hidden";
-    bodyEl.style.overflow = "hidden";
-
-    const bloquearArrasto = (e) => {
-      // Deixa rolar so dentro do proprio campo de texto (quando o texto
-      // passa do tamanho da caixa).
-      const alvo = e.target;
-      if (alvo && alvo.tagName === "TEXTAREA") return;
-      e.preventDefault();
-    };
-    document.addEventListener("touchmove", bloquearArrasto, { passive: false });
-
-    // Faz o container acompanhar a area visivel. Como a caixa esta
-    // alinhada ao fim dele, ela acompanha o teclado naturalmente.
-    const ajustar = () => {
-      const teclado = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      area.style.top = `${vv.offsetTop}px`;
-      area.style.height = `${vv.height}px`;
-      // Com teclado aberto, cola perto dele; sem teclado, um respiro maior.
-      area.style.paddingBottom = teclado > 60 ? "10px" : "26px";
-    };
-
-    // Perdeu o foco = teclado descendo: a caixa fecha junto e o dashboard
-    // volta ao normal. A checagem evita fechar quando o foco so pulou pra
-    // outro campo por um instante.
-    const aoSair = () => {
-      setTimeout(() => {
-        const a = document.activeElement;
-        const digitando = a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA");
-        if (!digitando) fecharSuave();
-      }, 80);
-    };
-
-    ajustar();
-    vv.addEventListener("resize", ajustar);
-    vv.addEventListener("scroll", ajustar);
-    document.addEventListener("focusout", aoSair);
-    return () => {
-      vv.removeEventListener("resize", ajustar);
-      vv.removeEventListener("scroll", ajustar);
-      document.removeEventListener("focusout", aoSair);
-      // Devolve a rolagem do dashboard ao fechar a caixinha.
-      document.removeEventListener("touchmove", bloquearArrasto);
-      htmlEl.style.overflow = overflowHtmlAntes;
-      bodyEl.style.overflow = overflowBodyAntes;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return createPortal(
-    <>
-      <style>{`
-        @keyframes caixaFiscoEntra {
-          from { opacity: 0.35; transform: translateY(12px) scale(0.99); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes caixaFiscoSai {
-          from { opacity: 1; transform: translateY(0) scale(1); }
-          to   { opacity: 0; transform: translateY(14px) scale(0.985); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .caixa-fisco-anima { animation: none !important; }
-        }
-      `}</style>
-
-      {/* Fundo: fecha ao tocar fora */}
-      <div
-        className="fixed inset-0"
-        style={{
-          zIndex: 60,
-          opacity: fechando ? 0 : 1,
-          transition: "opacity 200ms ease-out",
-        }}
-        onClick={fecharSuave}
-      />
-
-      {/* Container = area visivel (acima do teclado). A caixa fica no fim
-          dele, entao nunca cai atras do teclado. */}
-      <div
-        ref={areaRef}
-        className="fixed flex flex-col justify-end"
-        style={{
-          zIndex: 61,
-          left: 0,
-          right: 0,
-          top: 0,
-          height: "100dvh",
-          paddingLeft: 20,
-          paddingRight: 20,
-          paddingBottom: 26,
-          pointerEvents: "none",
-        }}
-      >
-        <div
-          className="caixa-fisco-anima"
-          style={{
-            pointerEvents: "auto",
-            animation: fechando
-              ? "caixaFiscoSai 200ms cubic-bezier(0.4,0,1,1) forwards"
-              : "caixaFiscoEntra 240ms cubic-bezier(0.22,0.61,0.36,1)",
-          }}
-        >
-          <CaixaFiscoExpandida onEnviarPrimeira={onEnviarPrimeira} {...anexos} />
-        </div>
-      </div>
-    </>,
-    document.body,
-  );
-}
+/* v43: a caixinha do chat da Isa (CaixaFiscoExpandida/Flutuante) saiu
+   com o chat do Inicio: a Isa fica so na aba Isa do rodape. */
 
 /* ===================================================================
    BOTAO DO BANCO — no canto de cima, no lugar do sino
@@ -2175,7 +1887,6 @@ export default function Dashboard() {
   const rotuloPerfil = LABEL_TIPO[tipoMEI];
   const saudacao = saudacaoPorHora();
 
-  const [caixaExpandida, setCaixaExpandida] = useState(false);
   // v21: painel "Como voce quer pagar seu DAS?" (botao "Emitir boleto")
   const [folhaDas, setFolhaDas] = useState(false);
   // v26: Apresentacao do Fisco.ia (abre pela notificacao do sininho)
@@ -2214,7 +1925,7 @@ export default function Dashboard() {
     onDas: () => (MOSTRAR_PAGINA_DAS ? navigate("/das", DE_DASHBOARD) : setFolhaDas(true)),
     onFisco: () => abrirWhatsAppFisco(MENSAGENS_WHATSAPP.falarComFisco(dadosWhats)),
     /* v33: o NF abre a janela "Notas fiscais" (MOSTRAR_JANELA_NOTAS) */
-    onNota: () => navigate(MOSTRAR_JANELA_NOTAS ? "/notas-fiscais" : "/como-emitir-nota", DE_DASHBOARD),
+    onNota: () => navigate(MOSTRAR_JANELA_NOTAS ? "/notas" : "/como-emitir-nota", DE_DASHBOARD),
   };
   const molduraVelocimetro = visual === "atual" ? "vidro" : visual === "b" ? "suave" : "nenhuma";
   /* v25: no F, o "+" fica sem circulo (BottomNav "simples") */
@@ -2229,46 +1940,10 @@ export default function Dashboard() {
   /* O historico de conversas nao vive mais aqui: quem cuida dele e a
      pagina /fisco (ver ChatFiscoPagina + lib/chatHistorico). */
 
-  // Abre a pagina do chat do Fisco (/fisco) levando a primeira mensagem.
-  // A pagina cria a conversa, mostra a mensagem e dispara a resposta.
-  function enviarPrimeiraMensagem(texto) {
-    setCaixaExpandida(false);
-    navigate("/fisco", { state: { primeiraMensagem: texto } });
-  }
-
   function perguntarAoFisco(texto) {
     setPainelDuvidas(null);
-    navigate("/fisco", { state: { primeiraMensagem: texto } });
+    navigate("/isa", { state: { primeiraMensagem: texto } });
   }
-
-  /* v40: ANEXOS DO CHAT DA ISA (barra do Inicio e caixinha aberta).
-     Os campos de arquivo ficam aqui, fora da caixinha (ela fecha quando
-     o campo de texto perde o foco, e o arquivo escolhido se perderia).
-     O arquivo vai para o "+" pela memoria (arquivoPendente) e a Lancar
-     abre ja lendo o comprovante. */
-  const inputCameraRef = useRef(null);
-  const inputAnexoRef = useRef(null);
-  const inputGaleriaRef = useRef(null);
-  const inputDocumentoRef = useRef(null);
-  const anexosLigados = MOSTRAR_ANEXOS_CHAT && MOSTRAR_COMPROVANTE_FOTO;
-  function receberArquivoDoChat(e) {
-    const arquivo = e.target.files?.[0];
-    e.target.value = "";
-    if (!arquivo) return;
-    setCaixaExpandida(false);
-    deixarArquivoPendente(arquivo);
-    navigate("/lancar", DE_DASHBOARD);
-  }
-  /* O app nao grava audio: o microfone abre o WhatsApp da Isa */
-  function mandarAudio() {
-    abrirWhatsAppFisco(MENSAGENS_WHATSAPP.audio(dadosWhats));
-  }
-  const anexosDaCaixa = {
-    onFoto: () => inputCameraRef.current?.click(),
-    onGaleria: () => inputGaleriaRef.current?.click(),
-    onDocumento: () => inputDocumentoRef.current?.click(),
-    onAudio: mandarAudio,
-  };
 
   return (
     <div
@@ -2277,7 +1952,7 @@ export default function Dashboard() {
     >
       <div
         className="flex-1 flex flex-col min-h-0"
-        style={{ paddingBottom: "calc(76px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: `calc(${ALTURA_RODAPE}px + env(safe-area-inset-bottom))` }}
       >
         {/* v23: seletor de teste do visual (some com a chave desligada) */}
         {MOSTRAR_SELETOR_VISUAL_INICIO && <SeletorVisualInicio visual={visual} onEscolher={escolherVisual} />}
@@ -2392,35 +2067,15 @@ export default function Dashboard() {
           {visual === "f" && <div aria-hidden style={RESPIRO_ABAIXO_DA_BARRA} />}
           {visual !== "atual" && visual !== "f" && <div aria-hidden className="shrink-0" style={{ height: 12 }} />}
 
-          {caixaExpandida && (
-            <CaixaFiscoFlutuante
-              onFechar={() => setCaixaExpandida(false)}
-              onEnviarPrimeira={enviarPrimeiraMensagem}
-              {...(MOSTRAR_ANEXOS_CHAT ? anexosDaCaixa : null)}
+          {/* v43: no lugar do chat da Isa (a Isa fica so na aba Isa do
+              rodape): os ultimos lancamentos, com altura fixa reservada */}
+          {visual === "atual" && (
+            <UltimosLancamentos
+              lancamentos={lancamentos}
+              carregado={app.lancamentosCarregados}
+              onVerTodos={() => navigate("/historico", DE_DASHBOARD)}
+              onEnviarExtrato={() => navigate(MOSTRAR_ENVIAR_EXTRATO ? "/enviar-extrato" : "/lancar", DE_DASHBOARD)}
             />
-          )}
-
-          {/* v37: o chat da Isa embaixo, so no Inicio de antes.
-              v40: menor (foto 68, barra 44) e com camera, clipe e microfone */}
-          {MOSTRAR_CHAT_FISCO && visual === "atual" && (
-            <BarraIsaInicio
-              onAbrir={() => setCaixaExpandida(true)}
-              onCamera={() => inputCameraRef.current?.click()}
-              onAnexo={() => inputAnexoRef.current?.click()}
-              onAudio={mandarAudio}
-              anexos={anexosLigados}
-              barraEscondida={caixaExpandida}
-            />
-          )}
-
-          {/* v40: campos de arquivo dos anexos do chat (escondidos) */}
-          {anexosLigados && (
-            <>
-              <input ref={inputCameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={receberArquivoDoChat} />
-              <input ref={inputAnexoRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={receberArquivoDoChat} />
-              <input ref={inputGaleriaRef} type="file" accept="image/*" className="hidden" onChange={receberArquivoDoChat} />
-              <input ref={inputDocumentoRef} type="file" accept="application/pdf" className="hidden" onChange={receberArquivoDoChat} />
-            </>
           )}
         </div>
       </div>
@@ -2469,9 +2124,8 @@ export default function Dashboard() {
         mediaLimite={mediaLimite}
       />
 
-      {/* O rodape some enquanto a caixinha do Fisco esta aberta: ele
-          ficava por cima dela e "roubava" o espaco acima do teclado. */}
-      {!caixaExpandida && <BottomNav ativo="inicio" visual={visualBarra} />}
+      {/* v43: o rodape fica sempre (a caixinha do chat saiu) */}
+      <BottomNav ativo="inicio" visual={visualBarra} />
     </div>
   );
 }
