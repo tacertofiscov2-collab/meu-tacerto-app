@@ -1,4 +1,4 @@
-/* NOTASFISCAIS v4 — "Por que precisa" do A1 deixa claro que o certificado fica guardado na plataforma de notas, que assina cada nota (nao no TaCerto) (v3: pagina do Perfil (Meu MEI, junto do DAS) e do atalho NF do Inicio: destaque "Emita suas notas grátis pelo TaCerto" + aviso do Certificado A1 (R$ 100,34, pago a certificadora; obrigatorio pelo CDC); Emitir nota (sem A1: folha com o que e, por que precisa, videochamada e "Tenho interesse"), Guardar uma nota (foto ou PDF; nota deste ano pergunta "Posso somar no velocímetro?" sem contar duas vezes) e Minhas notas (/notas-fiscais/minhas); quando emitir; com A1 ativo a pagina continua (antes virava so "Minhas notas") (v2: Fisco vira Isa: "A Isa monta a nota com você" (v1: janela "Notas fiscais" (Perfil > Ajuda e o atalho NF do Inicio): sem certificado ativo, explica curto quando emitir (NFS-e so frete na mesma cidade; CT-e entre cidades contratado direto; agregado sem IE em MG hoje nao emite; 2027 em todo servico), como o TaCerto ajuda e o Certificado A1 (R$ 100,34, preco de custo; videochamada) com "Tenho interesse no certificado"; com certificado ativo vira "Minhas notas"))) */
+/* NOTASFISCAIS v5 — topo: "Para a nota automática é preciso o Certificado Digital A1" e, sem ele, emite pelo gov.br (conta prata ou ouro) (resposta N8) (v4: "Por que precisa" do A1 deixa claro que o certificado fica guardado na plataforma de notas, que assina cada nota (nao no TaCerto) (v3: pagina do Perfil (Meu MEI, junto do DAS) e do atalho NF do Inicio: destaque "Emita suas notas grátis pelo TaCerto" + aviso do Certificado A1 (R$ 100,34, pago a certificadora; obrigatorio pelo CDC); Emitir nota (sem A1: folha com o que e, por que precisa, videochamada e "Tenho interesse"), Guardar uma nota (foto ou PDF; nota deste ano pergunta "Posso somar no velocímetro?" sem contar duas vezes) e Minhas notas (/notas-fiscais/minhas); quando emitir; com A1 ativo a pagina continua (antes virava so "Minhas notas") (v2: Fisco vira Isa: "A Isa monta a nota com você" (v1: janela "Notas fiscais" (Perfil > Ajuda e o atalho NF do Inicio): sem certificado ativo, explica curto quando emitir (NFS-e so frete na mesma cidade; CT-e entre cidades contratado direto; agregado sem IE em MG hoje nao emite; 2027 em todo servico), como o TaCerto ajuda e o Certificado A1 (R$ 100,34, preco de custo; videochamada) com "Tenho interesse no certificado"; com certificado ativo vira "Minhas notas")))) */
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -130,7 +130,7 @@ export default function NotasFiscais() {
           <p className="leading-snug" style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 6 }}>
             {comCertificado
               ? "Seu Certificado Digital A1 está ativo."
-              : `Para emitir é preciso o Certificado Digital A1 (${PRECO_A1}, pago à certificadora; o TaCerto não ganha nada).`}
+              : `Para a nota automática é preciso o Certificado Digital A1 (${PRECO_A1}, pago à certificadora; o TaCerto não ganha nada). Sem ele, você emite pelo gov.br, com a conta prata ou ouro.`}
           </p>
         </section>
 
@@ -138,7 +138,7 @@ export default function NotasFiscais() {
           <LinhaLista
             Icon={FilePlus2}
             rotulo="Emitir nota"
-            detalhe={comCertificado ? "A Isa emite com você no WhatsApp" : "Primeiro, o Certificado Digital A1"}
+            detalhe={comCertificado ? "A Isa emite com você no WhatsApp" : "Pelo gov.br, ou automática com o A1"}
             onClick={emitir}
           />
           <LinhaLista

@@ -1,4 +1,4 @@
-/* CONVERSAISAEXEMPLO v1 — conversa de exemplo com a Isa no WhatsApp (tema claro do WhatsApp), desenhada no tamanho do app (390 de largura) para o celular de exemplo do tutorial e da Apresentação da Isa: audio, entrada, gasto, nota fiscal, boleto do DAS e duvida — tudo pelo WhatsApp */
+/* CONVERSAISAEXEMPLO v2 — a Isa diz "Montei sua nota! Agora é só confirmar no gov.br." (nao diz que emitiu sozinha; resposta N5) (v1: conversa de exemplo com a Isa no WhatsApp (tema claro do WhatsApp), desenhada no tamanho do app (390 de largura) para o celular de exemplo do tutorial e da Apresentação da Isa: audio, entrada, gasto, nota fiscal, boleto do DAS e duvida — tudo pelo WhatsApp) */
 import { ArrowLeft, CheckCheck, FileText, Mic, Play, Plus, Smile } from "lucide-react";
 import { FOTO_ISA_256 } from "./FotoIsa.jsx";
 
@@ -102,8 +102,7 @@ export default function ConversaIsaExemplo() {
         <Balao hora="08:12">Anotei nos seus gastos.</Balao>
         <Balao enviada hora="08:15">Emite a nota desse frete?</Balao>
         <Balao hora="08:16">
-          Nota emitida! Está aqui:
-          <Anexo nome="Nota fiscal.pdf" />
+          Montei sua nota! Agora é só confirmar no gov.br.
         </Balao>
         <Balao hora="08:16">
           Seu DAS vence dia 20. O boleto:

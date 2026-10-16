@@ -1,4 +1,4 @@
-/* COMOEMITIRNOTA v11 — Fisco vira Isa: "Com a Isa no WhatsApp" e explicacao na terceira pessoa (a Isa monta tudo e te guia) (v10: passos da NFS-e do caminhoneiro so para frete na mesma cidade (tomador = quem contratou; exemplo "Frete dentro de [cidade]") (v9: correcoes de 08-10: aviso certo (este passo a passo e para frete na MESMA cidade; entre cidades e CT-e; agregado sem IE em MG hoje nao emite), A1 R$ 100,34 a preco de custo, videochamada (parado, internet, luz, CNH original) e "Tenho interesse no certificado" (v8: sem o "Em breve" no Certificado A1; explicacao do A1 nova (certificadora parceira credenciada, mais credibilidade e curta); secao "Como o TaCerto ajuda hoje"; icone do WhatsApp (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: padrao do Perfil: lista simples sem cartoes, selos nem botao verde cheio; aviso como linha; passos e Certificado A1 abrem em secoes abaixo; letras maiores (v5: A1: "Custa a partir de R$ 99,90" (vale 1 ano) no lugar de "valor a confirmar"; Fisco.ia (v4: selo so "Grátis"; v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1)) */
+/* COMOEMITIRNOTA v12 — "Como o TaCerto ajuda hoje" sem a promessa de nota automatica (ainda nao existe): no lugar, "Sem certificado, você emite no gov.br" (conta prata ou ouro) (resposta N8 do Fernando) (v11: Fisco vira Isa: "Com a Isa no WhatsApp" e explicacao na terceira pessoa (a Isa monta tudo e te guia) (v10: passos da NFS-e do caminhoneiro so para frete na mesma cidade (tomador = quem contratou; exemplo "Frete dentro de [cidade]") (v9: correcoes de 08-10: aviso certo (este passo a passo e para frete na MESMA cidade; entre cidades e CT-e; agregado sem IE em MG hoje nao emite), A1 R$ 100,34 a preco de custo, videochamada (parado, internet, luz, CNH original) e "Tenho interesse no certificado" (v8: sem o "Em breve" no Certificado A1; explicacao do A1 nova (certificadora parceira credenciada, mais credibilidade e curta); secao "Como o TaCerto ajuda hoje"; icone do WhatsApp (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: padrao do Perfil: lista simples sem cartoes, selos nem botao verde cheio; aviso como linha; passos e Certificado A1 abrem em secoes abaixo; letras maiores (v5: A1: "Custa a partir de R$ 99,90" (vale 1 ano) no lugar de "valor a confirmar"; Fisco.ia (v4: selo so "Grátis"; v3: Fisco pelo WhatsApp, fazer sozinho, Certificado A1))) */
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -211,8 +211,8 @@ export default function ComoEmitirNota() {
           />
           <LinhaLista
             Icon={CheckCircle2}
-            rotulo="Com o Certificado A1, ela sai automática"
-            detalhe="Você só confirma cada nota pelo app."
+            rotulo="Sem certificado, você emite no gov.br"
+            detalhe="Basta a conta gov.br prata ou ouro."
           />
         </SecaoLista>
 
