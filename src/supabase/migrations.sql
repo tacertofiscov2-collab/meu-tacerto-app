@@ -1,3 +1,5 @@
+-- MIGRATIONS v6 — PARTE 4D: o registro dizia `do $` / `end $;` (um cifrão
+--   só); corrigido para `$$` (só o texto; no banco rodou certo em 10/10).
 -- MIGRATIONS v5 — + PARTE 4D: SQL de 08-10 (CNPJ e lembrete do DAS no
 --   perfil, categoria/chave_unica em entradas e saidas, tabela
 --   extratos_enviados). RODADO em 10/10/2026 pelo conector, com o "pode"
@@ -562,7 +564,7 @@ alter table public.extratos_enviados enable row level security;
 
 -- Politicas "so as proprias linhas" (criadas so se ainda nao existirem;
 -- sem DROP)
-do $
+do $$
 begin
   if not exists (select 1 from pg_policies where schemaname = 'public'
                  and tablename = 'extratos_enviados' and policyname = 'extratos: ver os proprios') then
@@ -584,7 +586,7 @@ begin
     create policy "extratos: apagar os proprios" on public.extratos_enviados
       for delete to authenticated using (auth.uid() = user_id);
   end if;
-end $;
+end $$;
 
 
 -- -------------------------------------------------------------------
