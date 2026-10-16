@@ -1,4 +1,4 @@
-/* PILOTO v31 — Inicio novo (12/10, prints do Fernando): chaves MOSTRAR_DAS_NO_INICIO e MOSTRAR_NOTA_NO_INICIO (false: o card Proximo DAS e o "Como emitir nota" saem do Inicio; o DAS e as notas ficam no Perfil); MOSTRAR_ANEXOS_CHAT ligado (foto, galeria e documento vao para o "+" com o comprovante; o microfone abre o WhatsApp da Isa); mensagem pronta "audio" (v30: chave MOSTRAR_PERMISSOES (Perfil > Conta > Permissões e integrações) (v29: chave MOSTRAR_COMPROVANTE_FOTO ("+": Foto ou PDF do comprovante, lido pela IA) (v28: chave MOSTRAR_CALCULAR (Perfil > Meu MEI > Calcular, no lugar do Simulador) (v27: MOSTRAR_JANELA_NOTAS: Notas fiscais no Perfil > Meu MEI (saiu da Ajuda), com Minhas notas em /notas-fiscais/minhas (v26: chave MOSTRAR_PAGINA_DAS (pagina /das com o historico em /das/historico); o card Proximo DAS e o "Como pagar o DAS" levam para ela (v25: mensagem pronta conferirCnpj ("Pedir pra Isa conferir meu CNPJ") (v24: Inicio de antes (visual "atual", com o chat da Isa embaixo) volta a ser o padrao: VISUAL_INICIO_PADRAO = "atual" e MOSTRAR_CHAT_FISCO = true; MOSTRAR_ANEXOS_CHAT (botoes sem funcao escondidos); mensagem pronta duvidaDoChat (v23: Fisco vira Isa (assistente virtual com IA): mensagens prontas comecam com "Oi Isa!"; FRASE_APRESENTACAO_ISA e NOME_ASSISTENTE; nomes internos (WHATSAPP_FISCO, abrirWhatsAppFisco...) ficam iguais (v22: chave MOSTRAR_SIMULADOR (/simulador) (v21: MOSTRAR_PREFERENCIAS ligada (so o Lembrete do DAS) (v20: chave MOSTRAR_JANELA_NOTAS (/notas-fiscais); mensagem do certificado A1 com R$ 100,34 e o CNPJ (v19: chave MOSTRAR_MEU_LUCRO (/meu-lucro) (v18: chave MOSTRAR_ENVIAR_EXTRATO (/enviar-extrato e /conferir-saidas) (v17: o CNPJ do perfil entra nas mensagens prontas (formatado 12.345.678/0001-90); sem CNPJ, "Meu CNPJ: " continua em branco para a pessoa completar (v16: numero REAL do WhatsApp do Fisco (37 99199-9373), o mesmo do suporte; mensagem do suporte comeca com "Oi Fisco!" e pede suporte (v15: chaves MOSTRAR_SUPORTE e MOSTRAR_DECLARACAO_ANUAL; mensagens prontas suporte e declaracaoAjuda; certificadoA1 fala em agendar com a certificadora parceira (v14: o Fernando ficou com a tela A (F): seletor desligado; mensagem pronta atualizarVelocimetro (v13: seletor do Inicio religado: A (F, a de hoje) x B (G, F invertido) (v12: chave MOSTRAR_NOTIFICACOES (sininho do Inicio + Apresentacao do Fisco.ia) (v11: Inicio escolhido: visual F (barra unica); seletor de teste desligado (v10: seletor de teste do Inicio religado para as variacoes novas (C, D, E, F); padrao continua C (v9: Inicio escolhido: visual C (atalhos); seletor de teste desligado (v8: variacoes do Inicio (MOSTRAR_SELETOR_VISUAL_INICIO, VISUAL_INICIO_PADRAO) (v7: testes sem limite: ehTelefoneTeste (37 00000-0001 a 9999, qualquer codigo) (v6: ponte do modo teste; v5: Privacidade sem "Fale com a gente"; v4: MODO_TESTE_LOGIN + TELEFONES_TESTE e MOSTRAR_WHATSAPP_DOCUMENTOS; v3: chaves de login e trocarNumero; v2: MENSAGENS_WHATSAPP))))))))) */
+/* PILOTO v32 — atalhos antigos abrem a Isa no app; nenhum link externo de WhatsApp (v31: versão anterior) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 import { formatarCnpj, soDigitosCnpj } from "@/lib/cnpj";
 
@@ -452,26 +452,14 @@ export const FRASE_APRESENTACAO_ISA = "Oi, sou a Isa, a assistente com IA do TaC
    ------------------------------------------------------------------- */
 export const MOSTRAR_WHATSAPP_DOCUMENTOS = false;
 
-/* Link que abre a conversa com a Isa no WhatsApp. Com `texto`, a
-   mensagem ja chega escrita (a pessoa so toca em enviar). */
-export function linkWhatsAppFisco(texto) {
-  const base = `https://wa.me/${WHATSAPP_FISCO}`;
-  return texto ? `${base}?text=${encodeURIComponent(texto)}` : base;
+/* Compatibilidade com atalhos antigos: toda ajuda abre a Isa NO APP.
+   Nomes internos preservados para nao alterar o chat antes do Bloco 6. */
+export function linkWhatsAppFisco() {
+  return "/fisco";
 }
 
-/* Abre o WhatsApp da Isa com a mensagem pronta. Usar DENTRO do toque
-   (onClick): o iPhone so deixa abrir outra janela a partir de um toque.
-   Se o navegador bloquear a janela nova, abre na mesma aba. */
-export function abrirWhatsAppFisco(texto) {
-  const link = linkWhatsAppFisco(texto);
-  // Sem "noopener" no window.open: com ele o navegador devolve null
-  // mesmo abrindo, e o plano B abriria o WhatsApp duas vezes.
-  const janela = window.open(link, "_blank");
-  if (janela) {
-    try { janela.opener = null; } catch { /* ignora */ }
-  } else {
-    window.location.href = link;
-  }
+export function abrirWhatsAppFisco() {
+  window.location.assign(linkWhatsAppFisco());
 }
 
 /* ===================================================================

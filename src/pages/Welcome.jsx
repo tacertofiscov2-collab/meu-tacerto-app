@@ -1,4 +1,4 @@
-/* WELCOME v17 — app instalado na Tela de Inicio (PWA) com a pessoa ja logada: pula os slides e vai direto para o Inicio (no Safari normal nada muda) (v16: slide da nota: "Pode ser automática." vira "Automática com o A1." (o mesmo tamanho: cabe nas 2 linhas) (o certificado e pago: nao esconder; Bloco M) (v15: Fisco vira Isa: foto da Isa (webp) nos desenhos, textos "a Isa" nos slides e no WhatsApp de exemplo ("Isa · TaCerto!" / "assistente virtual"); so nome, foto e texto: nenhum desenho mudou de tamanho (escala comum) (v14: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v13: slide 5: WhatsApp claro (original) e conversa nova (soma no velocimetro + "Devo emitir a nota fiscal?" Sim/Nao); slide 4: "Emissão de nota fiscal" e "Fisco.ia 24h para te ajudar" (v12: textos com destaque em facilidades (titulos e frases novos), slide 3 nota por audio/mensagem/automatica/sozinho, slide 4 itens de facilidade (v11: letras maiores (zoom de 10% igual em todos os desenhos; moldura ocupa o espaco ate o card de baixo), destaques verdes discretos (so borda, sem fundo nem selo), slide 2 "Boleto automático no WhatsApp" e "te lembra" (v10: correcao: o slide 3 (nota) fica FORA da conta da escala comum, entao os slides 1, 2, 4 e 5 voltam a ser como antes da v9 (v9: slide 3 preenchido, sem "Gratis"; v8: Fisco.ia; v7: sem a palavra "piloto" na tela: slide 4 virou "Grátis" (v6: 5 slides do piloto, mesma escala e altura em todos))))) */
+/* WELCOME v18 — slides mostram avisos do DAS e check-up do CNPJ; dúvidas ficam no app (v17: versão anterior) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -75,7 +75,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import {
-  Gauge, ArrowLeft, ChevronRight, ChevronDown, Send, Mic, Plus, Smile,
+  Gauge, ArrowLeft, ChevronRight, ChevronDown, Send, Mic,
   ArrowDownLeft, ArrowUpRight, CalendarCheck, FileText, Check, CheckCheck,
   MessageCircle, Headphones, ListChecks, Globe, Zap, CheckCircle2,
 } from "lucide-react";
@@ -378,7 +378,7 @@ function MiniInicio() {
             style={{ color: "var(--text-tertiary)", fontSize: 10.5, fontStyle: "italic", fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive' }}
           >
             {/* Sem o chat no app, a Isa atende pelo WhatsApp */}
-            {MOSTRAR_CHAT_FISCO ? "Pergunte à Isa..." : "Isa no WhatsApp"}
+            {MOSTRAR_CHAT_FISCO ? "Pergunte à Isa..." : "Isa no app"}
           </span>
           <Send size={12} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
         </span>
@@ -559,7 +559,7 @@ function MiniDas() {
    jeito que a pessoa quiser (audio, mensagem, automatica). Agora sao 4
    opcoes do mesmo tamanho, cada uma com titulo + uma frase curta
    (destaque discreto so na primeira, DESTAQUE_BORDA), e no pe o
-   resultado: "Nota emitida / PDF direto no seu WhatsApp". A lista
+   resultado: "Nota emitida / Guarde o PDF na aba Notas". A lista
    cresce para ocupar a sobra (flexGrow) e continua FORA da escala
    comum (foraDaEscala): os outros slides nao mudam por causa dela. */
 function MiniNota() {
@@ -727,15 +727,6 @@ function Balao({ enviada = false, hora = "21:00", children }) {
 }
 
 function MiniWhatsApp() {
-  /* botao de resposta rapida do WhatsApp (embaixo do balao) */
-  const botaoResposta = (rotulo) => (
-    <div
-      className="flex-1 rounded-lg text-center font-semibold"
-      style={{ backgroundColor: WA.recebida, color: WA.acao, fontSize: 10.5, padding: "6px 0", boxShadow: WA.sombra }}
-    >
-      {rotulo}
-    </div>
-  );
   return (
     <MiniTela padding="0" fundo={WA.fundo}>
       <div className="flex items-center gap-2 shrink-0" style={{ backgroundColor: WA.topo, padding: "12px 12px 9px", borderBottom: `1px solid ${WA.linha}` }}>
@@ -747,36 +738,14 @@ function MiniWhatsApp() {
         </span>
       </div>
 
-      {/* v13 (pedido do Fernando): a pessoa conta o que recebeu, o
-          Fisco.ia ja soma no velocimetro (sem pedir confirmacao) e
-          oferece a nota fiscal, com "Sim" e "Nao". Neutro (cliente). */}
-      <div className="flex flex-col" style={{ gap: 5, padding: "9px 9px" }}>
-        <Balao>Boa noite! Quanto você recebeu hoje?</Balao>
-        <Balao enviada hora="21:02">Recebi R$ ••• de um cliente</Balao>
-        <Balao hora="21:02">Pronto! Já somei no seu velocímetro.</Balao>
-        <div className="flex flex-col" style={{ maxWidth: "84%", gap: 2 }}>
-          <div className="rounded-lg" style={{ backgroundColor: WA.recebida, color: WA.texto, fontSize: 10.5, lineHeight: 1.35, padding: "5px 7px 4px", boxShadow: WA.sombra }}>
-            Devo emitir a nota pro cliente?
-            <span className="flex justify-end" style={{ color: WA.hora, fontSize: 7.5, marginTop: 1 }}>21:02</span>
-          </div>
-          <div className="flex" style={{ gap: 2 }}>
-            {botaoResposta("Sim")}
-            {botaoResposta("Não")}
-          </div>
-        </div>
+      <div className="flex flex-col" style={{ gap: 8, padding: "12px 9px" }}>
+        <Balao hora="09:00">Seu DAS vence em breve. Confira o vencimento no app.</Balao>
+        <Balao hora="09:01">Seu boleto do DAS está aqui.<br />Boleto do DAS.pdf</Balao>
+        <Balao hora="09:02">O check-up do seu CNPJ chegou. Veja os detalhes no app.</Balao>
       </div>
-
-      {/* barra de digitar, no pé */}
-      <div className="flex items-center gap-1.5 shrink-0" style={{ marginTop: "auto", padding: "6px 8px 10px", backgroundColor: WA.topo, borderTop: `1px solid ${WA.linha}` }}>
-        <span className="flex-1 rounded-full flex items-center gap-2" style={{ backgroundColor: "#ffffff", height: 30, padding: "0 10px" }}>
-          <Smile size={14} style={{ color: WA.hora }} />
-          <span className="flex-1" style={{ color: WA.hora, fontSize: 10.5 }}>Mensagem</span>
-          <Plus size={14} style={{ color: WA.hora }} />
-        </span>
-        <span className="rounded-full flex items-center justify-center shrink-0" style={{ width: 30, height: 30, backgroundColor: WA.acao }}>
-          <Mic size={14} style={{ color: "#ffffff" }} />
-        </span>
-      </div>
+      <p style={{ color: WA.hora, fontSize: 10.5, padding: "12px", marginTop: "auto" }}>
+        Dúvidas? Abra a aba Isa no app.
+      </p>
     </MiniTela>
   );
 }
@@ -807,7 +776,7 @@ const SLIDES = [
     subtitulo: "Entradas, saídas, DAS e notas fiscais, organizados mês a mês.",
   },
   { Mini: MiniPiloto, titulo: "Tudo isso, grátis", subtitulo: "Menos burocracia e mais tempo para trabalhar, sem pagar nada." },
-  { Mini: MiniWhatsApp, titulo: "Tudo pelo WhatsApp", subtitulo: "Às 21h a Isa pergunta quanto você recebeu e anota tudo para você." },
+  { Mini: MiniWhatsApp, titulo: "A Isa te avisa", subtitulo: "As dúvidas você tira com a Isa aqui no app. No WhatsApp ela só te avisa do que importa." },
 ].filter((s) => s.mostrar !== false);
 
 export default function Welcome() {

@@ -1,4 +1,4 @@
-/* PERFILPERMISSOES v3 — notificacoes so com "Permitir notificações" e a chave, sem texto explicando (pedido do Fernando: "sem falar e explicar demais"; saiu o "No iPhone, adicione a Tela de Inicio" e a folha "Como fazer"; se o celular nao deixar, so um aviso curto no toque) (v2: so o que o app tem hoje (pedido do Fernando, 12/10): WhatsApp (Conectado + liga/desliga dos lembretes e avisos), CNPJ (e Remover CNPJ) e a Notificacao da semana no celular (ativar, liga/desliga; no iPhone, como adicionar a Tela de Inicio); sairam Extratos enviados, Receita Federal, Certificado A1 (fica com a plataforma de notas, nao com o TaCerto), Banco (Open Finance) e o rodape com Privacidade e Excluir conta (ja estao no Perfil) (v1: o que o TaCerto usa, com status e acao: WhatsApp, CNPJ, Extratos enviados (ver e apagar), Receita Federal e Banco (Em breve), Certificado A1 e Notificacoes do celular (status); rodape com Privacidade e Excluir conta)) */
+/* PERFILPERMISSOES v4 — permissão de WhatsApp limitada aos avisos do DAS e check-up do CNPJ (v3: versão anterior) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -163,11 +163,11 @@ export default function PerfilPermissoes() {
         <TopoRolavel titulo="Permissões e integrações" onVoltar={voltar} />
 
         <SecaoLista titulo="WhatsApp" style={{ marginTop: 8 }}>
-          <LinhaLista Icon={IconeWhatsApp} rotulo="WhatsApp" detalhe="Seu login e o canal da Isa" valor="Conectado" />
+          <LinhaLista Icon={IconeWhatsApp} rotulo="WhatsApp" detalhe="Seu login e os avisos da Isa" valor="Conectado" />
           <LinhaComChave
             Icon={avisosWhatsapp ? MessageSquare : MessageSquareOff}
             titulo="Lembretes e avisos no WhatsApp"
-            frase={avisosWhatsapp ? "Desligue quando quiser parar as mensagens." : "Desligados: a Isa só responde quando você chamar."}
+            frase={avisosWhatsapp ? "Lembrete e boleto do DAS e check-up do CNPJ. Dúvidas na Isa, aqui no app." : "Avisos desligados. Dúvidas na Isa, aqui no app."}
             ligada={Boolean(avisosWhatsapp)}
             onMudar={mudarAvisos}
           />

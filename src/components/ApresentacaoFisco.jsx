@@ -1,4 +1,4 @@
-/* APRESENTACAOFISCO v9 — celular de exemplo com o Inicio novo: sem o chat da Isa, com "Ultimos lancamentos" (mesma peca do Inicio); passos novos "Seus últimos lançamentos" e "Ficou com dúvida?" na aba Isa (ajuste do Bloco 3) (v8: celular de exemplo com o rodape de verdade de 5 itens (Inicio | Notas | + | Isa | Mais, a mesma peca BottomNav); "Perfil" vira "Mais" ("Seu MEI no Mais"; passo novo "Notas") (Bloco 3) (v7: o celular de exemplo mostra o Inicio NOVO igual ao de verdade (pecas e medidas de InicioPartes: so o sininho, card do velocimetro com "Atualizar velocímetro" no canto, chat da Isa com camera/clipe/microfone, barra de baixo de vidro; desenho 390 x 800) e ganha a tela da conversa no WhatsApp (ConversaIsaExemplo); tutorial: 3a tela "Tudo pelo WhatsApp com a Isa" (nota, DAS, entradas e gastos, duvidas), 2a "Seu MEI no Perfil" e a 4a destaca o Atualizar velocímetro; Apresentacao da Isa sem os passos do DAS e da NF do Inicio (agora no Perfil e no WhatsApp) (v6: modo "tutorial" (primeiro acesso, Bloco L): 4 telas (o velocimetro e o limite; integracoes e o que automatizam; tudo tambem pelo WhatsApp; comece pelo extrato, Recomendado), "Pular tutorial" no topo e, no fim, "Enviar extrato" + "Agora não"; o modo de sempre (Apresentacao da Isa) nao mudou (v5: Fisco vira Isa: "Oi, sou a Isa" (assistente com IA do TaCerto), foto da Isa (FotoIsa) no texto e na barra do celular de exemplo, titulo "Apresentação da Isa" (v4: celular MENOR, menos espaco vazio dentro dele (desenho mais justo: 340 x 715, mesma proporcao) e icones MAIORES (barra DAS/Fisco/NF, rodape e sininho); celular e texto do Fisco juntos, centrados na tela (pedido do Fernando) (v3: celular de exemplo com proporcao de celular de verdade (390 x 820) e igual ao Inicio novo: saudacao, velocimetro grande e a barra dos 3 atalhos centrada entre as bolinhas e o rodape (v2: celular de exemplo igual ao Inicio novo (DAS, Fisco com o simbolo do WhatsApp, NF; casinha cinza; velocimetro mais alto); textos do + e do Perfil (v1: tutorial "Apresentação do Fisco.ia": celular de exemplo do Inicio (visual F) com um circulo verde passando por cada funcao e o Fisco.ia explicando, em slides)))) */
+/* APRESENTACAOFISCO v10 — tutorial e apresentação: dúvidas no app; WhatsApp só avisa; celular com rodapé real (v9: versão anterior) */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowLeft, Gauge, Bell } from "lucide-react";
@@ -6,7 +6,6 @@ import BottomNav from "./BottomNav.jsx";
 import VelocimetroAnimado from "./VelocimetroAnimado.jsx";
 import FotoIsa from "./FotoIsa.jsx";
 import SeloRecomendado from "./SeloRecomendado.jsx";
-import ConversaIsaExemplo from "./ConversaIsaExemplo.jsx";
 import { MEDIDAS_INICIO, VIDRO, BotaoAtualizarCanto, UltimosLancamentos } from "./InicioPartes.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import { LABEL_TIPO } from "@/lib/fiscal";
@@ -51,7 +50,7 @@ const PASSOS_ISA = [
   {
     alvo: "atualizar",
     titulo: "Atualize quando quiser",
-    texto: "Toque aqui para mandar o extrato, digitar o total do ano ou me contar no WhatsApp.",
+    texto: "Toque aqui para mandar o extrato ou digitar o total do ano.",
   },
   {
     alvo: "mais",
@@ -66,13 +65,12 @@ const PASSOS_ISA = [
   {
     alvo: "isa",
     titulo: "Ficou com dúvida?",
-    texto: "Toque em Isa e pergunte. Dá para mandar foto do comprovante e falar em vez de digitar.",
+    texto: "As dúvidas você tira com a Isa aqui no app, na aba Isa.",
   },
   {
-    tela: "whatsapp",
-    alvo: null,
-    titulo: "Tudo pelo WhatsApp",
-    texto: "Nota fiscal, boleto do DAS, entradas e gastos, dúvidas: é só me mandar mensagem.",
+    alvo: "isa",
+    titulo: "A Isa te avisa",
+    texto: "As dúvidas você tira com a Isa aqui no app. No WhatsApp ela só te avisa do que importa: DAS e check-up do CNPJ.",
   },
   { alvo: "notas", titulo: "Notas", texto: "Suas notas fiscais: emitir, guardar e ver todas." },
   { alvo: "menu", titulo: "Mais", texto: "Seus dados, o CNPJ, o DAS, o Calcular e a ajuda." },
@@ -103,10 +101,9 @@ const PASSOS_TUTORIAL = [
     texto: "CNPJ e DAS ficam no Mais. As notas fiscais, na aba Notas.",
   },
   {
-    tela: "whatsapp",
-    alvo: null,
-    titulo: "Tudo pelo WhatsApp com a Isa",
-    texto: "Nota fiscal, boleto do DAS, entradas e gastos, dúvidas: é só mandar mensagem, áudio ou foto.",
+    alvo: "isa",
+    titulo: "A Isa te avisa",
+    texto: "As dúvidas você tira com a Isa aqui no app. No WhatsApp ela só te avisa do que importa: DAS e check-up do CNPJ.",
   },
   {
     /* o ultimo passo leva ao extrato (botao "Enviar extrato" embaixo) */
@@ -237,7 +234,7 @@ function InicioDeExemplo() {
 /* O celular de exemplo, encolhido para caber, com o circulo verde.
    v4: a escala vem de fora (ApresentacaoFisco mede o espaco que sobra
    para o celular e o texto juntos) */
-function CelularDeExemplo({ alvo, escala, tela = "inicio" }) {
+function CelularDeExemplo({ alvo, escala }) {
   const desenhoRef = useRef(null);
   const [circulo, setCirculo] = useState(null);
 
@@ -265,7 +262,7 @@ function CelularDeExemplo({ alvo, escala, tela = "inicio" }) {
       h = lado;
     }
     setCirculo({ x, y, w, h, redondo, visivel: true });
-  }, [alvo, escala, tela]);
+  }, [alvo, escala]);
 
   return (
     <div className="shrink-0 w-full flex justify-center">
@@ -291,12 +288,8 @@ function CelularDeExemplo({ alvo, escala, tela = "inicio" }) {
             transformOrigin: "top left",
           }}
         >
-          {/* v7: as duas telas uma por cima da outra; troca suave */}
-          <div className="absolute inset-0" style={{ opacity: tela === "whatsapp" ? 0 : 1, transition: "opacity 260ms ease" }}>
+          <div className="absolute inset-0">
             <InicioDeExemplo />
-          </div>
-          <div className="absolute inset-0" style={{ opacity: tela === "whatsapp" ? 1 : 0, transition: "opacity 260ms ease" }}>
-            <ConversaIsaExemplo />
           </div>
           {circulo && (
             <div
@@ -456,7 +449,7 @@ export default function ApresentacaoFisco({ aberto, onFechar, modo = "isa", onEn
         onTouchStart={inicioToque}
         onTouchEnd={fimToque}
       >
-        <CelularDeExemplo alvo={PASSOS[atual].alvo} escala={escala} tela={PASSOS[atual].tela} />
+        <CelularDeExemplo alvo={PASSOS[atual].alvo} escala={escala} />
 
         {/* Todos os textos no mesmo lugar: a altura nao muda */}
         <div ref={textoRef} className="shrink-0 grid" style={{ marginTop: ESPACO_CELULAR_TEXTO }}>

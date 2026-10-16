@@ -1,4 +1,4 @@
-/* PRIVACIDADE v13 — "Perfil" vira "Mais" (Mais → Permissões e integrações; Mais → Excluir conta) (Bloco 3) (v12: 12/10 (pedidos do Fernando): sai "apaga os extratos enviados" (a linha saiu do Permissoes); o extrato em PDF fica guardado (sem o "ate ser lido"); gastos que a pessoa conta a Isa no WhatsApp; comprovante tambem pelo chat da Isa; notificacao da semana no celular (so se ativar, sem valores, como desligar, passa pelo servico de notificacao do celular) (v11: Bloco M (12/10/2026): conversas do chat da Isa (no celular e no servidor), comprovante lido por IA (empresa da IA so para ler, sem treinar), escolhas novas (forma de pagar o DAS, avisos no WhatsApp, tutorial), como parar as mensagens e a pagina Permissoes e integracoes; data atualizada (v10: Fisco vira Isa: "A Isa usa inteligência artificial" (assistente virtual, não é pessoa nem contadora) (v9: textos de 08-10: CNPJ e dados publicos, extrato (so o ano atual; PDF numa pasta so da pessoa ate ser lido), gastos, notas e comprovantes, lembrete do DAS; caminho certo do Excluir conta (Perfil > Excluir conta) (v8: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v7: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v6: secao "Fale com a gente" inteira escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v5: so o botao; v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("Por enquanto, a equipe..."); v2: botao do WhatsApp com mensagem pronta))))))) */
+/* PRIVACIDADE v14 — privacidade alinhada ao WhatsApp apenas para avisos (v13: versão anterior) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp, MOSTRAR_WHATSAPP_DOCUMENTOS } from "@/config/piloto";
@@ -75,8 +75,8 @@ const SECOES = [
   {
     titulo: "Mensagens no WhatsApp",
     paragrafos: [
-      "Usamos o seu WhatsApp para o login, para os lembretes e avisos do seu MEI e para as respostas da Isa.",
-      "Para parar os lembretes e avisos quando quiser: Mais → Permissões e integrações → Lembretes e avisos no WhatsApp. Ou peça para a Isa no próprio WhatsApp.",
+      "Usamos o seu WhatsApp para o login, para os lembretes e boletos do DAS e o check-up do CNPJ. As dúvidas são respondidas no app.",
+      "Para parar os lembretes e avisos quando quiser: Mais → Permissões e integrações → Lembretes e avisos no WhatsApp. As dúvidas você tira com a Isa aqui no app.",
       "Notificação no celular: só se você ativar, no máximo uma por semana. Para parar: Mais → Permissões e integrações → Notificações, ou nos Ajustes do celular.",
     ],
   },
@@ -149,7 +149,7 @@ export default function Privacidade() {
             Fale com a gente
           </h2>
           <p className="text-[14.5px] leading-relaxed mt-2" style={{ color: "var(--text-secondary)" }}>
-            Dúvida sobre seus dados? Chame a Isa no WhatsApp.
+            Dúvida sobre seus dados? Chame a Isa aqui no app.
           </p>
           <a
             href={linkWhatsAppFisco(MENSAGENS_WHATSAPP.falarComFisco(dadosParaWhatsApp(app)))}
@@ -166,7 +166,7 @@ export default function Privacidade() {
               textDecoration: "none",
             }}
           >
-            Falar com a Isa no WhatsApp
+            Falar com a Isa no app
           </a>
         </section>
         )}

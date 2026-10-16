@@ -1,4 +1,4 @@
-/* FOLHAATUALIZARVELOCIMETRO v5 — "Enviar extrato" com o selo "Recomendado" no canto (SeloRecomendado, o mesmo de todo o app; Bloco I) (v4: Fisco vira Isa: "Mandar pra Isa no WhatsApp" (v3: 3 jeitos de atualizar, uma frase cada: Enviar extrato (recomendado, borda verde fina), Digitar (o "+", Recebimento ou Total do ano) e Mandar pro Fisco no WhatsApp; abre pelo sininho e pelo botao "Atualizar velocímetro" do Inicio (v2: "Fisco.ia" vira "Fisco" nos textos da tela (v1: notificacao "Atualize seu velocimetro": 2 jeitos faceis (digitar o total do ano no "+" ou mandar valores/extrato pro Fisco.ia no WhatsApp)))) */
+/* FOLHAATUALIZARVELOCIMETRO v6 — ajuda do velocímetro fica na Isa dentro do app (v5: versão anterior) */
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, FileUp, Hash } from "lucide-react";
 import FolhaDeBaixo from "./FolhaDeBaixo.jsx";
@@ -79,8 +79,8 @@ export default function FolhaAtualizarVelocimetro({ aberto, onFechar }) {
         />
         <Opcao
           Icon={IconeWhatsApp}
-          titulo="Mandar pra Isa no WhatsApp"
-          frase="Mande os valores ou a foto do extrato."
+          titulo="Tirar dúvida com a Isa"
+          frase="Converse aqui no app."
           onClick={() => {
             abrirWhatsAppFisco(MENSAGENS_WHATSAPP.atualizarVelocimetro(dadosParaWhatsApp(app)));
             onFechar();
