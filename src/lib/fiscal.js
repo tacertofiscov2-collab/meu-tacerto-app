@@ -1,5 +1,12 @@
-/* FISCAL v6 — DAS do MEI comum: oficina de carro/moto (4520, 4543) e manutencao de maquinas (divisao 33) contam como servico (v5: DAS_VENCIMENTO_LABEL certo (prorroga para o proximo dia util) (v4: preco do Certificado A1 (R$ 100,34, preco de custo) num lugar so (v3: palavraDaSituacao: velocimetro zerado diz "Falta informar" (nunca "Tá tranquilo") (v2: valor do DAS pelo CNAE (caminhoneiro: municipal / intermunicipal / os dois; MEI comum: comercio / servicos / os dois) (v1: fonte unica das regras fiscais) */
+/* FISCAL v7 — regra precisaDeNota e aviso para recebimento de empresa (v6: DAS por CNAE) */
 // Fonte ÚNICA da verdade para regras fiscais do TaCerto!
+
+export function precisaDeNota(tipoPagador) {
+  return tipoPagador === "cnpj";
+}
+
+export const AVISO_NOTA_EMPRESA =
+  "Venda para empresa precisa de nota fiscal. Você pode emitir depois em Notas.";
 
 export const LIMITES_ANUAIS = {
   MEI: 81000,

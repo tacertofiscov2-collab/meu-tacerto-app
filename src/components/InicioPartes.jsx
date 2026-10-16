@@ -1,4 +1,4 @@
-/* INICIOPARTES v2 — sai a barra da Isa do Inicio (a Isa fica so na aba Isa do rodape); no lugar, "Ultimos lancamentos" (3 mais recentes com data, selo com nota/sem nota e valor, "Ver todos"; sem lancamento: "Comece pelo extrato"), altura fixa reservada antes de carregar (ajuste do Bloco 3) (v1: pecas do Inicio usadas no Inicio de verdade (Dashboard) E no celular de exemplo do tutorial (ApresentacaoFisco), para os dois nunca mais ficarem diferentes: medidas (MEDIDAS_INICIO), vidro, luz correndo na borda, botao pequeno "Atualizar velocímetro" no canto do card (com "Atualizado em" embaixo) e a barra da Isa (foto 68 + barra 44 com camera, clipe e microfone)) */
+/* INICIOPARTES v3 — selo usa tem_nota; antigos sem informacao ficam sem selo (v2: ultimos lancamentos no Inicio) */
 import { RefreshCw, ChevronRight, FileUp } from "lucide-react";
 
 /* ===================================================================
@@ -183,8 +183,7 @@ export function BotaoAtualizarCanto({ quando, faltaInformar, onAtualizar, exempl
      os lancamentos chegarem do banco, entao nada no Inicio muda de
      altura entre carregar e mostrar. Enquanto carrega (carregado =
      false), o espaco fica vazio.
-   - Selo: "com nota" quando o recebimento tem nota (temNota, Bloco 4);
-     senao "sem nota".
+   - Selo usa tem_nota (Bloco 4); informacao ausente fica sem selo.
    - exemplo = desenho do tutorial (sem valores, nada clicavel).
    =================================================================== */
 const ddmm = (iso) => {
@@ -194,6 +193,7 @@ const ddmm = (iso) => {
 const formatoReal = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
 export function SeloNota({ temNota }) {
+  if (typeof temNota !== "boolean") return null;
   return (
     <span
       className="inline-flex items-center rounded-full shrink-0"
@@ -219,9 +219,9 @@ export function UltimosLancamentos({
   const Botao = exemplo ? "span" : "button";
   const ultimos = exemplo
     ? [
-        { id: 1, data: new Date().toISOString(), temNota: true },
-        { id: 2, data: new Date(Date.now() - 2 * 86400000).toISOString(), temNota: false },
-        { id: 3, data: new Date(Date.now() - 5 * 86400000).toISOString(), temNota: true },
+        { id: 1, data: new Date().toISOString(), tem_nota: true },
+        { id: 2, data: new Date(Date.now() - 2 * 86400000).toISOString(), tem_nota: false },
+        { id: 3, data: new Date(Date.now() - 5 * 86400000).toISOString(), tem_nota: true },
       ]
     : [...lancamentos]
         .sort((a, b) => new Date(b.data) - new Date(a.data) || String(b.criado_em || "").localeCompare(String(a.criado_em || "")))
@@ -278,7 +278,7 @@ export function UltimosLancamentos({
               <span className="shrink-0" style={{ fontSize: 15, color: "var(--text-secondary)", width: 46, fontVariantNumeric: "tabular-nums" }}>
                 {ddmm(l.data)}
               </span>
-              <SeloNota temNota={l.temNota === true} />
+              <SeloNota temNota={l.tem_nota} />
               <span
                 className="flex-1 min-w-0 text-right font-semibold truncate"
                 style={{ fontSize: 16, color: "var(--text)", fontVariantNumeric: "tabular-nums" }}
