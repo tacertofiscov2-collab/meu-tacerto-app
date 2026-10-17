@@ -1,4 +1,4 @@
-/* SELETORMESANO v2 — prop anoMinimo: a faixa de anos comeca no ano em que a pessoa comecou a usar o app */
+/* SELETORMESANO v5 — prop permitirAnoTodo: tocar no ANO (ou em "Ano todo") escolhe o ano inteiro e o Confirmar devolve mes = null (Historico de entradas, Bloco H) (v4: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v3: mes/ano escolhido so com contorno verde (sem verde cheio); botao Confirmar em contorno (botao-confirmar) (v2: prop anoMinimo: a faixa de anos comeca no ano em que a pessoa comecou a usar o app)) */
 import { useState, useEffect } from "react";
 import { Gauge, X } from "lucide-react";
 
@@ -21,6 +21,8 @@ const MESES_CURTO = [
  *   para quem ainda usa assim, ex.: faturamento de anos anteriores).
  * - titulo
  * - onSelecionar(mes, ano)
+ * - permitirAnoTodo (v5): tocar num ANO escolhe o ano inteiro (sem mes);
+ *   a pilula "Ano todo" tambem. O Confirmar devolve onSelecionar(null, ano).
  */
 export default function SeletorMesAno({
   aberto,
@@ -32,6 +34,7 @@ export default function SeletorMesAno({
   anoMinimo,
   titulo = "Escolha o período",
   onSelecionar,
+  permitirAnoTodo = false,
 }) {
   const hoje = new Date();
   const anoAtual = hoje.getFullYear();
@@ -62,7 +65,7 @@ export default function SeletorMesAno({
       <div
         className="w-full max-w-sm overflow-hidden"
         style={{
-          backgroundColor: "var(--surface)",
+          backgroundColor: "var(--bg)",
           border: "1px solid var(--border)",
           borderRadius: 24,
           boxShadow: "0 20px 50px rgba(0,0,0,0.45)",
@@ -80,7 +83,7 @@ export default function SeletorMesAno({
             onClick={onFechar}
             aria-label="Fechar"
             className="w-8 h-8 rounded-full flex items-center justify-center active:opacity-70"
-            style={{ backgroundColor: "var(--field)" }}
+            style={{ border: "1px solid var(--border)" }}
           >
             <X size={15} style={{ color: "var(--text-secondary)" }} />
           </button>
@@ -102,8 +105,9 @@ export default function SeletorMesAno({
                   onClick={() => setMesSel(num)}
                   className="py-2.5 rounded-xl text-[13px] transition active:scale-95 disabled:opacity-25"
                   style={{
-                    backgroundColor: ativo ? "var(--primary)" : "var(--field)",
-                    color: ativo ? "var(--primary-contrast)" : "var(--text)",
+                    backgroundColor: "transparent",
+                    boxShadow: ativo ? "inset 0 0 0 1.5px var(--text-secondary)" : "inset 0 0 0 1px var(--border)",
+                    color: ativo ? "var(--text)" : "var(--text-secondary)",
                     fontWeight: ativo ? 700 : 400,
                   }}
                 >
@@ -112,6 +116,22 @@ export default function SeletorMesAno({
               );
             })}
           </div>
+          {/* v5: o ano inteiro (sem mes escolhido) */}
+          {permitirAnoTodo && (
+            <button
+              onClick={() => setMesSel(null)}
+              className="w-full py-2.5 rounded-xl text-[13px] transition active:scale-95"
+              style={{
+                marginTop: 8,
+                backgroundColor: "transparent",
+                boxShadow: mesSel === null ? "inset 0 0 0 1.5px var(--text-secondary)" : "inset 0 0 0 1px var(--border)",
+                color: mesSel === null ? "var(--text)" : "var(--text-secondary)",
+                fontWeight: mesSel === null ? 700 : 400,
+              }}
+            >
+              Ano todo
+            </button>
+          )}
         </div>
 
         {comAno && (
@@ -127,14 +147,17 @@ export default function SeletorMesAno({
                     key={a}
                     onClick={() => {
                       setAnoSel(a);
-                      if (maxHoje && a === anoAtual && mesSel && mesSel > mesAtual) {
+                      // v5: tocar no ano = o ano todo
+                      if (permitirAnoTodo) setMesSel(null);
+                      else if (maxHoje && a === anoAtual && mesSel && mesSel > mesAtual) {
                         setMesSel(mesAtual);
                       }
                     }}
                     className="px-4 py-2.5 rounded-xl text-[13px] shrink-0 transition active:scale-95"
                     style={{
-                      backgroundColor: ativo ? "var(--primary)" : "var(--field)",
-                      color: ativo ? "var(--primary-contrast)" : "var(--text)",
+                      backgroundColor: "transparent",
+                    boxShadow: ativo ? "inset 0 0 0 1.5px var(--text-secondary)" : "inset 0 0 0 1px var(--border)",
+                      color: ativo ? "var(--text)" : "var(--text-secondary)",
                       fontWeight: ativo ? 700 : 400,
                     }}
                   >
@@ -150,14 +173,14 @@ export default function SeletorMesAno({
           <button
             onClick={onFechar}
             className="flex-1 py-3 rounded-xl font-semibold text-sm"
-            style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
+            style={{ border: "1px solid var(--border)", color: "var(--text)" }}
           >
             Cancelar
           </button>
           <button
-            onClick={() => mesSel && onSelecionar?.(mesSel, anoSel)}
-            disabled={!mesSel}
-            className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-40"
+            onClick={() => (mesSel || permitirAnoTodo) && onSelecionar?.(mesSel || null, anoSel)}
+            disabled={!mesSel && !permitirAnoTodo}
+            className="botao-confirmar flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-40"
             style={{
               backgroundColor: "var(--primary)",
               color: "var(--primary-contrast)",

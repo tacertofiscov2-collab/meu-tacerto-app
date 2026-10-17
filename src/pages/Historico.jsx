@@ -1,17 +1,28 @@
-/* HISTORICO v3 — "Histórico de entradas": ano inteiro na lista (mes separando), anos so desde o inicio do uso, topo que rola */
+/* HISTORICO v9 — selo com nota ou sem nota apenas quando informado (v8: historico do ano todo) */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Search, TrendingUp, ChevronDown, Receipt, Plus, Pencil, Trash2, BarChart3, Calendar,
+  Search, TrendingUp, ChevronDown, ChevronRight, Plus, Pencil, Trash2, BarChart3, Calendar,
 } from "lucide-react";
 import ModalFaturamentoInicial from "../components/ModalFaturamentoInicial.jsx";
 import SeletorMesAno from "../components/SeletorMesAno.jsx";
 import TopoRolavel from "../components/TopoRolavel.jsx";
+import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
+import { SeloNota } from "../components/InicioPartes.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import useAnoInicio from "@/hooks/useAnoInicio";
+import { MOSTRAR_INACABADOS } from "@/config/piloto";
+
+/* ===================================================================
+   HISTORICO v4 (04/10/2026) — PILOTO
+   O cartao "Comece com o velocimetro certo / Adicionar faturamento"
+   ficou escondido (chave MOSTRAR_INACABADOS em src/config/piloto.js):
+   o botao dele abria uma janela que NAO salvava nada. No piloto o
+   faturamento de antes do app e perguntado no Onboarding.
+   =================================================================== */
 
 /* ===================================================================
    HISTORICO v3 — "Histórico de entradas" (28/09/2026)
@@ -101,10 +112,30 @@ export default function Historico() {
   );
   const totalAno = useMemo(() => doAno.reduce((s, l) => s + (Number(l.valor) || 0), 0), [doAno]);
 
+  /* v8: ANO TODO (mesIdx = null): o total de cada mes que teve entrada
+     (mais recente primeiro) */
+  const anoTodo = mesIdx === null;
+  const porMes = useMemo(() => {
+    const somas = Array(12).fill(0);
+    const tem = Array(12).fill(false);
+    for (const l of doAno) {
+      const m = new Date(l.data).getMonth();
+      somas[m] += Number(l.valor) || 0;
+      tem[m] = true;
+    }
+    return somas.map((total, mes) => ({ mes, total })).filter((x) => tem[x.mes]).reverse();
+  }, [doAno]);
+
+  function verAnoTodo() {
+    setMesIdx(null);
+    setPularPara("topo");
+  }
+
   /* Depois de escolher no calendario, desce ate o mes */
   useEffect(() => {
     if (pularPara === null) return;
-    const alvo = mesesRef.current[pularPara];
+    // v8: ano todo volta para o topo da tela
+    const alvo = pularPara === "topo" ? mesesRef.current.topo : mesesRef.current[pularPara];
     if (alvo) alvo.scrollIntoView({ behavior: "smooth", block: "start" });
     setPularPara(null);
   }, [pularPara, grupos]);
@@ -118,9 +149,10 @@ export default function Historico() {
         className="conteudo-rolavel hide-scrollbar px-5"
         style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
       >
+        <div ref={(el) => { mesesRef.current.topo = el; }} />
         <TopoRolavel titulo="Histórico de entradas" onVoltar={() => navigate(-1)} />
 
-        {mostrarFaturamento && (
+        {MOSTRAR_INACABADOS && mostrarFaturamento && (
           <div className="card-tacerto rounded-2xl px-4 py-3.5 mt-2">
             <div className="flex items-start gap-3">
               <div
@@ -173,128 +205,117 @@ export default function Historico() {
           />
         </div>
 
-        {/* Período: escolhe o mes e desce ate ele */}
-        <button
-          onClick={() => setSeletorAberto(true)}
-          className="card-tacerto w-full rounded-2xl flex items-center gap-3 px-4 mt-2.5 active:opacity-80"
-          style={{ minHeight: 58 }}
-        >
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-            style={{ backgroundColor: "var(--surface)" }}
-          >
-            <Calendar size={18} style={{ color: "var(--primary)" }} />
-          </div>
-          <div className="flex-1 min-w-0 text-left">
-            <p className="text-[15px] font-semibold" style={{ color: "var(--text)" }}>
-              {`${MESES[mesIdx]} de ${anoNum}`}
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-              Ir para o mês
-            </p>
-          </div>
-          <ChevronDown size={18} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
-        </button>
+        {/* v5: periodo e "Lancar entrada" como linhas (sem cartoes) */}
+        <SecaoLista style={{ marginTop: 10 }}>
+          <LinhaLista
+            Icon={Calendar}
+            rotulo={anoTodo ? `Ano todo de ${anoNum}` : `${MESES[mesIdx]} de ${anoNum}`}
+            detalhe="Ir para o mês ou o ano"
+            semSeta
+            valor={<ChevronDown size={18} style={{ color: "var(--text-tertiary)" }} />}
+            onClick={() => setSeletorAberto(true)}
+          />
+          <LinhaLista Icon={Plus} rotulo="Lançar entrada" onClick={() => navigate("/lancar")} />
+        </SecaoLista>
 
-        {/* Total do mes (e do ano) */}
-        <div className="card-tacerto rounded-2xl px-4 py-3.5 mt-2.5">
-          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+        {/* v8: ano todo: total do ano + resumo por mes */}
+        {anoTodo && (
+          <div style={{ marginTop: 26 }}>
+            <p
+              className="font-semibold uppercase"
+              style={{ color: "var(--text-tertiary)", fontSize: 12.5, letterSpacing: "0.08em" }}
+            >
+              Total de {anoNum}
+            </p>
+            <div style={{ marginTop: 6 }}>
+              <Valor tamanho="xl" autoAjustar>{totalAno}</Valor>
+            </div>
+            {porMes.length > 0 && (
+              <SecaoLista titulo="Por mês" style={{ marginTop: 22 }}>
+                {porMes.map((x) => (
+                  <LinhaLista
+                    key={x.mes}
+                    rotulo={MESES[x.mes]}
+                    valor={<Valor px={15} cor="var(--text-secondary)">{x.total}</Valor>}
+                    onClick={() => { setMesIdx(x.mes); setPularPara(x.mes); }}
+                  />
+                ))}
+              </SecaoLista>
+            )}
+          </div>
+        )}
+
+        {/* v5: total do mes (e do ano), sem cartao */}
+        {!anoTodo && (
+        <div style={{ marginTop: 26 }}>
+          <p
+            className="font-semibold uppercase"
+            style={{ color: "var(--text-tertiary)", fontSize: 12.5, letterSpacing: "0.08em" }}
+          >
             Total de {MESES[mesIdx]}
           </p>
-          <div className="mt-1">
+          <div style={{ marginTop: 6 }}>
             <Valor tamanho="xl" autoAjustar>{totalMes}</Valor>
           </div>
-          <div className="flex items-center gap-1.5 mt-1.5" style={{ color: "var(--text-tertiary)" }}>
-            <span className="text-xs">No ano de {anoNum}:</span>
-            <Valor tamanho="sm">{totalAno}</Valor>
-          </div>
+          {/* v8: tocar leva ao ano todo */}
+          <button
+            type="button"
+            onClick={verAnoTodo}
+            className="toque flex items-center gap-1.5"
+            style={{ color: "var(--text-tertiary)", marginTop: 6, background: "none", padding: 0 }}
+          >
+            <span style={{ fontSize: 14 }}>No ano de {anoNum}:</span>
+            <Valor px={14.5} cor="var(--text-secondary)">{totalAno}</Valor>
+            <ChevronRight size={15} style={{ color: "var(--text-tertiary)" }} />
+          </button>
         </div>
+        )}
 
-        {/* Nova entrada */}
-        <button
-          onClick={() => navigate("/lancar")}
-          className="card-tacerto w-full rounded-2xl flex items-center gap-3 px-4 mt-2.5 active:opacity-80"
-          style={{ minHeight: 52 }}
-        >
-          <Plus size={20} strokeWidth={2.2} style={{ color: "var(--primary)" }} className="shrink-0" />
-          <span className="text-[15px] font-semibold" style={{ color: "var(--text)" }}>
-            Lançar entrada
-          </span>
-        </button>
-
-        {/* Lista: o ano inteiro, com o mes separando */}
-        <p
-          className="text-[12px] font-semibold uppercase mt-6"
-          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
-        >
-          Entradas de {anoNum}
-        </p>
-
+        {/* v5: lista do ano, um titulo por mes, linhas com risca fina */}
         {grupos.length === 0 ? (
-          <div className="card-tacerto rounded-2xl py-10 mt-2 flex flex-col items-center gap-3">
-            <div
-              className="rounded-full flex items-center justify-center"
-              style={{ backgroundColor: "var(--surface)", width: 52, height: 52 }}
-            >
-              <Receipt size={24} style={{ color: "var(--text-tertiary)" }} />
-            </div>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              {busca.trim() ? "Nada encontrado" : `Nenhuma entrada em ${anoNum}`}
-            </p>
-          </div>
+          <p className="text-center" style={{ color: "var(--text-tertiary)", fontSize: 15, marginTop: 40 }}>
+            {busca.trim() ? "Nada encontrado" : `Nenhuma entrada em ${anoNum}`}
+          </p>
         ) : (
           grupos.map((g) => (
-            <div key={g.mes}>
-              <p
-                ref={(el) => { mesesRef.current[g.mes] = el; }}
-                className="text-[13px] font-semibold mt-4 mb-2"
-                style={{ color: "var(--text-secondary)", scrollMarginTop: 72 }}
-              >
-                {MESES[g.mes]}
-              </p>
-              <div className="space-y-2">
+            <div
+              key={g.mes}
+              ref={(el) => { mesesRef.current[g.mes] = el; }}
+              style={{ scrollMarginTop: 72 }}
+            >
+              <SecaoLista titulo={`${MESES[g.mes]} de ${anoNum}`} style={{ marginTop: 26 }}>
                 {g.itens.map((l) => (
-                  <div
+                  <LinhaLista
                     key={l.id}
-                    className="card-tacerto rounded-2xl px-4 py-3 flex items-center gap-3"
-                  >
-                    <TrendingUp
-                      size={19}
-                      strokeWidth={2}
-                      style={{ color: "var(--primary)" }}
-                      className="shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className="text-[15px] font-semibold leading-tight truncate"
-                        style={{ color: "var(--text)" }}
-                      >
-                        {l.descricao}
-                      </p>
-                      <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                        {labelData(l.data)}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-0.5 shrink-0">
-                      <Valor tamanho="md" sinal="+">{l.valor}</Valor>
-                      <button
-                        onClick={() => navigate(`/lancar?id=${l.id}`)}
-                        aria-label="Editar lançamento"
-                        className="w-9 h-9 rounded-full flex items-center justify-center active:opacity-70"
-                      >
-                        <Pencil size={15} style={{ color: "var(--text-tertiary)" }} />
-                      </button>
-                      <button
-                        onClick={() => setExcluirId(l.id)}
-                        aria-label="Excluir lançamento"
-                        className="w-9 h-9 -ml-1 rounded-full flex items-center justify-center active:opacity-70"
-                      >
-                        <Trash2 size={15} style={{ color: "var(--text-tertiary)" }} />
-                      </button>
-                    </div>
-                  </div>
+                    Icon={TrendingUp}
+                    rotulo={l.descricao}
+                    maxLinhas={2}
+                    detalhe={<span className="flex flex-wrap items-center" style={{ gap: 6 }}>
+                      {labelData(l.data)}
+                      <SeloNota temNota={l.tem_nota} />
+                    </span>}
+                    valor={
+                      <span className="flex items-center" style={{ gap: 2 }}>
+                        <Valor px={15.5} peso={600} sinal="+">{l.valor}</Valor>
+                        <button
+                          onClick={() => navigate(`/lancar?id=${l.id}`)}
+                          aria-label="Editar lançamento"
+                          className="w-9 h-9 rounded-full flex items-center justify-center active:opacity-70"
+                        >
+                          <Pencil size={16} style={{ color: "var(--text-tertiary)" }} />
+                        </button>
+                        <button
+                          onClick={() => setExcluirId(l.id)}
+                          aria-label="Excluir lançamento"
+                          className="w-9 h-9 -ml-1 rounded-full flex items-center justify-center active:opacity-70"
+                        >
+                          <Trash2 size={16} style={{ color: "var(--text-tertiary)" }} />
+                        </button>
+                      </span>
+                    }
+                  />
                 ))}
-              </div>
+              </SecaoLista>
             </div>
           ))
         )}
@@ -302,15 +323,20 @@ export default function Historico() {
 
       <SeletorMesAno
         aberto={seletorAberto}
-        titulo="Ir para o mês"
-        mes={mesIdx + 1}
+        titulo="Ir para o mês ou o ano"
+        mes={anoTodo ? null : mesIdx + 1}
         ano={anoNum}
         anoMinimo={anoInicio}
+        permitirAnoTodo
         onFechar={() => setSeletorAberto(false)}
         onSelecionar={(m, a) => {
-          setMesIdx(m - 1);
           setAnoNum(a);
           setSeletorAberto(false);
+          if (m === null) {
+            verAnoTodo();
+            return;
+          }
+          setMesIdx(m - 1);
           setPularPara(m - 1);
         }}
       />
@@ -322,7 +348,7 @@ export default function Historico() {
         >
           <div
             className="w-full max-w-sm rounded-2xl p-5 space-y-4"
-            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
+            style={{ backgroundColor: "var(--bg)", border: "1px solid var(--border)" }}
           >
             <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
               Excluir esta entrada?
@@ -334,13 +360,13 @@ export default function Historico() {
               <button
                 onClick={() => setExcluirId(null)}
                 className="flex-1 py-3 rounded-xl font-semibold"
-                style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
+                style={{ border: "1px solid var(--border)", color: "var(--text)" }}
               >
                 Cancelar
               </button>
               <button
                 onClick={() => { removerLancamento(excluirId); setExcluirId(null); }}
-                className="flex-1 py-3 rounded-xl font-semibold"
+                className="botao-perigo flex-1 py-3 rounded-xl font-semibold"
                 style={{ backgroundColor: "#ef4444", color: "#fff" }}
               >
                 Excluir

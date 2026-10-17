@@ -1,4 +1,4 @@
-/* TERMOS v3 — topo que rola (titulo sobe, setinha fica transparente) */
+/* TERMOS v5 — o resumo diz o que o app guarda hoje (CNPJ, extrato do ano, gastos) e que nao pede senha de banco, cartao, gov.br nem do certificado (v4: piloto: "Ver Politica de Privacidade" e "Ver Termos de Uso" abrem os documentos (antes: "em breve"); texto do resumo nao mudou */
 import { useNavigate } from "react-router-dom";
 import {
   Gauge, Database, EyeOff, Lock, ShieldCheck,
@@ -11,6 +11,12 @@ import TopoRolavel from "../components/TopoRolavel.jsx";
 import { SectionTitle } from "../components/FlatList.jsx";
 
 /* ===================================================================
+   TERMOS v4 (04/10/2026, PILOTO): os dois botoes do fim mostravam o
+   alerta "Documento completo em breve". Agora abrem as paginas novas
+   /privacidade (Privacidade.jsx) e /termos-de-uso (TermosDeUso.jsx).
+   O texto deste resumo NAO foi reescrito (pendencias anotadas no
+   relatorio do piloto: ainda fala em "educacao fiscal").
+
    TERMOS v3 (28/09/2026): o cabecalho passou para DENTRO da area que
    rola (TopoRolavel): o titulo sobe com a rolagem e a setinha fica
    parada e transparente. Nada mais mudou.
@@ -34,8 +40,8 @@ const SECOES = [
   {
     titulo: "O que coletamos",
     itens: [
-      { Icon: Database, t: "Só o essencial: nome, e-mail ou telefone, e os lançamentos que você registra." },
-      { Icon: EyeOff, t: "Não pedimos CPF, endereço nem dados bancários nesta fase." },
+      { Icon: Database, t: "Só o necessário: nome, WhatsApp, CNPJ, os lançamentos e, se você enviar, o extrato deste ano e os seus gastos." },
+      { Icon: EyeOff, t: "Não pedimos senha de banco, de cartão, do gov.br nem do certificado." },
     ],
   },
   {
@@ -62,10 +68,6 @@ const SECOES = [
 
 export default function Termos() {
   const navigate = useNavigate();
-
-  function docEmBreve() {
-    alert("Documento completo em breve.");
-  }
 
   return (
     <div
@@ -123,10 +125,13 @@ export default function Termos() {
         ))}
 
         <div className="mt-8 space-y-1">
-          {["Ver Política de Privacidade", "Ver Termos de Uso"].map((label) => (
+          {[
+            { label: "Ver Política de Privacidade", rota: "/privacidade" },
+            { label: "Ver Termos de Uso", rota: "/termos-de-uso" },
+          ].map(({ label, rota }) => (
             <button
               key={label}
-              onClick={docEmBreve}
+              onClick={() => navigate(rota)}
               className="w-full flex items-center justify-between py-4 text-[16px] active:opacity-70"
               style={{ color: "var(--text)" }}
             >

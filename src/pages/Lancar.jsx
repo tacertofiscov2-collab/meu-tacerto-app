@@ -1,11 +1,66 @@
+/* LANCAR v13 — recebimento pergunta nota e pagador; aviso sem bloquear e tem_nota salvo (v12: comprovante vindo do chat) */
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useState, useMemo, useEffect } from "react";
-import { ArrowLeft, Calendar as CalendarIcon, TrendingUp } from "lucide-react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { ArrowLeft, Calendar as CalendarIcon, TrendingUp, Camera, FileText, X, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { useAppState } from "@/context/AppStateContext";
 import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
 import PendenciasEntradas from "../components/PendenciasEntradas.jsx";
-import { dataMinimaLancamento, LIMITE_VALOR_LANCAMENTO } from "@/lib/fiscal";
+import { dataMinimaLancamento, LIMITE_VALOR_LANCAMENTO, precisaDeNota, AVISO_NOTA_EMPRESA } from "@/lib/fiscal";
+import { DESCRICAO_AJUSTE_ANO, DESCRICOES_DE_AJUSTE, acharLancamentoParecido } from "@/lib/conciliacao";
+import FolhaSomarNoVelocimetro from "../components/FolhaSomarNoVelocimetro.jsx";
+import { supabase } from "@/lib/supabase";
+import {
+  enviarArquivoComprovante, lerComprovante, guardarComprovante, ligarComprovanteAoLancamento,
+} from "@/lib/comprovantes";
+import { lancarGastoAMao } from "@/lib/lucro";
+import { pegarArquivoPendente } from "@/lib/arquivoPendente";
+import { MOSTRAR_COMPROVANTE_FOTO, MOSTRAR_MEU_LUCRO } from "@/config/piloto";
+
+/* ===================================================================
+   LANCAR v11 (12/10/2026, tarefa de 10-10, Bloco J) — COMPROVANTE
+
+   No Recebimento (lancamento novo), a linha "Foto ou PDF do
+   comprovante" (camera ou arquivo; Pix, comprovante, recibo, nota):
+   1) o arquivo vai para o balde "comprovantes" (pasta da pessoa);
+   2) a funcao ler-comprovante (IA) le valor, data, quem pagou e se e
+      recebimento ou gasto. A tela PREENCHE os campos e avisa "Li do
+      comprovante: confira e corrija se precisar." Nada e salvo sem a
+      pessoa tocar em Salvar;
+   3) parece gasto: "Lançar como gasto" (vai para o Meu lucro, com nota);
+   4) ao salvar: antes de criar o lancamento, procura recebimento
+      PARECIDO no velocimetro (+-1%, +-15 dias). Achou: "É o mesmo?" (so
+      liga o comprovante a ele). Nao achou ou "é outro": cria e liga.
+   SEM a funcao publicada ou sem a chave da IA: "Não consegui ler
+   sozinho. Preencha você" e o lancamento a mao segue com o arquivo
+   anexado. Chave MOSTRAR_COMPROVANTE_FOTO em src/config/piloto.js.
+   =================================================================== */
+
+/* ===================================================================
+   LANCAR v7 (05/10/2026) — MODO "TOTAL DO ANO" (pedido do Fernando)
+
+   No topo, duas opcoes: "Recebimento" (o lancamento de sempre) e
+   "Total do ano". No total do ano a pessoa digita SO o quanto ja
+   faturou no ano e o velocimetro fica igual a esse valor.
+
+   Como funciona, sem mudar o banco e sem contar em dobro:
+   - Os lancamentos de AJUSTE sao os que tem a descricao
+     DESCRICAO_AJUSTE_ANO ou a do Onboarding (DESCRICAO_ESTIMADO,
+     "Faturamento estimado ate hoje").
+   - Soma dos recebimentos do ano (todos os outros) = S.
+   - Ajuste = total digitado - S. Fica UM lancamento de ajuste so, com a
+     data de hoje (os outros ajustes do ano sao apagados). Ajuste zero =
+     nenhum lancamento de ajuste.
+   - Total menor que S nao da: a tela avisa quanto ja foi lancado em
+     recebimentos (para diminuir, editar no Historico).
+   A pessoa digitou o valor, entao e ela confirmando (regra do app).
+   /lancar?modo=total abre direto neste modo (notificacao "Atualize seu
+   velocimetro").
+   =================================================================== */
+/* v10: DESCRICAO_AJUSTE_ANO e DESCRICOES_DE_AJUSTE moram em
+   src/lib/conciliacao.js (o "Faturamento estimado até hoje" do cadastro
+   antigo continua contando como ajuste). */
 
 /* LANCAR v5 — faixa de pendencias do Open Finance no topo
 
@@ -27,6 +82,17 @@ import { dataMinimaLancamento, LIMITE_VALOR_LANCAMENTO } from "@/lib/fiscal";
 const MAX_CENTAVOS = Math.round(LIMITE_VALOR_LANCAMENTO * 100);
 const MAX_DIGITOS = String(MAX_CENTAVOS).length;
 const LIMITE_DESCRICAO = 60;
+
+/* v6: rotulo dos campos no padrao do Perfil (titulo de secao: cinza,
+   maiusculo, com espacamento) */
+const ROTULO_CAMPO = {
+  color: "var(--text-tertiary)",
+  fontSize: 12.5,
+  fontWeight: 600,
+  letterSpacing: "0.08em",
+  textTransform: "uppercase",
+  marginBottom: 8,
+};
 const LIMITE_VISITANTE = 8;
 
 const MESES = [
@@ -91,10 +157,27 @@ export default function Lancar() {
     lancamentos,
     adicionarLancamento,
     atualizarLancamento,
+    removerLancamento,
     setModoSimulacao,
     mesAnoAbertura,
     visitante,
+    faturamentoAtual,
   } = useAppState();
+
+  /* v7: "recebimento" (de sempre) ou "total" (total do ano) */
+  const [modo, setModo] = useState(params.get("modo") === "total" && !editId ? "total" : "recebimento");
+  const modoTotal = modo === "total";
+  const anoAtual = new Date().getFullYear();
+
+  /* v7: lancamentos do ano separados em ajustes e recebimentos (ver topo) */
+  const { ajustesDoAno, recebimentosCentavos } = useMemo(() => {
+    const doAno = (lancamentos || []).filter((l) => new Date(l.data).getFullYear() === anoAtual);
+    const ajustes = doAno.filter((l) => DESCRICOES_DE_AJUSTE.includes(l.descricao));
+    const soma = doAno
+      .filter((l) => !DESCRICOES_DE_AJUSTE.includes(l.descricao))
+      .reduce((s, l) => s + Math.round((Number(l.valor) || 0) * 100), 0);
+    return { ajustesDoAno: ajustes, recebimentosCentavos: soma };
+  }, [lancamentos, anoAtual]);
 
   const dataMin = dataMinimaLancamento(
     mesAnoAbertura?.mes,
@@ -106,6 +189,7 @@ export default function Lancar() {
     [editId, lancamentos],
   );
   const modoEdicao = Boolean(lancamentoAtual);
+  const ehRecebimento = !modoTotal && !DESCRICOES_DE_AJUSTE.includes(lancamentoAtual?.descricao);
 
   const ultimoLancamento = useMemo(() => {
     if (!lancamentos || lancamentos.length === 0) return null;
@@ -125,16 +209,27 @@ export default function Lancar() {
 
   const [centavos, setCentavos] = useState(0);
   const [descricao, setDescricao] = useState("");
+  const [temNota, setTemNota] = useState(true);
+  const [tipoPagador, setTipoPagador] = useState("");
   const [dataBR, setDataBR] = useState(isoToBR(hojeISO()));
   const [salvando, setSalvando] = useState(false);
   const [preenchido, setPreenchido] = useState(false);
   const [calendarioAberto, setCalendarioAberto] = useState(false);
   const [atingiuTeto, setAtingiuTeto] = useState(false);
+  /* v11: comprovante { userId, caminho, tipo, nome, previa, lendo, lido, falhou }
+     e o "É o mesmo?" ao salvar ({ valor, data, descricao, parecido }) */
+  const [comprovante, setComprovante] = useState(null);
+  const [somarCom, setSomarCom] = useState(null);
+  const inputComprovanteRef = useRef(null);
+  const previaRef = useRef(null);
+  useEffect(() => () => { if (previaRef.current) URL.revokeObjectURL(previaRef.current); }, []);
 
   useEffect(() => {
     if (lancamentoAtual && !preenchido) {
       setCentavos(Math.round((Number(lancamentoAtual.valor) || 0) * 100));
       setDescricao((lancamentoAtual.descricao || "").slice(0, LIMITE_DESCRICAO));
+      setTemNota(lancamentoAtual.tem_nota ?? true);
+      setTipoPagador(lancamentoAtual.tipoPagador || "");
       const d = new Date(lancamentoAtual.data);
       setDataBR(isoToBR(`${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`));
       setPreenchido(true);
@@ -181,8 +276,128 @@ export default function Lancar() {
     setCentavos(limitado);
   }
 
+  /* v7: total do ano menor que os recebimentos ja lancados nao da */
+  const totalAbaixoDosRecebimentos = modoTotal && centavos > 0 && centavos < recebimentosCentavos;
+  const podeSalvar = modoTotal
+    ? centavos > 0 && !totalAbaixoDosRecebimentos
+    : centavos > 0 && dataValida;
+
+  /* v7: salva o total do ano como UM lancamento de ajuste (ver topo) */
+  async function salvarTotalDoAno() {
+    if (!podeSalvar || salvando) return;
+    const ajusteCentavos = centavos - recebimentosCentavos;
+    const [primeiro, ...sobrando] = ajustesDoAno;
+    if (!primeiro && ajusteCentavos > 0 && visitante && lancamentos.length >= LIMITE_VISITANTE) {
+      navigate("/lancar/limite-atingido", { replace: true });
+      return;
+    }
+    setSalvando(true);
+    setModoSimulacao(false);
+    const hoje = new Date().toISOString();
+    if (ajusteCentavos <= 0) {
+      ajustesDoAno.forEach((l) => removerLancamento(l.id));
+    } else if (primeiro) {
+      atualizarLancamento(primeiro.id, { descricao: DESCRICAO_AJUSTE_ANO, valor: ajusteCentavos / 100, data: hoje });
+      sobrando.forEach((l) => removerLancamento(l.id));
+    } else {
+      adicionarLancamento({ descricao: DESCRICAO_AJUSTE_ANO, valor: ajusteCentavos / 100, data: hoje });
+    }
+    await new Promise((r) => setTimeout(r, 200));
+    setSalvando(false);
+    toast.success("Velocímetro atualizado");
+    navigate("/dashboard");
+  }
+
+  /* v11: escolheu a foto ou o PDF do comprovante */
+  function escolherComprovante(e) {
+    const arquivo = e.target.files?.[0];
+    e.target.value = "";
+    if (arquivo) processarComprovante(arquivo);
+  }
+
+  /* v12: a foto ou o PDF que a pessoa mandou no chat da Isa chega aqui
+     (so num lancamento novo de recebimento). A caixinha esvazia ao
+     pegar: no modo de teste do React o efeito roda duas vezes e a
+     segunda ja acha vazio. */
+  useEffect(() => {
+    const arquivo = pegarArquivoPendente();
+    if (arquivo && MOSTRAR_COMPROVANTE_FOTO && !editId && modo !== "total") processarComprovante(arquivo);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function processarComprovante(arquivo) {
+    const { data: sessao } = await supabase.auth.getUser().catch(() => ({ data: null }));
+    const user = sessao?.user;
+    if (!user) {
+      toast("Entre na sua conta para guardar comprovantes.");
+      return;
+    }
+    if (previaRef.current) URL.revokeObjectURL(previaRef.current);
+    const previa = String(arquivo.type || "").startsWith("image/") ? URL.createObjectURL(arquivo) : null;
+    previaRef.current = previa;
+    setComprovante({ userId: user.id, nome: arquivo.name, previa, lendo: true, lido: null, falhou: false });
+
+    let enviado;
+    try {
+      enviado = await enviarArquivoComprovante(user.id, arquivo);
+    } catch (err) {
+      toast.error(String(err?.message || "").includes("10 MB") ? err.message : "Não consegui guardar o arquivo. Tente de novo.");
+      setComprovante(null);
+      return;
+    }
+    const lido = await lerComprovante(enviado);
+    if (lido.ok && lido.eh_comprovante && lido.valor > 0) {
+      setCentavos(Math.min(Math.round(lido.valor * 100), MAX_CENTAVOS));
+      setAtingiuTeto(false);
+      if (lido.data && validarDataBR(isoToBR(lido.data))) setDataBR(isoToBR(lido.data));
+      if (lido.pessoa) setDescricao((d) => (d.trim() ? d : lido.pessoa.slice(0, LIMITE_DESCRICAO)));
+      setComprovante((c) => c && { ...c, ...enviado, lendo: false, lido });
+    } else {
+      setComprovante((c) => c && { ...c, ...enviado, lendo: false, falhou: true });
+    }
+  }
+
+  function tirarComprovante() {
+    if (previaRef.current) URL.revokeObjectURL(previaRef.current);
+    previaRef.current = null;
+    setComprovante(null);
+  }
+
+  /* v11: grava o comprovante (com o que a pessoa confirmou) e liga ao lancamento */
+  async function guardarELigar(idLancamento, { valor, data, descricao: desc, tem_nota = temNota, tipoPagador: pagador = tipoPagador }) {
+    if (idLancamento) await atualizarLancamento(idLancamento, { tem_nota, tipoPagador: pagador });
+    if (!comprovante?.caminho) return;
+    const linha = await guardarComprovante(comprovante.userId, {
+      caminho: comprovante.caminho, tipo: comprovante.tipo, nome: comprovante.nome, valor, data, descricao: desc,
+    });
+    if (linha?.id && idLancamento) await ligarComprovanteAoLancamento(comprovante.userId, linha.id, idLancamento);
+  }
+
+  /* v11: o comprovante parece um pagamento que a pessoa FEZ */
+  async function lancarComoGasto() {
+    const iso = brToISO(dataBR);
+    if (!comprovante?.caminho || centavos <= 0 || !dataValida || salvando) return;
+    setSalvando(true);
+    try {
+      const saida = await lancarGastoAMao(comprovante.userId, {
+        valor: centavos / 100, data: iso, descricao: descricao.trim(), categoria: null, meio: "Comprovante", comNota: true,
+      });
+      await guardarComprovante(comprovante.userId, {
+        caminho: comprovante.caminho, tipo: comprovante.tipo, nome: comprovante.nome,
+        valor: centavos / 100, data: new Date(iso + "T12:00:00").toISOString(), descricao: descricao.trim(), saidaId: saida?.id || null,
+      });
+      toast.success("Gasto lançado no Meu lucro");
+      navigate(MOSTRAR_MEU_LUCRO ? "/meu-lucro" : "/dashboard");
+    } catch {
+      toast.error("Não consegui salvar agora. Tente de novo.");
+      setSalvando(false);
+    }
+  }
+
   async function handleSalvar() {
+    if (modoTotal) return salvarTotalDoAno();
     if (centavos <= 0 || !dataValida || salvando) return;
+    if (comprovante?.lendo) return;
 
     if (!modoEdicao && visitante && lancamentos.length >= LIMITE_VISITANTE) {
       navigate("/lancar/limite-atingido", { replace: true });
@@ -195,12 +410,25 @@ export default function Lancar() {
       descricao: descricao.trim().slice(0, LIMITE_DESCRICAO),
       valor: centavos / 100,
       data: new Date(iso + "T12:00:00").toISOString(),
+      ...(ehRecebimento ? { tem_nota: temNota, tipoPagador } : {}),
     };
     if (modoEdicao) {
-      atualizarLancamento(lancamentoAtual.id, payload);
+      await atualizarLancamento(lancamentoAtual.id, payload);
+    } else if (comprovante?.caminho) {
+      /* v11: com comprovante, antes de somar procura o mesmo dinheiro */
+      setModoSimulacao(false);
+      const parecido = acharLancamentoParecido(lancamentos, { valor: payload.valor, data: payload.data });
+      if (parecido) {
+        setSalvando(false);
+        setSomarCom({ ...payload, parecido });
+        return;
+      }
+      const id = await adicionarLancamento(payload);
+      await guardarELigar(id, payload);
+      toast.success("Lançamento salvo com o comprovante");
     } else {
       setModoSimulacao(false);
-      adicionarLancamento(payload);
+      await adicionarLancamento(payload);
     }
     await new Promise((r) => setTimeout(r, 200));
     setSalvando(false);
@@ -216,15 +444,49 @@ export default function Lancar() {
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
-          className="toque toque-escala w-10 h-10 rounded-full flex items-center justify-center"
+          className="toque toque-escala w-[46px] h-[46px] rounded-full flex items-center justify-center"
           style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
         >
-          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
+          <ArrowLeft size={24} style={{ color: "var(--text)" }} />
         </button>
-        <h1 className="text-lg font-bold" style={{ color: "var(--text)" }}>
-          {modoEdicao ? "Editar lançamento" : "Novo lançamento"}
+        <h1 className="font-bold" style={{ color: "var(--text)", fontSize: 20 }}>
+          {modoEdicao ? "Editar lançamento" : modoTotal ? "Atualizar velocímetro" : "Novo lançamento"}
         </h1>
       </header>
+
+      {/* v7: Recebimento | Total do ano (so para lancamento novo) */}
+      {!modoEdicao && (
+        <div className="shrink-0 px-5" style={{ paddingTop: 6, paddingBottom: 10 }}>
+          <div className="max-w-md mx-auto flex rounded-full" style={{ padding: 3, border: "1px solid var(--border)" }}>
+            {[["recebimento", "Recebimento"], ["total", "Total do ano"]].map(([valor, rotulo]) => {
+              const ativo = modo === valor;
+              return (
+                <button
+                  key={valor}
+                  type="button"
+                  aria-pressed={ativo}
+                  onClick={() => {
+                    if (ativo) return;
+                    setModo(valor);
+                    setCentavos(0);
+                    setAtingiuTeto(false);
+                  }}
+                  className="flex-1 rounded-full font-medium transition-colors"
+                  style={{
+                    fontSize: 15,
+                    padding: "8px 0",
+                    backgroundColor: "transparent",
+                    boxShadow: ativo ? "inset 0 0 0 1px var(--text-secondary)" : "none",
+                    color: ativo ? "var(--text)" : "var(--text-tertiary)",
+                  }}
+                >
+                  {rotulo}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Conteúdo: rola só se precisar, mas cabe tudo em tela normal */}
       <div
@@ -239,14 +501,90 @@ export default function Lancar() {
               Só aparece quando há entrada esperando classificação. Sem
               nada pendente, o componente não renderiza e os campos
               ficam no lugar de sempre. */}
-          {!modoEdicao && <PendenciasEntradas />}
+          {!modoEdicao && !modoTotal && <PendenciasEntradas />}
+
+          {/* v11: comprovante (foto ou PDF) lido pela IA */}
+          {MOSTRAR_COMPROVANTE_FOTO && !modoEdicao && !modoTotal && (
+            <>
+              <input
+                ref={inputComprovanteRef}
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={escolherComprovante}
+                style={{ display: "none" }}
+              />
+              {!comprovante ? (
+                <button
+                  type="button"
+                  onClick={() => inputComprovanteRef.current?.click()}
+                  className="toque card-tacerto w-full rounded-xl flex items-center text-left"
+                  style={{ gap: 12, minHeight: 56, padding: "10px 14px" }}
+                >
+                  <Camera size={21} strokeWidth={1.9} className="shrink-0" style={{ color: "var(--text-secondary)" }} />
+                  <span className="flex-1 min-w-0">
+                    <span className="block font-semibold" style={{ fontSize: 15.5, color: "var(--text)" }}>Foto ou PDF do comprovante</span>
+                    <span className="block" style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 1 }}>Pix, comprovante, recibo ou nota</span>
+                  </span>
+                </button>
+              ) : (
+                <div className="card-tacerto rounded-xl" style={{ padding: "10px 12px 11px" }}>
+                  <div className="flex items-center" style={{ gap: 12 }}>
+                    {comprovante.previa ? (
+                      <img src={comprovante.previa} alt="" className="shrink-0 rounded-lg" style={{ width: 42, height: 42, objectFit: "cover" }} />
+                    ) : (
+                      <span className="shrink-0 rounded-lg flex items-center justify-center" style={{ width: 42, height: 42, border: "1px solid var(--border)" }}>
+                        <FileText size={20} style={{ color: "var(--text-secondary)" }} />
+                      </span>
+                    )}
+                    <p className="flex-1 min-w-0 flex items-center" style={{ gap: 7, fontSize: 14, lineHeight: 1.4, color: "var(--text-secondary)" }}>
+                      {comprovante.lendo && <Loader2 size={15} className="animate-spin shrink-0" />}
+                      <span>
+                        {comprovante.lendo
+                          ? "Lendo o comprovante..."
+                          : comprovante.lido
+                          ? "Li do comprovante: confira e corrija se precisar."
+                          : "Não consegui ler sozinho. Preencha você: o comprovante fica guardado junto."}
+                      </span>
+                    </p>
+                    <button
+                      type="button"
+                      onClick={tirarComprovante}
+                      disabled={salvando}
+                      aria-label="Tirar o comprovante"
+                      className="toque shrink-0 rounded-full flex items-center justify-center"
+                      style={{ width: 30, height: 30, border: "1px solid var(--border)" }}
+                    >
+                      <X size={15} style={{ color: "var(--text-secondary)" }} />
+                    </button>
+                  </div>
+                  {comprovante.lido?.confianca === "baixa" && (
+                    <p style={{ fontSize: 13, color: "#f59e0b", marginTop: 8 }}>A leitura ficou incerta: confira com atenção.</p>
+                  )}
+                  {comprovante.lido?.tipo === "gasto" && (
+                    <div className="flex items-center justify-between" style={{ gap: 10, marginTop: 10 }}>
+                      <span style={{ fontSize: 13.5, color: "var(--text-secondary)" }}>Parece um pagamento que você fez.</span>
+                      <button
+                        type="button"
+                        onClick={lancarComoGasto}
+                        disabled={salvando || !podeSalvar}
+                        className="toque shrink-0 rounded-full font-semibold disabled:opacity-40"
+                        style={{ fontSize: 13.5, padding: "7px 12px", border: "1px solid var(--text-secondary)", color: "var(--text)", background: "none" }}
+                      >
+                        Lançar como gasto
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
 
           <div>
             <label
               className="block"
-              style={{ color: "var(--text-secondary)", fontSize: 12, marginBottom: 6 }}
+              style={ROTULO_CAMPO}
             >
-              Valor
+              {modoTotal ? `Total faturado em ${anoAtual}` : "Valor"}
             </label>
             <div
               className="card-tacerto flex items-center rounded-xl overflow-hidden"
@@ -281,21 +619,28 @@ export default function Lancar() {
             </div>
             <p
               style={{
-                color: atingiuTeto ? "#ef4444" : "var(--text-secondary)",
-                fontSize: 11.5,
-                marginTop: 6,
+                color: atingiuTeto || totalAbaixoDosRecebimentos ? "#ef4444" : "var(--text-secondary)",
+                fontSize: 13.5,
+                marginTop: 7,
               }}
             >
               {atingiuTeto
                 ? `Valor máximo por lançamento: R$ ${formatBRLFromCentavos(MAX_CENTAVOS)}`
+                : totalAbaixoDosRecebimentos
+                ? `Você já lançou R$ ${formatBRLFromCentavos(recebimentosCentavos)} em recebimentos este ano. Digite pelo menos esse valor.`
+                : modoTotal
+                ? `Hoje o velocímetro marca R$ ${formatBRLFromCentavos(Math.round((Number(faturamentoAtual) || 0) * 100))}`
                 : "Digite o valor recebido"}
             </p>
           </div>
 
+          {/* v7: no "Total do ano" fica so o valor */}
+          {!modoTotal && (
+          <>
           <div>
             <label
               className="block"
-              style={{ color: "var(--text-secondary)", fontSize: 12, marginBottom: 6 }}
+              style={ROTULO_CAMPO}
             >
               Descrição
             </label>
@@ -308,10 +653,10 @@ export default function Lancar() {
               className="campo-tacerto card-tacerto w-full rounded-xl placeholder:opacity-70"
               style={{
                 color: "var(--text)",
-                minHeight: 46,
+                minHeight: 50,
                 paddingLeft: 16,
                 paddingRight: 16,
-                fontSize: 14,
+                fontSize: 16,
               }}
             />
           </div>
@@ -319,7 +664,7 @@ export default function Lancar() {
           <div>
             <label
               className="block"
-              style={{ color: "var(--text-secondary)", fontSize: 12, marginBottom: 6 }}
+              style={ROTULO_CAMPO}
             >
               Data
             </label>
@@ -329,7 +674,7 @@ export default function Lancar() {
                 color: "var(--text)",
                 /* Só o erro sobrescreve a moldura padrão do card. */
                 borderColor: mostrarErroData ? "#ef4444" : undefined,
-                minHeight: 46,
+                minHeight: 50,
                 paddingLeft: 16,
                 paddingRight: 16,
               }}
@@ -342,7 +687,7 @@ export default function Lancar() {
                 placeholder="dd/mm/aaaa"
                 maxLength={10}
                 className="flex-1 bg-transparent focus:outline-none placeholder:opacity-70"
-                style={{ color: "var(--text)", fontSize: 14 }}
+                style={{ color: "var(--text)", fontSize: 16 }}
               />
               <button
                 type="button"
@@ -350,35 +695,64 @@ export default function Lancar() {
                 aria-label="Selecionar data"
                 className="toque ml-2 shrink-0 flex items-center justify-center"
               >
-                <CalendarIcon size={18} style={{ color: "var(--text-secondary)" }} />
+                <CalendarIcon size={20} style={{ color: "var(--text-secondary)" }} />
               </button>
             </div>
             {mostrarErroData && (
-              <p style={{ color: "#ef4444", fontSize: 11.5, marginTop: 6 }}>
+              <p style={{ color: "#ef4444", fontSize: 13.5, marginTop: 7 }}>
                 {msgErroData}
               </p>
             )}
           </div>
 
+          {ehRecebimento && <>
+          <fieldset>
+            <legend style={{ ...ROTULO_CAMPO, fontSize: 16, textTransform: "none", letterSpacing: "normal" }}>
+              Tem nota fiscal desse recebimento?
+            </legend>
+            <div className="flex" style={{ gap: 10 }}>
+              {[[true, "Com nota"], [false, "Sem nota"]].map(([valor, rotulo]) => (
+                <button key={rotulo} type="button" aria-pressed={temNota === valor}
+                  onClick={() => setTemNota(valor)}
+                  className="toque card-tacerto flex-1 rounded-xl"
+                  style={{ minHeight: 50, fontSize: 16, color: temNota === valor ? "var(--text)" : "var(--text-tertiary)", boxShadow: temNota === valor ? "inset 0 0 0 1px var(--text-secondary)" : "none" }}>
+                  {rotulo}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <div>
+            <label htmlFor="tipo-pagador" className="block" style={ROTULO_CAMPO}>Quem pagou?</label>
+            <select id="tipo-pagador" value={tipoPagador} onChange={(e) => setTipoPagador(e.target.value)}
+              className="campo-tacerto card-tacerto w-full rounded-xl"
+              style={{ minHeight: 50, padding: "0 16px", fontSize: 16, color: "var(--text)", backgroundColor: "var(--field)" }}>
+              <option value="">Selecionar (opcional)</option>
+              <option value="cpf">Pessoa (CPF)</option>
+              <option value="cnpj">Empresa (CNPJ)</option>
+            </select>
+            {!temNota && precisaDeNota(tipoPagador) && (
+              <p role="status" style={{ color: "var(--text-secondary)", fontSize: 16, marginTop: 8 }}>
+                {AVISO_NOTA_EMPRESA}
+              </p>
+            )}
+          </div>
+
+          </>}
+
           <div style={{ marginTop: 4 }}>
             <p
-              style={{ color: "var(--text-secondary)", fontSize: 12, marginBottom: 6 }}
+              style={ROTULO_CAMPO}
             >
               Último lançamento
             </p>
             {ultimoLancamento ? (
               <div
-                className="card-tacerto w-full rounded-xl flex items-center"
-                style={{
-                  gap: 12,
-                  paddingLeft: 16,
-                  paddingRight: 16,
-                  paddingTop: 11,
-                  paddingBottom: 11,
-                }}
+                className="w-full flex items-center"
+                style={{ gap: 14, paddingTop: 6, paddingBottom: 6 }}
               >
                 <TrendingUp
-                  size={19}
+                  size={20}
                   strokeWidth={1.75}
                   style={{ color: "var(--primary)" }}
                   className="shrink-0"
@@ -386,38 +760,45 @@ export default function Lancar() {
                 <div className="flex-1 min-w-0">
                   <p
                     className="leading-tight truncate"
-                    style={{ color: "var(--text)", fontSize: 13.5 }}
+                    style={{ color: "var(--text)", fontSize: 16.5, fontWeight: 500 }}
                   >
                     {ultimoLancamento.descricao}
                   </p>
                   <p
-                    style={{ color: "var(--text-secondary)", fontSize: 11.5, marginTop: 2 }}
+                    style={{ color: "var(--text-tertiary)", fontSize: 13.5, marginTop: 2 }}
                   >
                     {labelDataCurta(ultimoLancamento.data)}
                   </p>
                 </div>
                 <div className="shrink-0">
-                  <Valor px={13.5} peso={700} sinal="+">{ultimoLancamento.valor}</Valor>
+                  <Valor px={15.5} peso={600} sinal="+">{ultimoLancamento.valor}</Valor>
                 </div>
               </div>
             ) : (
-              <div
-                className="card-tacerto w-full rounded-xl text-center"
-                style={{
-                  paddingTop: 14,
-                  paddingBottom: 14,
-                  /* Tracejado mantido: e ele que diz "vazio". */
-                  borderStyle: "dashed",
-                }}
-              >
-                <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
+              <div className="w-full" style={{ paddingTop: 4 }}>
+                <p style={{ color: "var(--text-tertiary)", fontSize: 15 }}>
                   Nenhum lançamento ainda
                 </p>
               </div>
             )}
           </div>
+          </>
+          )}
         </div>
       </div>
+
+      {/* v11: com comprovante, "É o mesmo?" antes de somar */}
+      <FolhaSomarNoVelocimetro
+        aberto={Boolean(somarCom)}
+        parecido={somarCom?.parecido || null}
+        valor={somarCom?.valor}
+        data={somarCom?.data}
+        descricao={somarCom?.descricao}
+        oQue="comprovante"
+        onLigar={(id) => guardarELigar(id, somarCom)}
+        onFechar={() => setSomarCom(null)}
+        onConcluir={() => navigate("/dashboard")}
+      />
 
       <Calendario
         aberto={calendarioAberto}
@@ -443,19 +824,19 @@ export default function Lancar() {
         <div className="max-w-md mx-auto">
           <button
             onClick={handleSalvar}
-            disabled={salvando || centavos <= 0 || !dataValida}
-            className="toque toque-escala w-full rounded-2xl font-bold disabled:opacity-40"
+            disabled={salvando || !podeSalvar || Boolean(comprovante?.lendo)}
+            className="botao-confirmar toque toque-escala w-full rounded-2xl font-bold disabled:opacity-40"
             style={{
               paddingTop: 16,
               paddingBottom: 16,
-              fontSize: 15.5,
+              fontSize: 16.5,
               letterSpacing: "0.01em",
               backgroundColor: "var(--primary)",
               color: "var(--primary-contrast)",
               transition: "opacity 200ms ease",
             }}
           >
-            {salvando ? "Salvando..." : "Salvar lançamento"}
+            {salvando ? "Salvando..." : modoTotal ? "Atualizar velocímetro" : "Salvar lançamento"}
           </button>
         </div>
       </div>

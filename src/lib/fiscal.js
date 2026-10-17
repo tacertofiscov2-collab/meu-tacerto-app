@@ -1,4 +1,12 @@
+/* FISCAL v7 — regra precisaDeNota e aviso para recebimento de empresa (v6: DAS por CNAE) */
 // Fonte ÚNICA da verdade para regras fiscais do TaCerto!
+
+export function precisaDeNota(tipoPagador) {
+  return tipoPagador === "cnpj";
+}
+
+export const AVISO_NOTA_EMPRESA =
+  "Venda para empresa precisa de nota fiscal. Você pode emitir depois em Notas.";
 
 export const LIMITES_ANUAIS = {
   MEI: 81000,
@@ -135,6 +143,15 @@ for (const chave of Object.keys(FAIXA_INFO)) {
   f.apoio = f.mensagem;
 }
 
+/* v3 (10/10/2026): velocimetro ZERADO no ano nao e "Tá tranquilo" —
+   e falta de informacao. Use esta funcao no lugar de
+   FAIXA_INFO[faixa].palavra sempre que mostrar a palavra da faixa. */
+export const PALAVRA_SEM_FATURAMENTO = "Falta informar";
+export function palavraDaSituacao(percentual, faturado) {
+  if (!(Number(faturado) > 0)) return PALAVRA_SEM_FATURAMENTO;
+  return (FAIXA_INFO[faixaDoVelocimetro(percentual)] || FAIXA_INFO.tranquilo).palavra;
+}
+
 export const DAS_2026 = {
   MEI: {
     comercio_industria: 82.05,
@@ -144,13 +161,89 @@ export const DAS_2026 = {
   MEI_CAMINHONEIRO: {
     intermunicipal_interestadual: 195.52,
     municipal: 199.52,
+    /* v2: R$ 200,52 e quem paga ICMS + ISS (frete municipal E
+       intermunicipal). O nome antigo da chave ficou para nao quebrar
+       quem ja usa; o certo e "icms_e_iss" (abaixo). */
     produtos_perigosos_mudancas: 200.52,
+    icms_e_iss: 200.52,
   },
 };
 
+/* ===================================================================
+   VALOR DO DAS PELO CNAE (v2 — 10/10/2026)
+
+   Salario minimo de 2026: R$ 1.621 (Decreto 12.797/2025). O DAS do MEI
+   e INSS + R$ 1 de ICMS (comercio, industria, frete entre cidades) e/ou
+   R$ 5 de ISS (servicos, frete na mesma cidade).
+
+   MEI CAMINHONEIRO (CNAE 4930-2/xx):
+     so 4930-2/01 (frete municipal)            -> ISS        R$ 199,52
+     4930-2/01 + outro 4930-2/0x               -> ICMS + ISS R$ 200,52
+     so 4930-2/02, /03 ou /04 (entre cidades)  -> ICMS       R$ 195,52
+     sem CNAE no perfil                        -> R$ 195,52 (como antes)
+   MEI COMUM:
+     comercio (45 a 47, menos 4520/4543) ou industria (05 a 32) -> ICMS R$ 82,05
+     servico (o resto)                                   -> ISS  R$ 86,05
+     os dois                                             -> R$ 87,05
+     sem CNAE no perfil -> R$ 86,05 (servicos, como antes)
+   Conta o CNAE principal E os secundarios (o DAS cobra pelas
+   atividades registradas).
+   ⚠️ Valores de 2026: trocar DAS_2026 quando sair o salario de 2027.
+   =================================================================== */
+export const DAS_ATIVIDADE_PADRAO = {
+  MEI_CAMINHONEIRO: "intermunicipal_interestadual",
+  MEI: "servicos",
+};
+
+function cnae7(c) {
+  const d = String(c ?? "").replace(/\D/g, "");
+  return d.length === 7 ? d : "";
+}
+
+/* Qual linha do DAS_2026 vale para o tipo e os CNAEs (principal +
+   secundarios, em qualquer formato: 4930202, "4930-2/02"...) */
+export function atividadeDasPeloCnae(tipo, cnaes = []) {
+  const lista = (Array.isArray(cnaes) ? cnaes : [cnaes]).map(cnae7).filter(Boolean);
+  if (tipo === "MEI_CAMINHONEIRO") {
+    const frete = lista.filter((c) => c.startsWith("49302"));
+    if (!frete.length) return DAS_ATIVIDADE_PADRAO.MEI_CAMINHONEIRO;
+    const municipal = frete.includes("4930201");
+    const entreCidades = frete.some((c) => c !== "4930201");
+    if (municipal && entreCidades) return "icms_e_iss";
+    return municipal ? "municipal" : "intermunicipal_interestadual";
+  }
+  if (!lista.length) return DAS_ATIVIDADE_PADRAO.MEI;
+  /* v6: comercio = divisoes 45 a 47, MENOS a manutencao de veiculos
+     (4520 carro, 4543 moto), que e servico; industria = 05 a 32 (a 33 e
+     manutencao e instalacao de maquinas: servico) */
+  const ehComercioOuIndustria = (c) => {
+    const d = Number(c.slice(0, 2));
+    const grupo = c.slice(0, 4);
+    if (grupo === "4520" || grupo === "4543") return false;
+    return (d >= 45 && d <= 47) || (d >= 5 && d <= 32);
+  };
+  const comercioOuIndustria = lista.some(ehComercioOuIndustria);
+  const servico = lista.some((c) => !ehComercioOuIndustria(c));
+  if (comercioOuIndustria && servico) return "comercio_e_servicos";
+  return comercioOuIndustria ? "comercio_industria" : "servicos";
+}
+
+/* Valor do DAS do mes (R$) para o tipo e os CNAEs do perfil */
+export function valorDasMensal(tipo, cnaes = []) {
+  const tabela = DAS_2026[tipo] || DAS_2026.MEI;
+  return tabela[atividadeDasPeloCnae(tipo, cnaes)] ?? tabela[DAS_ATIVIDADE_PADRAO[tipo] || DAS_ATIVIDADE_PADRAO.MEI];
+}
+
+/* v4: Certificado Digital A1 (e-CNPJ) pela Tecnosign (certificadora
+   Soluti), pelo link de venda, a PRECO DE CUSTO: o TaCerto nao ganha
+   nada (decisao do Fernando, HANDOFF-08-10). Antes o app dizia R$ 99,90. */
+export const PRECO_CERTIFICADO_A1 = 100.34;
+
 export const DAS_VENCIMENTO_DIA = 20;
+/* v5: o DAS PRORROGA para o proximo dia util (antes dizia "antecipa",
+   errado). Mesmo texto de src/lib/vencimentoDas.js (TEXTO_VENCIMENTO_DAS). */
 export const DAS_VENCIMENTO_LABEL =
-  "Dia 20 (antecipa se cair em fim de semana ou feriado)";
+  "Dia 20. Se cair em fim de semana ou feriado, vence no próximo dia útil.";
 export const DASN_PRAZO = { dia: 31, mes: 5 };
 
 export function calcularPercentual(faturado, limite) {

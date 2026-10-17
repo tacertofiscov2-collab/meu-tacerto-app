@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- INDEX v1 — app instalavel na Tela de Inicio (PWA): manifest, icone do iPhone (apple-touch-icon), cor do topo (theme-color) e nome curto "TaCerto" na Tela de Inicio -->
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -19,6 +20,18 @@
       declarado aqui. Para trocar o desenho, edite public/favicon.svg.
     -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!--
+      INDEX v1: app instalavel (PWA). No iPhone: Safari > Compartilhar >
+      "Adicionar a Tela de Inicio". So assim o iPhone deixa o app mandar
+      notificacao (iOS 16.4 ou mais novo). O manifest diz o nome, o icone
+      e a cor; o apple-touch-icon e o icone que o iPhone usa na Tela de
+      Inicio (180 x 180). Os desenhos ficam em public/icones/.
+    -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icones/icone-180.png" />
+    <meta name="theme-color" content="#0f0f11" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="TaCerto" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap" rel="stylesheet" />

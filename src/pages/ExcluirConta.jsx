@@ -1,4 +1,4 @@
-﻿/* EXCLUIRCONTA v4 — topo que rola (titulo sobe, setinha fica transparente) */
+﻿/* EXCLUIRCONTA v7 — menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v6: padrao do Perfil: confirmacoes em linhas (sem cartoes), letras maiores, campos com 16px (sem zoom no iPhone), botoes em contorno vermelho (v5: piloto: aviso "Excluir todos os lançamentos" (opcao que nao existe) escondido) */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -6,6 +6,14 @@ import { Check, Info } from "lucide-react";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import { supabase } from "@/lib/supabase";
+import { MOSTRAR_INACABADOS } from "@/config/piloto";
+
+/* ===================================================================
+   EXCLUIRCONTA v5 (04/10/2026) — PILOTO: o aviso "Se você quiser
+   apenas zerar sua conta... 'Excluir todos os lançamentos'" ficou
+   escondido (MOSTRAR_INACABADOS em src/config/piloto.js): essa opcao
+   nao existe no app. A exclusao em si nao mudou.
+   =================================================================== */
 
 /* ===================================================================
    EXCLUIRCONTA v4 (28/09/2026): o cabecalho passou para DENTRO da area
@@ -77,13 +85,8 @@ export default function ExcluirConta() {
   const podeContinuar = ck1 && ck2;
   const podeExcluir = palavra.trim().toUpperCase() === "EXCLUIR";
 
-  const cardStyle = {
-    backgroundColor: "var(--surface)",
-    border: "1px solid var(--border)",
-  };
-
   const fieldStyle = {
-    backgroundColor: "var(--field)",
+    backgroundColor: "transparent",
     border: "1px solid var(--border)",
     color: "var(--text)",
   };
@@ -163,13 +166,13 @@ export default function ExcluirConta() {
               <h2 className="text-2xl font-bold leading-tight" style={{ color: "var(--text)" }}>
                 Você está prestes a excluir sua conta
               </h2>
-              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              <p style={{ color: "var(--text-secondary)", fontSize: 15.5, lineHeight: 1.45 }}>
                 Confirme essas informações importantes sobre sua conta antes de continuar com a exclusão
               </p>
             </div>
 
             {/* Card 1 */}
-            <div className="rounded-2xl p-4 flex items-start gap-3" style={cardStyle}>
+            <div className="flex items-start gap-3" style={{ padding: "16px 0", borderTop: "1px solid color-mix(in srgb, var(--border) 55%, transparent)" }}>
               <div className="pt-0.5">
                 <Checkbox
                   checked={ck1}
@@ -178,17 +181,17 @@ export default function ExcluirConta() {
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                <p className="font-semibold" style={{ color: "var(--text)", fontSize: 16.5 }}>
                   Seus lançamentos dentro do app
                 </p>
-                <p className="text-xs mt-1 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                <p className="mt-1 leading-relaxed" style={{ color: "var(--text-secondary)", fontSize: 14 }}>
                   Todas as movimentações serão excluídas e não poderão ser restauradas.
                 </p>
               </div>
             </div>
 
             {/* Card 2 */}
-            <div className="rounded-2xl p-4 flex items-start gap-3" style={cardStyle}>
+            <div className="flex items-start gap-3" style={{ padding: "16px 0", borderTop: "1px solid color-mix(in srgb, var(--border) 55%, transparent)" }}>
               <div className="pt-0.5">
                 <Checkbox
                   checked={ck2}
@@ -197,31 +200,35 @@ export default function ExcluirConta() {
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                <p className="font-semibold" style={{ color: "var(--text)", fontSize: 16.5 }}>
                   Seus dados dentro do app
                 </p>
-                <p className="text-xs mt-1 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                <p className="mt-1 leading-relaxed" style={{ color: "var(--text-secondary)", fontSize: 14 }}>
                   Você concorda que está ciente que os dados excluídos não serão restaurados em nenhum momento.
                 </p>
               </div>
             </div>
 
-            {/* Aviso info */}
-            <div className="flex items-start gap-3 px-1">
-              <Info size={18} style={{ color: "var(--text-secondary)" }} className="shrink-0 mt-0.5" />
-              <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                Se você quiser apenas zerar sua conta, volte na tela anterior e selecione a opção "Excluir todos os lançamentos"
-              </p>
-            </div>
+            {/* Aviso info — piloto (v5): escondido, a opcao citada nao existe */}
+            {MOSTRAR_INACABADOS && (
+              <div className="flex items-start gap-3 px-1">
+                <Info size={18} style={{ color: "var(--text-secondary)" }} className="shrink-0 mt-0.5" />
+                <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  Se você quiser apenas zerar sua conta, volte na tela anterior e selecione a opção "Excluir todos os lançamentos"
+                </p>
+              </div>
+            )}
 
             <div className="pt-2 space-y-3">
               <button
                 disabled={!podeContinuar}
                 onClick={() => podeContinuar && setEtapa(2)}
-                className="w-full py-4 rounded-xl font-semibold transition-opacity"
+                className={`${podeContinuar ? "botao-perigo " : ""}w-full py-4 rounded-xl font-semibold transition-opacity`}
                 style={{
-                  backgroundColor: podeContinuar ? "#ef4444" : "var(--field)",
-                  color: podeContinuar ? "#ffffff" : "var(--text-secondary)",
+                  backgroundColor: "transparent",
+                  border: "1px solid var(--border)",
+                  color: "var(--text-tertiary)",
+                  fontSize: 16,
                   cursor: podeContinuar ? "pointer" : "not-allowed",
                 }}
               >
@@ -229,8 +236,8 @@ export default function ExcluirConta() {
               </button>
               <button
                 onClick={() => navigate("/perfil")}
-                className="w-full py-2 text-sm font-medium"
-                style={{ color: "var(--text-secondary)" }}
+                className="w-full py-2 font-medium"
+                style={{ color: "var(--text-secondary)", fontSize: 15.5 }}
               >
                 Cancelar
               </button>
@@ -242,14 +249,14 @@ export default function ExcluirConta() {
               <h2 className="text-2xl font-bold leading-tight" style={{ color: "var(--text)" }}>
                 Você tem certeza que deseja excluir esta conta?
               </h2>
-              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              <p style={{ color: "var(--text-secondary)", fontSize: 15.5, lineHeight: 1.45 }}>
                 Vamos sentir a sua falta! Pode nos dizer qual o motivo da exclusão? Assim podemos melhorar ainda mais nosso app.
               </p>
             </div>
 
             {/* Motivo */}
             <div className="space-y-2">
-              <label className="text-sm font-medium" style={{ color: "var(--text)" }}>
+              <label className="font-medium" style={{ color: "var(--text)", fontSize: 15.5 }}>
                 Motivo
               </label>
               <textarea
@@ -257,8 +264,8 @@ export default function ExcluirConta() {
                 onChange={(e) => setMotivo(e.target.value)}
                 placeholder="Digite seu motivo aqui (opcional)"
                 rows={4}
-                className="campo-tacerto w-full px-4 py-3 rounded-xl text-sm focus:outline-none resize-y"
-                style={{ ...fieldStyle, maxHeight: "200px", minHeight: "96px" }}
+                className="campo-tacerto w-full px-4 py-3 rounded-xl focus:outline-none resize-y"
+                style={{ ...fieldStyle, fontSize: 16, maxHeight: "200px", minHeight: "96px" }}
               />
             </div>
 
@@ -266,7 +273,7 @@ export default function ExcluirConta() {
 
             {/* Confirmação por palavra */}
             <div className="space-y-2">
-              <label className="text-sm font-medium" style={{ color: "var(--text)" }}>
+              <label className="font-medium" style={{ color: "var(--text)", fontSize: 15.5 }}>
                 Digite a palavra{" "}
                 <span style={{ color: "#ef4444", fontWeight: 700 }}>EXCLUIR</span>{" "}
                 para confirmar
@@ -279,8 +286,8 @@ export default function ExcluirConta() {
                 autoCapitalize="characters"
                 autoCorrect="off"
                 spellCheck={false}
-                className="campo-tacerto w-full px-4 py-3 rounded-xl text-sm focus:outline-none"
-                style={fieldStyle}
+                className="campo-tacerto w-full px-4 py-3 rounded-xl focus:outline-none"
+                style={{ ...fieldStyle, fontSize: 16 }}
               />
             </div>
 
@@ -288,10 +295,12 @@ export default function ExcluirConta() {
               <button
                 disabled={!podeExcluir || excluindo}
                 onClick={() => podeExcluir && excluirDefinitivo()}
-                className="w-full py-4 rounded-xl font-semibold transition-opacity"
+                className={`${podeExcluir && !excluindo ? "botao-perigo " : ""}w-full py-4 rounded-xl font-semibold transition-opacity`}
                 style={{
-                  backgroundColor: podeExcluir && !excluindo ? "#ef4444" : "var(--field)",
-                  color: podeExcluir && !excluindo ? "#ffffff" : "var(--text-secondary)",
+                  backgroundColor: "transparent",
+                  border: "1px solid var(--border)",
+                  color: "var(--text-tertiary)",
+                  fontSize: 16,
                   cursor: podeExcluir && !excluindo ? "pointer" : "not-allowed",
                 }}
               >
@@ -299,8 +308,8 @@ export default function ExcluirConta() {
               </button>
               <button
                 onClick={() => navigate("/perfil")}
-                className="w-full py-2 text-sm font-medium"
-                style={{ color: "var(--text-secondary)" }}
+                className="w-full py-2 font-medium"
+                style={{ color: "var(--text-secondary)", fontSize: 15.5 }}
               >
                 Cancelar
               </button>

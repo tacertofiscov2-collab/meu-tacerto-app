@@ -1,3 +1,4 @@
+/* ALTERARSENHA v1 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
@@ -39,10 +40,10 @@ export default function AlterarSenha() {
         <button
           onClick={() => navigate(-1)}
           aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
+          className="w-[46px] h-[46px] rounded-full flex items-center justify-center hover:opacity-80 shrink-0"
           style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
         >
-          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
+          <ArrowLeft size={24} style={{ color: "var(--text)" }} />
         </button>
         <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
           Alterar senha

@@ -1,3 +1,4 @@
+/* FAQ v3 — DASN: "pode ser feita desde o começo do ano até 31 de maio" (Bloco G) (v2: vencimento do DAS: "vence no proximo dia util" (v1: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26)) */
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Search, ChevronDown } from "lucide-react";
@@ -26,7 +27,7 @@ const PERGUNTAS = [
     id: 3,
     pergunta: "Quando vence o DAS?",
     resposta:
-      "O DAS (Documento de Arrecadação do Simples Nacional) vence todo dia 20 de cada mês. Se cair em final de semana ou feriado, o vencimento pode ser prorrogado para o próximo dia útil.",
+      "O DAS (Documento de Arrecadação do Simples Nacional) vence dia 20 de cada mês. Se cair em fim de semana ou feriado, vence no próximo dia útil.",
   },
   {
     id: 4,
@@ -38,7 +39,7 @@ const PERGUNTAS = [
     id: 5,
     pergunta: "O que é a DASN?",
     resposta:
-      "A DASN é a Declaração Anual do Simples Nacional, obrigatória para todo MEI. Ela deve ser entregue até 31 de maio de cada ano e informa o faturamento do ano anterior.",
+      "A DASN é a Declaração Anual do Simples Nacional, obrigatória para todo MEI. Pode ser feita desde o começo do ano até 31 de maio e informa o faturamento do ano anterior.",
   },
   {
     id: 6,
@@ -160,7 +161,7 @@ export default function Faq() {
             className="p-2 -ml-2 rounded-full hover:opacity-80"
             aria-label="Voltar"
           >
-            <ArrowLeft size={24} style={{ color: "var(--text)" }} />
+            <ArrowLeft size={26} style={{ color: "var(--text)" }} />
           </button>
           <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
             Dúvidas frequentes

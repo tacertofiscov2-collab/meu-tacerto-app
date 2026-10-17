@@ -1,16 +1,45 @@
-/* ONBOARDING v6 — sem o aviso "Confira" no tipo de MEI (volta ao que era) + acentos nos textos */
+/* ONBOARDING v17 — o "Está certo" do CNPJ tambem guarda o resumo da consulta (cnpjDados) e a data, para a pagina do CNPJ do Perfil (v16: "Está certo" sem a data do MEI na Receita: o tipo vem do CNPJ e ainda pergunta "Abriu este ano?" (antes pulava e o limite podia ficar cheio por engano) (v15: etapa nova "Qual o CNPJ do seu MEI?" depois do nome (opcional, "Preencher depois"); achou na BrasilAPI: "Achei você" e "Está certo" grava CNPJ, CNAE, MEI desde, tipo e abertura e vai pro Inicio (pula tipo e abertura); SAIU a etapa "Quanto você já faturou" (o onboarding termina no "Abriu este ano?") (v14: bolinhas de progresso (abaixo do logo) VERDES de novo, como eram antes da v13 (pedido do Fernando) (v13: cara do app: opcao escolhida sem verde e sem fundo cinza (so mais acesa), fundo preto em tudo, verde so no botao de continuar; letras maiores; campos com 16px (o iPhone dava zoom) (v12: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v11: botao "Começar a usar" em contorno verde (botao-confirmar) (v10: gesto de voltar do iPhone volta UMA ETAPA (nao sai mais do onboarding para o Inicio); onboarding ja feito volta para o Inicio (v9: nome ja preenchido; v8: "Digitar valor" em folha acima do teclado)))) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft, ArrowRight, Briefcase, Truck, CheckCircle2, Clock, Gauge, CalendarDays,
 } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { salvarPerfilLocal } from "@/lib/localData";
 import { setUserState } from "@/lib/userState";
 import { LIMITES_ANUAIS, limiteProporcional, LIMITE_NOME_INPUT } from "@/lib/fiscal";
+import { mesAnoDaOpcaoMei } from "@/lib/cnpj";
 import SeletorMesAno from "@/components/SeletorMesAno";
 import Valor from "@/components/Valor";
+import { PassoDigitarCnpj, PassoAcheiVoce } from "@/components/FluxoCnpj";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
+import { useAppState } from "@/context/AppStateContext";
+
+/* ===================================================================
+   ONBOARDING v15 (10/10/2026) — CNPJ e fim do "Quanto você já faturou"
+   (tarefa de 08-10, decisoes do Fernando em docs/HANDOFF-08-10-PESQUISAS.md)
+
+   Etapas agora:
+     1 Nome  ->  2 CNPJ (opcional)  ->  3 Tipo de MEI  ->  4 Abriu este ano?
+   - 2 CNPJ: "Qual o CNPJ do seu MEI?" (src/components/FluxoCnpj.jsx).
+       "Preencher depois" -> etapa 3, sem CNPJ.
+       Buscar e achou -> "Achei você" (etapa "achei"): nome, "Parece MEI
+         Caminhoneiro"/"Parece MEI" (1 toque troca) e "MEI desde".
+         "Está certo" grava CNPJ, CNAE, MEI desde, CNPJ confirmado, o
+         tipo e a abertura (mes/ano da opcao pelo MEI, SO se for deste
+         ano — a mesma regra de hoje) e vai DIRETO pro Inicio.
+         "Não sou eu" volta para o campo (com os numeros, para corrigir).
+       Buscar e falhou (sem rede, nao achou): "Não consegui buscar agora"
+         e segue para as etapas 3 e 4. O CNPJ digitado (valido) fica
+         guardado como NAO confirmado.
+   - SAIU a etapa "Quanto você já faturou em <ano>?" (faixas e "Digitar
+     valor", v7/v8). O "Começar a usar" voltou para a etapa 4. Quem
+     quiser pode atualizar o velocimetro no Inicio. (O codigo antigo
+     esta no Git, commits ate 5081b2f.)
+   - Gesto de voltar do iPhone: volta UMA etapa ("achei" volta para o
+     CNPJ). Igual a v10.
+   =================================================================== */
 
 /* ===================================================================
    ONBOARDING v6 (26/09/2026)
@@ -83,12 +112,14 @@ function telefoneValido(valor) {
 function Progress({ step }) {
   return (
     <div className="flex justify-center gap-2 mb-5">
-      {[1, 2, 3].map((s) => (
+      {[1, 2, 3, 4].map((s) => (
         <div
           key={s}
           className="h-1.5 rounded-full transition-all"
           style={{
             width: s === step ? 28 : 8,
+            /* v14: verdes de novo (pedido do Fernando; na v13 tinham
+               ficado brancas) */
             backgroundColor: s <= step ? "var(--primary)" : "var(--border)",
           }}
         />
@@ -109,10 +140,22 @@ export default function Onboarding() {
   const [telefone, setTelefone] = useState("");
   const [codigo, setCodigo] = useState("");
   const [nome, setNome] = useState("");
-  const [tipoMei, setTipoMei] = useState("");
+  /* v7: o piloto e de MEI Caminhoneiros — ja vem marcado */
+  const [tipoMei, setTipoMei] = useState("MEI_CAMINHONEIRO");
   const [meiEsseAno, setMeiEsseAno] = useState(null);
   const [mesMei, setMesMei] = useState("");
   const [seletorMes, setSeletorMes] = useState(false);
+  const [finalizando, setFinalizando] = useState(false);
+  /* v15: CNPJ (etapa 2). cnpjDigitado = o que a pessoa digitou (vale
+     mesmo sem confirmar); dadosCnpj = o que a BrasilAPI devolveu. */
+  const [cnpjDigitado, setCnpjDigitado] = useState("");
+  const [dadosCnpj, setDadosCnpj] = useState(null);
+  const [tipoDoCnpj, setTipoDoCnpj] = useState("MEI_CAMINHONEIRO");
+  /* v16: "Está certo", mas a Receita nao informou desde quando e MEI:
+     o tipo vem do CNPJ e a pessoa ainda responde "Abriu este ano?" */
+  const [cnpjConfirmadoSemData, setCnpjConfirmadoSemData] = useState(false);
+
+  const { salvarDadosCnpj } = useAppState();
 
   const inputCodigoRef = useRef(null);
 
@@ -132,6 +175,38 @@ export default function Onboarding() {
     };
   }, []);
 
+  /* v9: quem entra pelo WhatsApp pode ja ter nome no perfil (conta
+     antiga que nao terminou o onboarding). Se tiver, o campo ja vem
+     preenchido e a pessoa so confirma. Le do BANCO, e nao do estado do
+     aparelho, para nao puxar o nome de outra conta usada antes no mesmo
+     celular. So preenche se o campo ainda estiver vazio. */
+  useEffect(() => {
+    let ativo = true;
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!data?.user) return;
+        const { data: perfil } = await supabase
+          .from("perfis")
+          .select("nome, onboarding_ok")
+          .eq("id", data.user.id)
+          .single();
+        /* v10: onboarding ja feito (ex.: voltou do Inicio pelo gesto do
+           iPhone) -> volta para o Inicio, sem refazer o cadastro */
+        if (ativo && perfil?.onboarding_ok === true) {
+          saindoRef.current = true;
+          navigate("/dashboard", { replace: true });
+          return;
+        }
+        const salvo = String(perfil?.nome || "").trim();
+        // Ignora o que nao parece nome (e-mail ou numero de telefone)
+        if (!ativo || !salvo || salvo.includes("@") || /^[\d\s()+-]+$/.test(salvo)) return;
+        setNome((atual) => atual || salvo.slice(0, LIMITE_NOME_INPUT));
+      } catch { /* visitante ou sem internet: campo fica vazio */ }
+    })();
+    return () => { ativo = false; };
+  }, []);
+
   useEffect(() => {
     if (step === "verificar" && inputCodigoRef.current) {
       setTimeout(() => inputCodigoRef.current?.focus(), 100);
@@ -146,10 +221,9 @@ export default function Onboarding() {
       ? limiteProporcional(tipoCanonico, parseInt(mesMei), anoAtual, anoAtual)
       : limiteCheio;
 
+  /* v15: 1 nome, 2 CNPJ ("achei" tambem e a 2), 3 tipo, 4 abertura */
   const progressStep =
-    step === 3
-      ? meiEsseAno === false || (meiEsseAno === true && mesMei) ? 3 : 2
-      : step === 0 || step === "verificar" ? 1 : step;
+    step === "achei" ? 2 : step === 0 || step === "verificar" ? 1 : step;
 
   const fieldStyle = {
     backgroundColor: "transparent",
@@ -167,14 +241,17 @@ export default function Onboarding() {
   const btnPrincipalClasse =
     "btn-pill-tacerto mx-auto flex items-center justify-center gap-2 rounded-full font-semibold text-[15px] disabled:opacity-35";
 
+  /* v13 (pedido do Fernando): opcao escolhida SEM verde e sem fundo
+     cinza — so fica mais "acesa" (borda e texto mais claros). Fundo
+     preto em todas. Verde so no botao de continuar. */
   function estiloCard(selecionado, algoSelecionado) {
     const claro = !algoSelecionado || selecionado;
     return {
-      backgroundColor: selecionado ? "rgba(34,197,94,0.07)" : "var(--field)",
+      backgroundColor: "transparent",
       border: selecionado
-        ? "1px solid var(--primary)"
-        : "1px solid rgba(255,255,255,0.22)",
-      opacity: claro ? 1 : 0.42,
+        ? "1px solid rgba(255,255,255,0.62)"
+        : "1px solid rgba(255,255,255,0.18)",
+      opacity: claro ? 1 : 0.5,
       transition:
         "background-color 180ms ease, border-color 180ms ease, opacity 180ms ease",
     };
@@ -200,17 +277,38 @@ export default function Onboarding() {
     setStep(1);
   }
 
-  async function handleFinalizar() {
+  /* v15: termina o cadastro. Dois caminhos:
+     - pelas etapas 3 e 4 (tipo + "Abriu este ano?"): usa o que a pessoa
+       escolheu ali; o CNPJ digitado (se houver) vai como NAO confirmado.
+     - pelo "Está certo" do CNPJ (`peloCnpj`): tipo do "Achei você" e
+       abertura pela data de opcao pelo MEI (so se for deste ano). */
+  async function handleFinalizar({ peloCnpj = false } = {}) {
+    if (finalizando) return;
+    setFinalizando(true);
+
+    let tipoFinal = tipoCanonico;
+    let mesAb = meiEsseAno && mesMei ? parseInt(mesMei) : null;
+    let anoAb = meiEsseAno && mesMei ? anoAtual : null;
+    if (peloCnpj && dadosCnpj) {
+      tipoFinal = tipoDoCnpj === "MEI_CAMINHONEIRO" ? "MEI_CAMINHONEIRO" : "MEI";
+      const ab = mesAnoDaOpcaoMei(dadosCnpj.dataOpcaoMei, anoAtual);
+      mesAb = ab?.mes || null;
+      anoAb = ab?.ano || null;
+    }
+    const limiteGravado = mesAb && anoAb
+      ? limiteProporcional(tipoFinal, mesAb, anoAb, anoAtual)
+      : LIMITES_ANUAIS[tipoFinal];
+
     salvarPerfilLocal({
       nome,
-      perfil: tipoCanonico.toLowerCase(),
-      limite: limiteFinal,
+      perfil: tipoFinal.toLowerCase(),
+      limite: limiteGravado,
     });
     setUserState({
       nome,
-      tipo: tipoCanonico,
-      mesAbertura: meiEsseAno && mesMei ? parseInt(mesMei) : null,
-      anoAbertura: meiEsseAno && mesMei ? anoAtual : null,
+      tipo: tipoFinal,
+      mesAbertura: mesAb,
+      anoAbertura: anoAb,
     });
     try {
       const { data } = await supabase.auth.getUser();
@@ -218,22 +316,110 @@ export default function Onboarding() {
         await salvarWhatsapp(data.user.id);
         await supabase.from("perfis").update({
           nome,
-          tipo_mei: tipoCanonico,
+          tipo_mei: tipoFinal,
           onboarding_ok: true,
-          mes_abertura: meiEsseAno && mesMei ? parseInt(mesMei) : null,
-          ano_abertura: meiEsseAno && mesMei ? anoAtual : null,
+          mes_abertura: mesAb,
+          ano_abertura: anoAb,
           atualizado_em: new Date().toISOString(),
         }).eq("id", data.user.id);
       }
     } catch { /* visitante */ }
-    navigate("/dashboard");
+
+    /* CNPJ: colunas novas, gravadas a parte (sem o SQL de 08-10 ficam
+       so no aparelho e sobem depois — ver AppStateContext v3) */
+    if ((peloCnpj || cnpjConfirmadoSemData) && dadosCnpj) {
+      await salvarDadosCnpj({
+        cnpj: dadosCnpj.cnpj,
+        cnae: dadosCnpj.cnaePrincipal || null,
+        cnaesSecundarios: dadosCnpj.cnaesSecundarios || [],
+        dataOpcaoMei: dadosCnpj.dataOpcaoMei || null,
+        cnpjConfirmado: true,
+        cnpjDados: dadosCnpj,
+      });
+    } else if (cnpjDigitado) {
+      await salvarDadosCnpj({ cnpj: cnpjDigitado, cnpjConfirmado: false });
+    }
+
+    /* v10: troca a marca do historico pelo Inicio (ver "GESTO DE VOLTAR") */
+    saindoRef.current = true;
+    navigate("/dashboard", { replace: true });
+  }
+
+  /* v15: CNPJ achado -> "Achei você", ja com o tipo que o CNAE sugere */
+  function aoAcharCnpj(dados) {
+    setCnpjDigitado(dados.cnpj);
+    setDadosCnpj(dados);
+    setTipoDoCnpj(dados.pareceCaminhoneiro ? "MEI_CAMINHONEIRO" : "MEI");
+    setStep("achei");
+  }
+
+  /* v15: nao deu para buscar: avisa e segue para as perguntas de sempre.
+     O CNPJ digitado e valido (os digitos conferem), entao fica guardado
+     como nao confirmado. */
+  function aoFalharCnpj(digitos) {
+    setCnpjDigitado(digitos);
+    setDadosCnpj(null);
+    toast("Não consegui buscar agora");
+    setStep(3);
+  }
+
+  /* Etapa anterior (setinha e gesto). "achei" volta para o campo. */
+  function etapaAnterior() {
+    if (step === "verificar") { setErro(""); setStep(0); return true; }
+    if (step === 1 && origemGoogle) { setErro(""); setStep(0); return true; }
+    if (step === "achei") { setStep(2); return true; }
+    // v16: voltou da abertura depois do "Está certo" sem data: volta ao "Achei você"
+    if (step === 4 && cnpjConfirmadoSemData) { setCnpjConfirmadoSemData(false); setStep("achei"); return true; }
+    if (typeof step === "number" && step > 1) { setStep(step - 1); return true; }
+    return false;
   }
 
   function handleBack() {
-    if (step === "verificar") { setErro(""); setStep(0); }
-    else if (step === 1 && origemGoogle) { setErro(""); setStep(0); }
-    else if (step > 1) setStep(step - 1);
-    else navigate(-1);
+    if (!etapaAnterior()) sairDoOnboarding();
+  }
+
+  /* ===================================================================
+     v10 (05/10/2026) — GESTO DE VOLTAR DO SAFARI
+
+     O BUG: as etapas do onboarding sao uma pagina so. O "arrastar da
+     borda" do iPhone e o VOLTAR do navegador, entao ele saia do
+     onboarding inteiro e caia na pagina anterior do historico — as
+     vezes o Inicio, com o cadastro pela metade.
+
+     A CORRECAO: ao abrir, o onboarding coloca uma "marca" no historico
+     (mesmo endereco). O gesto de voltar so tira a marca; a tela percebe
+     (popstate), volta UMA ETAPA (ou fecha a folha do valor) e poe a
+     marca de novo. Na primeira etapa o gesto nao faz nada. A marca
+     tambem apaga o "avancar" do historico, entao o gesto para a frente
+     nao leva ao Inicio. A setinha da primeira etapa leva para as
+     boas-vindas (sairDoOnboarding).
+     =================================================================== */
+  const saindoRef = useRef(false);
+  const voltarPeloGestoRef = useRef(null);
+  voltarPeloGestoRef.current = () => {
+    // primeira etapa: fica aqui (etapaAnterior devolve false)
+    etapaAnterior();
+  };
+
+  useEffect(() => {
+    const marcar = () =>
+      window.history.pushState({ ...(window.history.state || {}), marcaOnboarding: true }, "");
+    if (!window.history.state?.marcaOnboarding) marcar();
+    const aoVoltar = () => {
+      if (saindoRef.current) return;
+      voltarPeloGestoRef.current?.();
+      marcar();
+    };
+    window.addEventListener("popstate", aoVoltar);
+    return () => window.removeEventListener("popstate", aoVoltar);
+  }, []);
+
+  /* Setinha da primeira etapa: volta para as boas-vindas ("/"). Nao usa
+     o "voltar" do navegador: a pagina anterior podia ser o Inicio, e a
+     pessoa entraria no app com o cadastro pela metade. */
+  function sairDoOnboarding() {
+    saindoRef.current = true;
+    navigate("/", { replace: true });
   }
 
   const isVerificar = step === "verificar";
@@ -247,7 +433,9 @@ export default function Onboarding() {
 
      Os steps 2 e 3 sao escolhas por botao — nao abrem teclado, entao
      continuam centralizados e travados, como sempre. */
-  const temCampoDeTexto = step === 0 || step === 1 || isVerificar;
+  /* v15: o 2 (CNPJ) tem campo, entao entra aqui. O "achei" e os 3 e 4
+     sao so botoes. */
+  const temCampoDeTexto = step === 0 || step === 1 || step === 2 || isVerificar;
 
   return (
     <div
@@ -281,10 +469,10 @@ export default function Onboarding() {
         <button
           onClick={handleBack}
           aria-label="Voltar"
-          className="w-10 h-10 flex items-center justify-center rounded-lg hover:opacity-80"
+          className="w-[46px] h-[46px] flex items-center justify-center rounded-lg hover:opacity-80"
           style={{ color: "var(--text)" }}
         >
-          <ArrowLeft size={22} strokeWidth={2} />
+          <ArrowLeft size={26} strokeWidth={2} />
         </button>
       </div>
 
@@ -323,7 +511,7 @@ export default function Onboarding() {
 
               <div className="flex items-stretch gap-2">
                 <div
-                  className="flex items-center justify-center gap-1.5 px-3.5 rounded-xl text-sm shrink-0"
+                  className="flex items-center justify-center gap-1.5 px-3.5 rounded-xl text-[16px] shrink-0"
                   style={fieldStyle}
                 >
                   <span aria-hidden style={{ fontSize: 16 }}>🇧🇷</span>
@@ -341,7 +529,7 @@ export default function Onboarding() {
                       setStep("verificar");
                     }
                   }}
-                  className="campo-tacerto flex-1 min-w-0 px-4 py-3.5 rounded-xl text-sm focus:outline-none placeholder:opacity-70"
+                  className="campo-tacerto flex-1 min-w-0 px-4 py-3.5 rounded-xl text-[16px] focus:outline-none placeholder:opacity-70"
                   style={fieldStyle}
                   autoFocus
                 />
@@ -387,7 +575,7 @@ export default function Onboarding() {
                 Confirme seu WhatsApp
               </h1>
               <p
-                className="text-sm text-center mb-6 leading-relaxed"
+                className="text-[15px] text-center mb-6 leading-relaxed"
                 style={{ color: "var(--text-secondary)" }}
               >
                 Enviamos um código para{" "}
@@ -414,8 +602,8 @@ export default function Onboarding() {
                         backgroundColor: "transparent",
                         border: `1px solid ${
                           atual || preenchido
-                            ? "var(--primary)"
-                            : "rgba(255,255,255,0.22)"
+                            ? "rgba(255,255,255,0.62)"
+                            : "rgba(255,255,255,0.18)"
                         }`,
                       }}
                     >
@@ -444,7 +632,7 @@ export default function Onboarding() {
 
                 <button
                   onClick={() => setErro("Reenvio disponível quando o envio de código for ativado.")}
-                  className="w-full text-center text-sm pt-1"
+                  className="w-full text-center text-[15px] pt-1"
                   style={{ color: "var(--text-secondary)" }}
                 >
                   Reenviar código
@@ -481,7 +669,7 @@ export default function Onboarding() {
                     else { setErro(""); setStep(2); }
                   }
                 }}
-                className="campo-tacerto w-full px-4 py-3.5 rounded-xl text-sm placeholder:opacity-70"
+                className="campo-tacerto w-full px-4 py-3.5 rounded-xl text-[16px] placeholder:opacity-70"
                 style={fieldStyle}
               />
 
@@ -507,8 +695,39 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* ====== STEP 2: TIPO MEI ====== */}
+          {/* ====== STEP 2: CNPJ (v15, opcional) ====== */}
           {step === 2 && (
+            <PassoDigitarCnpj
+              valorInicial={cnpjDigitado}
+              onAchou={aoAcharCnpj}
+              onFalhou={aoFalharCnpj}
+              onPular={() => { setCnpjDigitado(""); setDadosCnpj(null); setStep(3); }}
+            />
+          )}
+
+          {/* ====== STEP "ACHEI": CONFIRMAR O CNPJ (v15) ====== */}
+          {step === "achei" && dadosCnpj && (
+            <PassoAcheiVoce
+              dados={dadosCnpj}
+              tipo={tipoDoCnpj}
+              tipoDetectado={dadosCnpj.pareceCaminhoneiro ? "MEI_CAMINHONEIRO" : "MEI"}
+              onTrocarTipo={() => setTipoDoCnpj((t) => (t === "MEI_CAMINHONEIRO" ? "MEI" : "MEI_CAMINHONEIRO"))}
+              onConfirmar={() => {
+                if (dadosCnpj.dataOpcaoMei) handleFinalizar({ peloCnpj: true });
+                else {
+                  // v16: sem a data do MEI, pergunta a abertura (o tipo ja veio)
+                  setTipoMei(tipoDoCnpj);
+                  setCnpjConfirmadoSemData(true);
+                  setStep(4);
+                }
+              }}
+              onNaoSouEu={() => { setDadosCnpj(null); setCnpjConfirmadoSemData(false); setStep(2); }}
+              salvando={finalizando}
+            />
+          )}
+
+          {/* ====== STEP 3: TIPO MEI (v15: era o 2) ====== */}
+          {step === 3 && (
             <div className="shrink-0">
               <h1
                 className="text-2xl font-bold text-center mb-5"
@@ -518,11 +737,12 @@ export default function Onboarding() {
               </h1>
 
               <div className="space-y-2.5">
+                {/* v7: Caminhoneiro primeiro (publico do piloto) */}
                 {[
-                  { v: "MEI", Icon: Briefcase, titulo: "MEI (outras atividades)",
-                    limite: LIMITES_ANUAIS.MEI },
                   { v: "MEI_CAMINHONEIRO", Icon: Truck, titulo: "MEI Caminhoneiro",
                     limite: LIMITES_ANUAIS.MEI_CAMINHONEIRO },
+                  { v: "MEI", Icon: Briefcase, titulo: "MEI (outras atividades)",
+                    limite: LIMITES_ANUAIS.MEI },
                 ].map((o) => {
                   const sel = tipoMei === o.v;
                   const Ico = o.Icon;
@@ -530,24 +750,24 @@ export default function Onboarding() {
                     <button
                       key={o.v}
                       onClick={() => setTipoMei(o.v)}
-                      className="w-full flex items-center gap-3.5 p-3.5 rounded-xl text-left"
-                      style={estiloCard(sel, !!tipoMei)}
+                      className="w-full flex items-center gap-3.5 rounded-2xl text-left"
+                      style={{ ...estiloCard(sel, !!tipoMei), padding: "16px 16px" }}
                     >
                       <Ico
                         size={24}
                         strokeWidth={1.75}
                         className="shrink-0"
-                        style={{ color: sel ? "var(--primary)" : "var(--text-secondary)" }}
+                        style={{ color: sel ? "var(--text)" : "var(--text-secondary)" }}
                       />
                       <div className="flex-1 min-w-0">
                         <div
-                          className="text-sm font-semibold"
-                          style={{ color: "var(--text)" }}
+                          className="font-semibold"
+                          style={{ color: "var(--text)", fontSize: 16.5 }}
                         >
                           {o.titulo}
                         </div>
                         <div
-                          className="text-[12px] mt-0.5 flex items-center gap-1"
+                          className="text-[13.5px] mt-0.5 flex items-center gap-1"
                           style={{ color: "var(--text-secondary)" }}
                         >
                           Limite: <Valor tamanho="sm">{o.limite}</Valor>
@@ -561,7 +781,7 @@ export default function Onboarding() {
 
               <div className="mt-6">
                 <button
-                  onClick={() => setStep(3)}
+                  onClick={() => setStep(4)}
                   disabled={!tipoMei}
                   className={btnPrincipalClasse}
                   style={btnPrincipal}
@@ -573,8 +793,8 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* ====== STEP 3: ABERTURA ====== */}
-          {step === 3 && (
+          {/* ====== STEP 4: ABERTURA (v15: era o 3; agora e a ultima) ====== */}
+          {step === 4 && (
             <div className="shrink-0">
               <h1
                 className="text-2xl font-bold text-center mb-5"
@@ -594,16 +814,17 @@ export default function Onboarding() {
                     <button
                       key={String(o.v)}
                       onClick={() => { setMeiEsseAno(o.v); if (!o.v) setMesMei(""); }}
-                      className="py-3 rounded-xl text-xs font-medium inline-flex items-center justify-center gap-1.5"
+                      className="rounded-2xl text-[15px] font-medium inline-flex items-center justify-center gap-2"
                       style={{
                         ...estiloCard(sel, meiEsseAno !== null),
                         color: "var(--text)",
+                        padding: "14px 6px",
                       }}
                     >
                       <Ico
-                        size={14}
+                        size={17}
                         strokeWidth={1.75}
-                        style={{ color: sel ? "var(--primary)" : "var(--text-secondary)" }}
+                        style={{ color: sel ? "var(--text)" : "var(--text-secondary)" }}
                       />
                       {o.l}
                     </button>
@@ -615,19 +836,19 @@ export default function Onboarding() {
                 {meiEsseAno === true && (
                   <>
                     <p
-                      className="text-xs font-medium mb-1.5"
+                      className="text-[13.5px] font-medium mb-2"
                       style={{ color: "var(--text-secondary)" }}
                     >
                       Qual mês você abriu?
                     </p>
                     <button
                       onClick={() => setSeletorMes(true)}
-                      className="w-full px-4 py-3 flex items-center justify-between gap-3 rounded-xl"
+                      className="w-full px-4 py-3.5 flex items-center justify-between gap-3 rounded-2xl"
                       style={fieldStyle}
                     >
                       <div className="flex-1 min-w-0 text-left flex items-center gap-2">
                         <span
-                          className="text-sm shrink-0"
+                          className="text-[16px] shrink-0"
                           style={{
                             fontWeight: mesMei ? 600 : 400,
                             color: mesMei ? "var(--text)" : "var(--text-secondary)",
@@ -666,7 +887,7 @@ export default function Onboarding() {
                     }}
                   >
                     <p
-                      className="text-xs font-medium inline-flex items-center gap-1.5"
+                      className="text-[14px] font-medium inline-flex items-center gap-1.5"
                       style={{ color: "var(--text)" }}
                     >
                       <CheckCircle2
@@ -680,9 +901,10 @@ export default function Onboarding() {
                 )}
               </div>
 
+              {/* v15: ultima etapa — termina o cadastro */}
               <button
-                onClick={handleFinalizar}
-                disabled={meiEsseAno === null || (meiEsseAno === true && !mesMei)}
+                onClick={() => handleFinalizar()}
+                disabled={finalizando || meiEsseAno === null || (meiEsseAno === true && !mesMei)}
                 className={btnPrincipalClasse}
                 style={btnPrincipal}
               >
@@ -691,6 +913,7 @@ export default function Onboarding() {
               </button>
             </div>
           )}
+
         </div>
       </div>
 

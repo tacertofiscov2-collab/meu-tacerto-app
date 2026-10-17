@@ -1,4 +1,4 @@
-/* MAIN v2 — tema padrao ESCURO quando nada foi escolhido (antes era "auto") */
+/* MAIN v3 — registra o /sw.js (service worker so de notificacao, sem cache) quando a pagina carrega (v2: tema padrao ESCURO quando nada foi escolhido (antes era "auto")) */
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import { AppStateProvider } from "./context/AppStateContext.jsx";
@@ -43,3 +43,22 @@ createRoot(document.getElementById("root")).render(
     <App />
   </AppStateProvider>,
 );
+
+/* ===================================================================
+   v3: SERVICE WORKER (public/sw.js) — so para as notificacoes semanais
+
+   Ele NAO guarda copia do app e NAO intercepta nada (sem cache, sem
+   fetch), entao pode ser registrado sempre, ate no desenvolvimento:
+   nao atrapalha o Vite nem faz o iPhone ver versao velha.
+   Se o navegador nao tiver suporte ou o registro falhar, o app segue
+   normal (so fica sem notificacao).
+   =================================================================== */
+if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+  const registrar = () => {
+    try {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    } catch {}
+  };
+  if (document.readyState === "complete") registrar();
+  else window.addEventListener("load", registrar, { once: true });
+}

@@ -1,0 +1,142 @@
+/* LISTASIMPLES v5 — prop maxLinhas (rotulo quebra em ate N linhas e so entao corta com "...") (v4: prop umaLinha (rotulo em uma linha so) (v3: numeroDoPasso (passo numerado no lugar do icone) (v2: letras maiores (rotulo 16.5, valor 15, titulo de secao 12.5, icone 20), pedido do Fernando (v1: lista clean do Perfil e Editar perfil) */
+import { Children } from "react";
+import { ChevronRight } from "lucide-react";
+
+/* ===================================================================
+   LISTA SIMPLES (05/10/2026) — referencia: app Pierre Finance
+
+   Usada no Perfil e no Editar perfil. Sem cartoes envolvendo os
+   grupos: cada item e uma LINHA (icone pequeno cinza, texto, valor em
+   cinza a direita e a setinha discreta quando da para tocar),
+   separadas por uma risca fina de 1px.
+
+     <SecaoLista titulo="Conta">
+       <LinhaLista Icon={User} rotulo="Editar perfil" onClick={...} />
+     </SecaoLista>
+
+   A risca so aparece ENTRE linhas que existem: item escondido por
+   chave (null/false) nao deixa risca sobrando.
+   =================================================================== */
+
+/* Risca fina, comecando no texto (depois do icone), com opacidade baixa */
+function Divisor({ comIcone }) {
+  return (
+    <div
+      aria-hidden
+      style={{
+        height: 1,
+        marginLeft: comIcone ? 34 : 0,
+        backgroundColor: "var(--border)",
+        opacity: 0.55,
+      }}
+    />
+  );
+}
+
+export function SecaoLista({ titulo, children, style }) {
+  const itens = Children.toArray(children).filter(Boolean);
+  if (itens.length === 0) return null;
+  return (
+    <section style={{ marginTop: 28, ...style }}>
+      {titulo && (
+        <p
+          className="font-semibold uppercase"
+          style={{
+            color: "var(--text-tertiary)",
+            fontSize: 12.5,
+            letterSpacing: "0.08em",
+            marginBottom: 2,
+          }}
+        >
+          {titulo}
+        </p>
+      )}
+      <div>
+        {itens.map((item, i) => (
+          <div key={item.key ?? i}>
+            {i > 0 && <Divisor comIcone={Boolean(item.props?.Icon)} />}
+            {item}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* v3: numero de passo no lugar do icone (bolinha discreta com contorno).
+   Uso: <LinhaLista Icon={numeroDoPasso(1)} rotulo="..." detalhe="..." />
+   Guarda um componente por numero para nao recriar a cada desenho. */
+const numerosDosPassos = {};
+export function numeroDoPasso(n) {
+  if (!numerosDosPassos[n]) {
+    numerosDosPassos[n] = function NumeroDoPasso({ className = "" }) {
+      return (
+        <span
+          className={`${className} rounded-full flex items-center justify-center font-semibold`}
+          style={{ width: 20, height: 20, fontSize: 11.5, color: "var(--text-secondary)", border: "1px solid var(--border)" }}
+        >
+          {n}
+        </span>
+      );
+    };
+  }
+  return numerosDosPassos[n];
+}
+
+/* Uma linha. Sem onClick = so informacao (sem setinha, nao reage ao
+   toque). `cor` pinta o texto (ex.: vermelho do "Sair da conta").
+   `semSeta` tira a setinha de uma linha que da para tocar.
+   v4: `umaLinha` corta o rotulo com "..." (ex.: descricao no Historico).
+   v5: `maxLinhas={2}` deixa o rotulo quebrar em ate 2 linhas antes de
+   cortar (o Historico cortava "Transportes Al..." no iPhone). */
+export function LinhaLista({ Icon, rotulo, detalhe, valor, onClick, cor, semSeta = false, umaLinha = false, maxLinhas }) {
+  const limiteDeLinhas = maxLinhas
+    ? { display: "-webkit-box", WebkitLineClamp: maxLinhas, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere" }
+    : null;
+  const conteudo = (
+    <>
+      {Icon && (
+        <Icon
+          size={20}
+          strokeWidth={1.9}
+          className="shrink-0"
+          style={{ color: cor || "var(--text-tertiary)" }}
+        />
+      )}
+      <span className="flex-1 min-w-0">
+        <span className={`block font-medium leading-snug${umaLinha ? " truncate" : ""}`} style={{ color: cor || "var(--text)", fontSize: 16.5, ...limiteDeLinhas }}>
+          {rotulo}
+        </span>
+        {detalhe && (
+          <span className="block" style={{ color: "var(--text-tertiary)", fontSize: 13.5, marginTop: 1 }}>
+            {detalhe}
+          </span>
+        )}
+      </span>
+      {valor != null && valor !== "" && (
+        <span
+          className="shrink-0 text-right truncate"
+          style={{ color: "var(--text-secondary)", fontSize: 15, maxWidth: "58%" }}
+        >
+          {valor}
+        </span>
+      )}
+      {onClick && !semSeta && (
+        <ChevronRight size={18} className="shrink-0" style={{ color: "var(--text-tertiary)", opacity: 0.7 }} />
+      )}
+    </>
+  );
+  const estilo = { gap: 14, padding: "14px 0", minHeight: 54 };
+  if (!onClick) {
+    return (
+      <div className="w-full flex items-center text-left" style={estilo}>
+        {conteudo}
+      </div>
+    );
+  }
+  return (
+    <button type="button" onClick={onClick} className="toque w-full flex items-center text-left" style={estilo}>
+      {conteudo}
+    </button>
+  );
+}
