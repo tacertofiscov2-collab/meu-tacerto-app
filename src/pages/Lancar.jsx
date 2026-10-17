@@ -1,4 +1,4 @@
-/* LANCAR v12 — abre ja lendo o comprovante quando a foto ou o PDF veio do chat da Isa (camera, galeria ou documento no Inicio e no /fisco; src/lib/arquivoPendente.js) (v11: "Foto ou PDF do comprovante" no Recebimento (Bloco J): guarda o arquivo, a IA le (funcao ler-comprovante) e preenche valor, data e quem pagou para a pessoa CONFERIR; parece gasto: "Lançar como gasto" (Meu lucro, com nota); ao salvar com comprovante, procura recebimento parecido (+-1%, +-15 dias) e pergunta "É o mesmo?" (so liga o comprovante); sem a funcao ou sem a chave, segue no lancamento a mao com o arquivo anexado (v10: as descricoes dos lancamentos de ajuste (Total do ano) vem de src/lib/conciliacao.js, a mesma fonte do selo Estimado/Conferido e da conferencia do extrato (v9: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v8: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v7: modo "Total do ano": digitar so o faturamento do ano e o velocimetro fica igual a ele (um lancamento de ajuste, sem contar em dobro); /lancar?modo=total abre direto nele (v6: padrao do Perfil: rotulos em cinza maiusculo, campos com 16px (sem zoom no iPhone), "Ultimo lancamento" em linha simples, letras maiores, botao em contorno (botao-confirmar)))))) */
+/* LANCAR v13 — recebimento pergunta nota e pagador; aviso sem bloquear e tem_nota salvo (v12: comprovante vindo do chat) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { ArrowLeft, Calendar as CalendarIcon, TrendingUp, Camera, FileText, X, Loader2 } from "lucide-react";
@@ -7,7 +7,7 @@ import { useAppState } from "@/context/AppStateContext";
 import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
 import PendenciasEntradas from "../components/PendenciasEntradas.jsx";
-import { dataMinimaLancamento, LIMITE_VALOR_LANCAMENTO } from "@/lib/fiscal";
+import { dataMinimaLancamento, LIMITE_VALOR_LANCAMENTO, precisaDeNota, AVISO_NOTA_EMPRESA } from "@/lib/fiscal";
 import { DESCRICAO_AJUSTE_ANO, DESCRICOES_DE_AJUSTE, acharLancamentoParecido } from "@/lib/conciliacao";
 import FolhaSomarNoVelocimetro from "../components/FolhaSomarNoVelocimetro.jsx";
 import { supabase } from "@/lib/supabase";
@@ -189,6 +189,7 @@ export default function Lancar() {
     [editId, lancamentos],
   );
   const modoEdicao = Boolean(lancamentoAtual);
+  const ehRecebimento = !modoTotal && !DESCRICOES_DE_AJUSTE.includes(lancamentoAtual?.descricao);
 
   const ultimoLancamento = useMemo(() => {
     if (!lancamentos || lancamentos.length === 0) return null;
@@ -208,6 +209,8 @@ export default function Lancar() {
 
   const [centavos, setCentavos] = useState(0);
   const [descricao, setDescricao] = useState("");
+  const [temNota, setTemNota] = useState(true);
+  const [tipoPagador, setTipoPagador] = useState("");
   const [dataBR, setDataBR] = useState(isoToBR(hojeISO()));
   const [salvando, setSalvando] = useState(false);
   const [preenchido, setPreenchido] = useState(false);
@@ -225,6 +228,8 @@ export default function Lancar() {
     if (lancamentoAtual && !preenchido) {
       setCentavos(Math.round((Number(lancamentoAtual.valor) || 0) * 100));
       setDescricao((lancamentoAtual.descricao || "").slice(0, LIMITE_DESCRICAO));
+      setTemNota(lancamentoAtual.tem_nota ?? true);
+      setTipoPagador(lancamentoAtual.tipoPagador || "");
       const d = new Date(lancamentoAtual.data);
       setDataBR(isoToBR(`${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`));
       setPreenchido(true);
@@ -359,7 +364,8 @@ export default function Lancar() {
   }
 
   /* v11: grava o comprovante (com o que a pessoa confirmou) e liga ao lancamento */
-  async function guardarELigar(idLancamento, { valor, data, descricao: desc }) {
+  async function guardarELigar(idLancamento, { valor, data, descricao: desc, tem_nota = temNota, tipoPagador: pagador = tipoPagador }) {
+    if (idLancamento) await atualizarLancamento(idLancamento, { tem_nota, tipoPagador: pagador });
     if (!comprovante?.caminho) return;
     const linha = await guardarComprovante(comprovante.userId, {
       caminho: comprovante.caminho, tipo: comprovante.tipo, nome: comprovante.nome, valor, data, descricao: desc,
@@ -404,9 +410,10 @@ export default function Lancar() {
       descricao: descricao.trim().slice(0, LIMITE_DESCRICAO),
       valor: centavos / 100,
       data: new Date(iso + "T12:00:00").toISOString(),
+      ...(ehRecebimento ? { tem_nota: temNota, tipoPagador } : {}),
     };
     if (modoEdicao) {
-      atualizarLancamento(lancamentoAtual.id, payload);
+      await atualizarLancamento(lancamentoAtual.id, payload);
     } else if (comprovante?.caminho) {
       /* v11: com comprovante, antes de somar procura o mesmo dinheiro */
       setModoSimulacao(false);
@@ -421,7 +428,7 @@ export default function Lancar() {
       toast.success("Lançamento salvo com o comprovante");
     } else {
       setModoSimulacao(false);
-      adicionarLancamento(payload);
+      await adicionarLancamento(payload);
     }
     await new Promise((r) => setTimeout(r, 200));
     setSalvando(false);
@@ -697,6 +704,41 @@ export default function Lancar() {
               </p>
             )}
           </div>
+
+          {ehRecebimento && <>
+          <fieldset>
+            <legend style={{ ...ROTULO_CAMPO, fontSize: 16, textTransform: "none", letterSpacing: "normal" }}>
+              Tem nota fiscal desse recebimento?
+            </legend>
+            <div className="flex" style={{ gap: 10 }}>
+              {[[true, "Com nota"], [false, "Sem nota"]].map(([valor, rotulo]) => (
+                <button key={rotulo} type="button" aria-pressed={temNota === valor}
+                  onClick={() => setTemNota(valor)}
+                  className="toque card-tacerto flex-1 rounded-xl"
+                  style={{ minHeight: 50, fontSize: 16, color: temNota === valor ? "var(--text)" : "var(--text-tertiary)", boxShadow: temNota === valor ? "inset 0 0 0 1px var(--text-secondary)" : "none" }}>
+                  {rotulo}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <div>
+            <label htmlFor="tipo-pagador" className="block" style={ROTULO_CAMPO}>Quem pagou?</label>
+            <select id="tipo-pagador" value={tipoPagador} onChange={(e) => setTipoPagador(e.target.value)}
+              className="campo-tacerto card-tacerto w-full rounded-xl"
+              style={{ minHeight: 50, padding: "0 16px", fontSize: 16, color: "var(--text)", backgroundColor: "var(--field)" }}>
+              <option value="">Selecionar (opcional)</option>
+              <option value="cpf">Pessoa (CPF)</option>
+              <option value="cnpj">Empresa (CNPJ)</option>
+            </select>
+            {!temNota && precisaDeNota(tipoPagador) && (
+              <p role="status" style={{ color: "var(--text-secondary)", fontSize: 16, marginTop: 8 }}>
+                {AVISO_NOTA_EMPRESA}
+              </p>
+            )}
+          </div>
+
+          </>}
 
           <div style={{ marginTop: 4 }}>
             <p

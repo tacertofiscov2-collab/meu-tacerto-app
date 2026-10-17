@@ -1,4 +1,4 @@
-/* TERMOSDEUSO v13 — "Perfil" vira "Mais" (Bloco 3) (v12: 12/10 (pedidos do Fernando): o extrato em PDF fica guardado (sem o "ate ser lido"); a notificacao da semana no celular (so se ativar) e como desligar (v11: Bloco M (12/10/2026): leitura do comprovante por IA (voce confere antes de salvar), "Permissoes e integracoes" e como parar os lembretes e avisos no WhatsApp; data atualizada (v10: Fisco vira Isa: "A Isa é uma assistente virtual com IA" (não é pessoa nem contadora, pode errar) (v9: diz que o extrato em PDF fica guardado ate ser lido (v8: textos de 08-10: app de gestao do MEI, o CNPJ (dados publicos e, no futuro, o DAS), o extrato (so o ano atual fica, o resto e descartado) e a pessoa confirma o que e faturamento; sem chamar o TaCerto de contabilidade/contador (v7: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v6: letras maiores (texto 16, titulos 17) e risca fina entre as secoes, no padrao do Perfil (v5: secao "Fale com a gente" (botao do WhatsApp) escondida por MOSTRAR_WHATSAPP_DOCUMENTOS (v4: Fisco.ia; v3: sem a palavra "piloto" no texto ("fase de testes"); v2: botao do WhatsApp com mensagem pronta))))))) */
+/* TERMOSDEUSO v14 — termos alinhados ao WhatsApp apenas para avisos (v13: versão anterior) */
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { linkWhatsAppFisco, MENSAGENS_WHATSAPP, dadosParaWhatsApp, MOSTRAR_WHATSAPP_DOCUMENTOS } from "@/config/piloto";
@@ -84,7 +84,7 @@ const SECOES = [
     titulo: "Mensagens no WhatsApp",
     paragrafos: [
       "A Isa manda lembretes (como o do DAS) e avisos sobre o seu MEI pelo WhatsApp.",
-      "Para parar quando quiser: Mais → Permissões e integrações → Lembretes e avisos no WhatsApp. Ou peça para a Isa no próprio WhatsApp. Você continua podendo falar com ela quando quiser.",
+      "Para parar quando quiser: Mais → Permissões e integrações → Lembretes e avisos no WhatsApp. As dúvidas você tira com a Isa aqui no app. No WhatsApp ela só envia lembretes e boletos do DAS e o check-up do CNPJ.",
       "Se você ativar, o app manda uma notificação por semana no celular, contando como está o seu velocímetro. Para parar: Perfil → Permissões e integrações → Notificações.",
     ],
   },
@@ -183,7 +183,7 @@ export default function TermosDeUso() {
               textDecoration: "none",
             }}
           >
-            Falar com a Isa no WhatsApp
+            Falar com a Isa no app
           </a>
         </section>
         )}

@@ -1,4 +1,5 @@
-// LER-COMPROVANTE v1 — le a foto ou o PDF de um comprovante (Pix, TED,
+/* LER-COMPROVANTE v2 — padrão claude-haiku-5-5; MODELO_COMPROVANTE continua opcional (v1: leitura de comprovantes com IA) */
+// Lê a foto ou o PDF de um comprovante (Pix, TED,
 //   boleto pago, recibo, nota) com IA e devolve { valor, data, pessoa,
 //   tipo }. Escrita em 12/10/2026 (tarefa de 10-10, Bloco J).
 //   ⚠️ AINDA NAO PUBLICADA: publicar so com o "pode" do Fernando, depois
@@ -19,9 +20,8 @@
 //
 // SEGREDOS (Supabase > Edge Functions > Secrets)
 //   ANTHROPIC_API_KEY     a chave da IA (obrigatoria)
-//   MODELO_COMPROVANTE    opcional; padrao "claude-opus-5-5". Para gastar
-//                         menos: "claude-haiku-5-5" (custo em
-//                         docs/IA-COMPROVANTE.md).
+//   MODELO_COMPROVANTE    opcional; padrão "claude-haiku-5-5".
+//                         Pode ser alterado nos segredos do Supabase.
 //   SUPABASE_URL e SUPABASE_ANON_KEY ja existem em toda funcao.
 //
 // RESPOSTA (sempre HTTP 200 com JSON, para o app nao quebrar)
@@ -43,7 +43,7 @@ const corsHeaders = {
 
 const BALDE = "comprovantes";
 const LIMITE_BYTES = 10 * 1024 * 1024; // o mesmo limite do app
-const MODELO = Deno.env.get("MODELO_COMPROVANTE") || "claude-opus-5-5";
+const MODELO = Deno.env.get("MODELO_COMPROVANTE") || "claude-haiku-5-5";
 const TIPOS_IMAGEM = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 /* O que a IA tem que devolver (saida estruturada: sempre este JSON) */

@@ -1,4 +1,4 @@
-/* APPSTATE v7 — lancamentosCarregados (os lancamentos desta conta ja foram lidos; o "Ultimos lancamentos" do Inicio espera por ele) (v6: extras10Prontos (os campos de 10-10 desta conta ja foram lidos nesta sessao; o tutorial do primeiro acesso so decide depois disso, para nao piscar) (v5: campos de 10-10 (resumo e data da consulta do CNPJ, tutorial visto, avisos no WhatsApp, forma de pagar o DAS) numa leitura SEPARADA (dono proprio no aparelho, donoExtras10); salvarDadosCnpj grava tambem o resumo e a data da consulta; removerCnpj (apaga o CNPJ e o que veio dele); salvarExtras; adicionarLancamento devolve o id do banco (para ligar nota/comprovante ao lancamento) (v4: adicionarLancamento monta o lancamento ANTES do setState (com varios de uma vez o React adiava e a gravacao no banco saia vazia) (v3: campos novos do perfil (CNPJ, CNAE, MEI desde, CNPJ confirmado, atualizacao do velocimetro, lembrete do DAS, nota automatica) lidos numa consulta separada e guardados no aparelho ate o SQL de 08-10 rodar; "Atualizado em" do velocimetro marcado a cada lancamento (v2: mediaMensal vira o RITMO do ano (faturado / meses que passaram) + mediaLimite)))) */
+/* APPSTATE v8 — tem_nota no banco com tentativa sem coluna e copia local por conta (v7: lancamentosCarregados) */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   LIMITES_ANUAIS,
@@ -116,6 +116,23 @@ function uuid() {
 
 function ordinal(n) {
   return `${n}º`;
+}
+
+// Metadados por conta e id: sobrevivem a recarga antes do SQL do Bloco 4.
+function lerNotasLocais(userId) {
+  try { return JSON.parse(localStorage.getItem(`tacerto_notas_recebimentos:${userId}`) || "{}") || {}; }
+  catch { return {}; }
+}
+
+function guardarNotaLocal(userId, id, dados) {
+  const notas = lerNotasLocais(userId);
+  notas[id] = { ...notas[id], ...dados };
+  try { localStorage.setItem(`tacerto_notas_recebimentos:${userId}`, JSON.stringify(notas)); } catch {}
+}
+
+function colunaTemNotaAusente(erro) {
+  return ["42703", "PGRST204"].includes(erro?.code) &&
+    `${erro.message || ""} ${erro.details || ""}`.includes("tem_nota");
 }
 
 function normalizarTipo(v) {
@@ -245,15 +262,21 @@ export function AppStateProvider({ children }) {
         // v3: com criado_em (plano B do "Atualizado em" do velocimetro)
         const { data: lancs } = await supabase
           .from("lancamentos")
-          .select("id, descricao, valor, data, criado_em")
+          .select("*")
           .eq("user_id", user.id)
           .order("data", { ascending: false });
 
         if (!ativo) return;
+        const notasLocais = lerNotasLocais(user.id);
         setState((s) => ({
           ...s,
           lancamentos: Array.isArray(lancs)
-            ? lancs.map((l) => ({ ...l, valor: Number(l.valor) || 0 }))
+            ? lancs.map((l) => ({
+                ...l,
+                valor: Number(l.valor) || 0,
+                tem_nota: typeof l.tem_nota === "boolean" ? l.tem_nota : notasLocais[l.id]?.tem_nota,
+                tipoPagador: notasLocais[l.id]?.tipoPagador || "",
+              }))
             : s.lancamentos,
         }));
         setLancamentosCarregados(true);
@@ -530,6 +553,8 @@ export function AppStateProvider({ children }) {
       valor: Number(l.valor) || 0,
       data,
       criado_em: new Date().toISOString(),
+      ...(typeof l.tem_nota === "boolean" ? { tem_nota: l.tem_nota } : {}),
+      ...(l.tipoPagador !== undefined ? { tipoPagador: l.tipoPagador } : {}),
     };
     setState((s) => ({ ...s, lancamentos: [novo, ...s.lancamentos] }));
     marcarVelocimetroAtualizado();
@@ -540,17 +565,24 @@ export function AppStateProvider({ children }) {
         const { data: userData } = await supabase.auth.getUser();
         const user = userData?.user;
         if (!user || !novo) return idLocal;
-        const { data: inserido } = await supabase
-          .from("lancamentos")
-          .insert({
+        const payload = {
             user_id: user.id,
             descricao: novo.descricao,
             valor: novo.valor,
             data: novo.data,
-          })
-          .select("id")
-          .single();
+            ...(typeof novo.tem_nota === "boolean" ? { tem_nota: novo.tem_nota } : {}),
+        };
+        const inserir = () => supabase.from("lancamentos").insert(payload).select("id").single();
+        let resultado = await inserir();
+        if (colunaTemNotaAusente(resultado.error) && "tem_nota" in payload) {
+          delete payload.tem_nota;
+          resultado = await inserir();
+        }
+        const inserido = resultado.data;
         if (inserido?.id) {
+          if (typeof novo.tem_nota === "boolean") {
+            guardarNotaLocal(user.id, inserido.id, { tem_nota: novo.tem_nota, tipoPagador: novo.tipoPagador });
+          }
           setState((s) => ({
             ...s,
             lancamentos: s.lancamentos.map((x) =>
@@ -575,7 +607,7 @@ export function AppStateProvider({ children }) {
     marcarVelocimetroAtualizado();
 
     // Espelha a edição no banco (só os campos que o banco conhece).
-    (async () => {
+    return (async () => {
       try {
         const { data: userData } = await supabase.auth.getUser();
         if (!userData?.user) return;
@@ -583,8 +615,16 @@ export function AppStateProvider({ children }) {
         if (dados.descricao !== undefined) patch.descricao = dados.descricao;
         if (dados.valor !== undefined) patch.valor = Number(dados.valor) || 0;
         if (dados.data !== undefined) patch.data = dados.data;
+        if (typeof dados.tem_nota === "boolean") {
+          patch.tem_nota = dados.tem_nota;
+          guardarNotaLocal(userData.user.id, id, { tem_nota: dados.tem_nota, tipoPagador: dados.tipoPagador });
+        }
         if (Object.keys(patch).length === 0) return;
-        await supabase.from("lancamentos").update(patch).eq("id", id);
+        const { error } = await supabase.from("lancamentos").update(patch).eq("id", id);
+        if (colunaTemNotaAusente(error) && "tem_nota" in patch) {
+          delete patch.tem_nota;
+          if (Object.keys(patch).length) await supabase.from("lancamentos").update(patch).eq("id", id);
+        }
       } catch {
         /* visitante ou falha de rede — segue só no local */
       }

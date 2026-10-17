@@ -1,4 +1,4 @@
-/* HISTORICO v8 — o ANO todo (Bloco H): no seletor, tocar no ano (ou em "Ano todo") mostra o total do ano e o resumo por mes (tocar num mes abre ele); "No ano de 2026" tambem leva ao ano todo; o mes a mes continua igual (v7: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v6: descricao quebra em ate 2 linhas (antes cortava "Transportes Al..." no iPhone) (v5:padrao do Perfil: mes, total e Lancar entrada sem cartoes; entradas em lista com risca fina e titulo por mes; letras maiores (v4: piloto: cartao "Comece com o velocimetro certo" escondido (MOSTRAR_INACABADOS); o resto igual a v3)) */
+/* HISTORICO v9 — selo com nota ou sem nota apenas quando informado (v8: historico do ano todo) */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -11,6 +11,7 @@ import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
 
 import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
+import { SeloNota } from "../components/InicioPartes.jsx";
 import { useAppState } from "@/context/AppStateContext";
 import useAnoInicio from "@/hooks/useAnoInicio";
 import { MOSTRAR_INACABADOS } from "@/config/piloto";
@@ -289,7 +290,10 @@ export default function Historico() {
                     Icon={TrendingUp}
                     rotulo={l.descricao}
                     maxLinhas={2}
-                    detalhe={labelData(l.data)}
+                    detalhe={<span className="flex flex-wrap items-center" style={{ gap: 6 }}>
+                      {labelData(l.data)}
+                      <SeloNota temNota={l.tem_nota} />
+                    </span>}
                     valor={
                       <span className="flex items-center" style={{ gap: 2 }}>
                         <Valor px={15.5} peso={600} sinal="+">{l.valor}</Valor>

@@ -1,10 +1,7 @@
-/* SUPORTE v8 — "Perfil" vira "Mais" nas respostas ("No Mais, toque em DAS"; notas "Na aba Notas") (Bloco 3) (v7: o DAS e as notas sairam do Inicio: as respostas dizem "No Perfil, toque em DAS" / "Notas fiscais" (v6: datas da declaracao (Bloco G): a do MEI "pode ser feita desde o começo do ano até 31 de maio" e "quando você quiser, dentro do prazo, a Isa faz com você" (sai o "em maio") (v5: resposta do Imposto de Renda aponta para Perfil > Calcular > Imposto de Renda (a calculadora saiu da Declaracao anual) (v4: Fisco vira Isa na resposta sobre nota fiscal (v3: "Preciso emitir nota?" com a regra do agregado (v2: correcoes de 08-10: DAS vence dia 20 e, se nao for dia util, no proximo dia util; NFS-e so para frete na mesma cidade (agregado sem IE em MG hoje nao emite); A1 a preco de custo (R$ 100,34) (v1: chat de suporte dentro do app (Perfil > Ajuda): perguntas prontas por assunto para afunilar; se nao resolver, a pessoa escreve e vai pro WhatsApp do suporte com tudo anotado))))) */
+/* SUPORTE v9 — suporte responde no app e encaminha dúvidas à aba Isa (v8: versão anterior) */
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
-import IconeWhatsApp from "../components/IconeWhatsApp.jsx";
-import { useAppState } from "@/context/AppStateContext";
-import { MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco } from "@/config/piloto";
 
 /* ===================================================================
    SUPORTE (06/10/2026 — pedido do Fernando)
@@ -16,7 +13,7 @@ import { MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco } from "@/con
      2. Qual destas e a sua duvida? (perguntas prontas do assunto)
      3. Resposta curta + "Isso resolveu?"
      4. Nao resolveu (ou "minha duvida e outra"): a pessoa escreve em
-        poucas palavras e toca em "Abrir o WhatsApp do suporte": a
+        poucas palavras e toca em "Abrir a Isa no app": a
         mensagem vai pronta com assunto, pergunta e o que ela escreveu
         (MENSAGENS_WHATSAPP.suporte). Uma pessoa da equipe responde la.
    O campo de escrever fica NO MEIO da conversa (nao preso embaixo):
@@ -78,7 +75,7 @@ const ASSUNTOS = [
       },
       {
         p: "Como emito?",
-        r: "Na aba Notas. Lá diz quando você precisa emitir e como: com a Isa no WhatsApp, sozinho ou automática, com o Certificado A1.",
+        r: "Na aba Notas. Lá diz quando você precisa emitir e como: com orientação da Isa aqui no app ou pelo passo a passo no gov.br.",
       },
       {
         p: "O que é o Certificado A1?",
@@ -137,8 +134,8 @@ const ASSUNTOS = [
   { id: "outro", rotulo: "Outro assunto", perguntas: [] },
 ];
 
-const BOAS_VINDAS = "Oi! Aqui é o suporte do TaCerto, com pessoas da equipe. Sobre o que é a sua dúvida?";
-const PEDE_DETALHE = "Me conta em poucas palavras o que aconteceu.";
+const BOAS_VINDAS = "Oi! As dúvidas você tira com a Isa aqui no app. No WhatsApp ela só te avisa sobre o DAS e o check-up do CNPJ. Sobre o que é a sua dúvida?";
+const PEDE_DETALHE = "Para continuar, abra a aba Isa e conte sua dúvida aqui no app.";
 
 function Balao({ de, children }) {
   const meu = de === "voce";
@@ -182,14 +179,11 @@ function Opcoes({ lista, onEscolher }) {
 export default function Suporte() {
   const navigate = useNavigate();
   const location = useLocation();
-  const app = useAppState();
   const fimRef = useRef(null);
 
   const [mensagens, setMensagens] = useState([{ de: "suporte", texto: BOAS_VINDAS }]);
   const [etapa, setEtapa] = useState("assunto");
   const [assunto, setAssunto] = useState(null);
-  const [pergunta, setPergunta] = useState("");
-  const [detalhe, setDetalhe] = useState("");
 
   useEffect(() => {
     const t = setTimeout(() => fimRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), 60);
@@ -206,10 +200,9 @@ export default function Suporte() {
   function escolherAssunto(rotulo) {
     const a = ASSUNTOS.find((x) => x.rotulo === rotulo);
     setAssunto(a);
-    setPergunta("");
     if (a.perguntas.length === 0) {
       falar({ de: "voce", texto: rotulo }, { de: "suporte", texto: PEDE_DETALHE });
-      setEtapa("escrever");
+      setEtapa("isa");
     } else {
       falar({ de: "voce", texto: rotulo }, { de: "suporte", texto: "Qual destas é a sua dúvida?" });
       setEtapa("pergunta");
@@ -219,11 +212,10 @@ export default function Suporte() {
   function escolherPergunta(rotulo) {
     if (rotulo === "Minha dúvida é outra") {
       falar({ de: "voce", texto: rotulo }, { de: "suporte", texto: PEDE_DETALHE });
-      setEtapa("escrever");
+      setEtapa("isa");
       return;
     }
     const item = assunto.perguntas.find((x) => x.p === rotulo);
-    setPergunta(rotulo);
     falar({ de: "voce", texto: rotulo }, { de: "suporte", texto: item.r }, { de: "suporte", texto: "Isso resolveu?" });
     setEtapa("resolveu");
   }
@@ -234,32 +226,16 @@ export default function Suporte() {
       setEtapa("fim");
     } else {
       falar({ de: "voce", texto: rotulo }, { de: "suporte", texto: PEDE_DETALHE });
-      setEtapa("escrever");
+      setEtapa("isa");
     }
   }
 
-  function enviarDetalhe() {
-    const texto = detalhe.trim();
-    if (!texto) return;
-    falar(
-      { de: "voce", texto },
-      { de: "suporte", texto: "Anotei tudo. Toque abaixo para ir ao WhatsApp do suporte: uma pessoa da equipe te responde por lá." },
-    );
-    setEtapa("whatsapp");
-  }
-
-  function abrirWhatsApp() {
-    abrirWhatsAppFisco(MENSAGENS_WHATSAPP.suporte(dadosParaWhatsApp(app), {
-      assunto: assunto?.rotulo || "",
-      pergunta,
-      detalhe: detalhe.trim(),
-    }));
+  function abrirIsa() {
+    navigate("/fisco");
   }
 
   function recomecar() {
     setAssunto(null);
-    setPergunta("");
-    setDetalhe("");
     falar({ de: "voce", texto: "Tenho outra dúvida" }, { de: "suporte", texto: "Claro! Sobre o que é?" });
     setEtapa("assunto");
   }
@@ -292,37 +268,15 @@ export default function Suporte() {
               <Opcoes lista={["Resolveu, obrigado", "Ainda preciso de ajuda"]} onEscolher={responderResolveu} />
             )}
             {etapa === "fim" && <Opcoes lista={["Tenho outra dúvida"]} onEscolher={recomecar} />}
-            {etapa === "escrever" && (
-              <div style={{ animation: "suporteEntra 220ms ease-out" }}>
-                <textarea
-                  value={detalhe}
-                  onChange={(e) => setDetalhe(e.target.value.slice(0, 500))}
-                  rows={3}
-                  placeholder="Escreva aqui..."
-                  className="campo-tacerto card-tacerto w-full rounded-2xl resize-none"
-                  style={{ fontSize: 16, lineHeight: 1.45, padding: "12px 14px", color: "var(--text)", background: "transparent" }}
-                />
-                <button
-                  type="button"
-                  onClick={enviarDetalhe}
-                  disabled={!detalhe.trim()}
-                  className="botao-confirmar toque w-full rounded-2xl font-semibold disabled:opacity-40"
-                  style={{ marginTop: 10, padding: "13px 0", fontSize: 16 }}
-                >
-                  Enviar
-                </button>
-              </div>
-            )}
-            {etapa === "whatsapp" && (
+            {etapa === "isa" && (
               <div style={{ animation: "suporteEntra 220ms ease-out" }}>
                 <button
                   type="button"
-                  onClick={abrirWhatsApp}
+                  onClick={abrirIsa}
                   className="botao-confirmar toque w-full rounded-2xl font-semibold flex items-center justify-center"
                   style={{ padding: "13px 0", fontSize: 16, gap: 10 }}
                 >
-                  <IconeWhatsApp size={20} strokeWidth={1.9} />
-                  Abrir o WhatsApp do suporte
+                  Abrir a Isa no app
                 </button>
                 <button
                   type="button"
