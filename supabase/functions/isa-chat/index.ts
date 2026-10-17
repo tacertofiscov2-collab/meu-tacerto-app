@@ -1,4 +1,4 @@
-/* ISA-CHAT v1 — IA com apostila, cota diária por pessoa e dúvidas pendentes; NÃO publicada */
+/* ISA-CHAT v2 — histórico enviado à IA começa pela pessoa e alterna os lados (v1: IA com apostila, cota diária por pessoa e dúvidas pendentes); NÃO publicada */
 import Anthropic from "npm:@anthropic-ai/sdk@0.133.0";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { BASE_MEI } from "./base-mei.ts";
@@ -91,6 +91,16 @@ Deno.serve(async (req) => {
     const historico: Mensagem[] = Array.isArray(entrada.historico) ? entrada.historico.slice(-6)
       .filter((m: Mensagem) => m && ["user", "assistant"].includes(m.role) && typeof m.content === "string" && m.content.trim())
       .map((m: Mensagem) => ({ role: m.role, content: m.content.slice(0, 2000) })) : [];
+    // v2: a conversa enviada à IA começa sempre pela pessoa (a fala de
+    // abertura da Isa não entra) e não repete o mesmo lado duas vezes.
+    while (historico.length && historico[0].role === "assistant") historico.shift();
+    for (let i = historico.length - 1; i > 0; i--) {
+      if (historico[i].role === historico[i - 1].role) {
+        historico[i - 1].content += "\n" + historico[i].content;
+        historico.splice(i, 1);
+      }
+    }
+    if (historico.length && historico[historico.length - 1].role === "user") historico.pop();
     const contexto = contextoSeguro(entrada.contexto);
     const admin = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
 
