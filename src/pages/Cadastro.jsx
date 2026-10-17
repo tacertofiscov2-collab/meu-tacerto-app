@@ -1,4 +1,4 @@
-/* CADASTRO v14 — piloto: rodape com um link para os Termos de Uso (/termos-de-uso) e outro para a Politica de Privacidade (/privacidade); nada mais mudou */
+/* CADASTRO v15 — código recebe foco pelo toque, sem autoFocus após cadastro assíncrono (v14: links de Termos e Privacidade) */
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useRef } from "react";
 import { Eye, EyeOff, Mail, Gauge, MailCheck } from "lucide-react";
@@ -674,7 +674,7 @@ export default function Cadastro() {
                     inputMode="numeric"
                     value={codigo}
                     maxLength={6}
-                    autoFocus
+                    // O toque da pessoa abre o teclado; não foca sozinho após a resposta do servidor.
                     onFocus={aoFocarCodigo}
                     onChange={(e) => setCodigo(e.target.value.replace(/\D/g, "").slice(0, 6))}
                     onKeyDown={(e) => { if (e.key === "Enter") conferirCodigo(); }}
