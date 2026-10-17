@@ -1,4 +1,4 @@
-/* WELCOME v19 — slide da nota sem certificado nem promessa de emissão automática (v18: versão anterior) */
+/* WELCOME v20 — quatro opções da nota com medidas preservadas e Últimos lançamentos no mini-Início (v19: slide sem certificado) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -75,7 +75,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import {
-  Gauge, ArrowLeft, ChevronRight, ChevronDown, Send, Mic,
+  Gauge, ArrowLeft, ChevronRight, ChevronDown,
   ArrowDownLeft, ArrowUpRight, CalendarCheck, FileText, Check, CheckCheck,
   MessageCircle, Headphones, ListChecks, Globe, CheckCircle2,
 } from "lucide-react";
@@ -84,9 +84,10 @@ import { supabase } from "@/lib/supabase";
 import { estaInstalado } from "@/lib/notificacoesCelular";
 import { FOTO_ISA_256 } from "@/components/FotoIsa";
 import SimboloPluggy from "@/components/SimboloPluggy";
+import { UltimosLancamentos, MEDIDAS_INICIO } from "@/components/InicioPartes";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_NOTAS_FISCAIS,
-  MOSTRAR_CHAT_FISCO, MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA,
+  MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA,
 } from "@/config/piloto";
 
 const VERDE = "var(--primary)";
@@ -328,6 +329,10 @@ function LinhaMov({ entrada, quando }) {
 
 /* ------------------------------ 1. LIMITE ------------------------------ */
 function MiniInicio() {
+  // A peça real é reduzida por inteiro, sem alterar suas medidas compartilhadas.
+  const escalaUltimos = 0.6;
+  const m = MEDIDAS_INICIO.ultimos;
+  const alturaUltimos = (m.titulo + m.linha * m.linhas + m.margemCima + m.margemBaixo) * escalaUltimos;
   return (
     <MiniTela>
       <div className="flex items-center justify-between shrink-0" style={{ marginBottom: 12 }}>
@@ -366,22 +371,14 @@ function MiniInicio() {
         </div>
       </div>
 
-      {/* Isa + barra do chat, no pé */}
-      <div className="flex items-center gap-2 shrink-0" style={{ marginTop: "auto", paddingTop: 12 }}>
-        <FotoFisco tamanho={44} />
-        <span
-          className="flex-1 min-w-0 rounded-full flex items-center gap-2"
-          style={{ ...VIDRO, border: "1px solid rgba(34,197,94,0.35)", height: 30, padding: "0 10px" }}
+      {/* Mesma peça do Início, só ilustrativa; a moldura mantém sua altura. */}
+      <div className="relative shrink-0 overflow-hidden" style={{ marginTop: "auto", height: alturaUltimos }}>
+        <div
+          className="absolute top-0 left-0 flex flex-col"
+          style={{ width: `${100 / escalaUltimos}%`, transform: `scale(${escalaUltimos})`, transformOrigin: "top left" }}
         >
-          <span
-            className="flex-1 truncate"
-            style={{ color: "var(--text-tertiary)", fontSize: 10.5, fontStyle: "italic", fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive' }}
-          >
-            {/* Sem o chat no app, a Isa atende pelo WhatsApp */}
-            {MOSTRAR_CHAT_FISCO ? "Pergunte à Isa..." : "Isa no app"}
-          </span>
-          <Send size={12} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
-        </span>
+          <UltimosLancamentos exemplo />
+        </div>
       </div>
     </MiniTela>
   );
@@ -564,9 +561,10 @@ function MiniDas() {
    comum (foraDaEscala): os outros slides nao mudam por causa dela. */
 function MiniNota() {
   const opcoes = [
-    { Icon: Mic, t: "Por áudio", d: "Você fala, a Isa emite" },
-    { Icon: MessageCircle, t: "Por mensagem", d: "Só o valor e para quem foi" },
-    { Icon: ListChecks, t: "Sozinho", d: "Passo a passo no gov.br" },
+    { Icon: ListChecks, t: "Passo a passo", d: "Emita pelo gov.br sem se perder" },
+    { Icon: MessageCircle, t: "Tire dúvidas com a Isa", d: "Ela responde aqui no app" },
+    { Icon: FileText, t: "Guarde suas notas", d: "Foto ou PDF, tudo num lugar" },
+    { Icon: CheckCircle2, t: "Selo com nota", d: "Saiba o que já tem nota" },
   ];
   return (
     <MiniTela>
@@ -597,8 +595,8 @@ function MiniNota() {
       <div className="rounded-xl flex items-center gap-2.5 shrink-0" style={{ ...CARD, marginTop: 8, padding: "7px 9px" }}>
         <CheckCircle2 size={16} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
         <span className="flex-1 min-w-0">
-          <span className="block font-bold" style={{ color: "var(--text)", fontSize: 11, lineHeight: 1.25 }}>Nota emitida</span>
-          <span className="block truncate" style={{ color: "var(--text-secondary)", fontSize: 9.5, lineHeight: 1.3 }}>PDF direto no seu WhatsApp</span>
+          <span className="block font-bold" style={{ color: "var(--text)", fontSize: 11, lineHeight: 1.25 }}>Notas organizadas</span>
+          <span className="block truncate" style={{ color: "var(--text-secondary)", fontSize: 9.5, lineHeight: 1.3 }}>Guarde o PDF na aba Notas</span>
         </span>
       </div>
     </MiniTela>
