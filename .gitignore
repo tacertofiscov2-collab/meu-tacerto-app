@@ -1,3 +1,4 @@
+# GITIGNORE v1 — ignora dados locais da Vercel do site
 # Logs
 logs
 *.log
@@ -35,3 +36,6 @@ dist-ssr
 
 # Copias de dados do Supabase antes de mudancas (nunca vao para o Git)
 backups/
+
+# Vinculo local do site com a Vercel
+site/.vercel/
