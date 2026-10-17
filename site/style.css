@@ -1,4 +1,4 @@
-/* STYLE v1 — página de apresentação responsiva em preto, branco e verde */
+/* STYLE v2 — alvos de toque de 44px (v1: apresentação responsiva em preto, branco e verde) */
 :root {
   color-scheme: dark;
   --bg: #0a0a0a;
@@ -29,18 +29,18 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
 .skip-link:focus { transform: translateY(0); }
 .site-header { position: sticky; z-index: 10; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); }
 .header-inner { min-height: 94px; display: flex; align-items: center; gap: 52px; }
-.brand { display: inline-flex; align-items: center; gap: 9px; flex-shrink: 0; font-size: 26px; font-weight: 700; letter-spacing: -1.2px; }
+.brand { display: inline-flex; align-items: center; min-height: 44px; gap: 9px; flex-shrink: 0; font-size: 26px; font-weight: 700; letter-spacing: -1.2px; }
 .brand img { border-radius: 10px; }
 .navigation { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .nav-links, .nav-actions { display: flex; align-items: center; gap: 28px; }
-.nav-links a, .login-link { font-size: 14px; font-weight: 500; color: var(--muted); padding-block: 12px; transition: color 150ms; }
+.nav-links a, .login-link { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; font-size: 14px; font-weight: 500; color: var(--muted); padding-block: 12px; transition: color 150ms; }
 .nav-links a:hover, .login-link:hover, .site-footer a:hover { color: var(--text); }
 .nav-actions { gap: 25px; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 26px; min-height: 56px; padding: 16px 24px; border: 1px solid var(--green); border-radius: 10px; background: var(--green); color: var(--bg); font-size: 16px; font-weight: 600; line-height: 1.2; transition: background 160ms, transform 160ms; }
 .button:hover { background: #35d470; }
 .button:active { transform: translateY(1px); }
 .button svg { width: 20px; height: 20px; }
-.button-small { min-height: 43px; padding: 11px 17px; gap: 20px; font-size: 14px; border-radius: 8px; }
+.button-small { min-height: 44px; padding: 11px 17px; gap: 20px; font-size: 14px; border-radius: 8px; }
 .menu-toggle { display: none; width: 44px; height: 44px; align-items: center; justify-content: center; background: none; border: 1px solid var(--border); border-radius: 8px; color: var(--text); }
 .menu-toggle svg { width: 23px; height: 23px; }
 .menu-close { display: none; }
@@ -53,7 +53,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
 h1 { font-size: clamp(64px, 7vw, 102px); font-weight: 550; line-height: .99; letter-spacing: -.075em; margin-top: 28px; }
 .hero-description { margin-top: 30px; max-width: 400px; color: var(--muted); font-size: 19px; line-height: 1.65; letter-spacing: -.3px; }
 .hero-actions { display: flex; align-items: center; gap: 29px; margin-top: 35px; }
-.text-link { display: inline-flex; align-items: center; gap: 12px; padding-block: 12px; font-size: 15px; font-weight: 500; }
+.text-link { display: inline-flex; align-items: center; min-height: 44px; gap: 12px; padding-block: 12px; font-size: 15px; font-weight: 500; }
 .text-link svg { width: 18px; height: 18px; transition: transform 160ms; }
 .text-link:hover svg { transform: translateX(3px); }
 .hero-note { display: flex; align-items: center; gap: 8px; margin-top: 28px; color: var(--muted); font-size: 12px; }
@@ -162,7 +162,7 @@ h3 { font-size: 18px; font-weight: 550; letter-spacing: -.5px; line-height: 1.35
 .footer-inner { min-height: 112px; display: flex; align-items: center; gap: 30px; }
 .site-footer .brand { font-size: 23px; }
 .site-footer nav { display: flex; gap: 27px; margin-left: auto; font-size: 12px; color: var(--muted); }
-.site-footer nav a { padding-block: 14px; }
+.site-footer nav a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding-block: 14px; }
 .site-footer p { color: var(--muted); font-size: 12px; margin-left: 30px; }
 
 @media (max-width: 1000px) {
