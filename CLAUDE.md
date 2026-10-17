@@ -1,313 +1,63 @@
-# CLAUDE.md — TaCerto!
+# CLAUDE.md — TaCerto! (v2, 17/10/2026)
 
-Este arquivo é lido pelo Claude Code no começo de cada sessão. A
-referência completa do projeto é o **`HANDOFF.md`** (na mesma pasta):
-leia as Partes 0, 1, 6 e 12 antes de começar qualquer tarefa.
+Lido no começo de cada sessão. Curto de propósito: cada linha aqui é
+relida o tempo todo e gasta crédito. Regras de código e mapa de pastas:
+**`AGENTS.md`**. Estado atual e pendências: **`docs/HANDOFF.md`**.
+Histórico antigo (só quando precisar): `docs/historico/`.
 
----
+## Quem é o Fernando
 
-## Quem é o Fernando (o dono do projeto)
+- Dono do projeto. **Não é programador**; testa tudo no **iPhone (Safari)**.
+- Português do Brasil simples, respostas curtas, **um passo por vez**
+  quando ele tiver que fazer algo (Supabase, Vercel, iPhone).
+- Quer **arquivo completo** já com a mudança, nunca trecho para colar.
+- Telas **minimalistas**: pouco texto, fundo preto, verde só no
+  confirmar. Visual que não agradou: mostrar **2-3 variações**.
+- Sem contador nem advogado: dúvida fiscal/legal se resolve pesquisando
+  em fonte oficial, nunca com "confirme com o contador".
+- Handoff só quando ele pedir ("crie o hand off").
 
-- **Não é programador.** Conhece o produto a fundo, tem olho para detalhe
-  visual e testa tudo no **iPhone** (Safari). Não lê código.
-- Fale **português do Brasil, simples**, sem jargão. Quando precisar de
-  um termo técnico, explique em uma frase com um exemplo do dia a dia.
-- Respostas curtas e diretas. **Um passo por vez** quando ele tiver que
-  fazer algo (Supabase, Vercel, iPhone).
-- Ele manda **prints** do iPhone. Leia com atenção: muitas vezes o
-  problema é visual e sutil (alinhamento, espaçamento, texto cortado).
-- Ele quer telas **básicas e minimalistas, sem texto explicando** nos
-  fluxos do dia a dia; explicação só onde é a primeira vez.
-- Quando uma mudança visual não agradar, mostre **2-3 variações** (pode
-  ser descrevendo ou num HTML de prévia) para ele escolher, em vez de
-  tentar versão atrás de versão.
-- Ele prefere receber **tudo de uma vez** (lista completa do que precisa)
-  e testar em lote.
+## Como o trabalho é dividido
 
----
+- **Claude (aqui) = patrão:** planeja, escreve o prompt do bloco,
+  revisa o que voltou, corrige detalhe pequeno, junta as branches.
+- **Codex (VS Code, conta ChatGPT Plus) = operário:** executa cada
+  bloco numa branch própria `codex/bloco-N`, criada da
+  `piloto-simplificado`, com push só dessa branch.
+- Branch do piloto: **`piloto-simplificado`**. A `main` é produção: só
+  recebe merge normal quando o Fernando autorizar.
+- Juntar: PR `codex/bloco-N` → `piloto-simplificado`, **merge normal**
+  (nunca squash, rebase, amend ou `--force`: o projeto é ligado ao Lovable).
+- Prévia de cada branch na Vercel:
+  `https://meu-tacerto-app-git-<branch-com-hifen>-tacertofiscov2-collab.vercel.app`
+  (login com a conta GitHub **tacertofiscov2-collab**).
 
-## Como trabalhar no código
+## Supabase (projeto `tacerto-fiscov2`)
 
-1. **Antes de mexer, diga em poucas linhas o que vai mudar** e em quais
-   arquivos. Depois mude só o necessário.
-2. **Marca de versão no topo de cada arquivo alterado**, na primeira
-   linha, assim: `/* NOMEDOARQUIVO vN — o que mudou */` (ex.:
-   `/* SAIDAS v3 — ... */`). Aumente o número a cada mudança e registre
-   no comentário de cabeçalho do arquivo o que mudou e por quê. É assim
-   que o Fernando e o HANDOFF acompanham as versões.
-3. **Arquivos sempre em UTF-8.** Acentos quebrados ("Ã©", "├") são
-   problema real no app; o terminal do Windows mostra errado, mas o
-   arquivo tem que estar certo.
-4. Depois de mudar, **confira**: rode o build ou ao menos verifique a
-   sintaxe; procure imports sem uso.
-   - **Mudança visual:** abra a tela no **navegador embutido** do app
-     Claude (`localhost:8080`, o `npm run dev` do Cursor — não iniciar
-     outro) na **largura do iPhone: 390 × 844**. Confira o visual
-     (alinhamento, espaçamento, texto cortado) e o **Console** (sem
-     erros). Corrija o que estiver errado e **só então** diga ao
-     Fernando que terminou. Telas que pedem login: conta **piloto2**
-     (ver "Contas de teste"). Ao terminar, volte o navegador ao tamanho
-     normal.
-   - ⚠️ A simulação no PC **não reproduz a altura útil do iPhone**
-     (03/10: o Dashboard parecia ter espaço sobrando no PC e no iPhone
-     estava ótimo). Sobra ou falta de espaço na **altura** não é motivo
-     para mudar sozinho: aponte como dúvida e deixe o print do iPhone
-     decidir. Alinhamento, texto cortado e Console continuam valendo.
-5. **Commit a cada etapa concluída**, com mensagem curta em português
-   sem acento (padrão: `feat: ...`, `ui: ...`, `fix: ...`). Mostre ao
-   Fernando o resultado do commit.
-6. **`git push` só quando o Fernando pedir** (o projeto é só dele; o
-   push manda tudo para a produção na Vercel). Nunca `push --force`,
-   nunca `git reset --hard` sem ele pedir.
-7. **Windows / PowerShell:** `&&` não funciona; um comando por vez.
-8. Não rode `npm audit fix --force`.
-9. O `npm run dev` normalmente fica rodando no terminal do Cursor. Se
-   precisar dele, pergunte antes de iniciar outro.
+- SQL ou função: mostrar o que vai fazer, explicar e **esperar o "pode"**.
+- **Nunca** `DROP`, `TRUNCATE` ou `DELETE` sem **"pode apagar"**.
+- Sem backup automático: antes de mudar, copiar os dados afetados para
+  `backups/` (fora do Git); depois, ler de novo, ver logs e advisors.
+- Todo SQL rodado vai para `src/supabase/migrations.sql`; o que não rodou
+  fica em `docs/SQL-PENDENTE-*.sql`.
+- Segredo `ANTHROPIC_API_KEY` já está no Supabase (créditos na conta
+  Anthropic do Fernando). Nenhuma função de IA publicada ainda.
 
----
+## Regras de produto (não quebrar)
 
-## O produto
+- **O app nunca manda a pessoa para o WhatsApp.** WhatsApp é só a Isa
+  avisando (DAS e check-up do CNPJ). Exceção: código de login.
+- Nada entra no faturamento sem a pessoa confirmar.
+- O app nunca diz que um DAS está "em aberto". Nada cita "Receita Federal".
+- Tipo de MEI travado. Datas só a partir do ano em que a pessoa começou.
+- A assistente é a **Isa** (IA, nunca pessoa nem contadora). Nomes
+  internos continuam "Fisco" (`Fisco.jsx`, `ChatFiscoUI`, `/fisco`).
+- Escopo congelado até o piloto: ideia nova vai para `PENDENCIAS_FUTURAS.md`.
+- Contador parceiro: a última coisa a construir.
 
-**TaCerto!** — app de gestão para **MEI** (foco em **MEI
-Caminhoneiro**): "entradas e saídas, sempre". O coração é um
-**velocímetro** do quanto do limite anual de faturamento já foi usado.
+## Conferir antes de dizer que terminou
 
-- Stack: **React + Vite + Tailwind + Supabase**, npm. Pasta:
-  `C:\Users\ferna\Documents\meu-tacerto-app`.
-- Dev: PC em `localhost:8080`; iPhone (mesmo Wi-Fi) em
-  `192.168.1.224:8080`.
-- Open Finance pela **Pluggy** (caminho B, sem widget, no sandbox).
-  Edge Function `supabase/functions/pluggy/index.ts` (v9, no ar).
-- **Funções e SQL do Supabase:** o Claude Code usa o **conector do
-  Supabase** (cada uso pede aprovação), seguindo a seção "Supabase"
-  abaixo. Sem o conector, o caminho antigo continua: Fernando publica no
-  painel (função → Code → colar → Deploy updates) e roda SQL no SQL
-  Editor, com o comando pronto e print antes do Run.
-- O app segue as regras da **reforma tributária de 2027** (ver HANDOFF
-  Parte 3).
-
----
-
-## Supabase
-
-- Antes de rodar **qualquer SQL** ou publicar **qualquer função**, mostrar
-  o que vai fazer, explicar em português simples e **esperar o "pode"**
-  do Fernando.
-- **Nunca** usar `DROP`, `TRUNCATE` ou `DELETE` sem o Fernando escrever
-  **"pode apagar"**.
-- Preferir comandos que podem rodar de novo sem estragar nada
-  (`if not exists`, `create or replace`, `on conflict do nothing`).
-- Registrar **todo SQL rodado** em `src/supabase/migrations.sql`.
-- Quando a validação com usuários reais começar, trocar o conector do
-  Supabase para **somente leitura** (`read_only`).
-- **Permissões do conector** (`.claude/settings.json`): as ferramentas
-  que só LEEM rodam sem perguntar (listar tabelas, migrations, extensões
-  e funções; ver função; logs; advisors; documentação). As que podem
-  mudar algo (`execute_sql`, `apply_migration`, `deploy_edge_function`
-  e afins) sempre pedem aprovação. Ferramenta nova do Supabase: na
-  dúvida, colocar em "ask".
-
-### Rotina de toda mudança no Supabase
-
-O projeto **não tem backup automático**. Por isso:
-
-1. **ANTES de mudar:** dizer o que vai mudar e **guardar uma cópia dos
-   dados afetados** na pasta `backups/` (fica fora do Git, no
-   `.gitignore`), com a data no nome do arquivo (ex.:
-   `backups/2026-10-03_saidas.json`; para função, o código publicado).
-2. **DEPOIS de mudar:** **ler de novo** para confirmar que ficou como
-   planejado, **olhar os logs** e **rodar os advisors de segurança**.
-3. **Se algo der errado:** **parar**, avisar o Fernando em português
-   simples e **propor como voltar atrás** (usando a cópia do passo 1).
-
----
-
-## Regras de produto que não podem ser quebradas
-
-- **Regra dos anos:** históricos, calendários e datas ficam limitados ao
-  **ano em que a pessoa começou a usar o app** (`useAnoInicio`). Antes
-  disso não interessa.
-- **Nada entra no faturamento sem a pessoa confirmar** (conferência de
-  entradas: "É faturamento?" Sim/Não; Sim vira regra, Não não vira).
-- **Saídas** são guardadas sozinhas, sem perguntar nada; a tela de saídas
-  é igual à de entradas.
-- O app **nunca diz que uma DAS está "em aberto"** (só o governo sabe).
-- **Nada no app cita "Receita Federal"** (nem "a Receita" como órgão):
-  usar "o governo", "dados públicos do CNPJ", "Portal do Simples" (12/10).
-- **Tipo de MEI** é travado (só muda pela folha "O que mudou?").
-- **Contador parceiro: é a ÚLTIMA coisa a construir** (pedido explícito).
-
----
-
-## Padrões técnicos (não reintroduzir bugs)
-
-- **Rolagem:** raiz `.tela-rolavel` + `.conteudo-rolavel` como **filho
-  DIRETO**. Tela sem rolagem: `.tela-fixa`.
-- **Topo das telas com rolagem:** `<TopoRolavel titulo="..." onVoltar={...} />`
-  como primeiro item DENTRO da área que rola (o título sobe; a setinha
-  fica parada e transparente). `recuo={20}` sem padding lateral;
-  `titulo=""` quando o título é outro; `simples` nas telas de entrada.
-  Exceção de propósito: "Escolha seu banco".
-- **Campos no iPhone: fonte ≥ 16px** (abaixo disso o Safari dá zoom).
-- **Teclado do iPhone:** folhas com campo usam a técnica do
-  `visualViewport` (ver `FolhaLancarSaida` em `src/pages/Saidas.jsx`).
-- **Cards:** `.card-tacerto`; cores por variáveis (`var(--primary)`,
-  `var(--text)`, `var(--surface)`, `var(--field)`, `var(--border)`).
-- **Cabeçalho:** setinha à esquerda, título ao lado (nunca centralizado).
-- **Toasts:** `import { toast } from "sonner"`.
-- Documento mascarado: CNPJ `12.345.•••/••01-90`, CPF `•••.654.321-••`.
-
----
-
-## Contas de teste
-
-- `piloto2@gmail.com` / `teste12345` — banco de teste conectado + 17
-  entradas de teste.
-- `piloto3@gmail.com` / `teste12345` — para ver a "primeira vez".
-- `piloto4@gmail.com` / `teste12345` — criada em 03/10 (teste do
-  cadastro depois do conserto de segurança); onboarding feito, MEI.
-- Comandos de criar/resetar as entradas de teste: HANDOFF, Parte 7.
-- O Claude **não faz login** no Supabase (serviço de fora). Para conferir
-  telas que pedem login no navegador embutido, usa um "banco de mentira"
-  só no navegador de teste (ver `docs/HANDOFF.md`, seção 7). Nada vai
-  para o banco real.
-
----
-
-## Onde estamos (atualizar ao fim de cada sessão)
-
-- **12/10 (noite): ajustes pelos prints do Fernando, na NUVEM, enviados
-  ao GitHub.** Início novo (só o sininho; card do velocímetro maior com
-  "Atualizar velocímetro" no canto; sem "Falta informar" e sem Próximo DAS;
-  chat da Isa menor com câmera, clipe e microfone FUNCIONANDO); tutorial
-  igual ao Início (peças em `src/components/InicioPartes.jsx`) + tela
-  "Tudo pelo WhatsApp com a Isa"; Permissões e integrações só com WhatsApp,
-  CNPJ e **Notificação da semana**; app instalável na Tela de Início;
-  **nada no app cita "Receita Federal"** (regra nova do Fernando); o A1 fica
-  com a plataforma de notas. **Falta o "pode"** para
-  `docs/SQL-PENDENTE-NOTIFICACOES.sql` e a função `aviso-semanal`
-  (`docs/NOTIFICACOES.md`), além dos de 10-10. Perguntas N1 a N9 no fim
-  do `docs/HANDOFF.md`.
-- **12/10: tarefa de `docs/PROMPT-CODE-10-10.md` CONCLUÍDA (blocos A a M),
-  feita no Claude Code na NUVEM** (sem `.env` e sem Supabase: nada rodou
-  no banco). Tudo **enviado ao GitHub** (push no fim de cada bloco, a
-  pedido) e um PR em rascunho só para acompanhar o branch (não juntar na
-  `main`). **Falta o Fernando:** dar o "pode" para o
-  **`docs/SQL-PENDENTE-10-10.sql`** (perfis: resumo do CNPJ, tutorial,
-  avisos no WhatsApp, forma de pagar o DAS; nota/comprovante ligados ao
-  lançamento) e para publicar a função **`ler-comprovante`** (antes, criar
-  a chave da Anthropic: `docs/IA-COMPROVANTE.md`). O app funciona antes
-  dos dois. Novos: página do **DAS** (`/das`), **Notas fiscais** no Meu MEI
-  (guardar nota soma no velocímetro sem duplicar), **Calcular** (no lugar
-  do Simulador; IR desconta o DAS), datas da declaração, histórico por
-  ano, selo **Recomendado**, **"+" com foto/PDF**, **Permissões e
-  integrações**, **tutorial do primeiro acesso**, Termos/Privacidade. O
-  que testar e as perguntas (A1 a M6): `docs/HANDOFF.md`. Para testar na
-  nuvem sem login: "banco de mentira" (HANDOFF seção 7).
-- **10/10 (noite): tarefa de `docs/PROMPT-CODE-10-10.md` (blocos A a M).**
-  **O Fisco morreu; o nome é Isa**, assistente virtual com IA (foto gerada
-  por IA, de uma pessoa que não existe: `public/isa/`, webp de 96/256/512
-  px; componente `src/components/FotoIsa.jsx`). Em todo texto da tela e
-  nas mensagens prontas do WhatsApp ("Oi Isa!"). A Isa **nunca diz que é
-  pessoa nem contadora**. Nomes internos continuam "Fisco" (Fisco.jsx,
-  ChatFiscoUI, ApresentacaoFisco, faqFisco, WHATSAPP_FISCO,
-  abrirWhatsAppFisco, MOSTRAR_CHAT_FISCO, rota `/fisco`): não renomear.
-
-- **10/10 (tarde): respostas do Fernando às 12 perguntas, feitas e
-  enviadas ao GitHub** (`git push` a pedido). Extrato **substitui** o
-  total do ano digitado quando cobre o ano até o dia do total e tudo foi
-  respondido; "Pode ser repetido" nas duas conferências (nada é
-  descartado sozinho); **Lançar gasto** (dinheiro vivo) e **Gastos
-  pessoais** (desfazer) no Meu lucro; sininho "Leva poucos minutos".
-  Detalhes no `docs/HANDOFF.md` (seção 4, "Respostas do Fernando"; a
-  pergunta 13 continua aberta). O `npm run dev` foi desligado no fim.
-- **10/10 (fim da tarefa de 08-10): CHAT NOVO, LER PRIMEIRO
-  `docs/HANDOFF.md`** (telas, chaves, o que testar no iPhone e as
-  **"Perguntas para o Fernando"** no fim) e `docs/HANDOFF-08-10-PESQUISAS.md`.
-  Branch `piloto-simplificado` **enviada ao GitHub em 10/10** (`git push`
-  a pedido do Fernando; a prévia da Vercel mostra esta versão). **SQL de
-  08-10 RODADO** em
-  10/10 (CNPJ e lembrete do DAS no perfil; categoria e chave_unica em
-  entradas/saídas; tabela `extratos_enviados`) — `migrations.sql`
-  PARTE 4D. Feito: CNPJ no cadastro (BrasilAPI, "Achei você") e no
-  Perfil; sai o "Quanto você já faturou"; velocímetro com "Atualizado
-  em", "Atualizar velocímetro", "Falta informar" e selo
-  Estimado/Conferido; **Enviar extrato** (OFX/CSV no celular, PDF "em
-  análise"), conferência com 6 respostas, gastos em dúvida, nada
-  contado duas vezes; **Meu lucro**; janela **Notas fiscais** (A1 R$
-  100,34); DAS com feriados (prorroga) e **Preferências** só com o
-  Lembrete do DAS; **Simulador**; Termos e Privacidade novos;
-  `docs/PLANO-AUTOMACAO-DAS.md`. O `npm run dev` foi desligado no fim.
-- **06/10 (fim da sessão): CHAT NOVO, LER PRIMEIRO `docs/HANDOFF.md`**
-  (resumo de passagem atualizado: telas, chaves, pendências, cuidados
-  técnicos). Branch `piloto-simplificado` com **16 commits sem push**
-  (a prévia da Vercel ainda está no `353c036`). WhatsApp real do Fisco e
-  do suporte: **(37) 99199-9373** (`WHATSAPP_FISCO`). O `npm run dev` do
-  Cursor estava desligado em 06/10 de manhã.
-- **06/10 (madrugada, Fernando dormindo, "trabalhe direto"):** Início com
-  velocímetro maior e barra DAS|Fisco|NF centrada; celular do tutorial na
-  proporção certa; setinha de voltar maior (46/24) em todas as telas;
-  "Fisco.ia" virou "Fisco" (o nome fica só na Apresentação); Perfil >
-  Ajuda com **Suporte** (chat com perguntas prontas → WhatsApp) e
-  **Declaração anual** (calculadora do IR); Excluir conta abaixo do Tema;
-  A1 sem "Em breve" e com a certificadora parceira; "Como o TaCerto ajuda
-  hoje" nas páginas de DAS, nota e declaração; onboarding/entrada e
-  janelas sem verde nem cinza (verde só no confirmar). Análise de
-  automação em `docs/AUTOMACAO-PILOTO.md`.
-- **05/10 (fim do dia): ler primeiro `docs/HANDOFF.md`** (resumo de
-  passagem: telas, chaves, o que falta no Supabase, pendências). Início
-  no **visual F** (DAS / Fisco / NF; "+" grande sem círculo; casinha cinza);
-  sininho com "Apresentação do Fisco.ia" e "Atualize seu velocímetro";
-  "+" com "Total do ano"; Perfil com os itens do Editar perfil; explicação
-  da média só uma vez; Perfil com "Limite restante" e "Histórico de
-  lançamentos"; páginas internas
-  no padrão do Perfil; botões em contorno; modo teste do login ligado.
-
-- **04/10: branch `piloto-simplificado`** (piloto com 30 MEI
-  Caminhoneiros, 6 semanas, canal principal = WhatsApp). O que não é do
-  piloto foi ESCONDIDO (nada apagado) pelas chaves de
-  **`src/config/piloto.js`**; rota escondida volta para o `/dashboard`.
-  Novos: pergunta "Quanto você já faturou" no Onboarding (vira
-  lançamento "Faturamento estimado até hoje"), card "Próximo DAS",
-  `/termos-de-uso`, `/privacidade`, `/como-emitir-nota`, botão "Falar com
-  o Fisco no WhatsApp" (`WHATSAPP_FISCO` = número real (37) 99199-9373
-  desde 06/10, o mesmo do suporte).
-  `PLUGGY_ATIVO = false`. "Sair da conta" agora desloga de verdade.
-  A `main` não foi mexida.
-- **04-05/10 (2ª rodada do piloto):** 5 slides com a mesma escala e
-  altura (bug do slide 2), mensagens prontas em `MENSAGENS_WHATSAPP`
-  (`piloto.js`), card do DAS com "Emitir boleto" + painel de pagamento,
-  `/como-pagar-das`, `/como-emitir-nota` com 3 caminhos, Perfil em
-  cartões sem a bola da inicial. Decisões e pendências em
-  **`docs/DECISOES-PILOTO.md`**.
-- **05/10 (3ª rodada):** **login só pelo WhatsApp** no app (tela
-  `EntrarWhatsApp` em `/login` e `/cadastro`; plano B `/entrar-email`;
-  chaves `MOSTRAR_LOGIN_EMAIL`/`MOSTRAR_LOGIN_GOOGLE`). Edge Function
-  `enviar-otp-whatsapp` no repositório, **ainda não publicada**; o painel
-  do Supabase ainda não foi ligado (`docs/LOGIN-WHATSAPP-PASSO-A-PASSO.md`).
-  Perfil e Editar perfil em **lista simples** (`ListaSimples.jsx`);
-  assistente agora é **Fisco.ia** na tela (no WhatsApp continua "Fisco").
-  Ajustes: **`MODO_TESTE_LOGIN = true`** (números de teste 37
-  00000-0001 a 9999, qualquer código; **desligar antes do piloto real**),
-  botão do WhatsApp escondido nos Termos/Privacidade
-  (`MOSTRAR_WHATSAPP_DOCUMENTOS`), slide 3 da nota preenchido.
-  O **Phone continua desligado no painel**; o modo teste entra por uma
-  "ponte" (conta de e-mail de teste por número, `contaDoNumeroTeste`).
-  Slides com textos de facilidade, letras 10% maiores e destaque verde
-  discreto (`DESTAQUE_BORDA`).
-- `main` com **33 commits sem push** (o Fernando decide quando
-  publicar). Produção ainda em `f1832bb`.
-- 03/10 (fim): advisors de segurança rodados; as funções-gatilho
-  `handle_new_user` e `rls_auto_enable` saíram do alcance do app
-  (`migrations.sql` Parte 4C; cadastro testado com piloto4 e OK).
-  Restam 2 avisos aceitos (ver HANDOFF Parte 12 → Segurança).
-- 03/10: `pluggy` **v9 publicada** (estava a v8) e conferida; **GRANT**
-  das tabelas `saidas`, `das_pagamentos`, `notas_fiscais` e
-  `comprovantes` rodado e conferido (as telas Saídas, DAS e Notas não
-  tinham acesso); SQL de 28/09 guardado no `migrations.sql` (Parte 4B);
-  código da `excluir-conta` no repositório.
-- Próximo passo: o Fernando testar no iPhone o que foi feito em 28-29/09
-  (lista no HANDOFF, Parte 12 → "Conferir no iPhone") e corrigir em lote.
-- Pendências rápidas: religar "Require Log In" na Vercel; conferir/apagar
-  a conta do amigo na prévia. Segurança: `excluir-conta` deve desconectar
-  a Pluggy e apagar os arquivos dos baldes `comprovantes` e `avatares`.
+- `npx vite build` sem erro e `node scripts/checar-whatsapp.mjs` passando.
+- Mudança visual: largura do iPhone (390 × 844) e Console sem erro.
+  Altura sobrando/faltando no PC não decide nada: o print do iPhone decide.
+- Erros já vistos e como evitar: **`docs/CUIDADOS-TECNICOS.md`**.
