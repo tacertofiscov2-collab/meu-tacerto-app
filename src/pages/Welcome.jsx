@@ -1,4 +1,4 @@
-/* WELCOME v20 — quatro opções da nota com medidas preservadas e Últimos lançamentos no mini-Início (v19: slide sem certificado) */
+/* WELCOME v21 — mini-Início volta à altura medida do bloco 6; nota com cinco opções juntas (v20: Últimos lançamentos e quatro opções) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -330,9 +330,10 @@ function LinhaMov({ entrada, quando }) {
 /* ------------------------------ 1. LIMITE ------------------------------ */
 function MiniInicio() {
   // A peça real é reduzida por inteiro, sem alterar suas medidas compartilhadas.
-  const escalaUltimos = 0.6;
   const m = MEDIDAS_INICIO.ultimos;
-  const alturaUltimos = (m.titulo + m.linha * m.linhas + m.margemCima + m.margemBaixo) * escalaUltimos;
+  // A barra antiga ocupava 44 px + 12 px: preserva a altura natural de 314 px.
+  const alturaUltimos = 56;
+  const escalaUltimos = alturaUltimos / (m.titulo + m.linha + m.margemCima + m.margemBaixo);
   return (
     <MiniTela>
       <div className="flex items-center justify-between shrink-0" style={{ marginBottom: 12 }}>
@@ -372,7 +373,11 @@ function MiniInicio() {
       </div>
 
       {/* Mesma peça do Início, só ilustrativa; a moldura mantém sua altura. */}
-      <div className="relative shrink-0 overflow-hidden" style={{ marginTop: "auto", height: alturaUltimos }}>
+      <div className="welcome-ultimos-mini relative shrink-0 overflow-hidden" style={{ marginTop: "auto", height: alturaUltimos }}>
+        <style>{`
+          .welcome-ultimos-mini [data-alvo="ultimos"] { height: ${m.titulo + m.linha}px !important; }
+          .welcome-ultimos-mini [data-alvo="ultimos"] > span:nth-of-type(n + 2) { display: none; }
+        `}</style>
         <div
           className="absolute top-0 left-0 flex flex-col"
           style={{ width: `${100 / escalaUltimos}%`, transform: `scale(${escalaUltimos})`, transformOrigin: "top left" }}
@@ -529,42 +534,16 @@ function MiniDas() {
   );
 }
 
-/* --------------------------- 3. NOTA (v9) ---------------------------
-   A tela "Como emitir sua nota": o Fisco.ia ajuda pelo WhatsApp ou a
-   pessoa faz sozinha. Sem a nota automatica (Certificado A1): no piloto
-   ela e so "em breve" e o slide nao pode prometer.
-
-   v9 (05/10/2026) — pedido do Fernando: sobrava muito espaco preto entre
-   o "Fazer sozinho" e o botao do pe. Agora:
-   - o botao "Chamar o Fisco.ia" fica DENTRO do card do Fisco.ia (como
-     na pagina real /como-emitir-nota) e saiu o selo "Gratis";
-   - o "Fazer sozinho" aparece aberto, com 3 passos curtos, e e ele que
-     CRESCE para ocupar a sobra (flexGrow): os passos se espalham por
-     igual, sem vao preto.
-
-   v10 (05/10/2026) — CORRECAO: no iPhone (letra um pouco maior que no
-   PC) a v9 virou o desenho MAIS ALTO, e como a escala e uma so para
-   todos (useEscalaComum), os 5 slides encolheram. Agora este slide fica
-   FORA da conta da escala (foraDaEscala em SLIDES): os slides 1, 2, 4 e
-   5 voltam a ser exatamente como antes. Ele so usa a escala que os
-   outros definirem e se ajusta ao espaco: o "Fazer sozinho" cresce
-   quando sobra e encolhe (minHeight 0) quando falta. Passos curtos, sem
-   quebrar linha.
-
-   v12 (05/10/2026) — pedido do Fernando: o "Fazer sozinho" estava mal
-   explicado, e o slide tem que mostrar que o Fisco.ia EMITE a nota do
-   jeito que a pessoa quiser (audio, mensagem, automatica). Agora sao 4
-   opcoes do mesmo tamanho, cada uma com titulo + uma frase curta
-   (destaque discreto so na primeira, DESTAQUE_BORDA), e no pe o
-   resultado: "Nota emitida / Guarde o PDF na aba Notas". A lista
-   cresce para ocupar a sobra (flexGrow) e continua FORA da escala
-   comum (foraDaEscala): os outros slides nao mudam por causa dela. */
+/* MiniNota: cinco opcoes e o card do pe, com gap fixo de 6 px.
+   foraDaEscala permanece: usa a escala comum sem altera-la.
+   Espaco extra fica ao redor do grupo, sem afastar as opcoes. */
 function MiniNota() {
   const opcoes = [
     { Icon: ListChecks, t: "Passo a passo", d: "Emita pelo gov.br sem se perder" },
     { Icon: MessageCircle, t: "Tire dúvidas com a Isa", d: "Ela responde aqui no app" },
     { Icon: FileText, t: "Guarde suas notas", d: "Foto ou PDF, tudo num lugar" },
     { Icon: CheckCircle2, t: "Selo com nota", d: "Saiba o que já tem nota" },
+    { Icon: CalendarCheck, t: "Histórico de notas", d: "Veja quanto já emitiu no ano" },
   ];
   return (
     <MiniTela>
@@ -574,30 +553,32 @@ function MiniNota() {
         Do jeito que você quiser
       </p>
 
-      {/* opcoes: mesmo tamanho; a lista cresce para ocupar a sobra */}
-      <div className="flex flex-col" style={{ gap: 5, flexGrow: 1, justifyContent: "space-evenly", minHeight: 0 }}>
-        {opcoes.map(({ Icon, t, d }, i) => (
-          <div
-            key={t}
-            className="rounded-xl flex items-center gap-2.5 shrink-0"
-            style={{ padding: "6px 9px", border: `1px solid ${i === 0 ? DESTAQUE_BORDA : "var(--card-borda)"}` }}
-          >
-            <Icon size={14} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
-            <span className="flex-1 min-w-0">
-              <span className="block font-bold truncate" style={{ color: "var(--text)", fontSize: 11, lineHeight: 1.25 }}>{t}</span>
-              <span className="block truncate" style={{ color: "var(--text-secondary)", fontSize: 9.5, lineHeight: 1.3 }}>{d}</span>
-            </span>
-          </div>
-        ))}
-      </div>
+      {/* A sobra fica ao redor do grupo, nunca entre as opções. */}
+      <div style={{ marginBlock: "auto" }}>
+        <div className="flex flex-col" style={{ gap: 6 }}>
+          {opcoes.map(({ Icon, t, d }, i) => (
+            <div
+              key={t}
+              className="rounded-xl flex items-center gap-2.5 shrink-0"
+              style={{ padding: "4px 9px", border: `1px solid ${i === 0 ? DESTAQUE_BORDA : "var(--card-borda)"}` }}
+            >
+              <Icon size={14} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
+              <span className="flex-1 min-w-0">
+                <span className="block font-bold truncate" style={{ color: "var(--text)", fontSize: 11, lineHeight: 1.25 }}>{t}</span>
+                <span className="block truncate" style={{ color: "var(--text-secondary)", fontSize: 9.5, lineHeight: 1.3 }}>{d}</span>
+              </span>
+            </div>
+          ))}
+        </div>
 
-      {/* no pe: o resultado */}
-      <div className="rounded-xl flex items-center gap-2.5 shrink-0" style={{ ...CARD, marginTop: 8, padding: "7px 9px" }}>
-        <CheckCircle2 size={16} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
-        <span className="flex-1 min-w-0">
-          <span className="block font-bold" style={{ color: "var(--text)", fontSize: 11, lineHeight: 1.25 }}>Notas organizadas</span>
-          <span className="block truncate" style={{ color: "var(--text-secondary)", fontSize: 9.5, lineHeight: 1.3 }}>Guarde o PDF na aba Notas</span>
-        </span>
+        {/* no pe: o resultado */}
+        <div className="rounded-xl flex items-center gap-2.5 shrink-0" style={{ ...CARD, marginTop: 6, padding: "5px 9px" }}>
+          <CheckCircle2 size={16} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
+          <span className="flex-1 min-w-0">
+            <span className="block font-bold" style={{ color: "var(--text)", fontSize: 11, lineHeight: 1.25 }}>Notas organizadas</span>
+            <span className="block truncate" style={{ color: "var(--text-secondary)", fontSize: 9.5, lineHeight: 1.3 }}>Guarde o PDF na aba Notas</span>
+          </span>
+        </div>
       </div>
     </MiniTela>
   );
