@@ -1,4 +1,4 @@
-/* WELCOME v18 — slides mostram avisos do DAS e check-up do CNPJ; dúvidas ficam no app (v17: versão anterior) */
+/* WELCOME v19 — slide da nota sem certificado nem promessa de emissão automática (v18: versão anterior) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -77,7 +77,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import {
   Gauge, ArrowLeft, ChevronRight, ChevronDown, Send, Mic,
   ArrowDownLeft, ArrowUpRight, CalendarCheck, FileText, Check, CheckCheck,
-  MessageCircle, Headphones, ListChecks, Globe, Zap, CheckCircle2,
+  MessageCircle, Headphones, ListChecks, Globe, CheckCircle2,
 } from "lucide-react";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 import { supabase } from "@/lib/supabase";
@@ -566,7 +566,6 @@ function MiniNota() {
   const opcoes = [
     { Icon: Mic, t: "Por áudio", d: "Você fala, a Isa emite" },
     { Icon: MessageCircle, t: "Por mensagem", d: "Só o valor e para quem foi" },
-    { Icon: Zap, t: "Automática", d: "Todo mês, sem digitar nada" },
     { Icon: ListChecks, t: "Sozinho", d: "Passo a passo no gov.br" },
   ];
   return (
@@ -765,7 +764,7 @@ const SLIDES = [
   { Mini: MiniInicio, titulo: "Limite sob controle 24h", subtitulo: "Veja na hora quanto já faturou e quanto ainda pode faturar no ano." },
   { Mini: MiniBanco, mostrar: MOSTRAR_OPEN_FINANCE, titulo: "Tudo chega sozinho", subtitulo: "Conecte o banco do seu MEI e as entradas e os gastos aparecem no app." },
   { Mini: MiniDas, mostrar: MOSTRAR_CARD_DAS, titulo: "DAS no automático", subtitulo: "Todo mês a Isa te lembra e manda o boleto do DAS no WhatsApp." },
-  { Mini: MiniNota, foraDaEscala: true, mostrar: MOSTRAR_TUTORIAL_NOTA, titulo: "Nota fiscal do seu jeito", subtitulo: "Mande um áudio ou uma mensagem e a Isa emite sua nota. Automática com o A1." },
+  { Mini: MiniNota, foraDaEscala: true, mostrar: MOSTRAR_TUTORIAL_NOTA, titulo: "Nota fiscal do seu jeito", subtitulo: "Veja o passo a passo do gov.br ou tire suas dúvidas com a Isa aqui no app." },
   /* Conferencia "É faturamento?": fora dos slides do piloto (a
      "propaganda" foi reprovada em 04/10). Troque para true para voltar. */
   { Mini: MiniConferir, mostrar: false, titulo: "A Isa organiza pra você", subtitulo: "Você diz uma vez se é faturamento. Da próxima, ela já sabe." },

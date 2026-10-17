@@ -1,3 +1,4 @@
+<!-- /* PENDENCIAS_FUTURAS v1 — certificado somente no fluxo futuro de emissão */ -->
 # PENDÊNCIAS PARA O FIM DO PROJETO — TaCerto!
 
 > Guardar este arquivo na raiz do projeto. Serve de lembrete para o dono
@@ -73,6 +74,8 @@ Se um dia quiser retomar no navegador, está tudo lá.
 ---
 
 ## 2. OUTRAS PENDÊNCIAS DO PROJETO
+
+- **Nota fiscal própria.** Pedir o Certificado A1 só dentro do fluxo de emissão, com ajuda da Isa na hora de preencher (o que é, como tirar, problema no arquivo).
 
 - **Back-end Supabase do zero.** Depois migrar `src/lib/chatHistorico.js`
   de localStorage para lá (o arquivo já tem o aviso de migração no topo).

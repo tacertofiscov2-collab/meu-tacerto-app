@@ -1,4 +1,4 @@
-/* PILOTO v33 — Isa com IA preparada e desligada; frase de dúvida pendente (v32: atalhos antigos abrem a Isa no app) */
+/* PILOTO v34 — remove mensagem pronta de interesse no certificado (v33: versão anterior) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 import { formatarCnpj, soDigitosCnpj } from "@/lib/cnpj";
 
@@ -526,12 +526,6 @@ export const MENSAGENS_WHATSAPP = {
     caminhoneiro
       ? `Oi Isa! Quero ajuda pra emitir uma nota fiscal. ${quemSou(d)}. Valor do frete: R$ ___. Para quem (empresa/CNPJ): ___`
       : `Oi Isa! Quero ajuda pra emitir uma nota fiscal. ${quemSou(d)}. Valor do servico: R$ ___. Para quem (empresa/CNPJ ou CPF): ___`,
-
-  /* Janela "Notas fiscais" (/notas-fiscais) e /como-emitir-nota,
-     botao "Tenho interesse no certificado". v20: preco de custo
-     R$ 100,34 (Tecnosign/Soluti); o agendamento e feito pelo WhatsApp. */
-  certificadoA1: (d) =>
-    `Oi Isa! Tenho interesse no Certificado Digital A1 (R$ 100,34, preco de custo) pra emitir nota automatica. Quero agendar a videochamada. ${quemSouComCnpj(d)}`,
 
   /* Inicio, painel da media limite: "Falar com a Isa no WhatsApp" */
   mediaLimite: (d) =>
