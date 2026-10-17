@@ -1,4 +1,4 @@
-/* CHATFISCOUI v7 — ditado pt-BR com conferência; sem botão de WhatsApp; limite 300 (v6: rodapé de cinco itens) */
+/* CHATFISCOUI v8 — teclado do iPhone: rodape some e a tela fica enquadrada acima do teclado (a conta antiga com offsetTop achava o teclado fechado) (v7: ditado pt-BR com conferência; sem botão de WhatsApp; limite 300 (v6: rodapé de cinco itens)) */
 import { useRef, useState, useEffect } from "react";
 import {
   Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList,
@@ -615,13 +615,22 @@ export default function ChatFiscoUI({
     // TROCA de estado — e nao a cada micro-evento da viewport.
     let tecladoAberto = false;
 
+    /* v8: no iPhone, ao abrir o teclado o Safari ROLA a pagina (offsetTop
+       cresce do tamanho do teclado), e a conta antiga
+       (innerHeight - height - offsetTop) dava ~0: o app achava que o
+       teclado estava fechado, o rodape ficava em cima do teclado e a tela
+       saia do enquadramento. Agora mede so innerHeight - height e, no
+       celular (toque), campo focado ja conta como teclado aberto. */
+    const toque = window.matchMedia?.("(pointer: coarse)")?.matches;
     const seguir = () => {
-      const teclado = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      const aberto = teclado > 60;
+      const a = document.activeElement;
+      const campoFocado = !!a && raiz.contains(a) && (a.tagName === "INPUT" || a.tagName === "TEXTAREA");
+      const teclado = Math.max(0, window.innerHeight - vv.height);
+      const aberto = teclado > 60 || (toque && campoFocado);
       // O scroll pro fim NAO fica aqui: se ficasse, disparava a cada
       // micro-evento da viewport e a tela "desfixava e reenquadrava".
       // O scroll acontece so quando chega mensagem nova (efeito abaixo).
-      aplicar(aberto ? teclado : 0);
+      aplicar(aberto ? Math.max(teclado, 1) : 0);
       if (aberto !== tecladoAberto) {
         tecladoAberto = aberto;
         setTecladoVisivel(aberto);
