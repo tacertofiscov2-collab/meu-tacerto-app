@@ -1,4 +1,4 @@
-/* CHATFISCOUI v8 — teclado do iPhone: rodape some e a tela fica enquadrada acima do teclado (a conta antiga com offsetTop achava o teclado fechado) (v7: ditado pt-BR com conferência; sem botão de WhatsApp; limite 300 (v6: rodapé de cinco itens)) */
+/* CHATFISCOUI v9 — microfone: fica verde enquanto ouve, aviso "Pode falar", texto aparece enquanto a pessoa fala e aviso certo para cada erro (Ditado desligado, microfone bloqueado, nao ouviu) (v8: teclado do iPhone: rodape some e a tela fica enquadrada acima do teclado (a conta antiga com offsetTop achava o teclado fechado) (v7: ditado pt-BR com conferência; sem botão de WhatsApp; limite 300 (v6: rodapé de cinco itens))) */
 import { useRef, useState, useEffect } from "react";
 import {
   Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList,
@@ -523,6 +523,11 @@ export default function ChatFiscoUI({
     }
   }, []);
 
+  /* v9: ditado com sinal de "ouvindo" (o microfone fica verde e o campo
+     mostra "Ouvindo..."), texto aparecendo enquanto fala e aviso certo
+     para cada erro do iPhone. O ditado do Safari depende do "Ditado" do
+     iPhone ligado (Ajustes > Geral > Teclado > Ativar Ditado). */
+  const [ouvindo, setOuvindo] = useState(false);
   function ditarPergunta() {
     const aviso = "Seu celular não deixou usar o microfone aqui. Digite sua pergunta.";
     const Reconhecimento = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -531,31 +536,41 @@ export default function ChatFiscoUI({
       reconhecimentoRef.current.stop();
       return;
     }
+    const base = rascunho.trim();
     try {
       const reconhecimento = new Reconhecimento();
       reconhecimentoRef.current = reconhecimento;
       reconhecimento.lang = "pt-BR";
       reconhecimento.continuous = false;
-      reconhecimento.interimResults = false;
+      reconhecimento.interimResults = true;
+      reconhecimento.onstart = () => { setOuvindo(true); toast("Pode falar... toque no microfone de novo para parar."); };
       reconhecimento.onresult = (evento) => {
-        const texto = Array.from(evento.results).filter((r) => r.isFinal)
-          .map((r) => r[0].transcript).join(" ").trim();
+        const texto = Array.from(evento.results).map((r) => r[0].transcript).join(" ").trim();
         if (!texto) return;
-        setRascunho((atual) => `${atual.trim()} ${texto}`.trim().slice(0, LIMITE_PERGUNTA_CHAT));
+        setRascunho(`${base} ${texto}`.trim().slice(0, LIMITE_PERGUNTA_CHAT));
+      };
+      reconhecimento.onerror = (evento) => {
+        const erro = evento?.error;
+        if (erro === "no-speech" || erro === "aborted") return toast("Não ouvi nada. Toque no microfone e fale de novo.");
+        if (erro === "not-allowed") return toast("Libere o microfone para este site: toque no \"aA\" da barra do Safari > Ajustes do Site > Microfone.");
+        if (erro === "service-not-allowed") return toast("Ligue o Ditado do iPhone: Ajustes > Geral > Teclado > Ativar Ditado.");
+        toast(aviso);
+      };
+      reconhecimento.onend = () => {
+        reconhecimentoRef.current = null;
+        setOuvindo(false);
         requestAnimationFrame(() => {
           const campo = inputChatRef.current;
           if (campo) {
             campo.style.height = "auto";
             campo.style.height = `${Math.min(campo.scrollHeight, MAX_ALTURA_CAMPO)}px`;
-            campo.focus();
           }
         });
       };
-      reconhecimento.onerror = () => toast(aviso);
-      reconhecimento.onend = () => { reconhecimentoRef.current = null; };
       reconhecimento.start();
     } catch {
       reconhecimentoRef.current = null;
+      setOuvindo(false);
       toast(aviso);
     }
   }
@@ -1074,7 +1089,7 @@ export default function ChatFiscoUI({
               }}
             />
 
-            {rascunho.trim() || !MOSTRAR_ANEXOS_CHAT ? (
+            {(rascunho.trim() && !ouvindo) || !MOSTRAR_ANEXOS_CHAT ? (
               <button
                 type="submit"
                 aria-label="Enviar"
@@ -1099,7 +1114,7 @@ export default function ChatFiscoUI({
                 className="toque rounded-full flex items-center justify-center shrink-0"
                 style={{ width: 40, height: 40 }}
               >
-                <Mic size={20} strokeWidth={2.1} style={{ color: "var(--text)" }} />
+                <Mic size={20} strokeWidth={2.1} style={{ color: ouvindo ? "var(--primary)" : "var(--text)" }} />
               </button>
             )}
           </div>
