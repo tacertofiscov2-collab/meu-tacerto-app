@@ -9,15 +9,26 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-<!-- AGENTS v2 — resumo das regras de código e mapa de pastas do CLAUDE.md
-     (para o Codex e outros agentes). A referência completa continua no
-     CLAUDE.md e no docs/HANDOFF.md. -->
+<!-- AGENTS v3 — fluxo por blocos (codex/bloco-N), mapa de pastas com docs/
+     e docs/historico/, leitura mínima (v2: regras de código e mapa de pastas) -->
 
 # TaCerto! — regras para agentes de código
 
 App de gestão para MEI (foco em MEI Caminhoneiro). O dono, Fernando, não é
 programador: fale com ele em português do Brasil simples. Leia antes o
-`CLAUDE.md` e o `docs/HANDOFF.md`.
+`CLAUDE.md` (curto) e o `docs/HANDOFF.md` (estado atual). Antes de mexer
+numa área, veja `docs/CUIDADOS-TECNICOS.md`. **Não leia `docs/historico/`**
+a não ser que a tarefa peça: é passado e só gasta tempo.
+
+## Como cada tarefa roda
+
+- Uma tarefa = um bloco = uma branch `codex/bloco-N`, criada a partir da
+  `piloto-simplificado` atualizada (`git checkout piloto-simplificado &&
+  git pull` antes).
+- No fim: build, checagem do WhatsApp, commit e push **só da sua branch**.
+  Quem junta na `piloto-simplificado` é o Claude/Fernando, depois de revisar.
+- Não inicie servidor no PC do Fernando (4 GB de RAM). Não rode SQL nem
+  publique funções. Não mexa no `.env`.
 
 ## Regras de código
 
@@ -77,6 +88,8 @@ programador: fale com ele em português do Brasil simples. Leia antes o
 | `src/hooks/` | `useAnoInicio` e outros |
 | `src/supabase/migrations.sql` | Registro de todo SQL já rodado |
 | `supabase/functions/` | Funções do servidor (Edge Functions do Supabase) |
-| `docs/` | HANDOFF, SQL pendente, passo a passo para o Fernando |
+| `docs/` | `HANDOFF.md` (estado), `LANCAMENTO-CHECKLIST.md`, `CUIDADOS-TECNICOS.md`, SQL pendente, passo a passo (índice: `docs/README.md`) |
+| `docs/historico/` | Resumos e prompts antigos — não ler no dia a dia |
+| `supabase/functions/isa-chat/` | Isa com IA: `index.ts`, apostila `base-mei.md` (editar esta) e `base-mei.ts` (gerado por `scripts/gerar-base-mei.mjs`) |
 | `scripts/` | Checagens simples (ex.: nada de link do WhatsApp em `src/`) |
 | `public/` | Ícones, fotos da Isa, manifesto do app |

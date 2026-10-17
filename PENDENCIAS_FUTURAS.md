@@ -76,9 +76,20 @@ Se um dia quiser retomar no navegador, está tudo lá.
 
 - **Back-end Supabase do zero.** Depois migrar `src/lib/chatHistorico.js`
   de localStorage para lá (o arquivo já tem o aviso de migração no topo).
-- **Fisco responder de verdade.** Hoje devolve sempre a mesma frase fixa.
-- **Ligar as ações dos anexos** do chat (foto, galeria, documento,
-  extrato) — hoje só a interface existe.
+- ~~Fisco responder de verdade~~ → Isa com IA pronta no Bloco 6
+  (`isa-chat`), falta publicar e ligar `ISA_IA_ATIVA`.
+- ~~Ligar as ações dos anexos do chat~~ → feito em 12/10.
+- **Nota fiscal própria, sem terceirizar** (pedido do Fernando, 16/10):
+  emitir pela API oficial e gratuita da **NFS-e Nacional** com o
+  certificado A1 da pessoa (frete na mesma cidade). CT-e (entre cidades)
+  também é gratuito, mas bem mais trabalhoso. Depois do piloto.
+- **Resposta da equipe voltar para o app:** hoje a dúvida pendente da Isa
+  é respondida no Supabase, mas a resposta não aparece sozinha para a pessoa.
+- **WhatsApp ativo (Isa avisando):** lembrete e boleto do DAS (no máx. 2
+  por mês), check-up do CNPJ, uso justo escondido. Falta escolher Z-API x
+  API oficial da Meta e construir o envio.
+- **Slide 1 das boas-vindas** ainda mostra a caixinha "Pergunte à Isa" no
+  Início de exemplo (saiu do Início no Bloco 3).
 - **Otimizar o tamanho do pacote.** O build avisa que o JS passou de
   835 KB (acima dos 500 KB recomendados). Resolve-se com code-splitting
   (`dynamic import`) ou `manualChunks`. Não é urgente, mas deixa a
