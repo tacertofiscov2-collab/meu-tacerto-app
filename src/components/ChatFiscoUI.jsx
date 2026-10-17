@@ -1,4 +1,4 @@
-/* CHATFISCOUI v6 — aba "Isa" (comRodape): o rodape de 5 itens embaixo da barra de digitar (sai com o teclado aberto) e sem o X (v5: "+" de anexos e microfone de volta, agora funcionando (MOSTRAR_ANEXOS_CHAT): Foto (camera), Galeria e Documento escolhem o arquivo aqui e chamam onAnexo(tipo, arquivo); Extrato e o microfone chamam onAnexo("extrato" | "audio") (v4: chat da Isa: botao "Falar com a Isa no WhatsApp" abaixo da resposta que a Isa nao soube (fora da bolha, por causa do segurar = menu); perguntas comuns em botoes na conversa que nao comecou; "+" de anexos e microfone escondidos (MOSTRAR_ANEXOS_CHAT: nunca fizeram nada); campo com 16px (o iPhone nao da zoom) (v3: Fisco vira Isa: foto da Isa (webp) e nome "Isa" no cabecalho, "assistente virtual" no lugar de "Online" (v2: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026)))))) */
+/* CHATFISCOUI v7 — ditado pt-BR com conferência; sem botão de WhatsApp; limite 300 (v6: rodapé de cinco itens) */
 import { useRef, useState, useEffect } from "react";
 import {
   Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList,
@@ -6,7 +6,8 @@ import {
 } from "lucide-react";
 import { rotuloData } from "@/lib/chatHistorico";
 import { FOTO_ISA_256 } from "./FotoIsa.jsx";
-import IconeWhatsApp from "./IconeWhatsApp.jsx";
+import { toast } from "sonner";
+import { LIMITE_PERGUNTA_CHAT } from "@/lib/fiscal";
 import { MOSTRAR_ANEXOS_CHAT } from "@/config/piloto";
 import BottomNav, { ALTURA_RODAPE } from "./BottomNav.jsx";
 
@@ -321,6 +322,7 @@ function FiscoDigitando() {
   return (
     <div className="flex w-full" style={{ justifyContent: "flex-start" }}>
       <div
+        role="status"
         className="rounded-2xl flex items-center"
         style={{
           padding: "10px 14px",
@@ -341,6 +343,7 @@ function FiscoDigitando() {
             }}
           />
         ))}
+        <span style={{ fontSize: 13, color: "var(--text-tertiary)", marginLeft: 5 }}>Isa está digitando...</span>
       </div>
     </div>
   );
@@ -479,10 +482,9 @@ function PainelHistorico({ aberto, onFechar, conversas, idAtual, onAbrir, onNova
 export default function ChatFiscoUI({
   mensagens, digitando, onEnviar, onEditarMensagem, onFechar,
   conversas, idAtual, onAbrirConversa, onNovaConversa, onApagarConversa,
-  /* v4: botao do WhatsApp (resposta sem resposta pronta) e perguntas comuns */
-  onWhatsApp, perguntasProntas = [], onPerguntaPronta,
+  perguntasProntas = [], onPerguntaPronta,
   /* v5: anexos — onAnexo("foto" | "galeria" | "documento", arquivo),
-     onAnexo("extrato") e onAnexo("audio") */
+     e onAnexo("extrato"); o microfone apenas preenche o campo */
   onAnexo,
   /* v6: aba "Isa" do rodape: o rodape de 5 itens fica embaixo da barra
      de digitar (some so com o teclado aberto, que cobre essa area) */
@@ -510,6 +512,53 @@ export default function ChatFiscoUI({
   /* v6: com o teclado aberto o rodape sai (o teclado cobre essa area) */
   const [tecladoVisivel, setTecladoVisivel] = useState(false);
   const rodapeNaTela = comRodape && !tecladoVisivel;
+  const reconhecimentoRef = useRef(null);
+  useEffect(() => () => {
+    const reconhecimento = reconhecimentoRef.current;
+    if (reconhecimento) {
+      reconhecimento.onresult = null;
+      reconhecimento.onerror = null;
+      reconhecimento.onend = null;
+      reconhecimento.abort();
+    }
+  }, []);
+
+  function ditarPergunta() {
+    const aviso = "Seu celular não deixou usar o microfone aqui. Digite sua pergunta.";
+    const Reconhecimento = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Reconhecimento) return toast(aviso);
+    if (reconhecimentoRef.current) {
+      reconhecimentoRef.current.stop();
+      return;
+    }
+    try {
+      const reconhecimento = new Reconhecimento();
+      reconhecimentoRef.current = reconhecimento;
+      reconhecimento.lang = "pt-BR";
+      reconhecimento.continuous = false;
+      reconhecimento.interimResults = false;
+      reconhecimento.onresult = (evento) => {
+        const texto = Array.from(evento.results).filter((r) => r.isFinal)
+          .map((r) => r[0].transcript).join(" ").trim();
+        if (!texto) return;
+        setRascunho((atual) => `${atual.trim()} ${texto}`.trim().slice(0, LIMITE_PERGUNTA_CHAT));
+        requestAnimationFrame(() => {
+          const campo = inputChatRef.current;
+          if (campo) {
+            campo.style.height = "auto";
+            campo.style.height = `${Math.min(campo.scrollHeight, MAX_ALTURA_CAMPO)}px`;
+            campo.focus();
+          }
+        });
+      };
+      reconhecimento.onerror = () => toast(aviso);
+      reconhecimento.onend = () => { reconhecimentoRef.current = null; };
+      reconhecimento.start();
+    } catch {
+      reconhecimentoRef.current = null;
+      toast(aviso);
+    }
+  }
 
   /* Veu e borda da barra de digitar e do "+". No escuro e um veu branco
      sobre fundo escuro; no claro precisa ser o contrario, senao o campo
@@ -655,7 +704,7 @@ export default function ChatFiscoUI({
   function submeter(e) {
     e.preventDefault();
     const texto = rascunho.trim();
-    if (!texto) return;
+    if (!texto || digitando) return;
     if (editando) {
       onEditarMensagem?.(editando.id, texto);
       setEditando(null);
@@ -802,26 +851,6 @@ export default function ChatFiscoUI({
               temaClaro={temaClaro}
               onSegurar={() => setMsgMenu(m)}
             />
-            {/* v4: a Isa nao soube: botao do WhatsApp FORA da bolha (o
-                segurar da bolha abre o menu). Abre dentro do toque. */}
-            {m.acao === "whatsapp" && onWhatsApp && (
-              <button
-                type="button"
-                onClick={() => onWhatsApp(m)}
-                className="toque self-start rounded-full font-semibold flex items-center"
-                style={{
-                  gap: 8,
-                  padding: "10px 16px",
-                  fontSize: 15,
-                  color: "var(--text)",
-                  background: "none",
-                  border: "1px solid rgba(34,197,94,0.45)",
-                }}
-              >
-                <IconeWhatsApp size={18} style={{ color: "var(--primary)" }} />
-                Falar com a Isa no WhatsApp
-              </button>
-            )}
           </div>
         ))}
         {/* v4: conversa que ainda nao comecou: perguntas comuns */}
@@ -1009,6 +1038,7 @@ export default function ChatFiscoUI({
             <textarea
               ref={inputChatRef}
               value={rascunho}
+              maxLength={LIMITE_PERGUNTA_CHAT}
               rows={1}
               onChange={(e) => {
                 setRascunho(e.target.value);
@@ -1054,8 +1084,9 @@ export default function ChatFiscoUI({
             ) : (
               <button
                 type="button"
-                aria-label="Mandar áudio para a Isa no WhatsApp"
-                onClick={() => onAnexo?.("audio")}
+                aria-label="Ditar pergunta para conferir antes de enviar"
+                onClick={ditarPergunta}
+                disabled={digitando}
                 className="toque rounded-full flex items-center justify-center shrink-0"
                 style={{ width: 40, height: 40 }}
               >

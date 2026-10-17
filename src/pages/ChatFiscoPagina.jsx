@@ -1,17 +1,34 @@
-/* CHATFISCOPAGINA v3 — vira a aba "Isa" do rodape (/isa, prop aba: sem o X, com o rodape); /fisco leva para ca com a mesma primeira mensagem (Bloco 3) (v2: anexos do chat funcionando (pedido do Fernando): foto, galeria e documento vao para o "+" ja lendo o comprovante (arquivoPendente), Extrato abre o Enviar extrato e o microfone abre o WhatsApp da Isa (v1: chat da Isa no app: responde com o motor de respostas prontas que ja existia (faqFisco, sem IA nova); o que nao souber mostra o botao "Falar com a Isa no WhatsApp" (com a pergunta); toda conversa comeca com "Oi, sou a Isa, a assistente com IA do TaCerto." e as perguntas comuns (antes respondia sempre "Ainda estou aprendendo..."))) */
+/* CHATFISCOPAGINA v4 — IA opcional desligada, fallback e dúvidas locais; sem saída para WhatsApp (v3: aba Isa) */
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ChatFiscoUI from "../components/ChatFiscoUI.jsx";
 import { deixarArquivoPendente } from "@/lib/arquivoPendente";
 import { useAppState } from "@/context/AppStateContext";
 import { contextoFaq, responderPergunta, perguntasGerais, textoPergunta } from "@/lib/faqFisco";
+import { supabase } from "@/lib/supabase";
+import { LIMITE_PERGUNTA_CHAT, valorDasMensal } from "@/lib/fiscal";
 import {
-  FRASE_APRESENTACAO_ISA, MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
+  FRASE_APRESENTACAO_ISA, ISA_IA_ATIVA, FRASE_ISA_NAO_SEI,
 } from "@/config/piloto";
 import {
   lerConversas, salvarConversa, apagarConversa, novoIdConversa,
   carregarConversasDoBanco,
 } from "@/lib/chatHistorico";
+
+// Sem envio ao banco: dúvidas da fase desligada ficam apenas neste aparelho.
+function guardarDuvidaLocal(pergunta, conta) {
+  try {
+    const chave = `tacerto_isa_duvidas:${conta || "visitante"}`;
+    const salvo = JSON.parse(localStorage.getItem(chave) || "[]");
+    const lista = Array.isArray(salvo) ? salvo : [];
+    localStorage.setItem(chave, JSON.stringify([...lista, { pergunta, criado_em: new Date().toISOString(), respondida: false }]));
+  } catch { /* armazenamento indisponível não derruba o chat */ }
+}
+
+// Conversas antigas não voltam a oferecer a ação de saída removida.
+function mensagensAtuais(lista) {
+  return lista.map(({ acao, ...m }) => acao ? { ...m, texto: FRASE_ISA_NAO_SEI } : m);
+}
 
 /* ===================================================================
    PAGINA /fisco — o chat da Isa em tela cheia (nome interno "fisco").
@@ -21,12 +38,8 @@ import {
    location.state.primeiraMensagem. Aqui a gente cria a conversa, mostra
    a mensagem dela e dispara a resposta da Isa.
 
-   v1 (10/10/2026): a resposta vem do faqFisco (responderPergunta), o
-   mesmo motor de respostas prontas que o chat antigo (Chat.jsx) usava.
-   Toda conversa comeca com a fala da Isa (FRASE_APRESENTACAO_ISA). Sem
-   resposta pronta: a bolha marca acao "whatsapp" e o ChatFiscoUI mostra
-   o botao "Falar com a Isa no WhatsApp" logo abaixo (a mensagem pronta
-   leva a pergunta). O botao abre DENTRO do toque (regra do iPhone).
+   Bloco 6: responde pela IA somente com a chave ligada. Na falha,
+   usa faqFisco; sem resposta pronta, guarda a duvida no aparelho.
 
    Se abrir /fisco sem primeira mensagem (ex.: link direto), comeca uma
    conversa vazia — a pessoa digita na propria pagina.
@@ -50,6 +63,21 @@ export default function ChatFiscoPagina({ aba = false }) {
   const [digitando, setDigitando] = useState(false);
   const [conversas, setConversas] = useState([]);
   const [idConversa, setIdConversa] = useState(null);
+  const requisicaoRef = useRef(0);
+  const ocupadaRef = useRef(false);
+  const abortarRef = useRef(null);
+
+  function interromperResposta() {
+    requisicaoRef.current++;
+    ocupadaRef.current = false;
+    abortarRef.current?.abort();
+    abortarRef.current = null;
+    setDigitando(false);
+  }
+  useEffect(() => () => {
+    requisicaoRef.current++;
+    abortarRef.current?.abort();
+  }, []);
 
   // Evita processar a primeira mensagem duas vezes (StrictMode roda o
   // efeito 2x em dev).
@@ -65,26 +93,30 @@ export default function ChatFiscoPagina({ aba = false }) {
   // Carrega a lista de conversas salvas ao montar.
   useEffect(() => {
     setConversas(lerConversas());
-    carregarConversasDoBanco().then((lista) => setConversas(lista));
+    carregarConversasDoBanco({ somenteLocal: !ISA_IA_ATIVA }).then((lista) => setConversas(lista));
   }, []);
 
   // Ao montar, se veio uma primeira mensagem do dashboard, dispara ela.
   useEffect(() => {
     if (primeiraTratada.current) return;
-    primeiraTratada.current = true;
-
-    const texto = location.state?.primeiraMensagem;
-    if (texto && String(texto).trim()) {
-      const minhaMsg = { id: Date.now(), autor: "user", texto: String(texto).trim() };
-      setIdConversa(novoIdConversa());
-      setMensagens([falaDeAbertura(), minhaMsg]);
-      responderComoFisco(minhaMsg.texto);
-      // Limpa o state pra um refresh nao reenviar a mesma mensagem.
-      navigate(location.pathname, { replace: true, state: {} });
-    } else {
-      // v1: conversa nova sem pergunta: a Isa se apresenta
-      setMensagens([falaDeAbertura()]);
-    }
+    let ativo = true;
+    // Só inicia após a montagem: o ciclo de teste do StrictMode não duplica
+    // a chamada nem cancela a única resposta à primeira mensagem.
+    queueMicrotask(() => {
+      if (!ativo || primeiraTratada.current) return;
+      primeiraTratada.current = true;
+      const texto = location.state?.primeiraMensagem;
+      if (texto && String(texto).trim()) {
+        const minhaMsg = { id: Date.now(), autor: "user", texto: String(texto).trim().slice(0, LIMITE_PERGUNTA_CHAT) };
+        setIdConversa(novoIdConversa());
+        setMensagens([falaDeAbertura(), minhaMsg]);
+        responderComoFisco(minhaMsg.texto);
+        navigate(location.pathname, { replace: true, state: {} });
+      } else {
+        setMensagens([falaDeAbertura()]);
+      }
+    });
+    return () => { ativo = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -93,39 +125,62 @@ export default function ChatFiscoPagina({ aba = false }) {
   useEffect(() => {
     if (!idConversa || mensagens.length === 0 || digitando) return;
     if (!mensagens.some((m) => m.autor === "user")) return;
-    salvarConversa(idConversa, mensagens);
+    salvarConversa(idConversa, mensagens, { somenteLocal: !ISA_IA_ATIVA });
     setConversas(lerConversas());
   }, [mensagens, digitando, idConversa]);
 
-  /* v1: resposta pelo faqFisco (respostas prontas, src/lib/faqFisco.js).
-     Sem resposta: { acao: "whatsapp", pergunta } e o chat mostra o botao. */
-  function responderComoFisco(pergunta) {
+  async function responderComoFisco(pergunta) {
+    if (ocupadaRef.current) return;
+    ocupadaRef.current = true;
+    const requisicao = ++requisicaoRef.current;
     setDigitando(true);
-    // Tempo "digitando": ~1,2s, com leve variacao
-    const tempo = 1100 + Math.floor(Math.random() * 300);
-    setTimeout(() => {
+    try {
       const a = appRef.current;
-      const ctx = contextoFaq({ tipoMEI: a.tipoMEI, limite: a.limiteAtual, faturado: a.faturamentoAtual });
-      const r = responderPergunta(pergunta, ctx);
-      setDigitando(false);
-      setMensagens((m) => [
-        ...m,
-        {
-          id: Date.now() + 1,
-          autor: "fisco",
-          texto: r.texto,
-          ...(r.achou ? {} : { acao: "whatsapp", pergunta }),
-        },
-      ]);
-    }, tempo);
-  }
-
-  /* v1: "Falar com a Isa no WhatsApp" (chamado dentro do toque) */
-  function falarNoWhatsApp(msg) {
-    abrirWhatsAppFisco(MENSAGENS_WHATSAPP.duvidaDoChat(dadosParaWhatsApp(appRef.current), msg?.pergunta || ""));
+      let resposta = null;
+      if (ISA_IA_ATIVA) {
+        const controle = new AbortController();
+        abortarRef.current = controle;
+        const tempo = setTimeout(() => controle.abort(), 35000);
+        try {
+          const cnaes = [a.cnae, ...(Array.isArray(a.cnaesSecundarios) ? a.cnaesSecundarios : [])].filter(Boolean);
+          const historico = mensagens.filter((m) => m.autor === "user" || m.autor === "fisco").slice(-6)
+            .map((m) => ({ role: m.autor === "user" ? "user" : "assistant", content: m.texto }));
+          const { data, error } = await supabase.functions.invoke("isa-chat", {
+            signal: controle.signal,
+            body: { pergunta, historico, contexto: {
+              tipoMEI: a.tipoMEI, faturado: a.faturamentoAtual, limite: a.limiteAtual,
+              valorDas: valorDasMensal(a.tipoMEI, cnaes), cnaes,
+            } },
+          });
+          if (!error && !data?.erro && typeof data?.resposta === "string" && data.resposta.trim()) {
+            resposta = data.resposta;
+          }
+        } catch { /* sem função, rede ou chave: usa a resposta pronta */ }
+        finally { clearTimeout(tempo); }
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+      }
+      if (requisicao !== requisicaoRef.current) return;
+      if (!resposta) {
+        const ctx = contextoFaq({ tipoMEI: a.tipoMEI, limite: a.limiteAtual, faturado: a.faturamentoAtual });
+        const pronta = responderPergunta(pergunta, ctx);
+        resposta = pronta.achou ? pronta.texto : FRASE_ISA_NAO_SEI;
+        if (!pronta.achou) guardarDuvidaLocal(pergunta, a.email);
+      }
+      setMensagens((m) => [...m, { id: Date.now() + 1, autor: "fisco", texto: resposta }]);
+    } finally {
+      if (requisicao === requisicaoRef.current) {
+        ocupadaRef.current = false;
+        abortarRef.current = null;
+        setDigitando(false);
+      }
+    }
   }
 
   function enviarMensagem(texto, respondendo) {
+    if (ocupadaRef.current) return;
+    texto = String(texto || "").trim().slice(0, LIMITE_PERGUNTA_CHAT);
+    if (!texto) return;
     const minhaMsg = {
       id: Date.now(),
       autor: "user",
@@ -146,11 +201,13 @@ export default function ChatFiscoPagina({ aba = false }) {
   function abrirConversa(id) {
     const c = lerConversas().find((x) => x.id === id);
     if (!c) return;
+    interromperResposta();
     setIdConversa(c.id);
-    setMensagens(c.mensagens);
+    setMensagens(mensagensAtuais(c.mensagens));
   }
 
   function novaConversa() {
+    interromperResposta();
     setIdConversa(null);
     setMensagens([falaDeAbertura()]);
   }
@@ -160,17 +217,15 @@ export default function ChatFiscoPagina({ aba = false }) {
     const restantes = lerConversas();
     setConversas(restantes);
     if (id === idConversa) {
+      interromperResposta();
       setIdConversa(null);
       setMensagens([falaDeAbertura()]);
     }
   }
 
-  /* v2: anexos do chat (MOSTRAR_ANEXOS_CHAT). O arquivo escolhido vai
-     para o "+" (Lancar), que abre lendo o comprovante; o app nao grava
-     audio: o microfone abre o WhatsApp da Isa. */
+  /* Arquivos seguem para o lançamento; ditado é tratado no ChatFiscoUI. */
   function receberAnexo(tipo, arquivo) {
     if (tipo === "extrato") return navigate("/enviar-extrato", { state: { de: "fisco" } });
-    if (tipo === "audio") return abrirWhatsAppFisco(MENSAGENS_WHATSAPP.audio(dadosParaWhatsApp(appRef.current)));
     if (!arquivo) return;
     deixarArquivoPendente(arquivo);
     navigate("/lancar", { state: { de: "fisco" } });
@@ -189,7 +244,6 @@ export default function ChatFiscoPagina({ aba = false }) {
       onAbrirConversa={abrirConversa}
       onNovaConversa={novaConversa}
       onApagarConversa={removerConversa}
-      onWhatsApp={falarNoWhatsApp}
       perguntasProntas={mensagens.some((m) => m.autor === "user") ? [] : perguntasProntas}
       onPerguntaPronta={(texto) => enviarMensagem(texto)}
       onAnexo={receberAnexo}
