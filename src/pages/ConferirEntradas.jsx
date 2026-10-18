@@ -1,8 +1,8 @@
-/* CONFERIRENTRADAS v10 — explicacao enquadrada: icone no topo, passos centralizados, botao no pe da tela */
+/* CONFERIRENTRADAS v16 — Fisco vira Isa: passo 3 "A Isa aprende" (v15: "Pode ser repetido": as entradas com o mesmo dia e valor de outro extrato vem num grupo so, primeiro (Sim, é repetido = nao conta; Não é repetido = viram as perguntas normais por pagador); no fim, o extrato pode substituir o total do ano digitado (respostas 1 e 11 do Fernando) (v14: no fim sempre passa pelos gastos em duvida (/conferir-saidas), tambem quando veio pelo portao do Inicio (v13: no lugar do Sim/Não, 6 respostas curtas (É frete/serviço, Reembolso de despesa, Vale-pedágio, Empréstimo, Estorno/devolução, Dinheiro meu/família); a sugerida pelo extrato vem com borda verde fina; grava a categoria; o que conta e lancado sem contar duas vezes (lancamento a mao igual e ajuste do total do ano); vindo do extrato, segue para os gastos (v12: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v11: "Fisco" vira "Fisco.ia" nos textos da tela (v10: explicacao enquadrada: icone no topo, passos centralizados, botao no pe da tela)))) */
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  ChevronDown, ChevronUp, ChevronLeft, Check, Loader2, AlertCircle, ListChecks,
+  ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Check, Loader2, AlertCircle, ListChecks, X,
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
@@ -10,6 +10,58 @@ import { useAppState } from "@/context/AppStateContext";
 import {
   organizarPelasRegras, salvarRegra, classificarGrupo, nomeParaDescricao,
 } from "@/lib/openfinance";
+import {
+  categoriasEntrada, entradaConta, sugerirCategoriaEntrada, ehRepetido, CATEGORIA_REPETIDO,
+} from "@/lib/categorias";
+import { lancarEntradasConfirmadas, substituirTotalPeloExtrato } from "@/lib/importarExtrato";
+
+/* ===================================================================
+   CONFERIRENTRADAS v15 (10/10/2026 — respostas do Fernando)
+   - POSSIVEL REPETIDO (resposta 11): o extrato que traz uma entrada com
+     o MESMO dia e valor de outra que ja veio de outro extrato nao
+     descarta mais sozinho: ela chega com categoria "repetido"
+     (src/lib/categorias.js). Todas essas vem num GRUPO SO, primeiro
+     ("N entradas iguais às de outro extrato"), com "Ver as entradas":
+       Sim, é repetido -> nao contam (status ignorada, categoria
+                          repetido; nao vira regra)
+       Não é repetido  -> o grupo se abre nas perguntas normais, por
+                          pagador (com as sugestoes de sempre)
+     O caso comum (o mesmo periodo mandado em outro formato) fica em um
+     toque so.
+   - EXTRATO NO LUGAR DO TOTAL (resposta 1): no fim, se os extratos
+     cobrem o ano ate o dia do total digitado e nada ficou sem resposta,
+     o total digitado sai e o velocimetro usa o extrato (regra em
+     src/lib/conciliacao.js). A tela final diz isso em uma linha.
+   =================================================================== */
+
+/* ===================================================================
+   CONFERIRENTRADAS v13 (10/10/2026 — tarefa de 08-10, Etapa 3)
+
+   O QUE MUDOU
+   - A pergunta continua "É faturamento?", mas a resposta e uma de 6
+     (src/lib/categorias.js — regras do HANDOFF-08-10):
+       CONTA:     É frete/serviço · Reembolso de despesa
+       NAO CONTA: Vale-pedágio · Empréstimo · Estorno/devolução ·
+                  Dinheiro meu/família
+     (MEI comum: "É venda/serviço" e sem "Vale-pedágio".) A categoria fica
+     gravada na entrada.
+   - AGRUPAMENTO: por pagador, como antes, MAS as entradas cuja descricao
+     ja diz o que sao (vale-pedagio, estorno, emprestimo, resgate...)
+     ficam num grupo proprio do mesmo pagador, com a resposta SUGERIDA
+     (borda verde fina). A mesma transportadora paga frete E
+     vale-pedagio, e so o frete conta.
+   - REGRA DO PAGADOR: o que conta (frete/servico ou reembolso) vira
+     regra "faturamento" para o documento — da proxima vez o mesmo
+     pagador entra sozinho (sugerido pelo que a pessoa ja disse). O que
+     nao conta NAO vira regra (um engano nunca esconde faturamento).
+   - NADA CONTADO DUAS VEZES: o que conta e lancado por
+     lancarEntradasConfirmadas (src/lib/importarExtrato.js): se a pessoa
+     ja tinha lancado a mao o mesmo valor (ate 3 dias), nao lanca de
+     novo; e o "Ajuste do total do ano" diminui o que ja estava nele.
+   - Vindo do "Enviar extrato" (state.de = "extrato"), no fim segue para
+     a conferencia dos GASTOS (/conferir-saidas), que so pergunta o que
+     estiver em duvida.
+   =================================================================== */
 
 /* ===================================================================
    CONFERIRENTRADAS — /conferir-entradas
@@ -28,7 +80,7 @@ import {
      pelo Fernando entre tres mostradas no chat):
        1 Veja quem te pagou        — Nome, valor e datas
        2 Responda: é faturamento?  — Sim ou Não
-       3 O Fisco aprende           — Da próxima vez, entra sozinho
+       3 A Isa aprende             — Da próxima vez, entra sozinho
      e, embaixo, um quadro pequeno com o que e Sim e o que e Não.
 
    v7 (27/09/2026): a explicacao estava "baguncada" (texto centralizado
@@ -169,17 +221,34 @@ function chaveDescricao(desc) {
     .trim();
 }
 
-function montarGrupos(entradas) {
+/* v15: { prefixo, abrirRepetidas } — com abrirRepetidas, as marcadas
+   "repetido" viram grupos normais por pagador (chave com o prefixo,
+   para nao misturar com os grupos que ja existem) */
+function montarGrupos(entradas, tipoMEI, { prefixo = "", abrirRepetidas = false } = {}) {
   const mapa = new Map();
 
   for (const e of entradas) {
     const doc = String(e.pagador_documento || "").replace(/\D/g, "");
-    const chave = doc ? `doc:${doc}` : `desc:${chaveDescricao(e.descricao) || "SEM DESCRICAO"}`;
+    /* v15: possivel repetido -> um grupo so, para todas */
+    if (!abrirRepetidas && ehRepetido(e)) {
+      if (!mapa.has("repetido")) {
+        mapa.set("repetido", { chave: "repetido", repetido: true, documento: "", tipoDoc: null, sugestao: CATEGORIA_REPETIDO, entradas: [] });
+      }
+      mapa.get("repetido").entradas.push(e);
+      continue;
+    }
+    /* v13: o que o extrato ja diz que NAO e faturamento fica num grupo
+       proprio do mesmo pagador, com a resposta sugerida */
+    const categoria = ehRepetido(e) ? null : e.categoria;
+    const sugestao = categoria || sugerirCategoriaEntrada(e.descricao, tipoMEI) || null;
+    const base = doc ? `doc:${doc}` : `desc:${chaveDescricao(e.descricao) || "SEM DESCRICAO"}`;
+    const chave = prefixo + (sugestao ? `${base}|${sugestao}` : base);
     if (!mapa.has(chave)) {
       mapa.set(chave, {
         chave,
         documento: doc,
         tipoDoc: doc.length === 14 ? "CNPJ" : doc.length === 11 ? "CPF" : null,
+        sugestao,
         entradas: [],
       });
     }
@@ -208,8 +277,9 @@ function montarGrupos(entradas) {
     };
   });
 
-  // Por data: quem pagou primeiro no ano vem primeiro
-  grupos.sort((a, b) => a.primeira - b.primeira);
+  // Por data: quem pagou primeiro no ano vem primeiro. v15: o grupo do
+  // "pode ser repetido" vem antes de tudo (um toque resolve o caso comum)
+  grupos.sort((a, b) => (b.repetido ? 1 : 0) - (a.repetido ? 1 : 0) || a.primeira - b.primeira);
   return grupos;
 }
 
@@ -218,25 +288,40 @@ function montarGrupos(entradas) {
 export default function ConferirEntradas() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { adicionarLancamento } = useAppState();
+  const app = useAppState();
+  const { tipoMEI } = app;
+  /* v13: estado ATUAL do app para lancar sem contar duas vezes */
+  const appRef = useRef(app);
+  appRef.current = app;
 
-  // Para onde vai no fim: a faixa de Lancar volta para Lancar; o resto,
-  // Dashboard.
-  const destinoFinal = location.state?.de === "lancar" ? "/lancar" : "/dashboard";
+  // Para onde vai no fim: a faixa de Lancar volta para Lancar; o resto
+  // passa pelos GASTOS em duvida (v14: tambem quando quem trouxe para ca
+  // foi o portao do Inicio, depois do "Depois" do extrato). Sem gasto em
+  // duvida, a /conferir-saidas volta sozinha para o Inicio.
+  const de = location.state?.de;
+  const destinoFinal = de === "lancar" ? "/lancar" : "/conferir-saidas";
+  const irParaODestino = () => navigate(destinoFinal, { replace: true });
 
   // carregando | explicacao | pergunta | salvando | fim | erro
   const [fase, setFase] = useState("carregando");
   const [userId, setUserId] = useState(null);
   const [grupos, setGrupos] = useState([]);
   const [indice, setIndice] = useState(0);
-  const [respostas, setRespostas] = useState({}); // chave -> "sim" | "nao"
+  const [respostas, setRespostas] = useState({}); // chave -> id da categoria
   const [listaAberta, setListaAberta] = useState(false);
   const [faturado, setFaturado] = useState(0);
+  const [jaLancadas, setJaLancadas] = useState(0);
   const [erro, setErro] = useState({ texto: "", tipo: "" }); // tipo: carregar | salvar
 
   // O que ja foi gravado entre uma tentativa e outra (nao repete)
   const salvosRef = useRef({});
   const faturadoRef = useRef(0);
+  const casadosRef = useRef(0);
+  const absorvidoRef = useRef(0);
+  const substituidoRef = useRef(0);
+  const [jaNoTotal, setJaNoTotal] = useState(0);
+  const [substituido, setSubstituido] = useState(0);
+  const opcoes = categoriasEntrada(tipoMEI);
 
   /* Organiza o que o Fisco ja sabe e agrupa o resto. Sem nada para
      conferir, segue direto (nao mostra tela nenhuma). */
@@ -253,13 +338,17 @@ export default function ConferirEntradas() {
         if (ativo) setUserId(user.id);
 
         const { pendentes } = await organizarPelasRegras(user.id, {
-          criarLancamento: adicionarLancamento,
+          tipoMEI: appRef.current.tipoMEI,
+          aoConfirmar: (efetivas) => lancarEntradasConfirmadas(user.id, efetivas, () => appRef.current),
         });
         if (!ativo) return;
 
-        const g = montarGrupos(pendentes);
+        const g = montarGrupos(pendentes, appRef.current.tipoMEI);
         if (!g.length) {
-          navigate(destinoFinal, { replace: true });
+          /* v15: as regras resolveram tudo: o extrato ja pode tomar o
+             lugar do total digitado? */
+          try { await substituirTotalPeloExtrato(user.id, () => appRef.current); } catch { /* fica o total */ }
+          if (ativo) irParaODestino();
           return;
         }
         // Primeira conferencia da vida? (nenhuma entrada ja conferida)
@@ -291,27 +380,47 @@ export default function ConferirEntradas() {
 
   /* Grava as respostas ainda nao gravadas. Lanca erro se falhar — o
      que ja foi gravado fica marcado e nao repete. */
+  /* v13: as que contam sao juntadas e lancadas DE UMA VEZ no fim
+     (lancarEntradasConfirmadas), mesmo se um grupo do meio falhar — o
+     "finally" garante que nada confirmado fica sem lancamento. */
   async function gravar(resps) {
-    for (const g of grupos) {
-      const r = resps[g.chave];
-      if (!r || salvosRef.current[g.chave]) continue;
+    const confirmadas = [];
+    try {
+      for (const g of grupos) {
+        const categoria = resps[g.chave];
+        if (!categoria || salvosRef.current[g.chave]) continue;
 
-      const sim = r === "sim";
-      const res = await classificarGrupo(userId, g.entradas, sim ? "faturamento" : "ignorada", {
-        criarLancamento: adicionarLancamento,
-      });
-      salvosRef.current[g.chave] = true;
+        const conta = entradaConta(categoria);
+        const res = await classificarGrupo(userId, g.entradas, conta ? "faturamento" : "ignorada", {
+          categoria,
+          aoConfirmar: (efetivas) => { confirmadas.push(...efetivas); },
+        });
+        salvosRef.current[g.chave] = true;
 
-      if (sim) {
-        faturadoRef.current += res?.total || 0;
-        // Sim vira regra (o Fisco aprende); Não, nao.
-        if (g.documento) {
-          try {
-            await salvarRegra(userId, g.documento, g.nome, "faturamento");
-          } catch {
-            /* sem a regra, da proxima vez pergunta de novo — nao e grave */
+        if (conta) {
+          faturadoRef.current += res?.total || 0;
+          // O que conta vira regra (o Fisco aprende); o que nao conta, nao.
+          if (g.documento) {
+            try {
+              await salvarRegra(userId, g.documento, g.nome, "faturamento");
+            } catch {
+              /* sem a regra, da proxima vez pergunta de novo — nao e grave */
+            }
           }
         }
+      }
+    } finally {
+      if (confirmadas.length) {
+        const r = await lancarEntradasConfirmadas(userId, confirmadas, () => appRef.current);
+        casadosRef.current += r.casados || 0;
+        absorvidoRef.current += r.absorvido || 0;
+        substituidoRef.current += r.substituido || 0;
+      } else {
+        /* v15: nada novo contou; mesmo assim o extrato pode tomar o
+           lugar do total digitado */
+        try {
+          substituidoRef.current += await substituirTotalPeloExtrato(userId, () => appRef.current);
+        } catch { /* fica o total */ }
       }
     }
   }
@@ -321,6 +430,9 @@ export default function ConferirEntradas() {
     try {
       await gravar(resps);
       setFaturado(faturadoRef.current);
+      setJaLancadas(casadosRef.current);
+      setJaNoTotal(absorvidoRef.current);
+      setSubstituido(substituidoRef.current);
       setFase("fim");
     } catch {
       setErro({
@@ -341,6 +453,15 @@ export default function ConferirEntradas() {
     } else {
       finalizar(novas);
     }
+  }
+
+  /* v15: "Não é repetido": o grupo vira as perguntas normais, por
+     pagador, no mesmo lugar da fila */
+  function abrirRepetidas() {
+    const atual = grupos[indice];
+    const separados = montarGrupos(atual.entradas, tipoMEI, { prefixo: "rep:", abrirRepetidas: true });
+    setGrupos([...grupos.slice(0, indice), ...separados, ...grupos.slice(indice + 1)]);
+    setListaAberta(false);
   }
 
   function anterior() {
@@ -425,8 +546,8 @@ export default function ConferirEntradas() {
                 <div className="flex justify-center">
                   <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                     <Passo numero={1} titulo="Veja quem te pagou" detalhe="Nome, valor e datas" />
-                    <Passo numero={2} titulo="Responda: é faturamento?" detalhe="Sim ou Não" />
-                    <Passo numero={3} titulo="O Fisco aprende" detalhe="Da próxima vez, entra sozinho" />
+                    <Passo numero={2} titulo="Responda: é faturamento?" detalhe="Um toque na resposta certa" />
+                    <Passo numero={3} titulo="A Isa aprende" detalhe="Da próxima vez, entra sozinho" />
                   </div>
                 </div>
 
@@ -438,17 +559,18 @@ export default function ConferirEntradas() {
                   className="rounded-2xl"
                   style={{
                     padding: "14px 16px",
-                    backgroundColor: "var(--surface)",
+                    /* v13: sem fundo cinza (padrao "menos cor") */
+                    backgroundColor: "transparent",
                     border: "1px solid var(--border)",
                   }}
                 >
+                  {/* v13: reembolso de despesa CONTA (Cosit 72/2020); antes
+                      estava do lado errado */}
                   <p style={{ fontSize: 14, lineHeight: 1.5, color: "var(--text-secondary)" }}>
-                    <strong style={{ color: "var(--text)" }}>Sim</strong> = cliente pagando seu trabalho
-                    (serviço, frete, vendas)
+                    <strong style={{ color: "var(--text)" }}>Conta</strong> = {tipoMEI === "MEI_CAMINHONEIRO" ? "frete, adiantamento e saldo de frete" : "venda ou serviço"}, reembolso de despesa
                   </p>
                   <p style={{ fontSize: 14, lineHeight: 1.5, color: "var(--text-secondary)", marginTop: 8 }}>
-                    <strong style={{ color: "var(--text)" }}>Não</strong> = transferência sua, presente,
-                    empréstimo, reembolso
+                    <strong style={{ color: "var(--text)" }}>Não conta</strong> = {tipoMEI === "MEI_CAMINHONEIRO" ? "vale-pedágio, " : ""}empréstimo, estorno, dinheiro seu ou da família
                   </p>
                 </div>
               </div>
@@ -484,7 +606,25 @@ export default function ConferirEntradas() {
 
               {/* o pagador, com cara de comprovante (v3) */}
               <div className="card-tacerto rounded-2xl overflow-hidden" style={{ marginTop: 16 }}>
-                {/* quem pagou */}
+                {/* quem pagou (v15: ou o aviso do possivel repetido) */}
+                {g.repetido ? (
+                  <div style={{ padding: "14px 16px 12px" }}>
+                    <p
+                      className="font-semibold uppercase"
+                      style={{ color: "var(--text-tertiary)", fontSize: 11, letterSpacing: "0.08em" }}
+                    >
+                      Pode ser repetido
+                    </p>
+                    <p className="font-bold" style={{ fontSize: 16.5, color: "var(--text)", marginTop: 8 }}>
+                      {g.entradas.length === 1
+                        ? "1 entrada igual à de outro extrato"
+                        : `${g.entradas.length} entradas iguais às de outro extrato`}
+                    </p>
+                    <p className="text-[12.5px]" style={{ color: "var(--text-tertiary)", marginTop: 1 }}>
+                      Mesmo dia e mesmo valor
+                    </p>
+                  </div>
+                ) : (
                 <div style={{ padding: "14px 16px 12px" }}>
                   <p
                     className="font-semibold uppercase"
@@ -518,12 +658,14 @@ export default function ConferirEntradas() {
                     </div>
                   </div>
                 </div>
+                )}
 
                 <Picote />
 
                 {/* detalhes */}
                 <div style={{ padding: "10px 16px 14px" }}>
-                  <LinhaDetalhe rotulo="Entradas" valor={String(g.entradas.length)} />
+                  {/* v15: no repetido o numero ja esta no titulo */}
+                  {!g.repetido && <LinhaDetalhe rotulo="Entradas" valor={String(g.entradas.length)} />}
                   <LinhaDetalhe rotulo="Período" valor={periodoCurto(g)} />
                   {meiosDoGrupo(g) && <LinhaDetalhe rotulo="Meio" valor={meiosDoGrupo(g)} />}
 
@@ -568,6 +710,12 @@ export default function ConferirEntradas() {
                               {reais(e.valor)}
                             </span>
                           </div>
+                          {/* v15: no grupo do repetido, de quem e cada uma */}
+                          {g.repetido && e.pagador_nome && (
+                            <p className="text-[12.5px] truncate" style={{ color: "var(--text-secondary)", marginTop: 2 }}>
+                              {nomeParaDescricao(e.pagador_nome)}
+                            </p>
+                          )}
                           {e.descricao && (
                             <p className="text-[12px] truncate" style={{ color: "var(--text-tertiary)", marginTop: 2 }}>
                               {e.descricao}
@@ -581,22 +729,36 @@ export default function ConferirEntradas() {
               </div>
 
               {/* a pergunta */}
-              <p className="font-bold text-center" style={{ fontSize: 20, marginTop: 26 }}>
-                É faturamento?
+              <p className="font-bold text-center" style={{ fontSize: 20, marginTop: 22 }}>
+                {g.repetido ? "É repetido?" : "É faturamento?"}
               </p>
-              <div className="flex" style={{ gap: 10, marginTop: 14 }}>
-                <BotaoResposta
-                  rotulo="Sim"
-                  marcado={respostas[g.chave] === "sim"}
-                  principal
-                  aoTocar={() => responder("sim")}
-                />
-                <BotaoResposta
-                  rotulo="Não"
-                  marcado={respostas[g.chave] === "nao"}
-                  aoTocar={() => responder("nao")}
-                />
+              {/* v15: possivel repetido — Sim (nao conta) ou abre por pagador */}
+              {g.repetido ? (
+                <div className="grid grid-cols-1" style={{ gap: 8, marginTop: 12 }}>
+                  <BotaoCategoria
+                    rotulo="Sim, é repetido"
+                    conta={false}
+                    sugerida
+                    marcada={respostas[g.chave] === CATEGORIA_REPETIDO}
+                    aoTocar={() => responder(CATEGORIA_REPETIDO)}
+                  />
+                  <BotaoCategoria rotulo="Não é repetido" seguir aoTocar={abrirRepetidas} />
+                </div>
+              ) : (
+              /* v13: 6 respostas curtas (as que contam primeiro) */
+              <div className="grid grid-cols-2" style={{ gap: 8, marginTop: 12 }}>
+                {opcoes.map((o) => (
+                  <BotaoCategoria
+                    key={o.id}
+                    rotulo={o.rotulo}
+                    conta={o.conta}
+                    sugerida={g.sugestao === o.id}
+                    marcada={respostas[g.chave] === o.id}
+                    aoTocar={() => responder(o.id)}
+                  />
+                ))}
               </div>
+              )}
 
               {indice > 0 && (
                 <div className="flex justify-center" style={{ marginTop: 18 }}>
@@ -639,7 +801,24 @@ export default function ConferirEntradas() {
                   "Nada entrou no seu faturamento."
                 )}
               </p>
-              <BotaoLargo rotulo="Continuar" aoTocar={() => navigate(destinoFinal, { replace: true })} />
+              {jaLancadas > 0 && (
+                <p className="text-[14px] leading-relaxed" style={{ color: "var(--text-tertiary)", marginTop: 6 }}>
+                  {jaLancadas === 1
+                    ? "1 já estava lançada à mão: não contei de novo."
+                    : `${jaLancadas} já estavam lançadas à mão: não contei de novo.`}
+                </p>
+              )}
+              {/* v15: o extrato tomou o lugar do total digitado */}
+              {substituido > 0 ? (
+                <p className="text-[14px] leading-relaxed" style={{ color: "var(--text-tertiary)", marginTop: 6 }}>
+                  Agora o velocímetro usa o extrato no lugar do total que você digitou.
+                </p>
+              ) : jaNoTotal > 0 && (
+                <p className="text-[14px] leading-relaxed" style={{ color: "var(--text-tertiary)", marginTop: 6 }}>
+                  {reais(jaNoTotal)} já estavam no total do ano que você digitou.
+                </p>
+              )}
+              <BotaoLargo rotulo="Continuar" aoTocar={irParaODestino} />
             </div>
           )}
 
@@ -677,29 +856,35 @@ export default function ConferirEntradas() {
 
 /* ========================== PECAS DA TELA ========================== */
 
-function BotaoResposta({ rotulo, marcado, principal = false, aoTocar }) {
-  const fundo = principal
-    ? "var(--primary)"
-    : marcado
-    ? "rgba(34,197,94,0.12)"
-    : "transparent";
-  const borda = principal ? "var(--primary)" : marcado ? "rgba(34,197,94,0.6)" : "var(--border)";
+/* v13: uma resposta. Conta = ✓ verde; nao conta = ✕ cinza.
+   sugerida (o extrato ja diz o que e) = borda verde fina (destaque
+   discreto, sem fundo); marcada (ao voltar com "Anterior") = mais acesa. */
+/* v15: seguir = "Não é repetido" (setinha: abre as perguntas normais) */
+function BotaoCategoria({ rotulo, conta, sugerida, marcada, seguir = false, aoTocar }) {
+  const borda = sugerida ? "rgba(34,197,94,0.55)" : marcada ? "var(--text-secondary)" : "var(--border)";
   return (
     <button
+      type="button"
       onClick={aoTocar}
-      className="flex-1 rounded-2xl font-bold transition active:scale-[0.98]"
+      className="toque rounded-2xl flex items-center text-left transition active:scale-[0.98]"
       style={{
-        paddingTop: 15,
-        paddingBottom: 15,
-        fontSize: 17,
-        backgroundColor: fundo,
-        border: `1.5px solid ${borda}`,
-        color: principal ? "var(--primary-contrast)" : "var(--text)",
-        // resposta anterior marcada (ao voltar com "Anterior")
-        boxShadow: marcado ? "0 0 0 3px rgba(34,197,94,0.25)" : "none",
+        gap: 8,
+        minHeight: 50,
+        padding: "9px 10px 9px 13px",
+        background: "none",
+        border: `1px solid ${borda}`,
       }}
     >
-      {rotulo}
+      <span className="flex-1 min-w-0 font-semibold leading-snug" style={{ fontSize: 14.5, color: "var(--text)" }}>
+        {rotulo}
+      </span>
+      {seguir ? (
+        <ChevronRight size={17} strokeWidth={2.2} className="shrink-0" style={{ color: "var(--text-tertiary)" }} />
+      ) : conta ? (
+        <Check size={16} strokeWidth={2.6} className="shrink-0" style={{ color: "var(--primary)" }} />
+      ) : (
+        <X size={15} strokeWidth={2.4} className="shrink-0" style={{ color: "var(--text-tertiary)" }} />
+      )}
     </button>
   );
 }
@@ -793,7 +978,7 @@ function BotaoLargo({ rotulo, aoTocar, margemTopo = 26 }) {
   return (
     <button
       onClick={aoTocar}
-      className="w-full py-3.5 rounded-2xl font-semibold transition active:scale-[0.99]"
+      className="botao-confirmar w-full py-3.5 rounded-2xl font-semibold transition active:scale-[0.99]"
       style={{
         marginTop: margemTopo,
         backgroundColor: "var(--primary)",

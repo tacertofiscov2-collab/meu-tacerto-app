@@ -1,4 +1,4 @@
-﻿/* TRANSICAOTELA v2 — altura acompanha o teclado (iOS) */
+﻿/* TRANSICAOTELA v3 — as 4 abas do rodape (/dashboard, /notas, /isa, /mais e /perfil) trocam sem deslizar: troca de aba e so pelo toque, como nos apps (v2: altura acompanha o teclado (iOS)) */
 import { useState } from "react";
 import { useLocation, useNavigationType } from "react-router-dom";
 
@@ -42,7 +42,8 @@ import { useLocation, useNavigationType } from "react-router-dom";
    não devem passar pela animação CSS daqui — se passassem, as duas
    animações rodariam juntas (uma por cima da outra) e ainda forçariam
    um remount extra pela troca de key, causando a travadinha geral. */
-const ROTAS_DO_TRILHO = new Set(["/dashboard", "/perfil"]);
+/* v3: as abas do rodape tambem: trocar de aba nao desliza a tela */
+const ROTAS_DO_TRILHO = new Set(["/dashboard", "/perfil", "/mais", "/notas", "/isa"]);
 
 const ROTAS_COM_VOLTAR_REAL = new Set([
   "/editar-perfil", "/preferencias", "/alterar-senha",

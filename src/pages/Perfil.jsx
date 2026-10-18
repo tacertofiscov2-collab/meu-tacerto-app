@@ -1,18 +1,179 @@
-﻿/* PERFIL v6 — setas de entrada/saida, "Adicionar movimentações" e topo que rola */
+﻿/* PERFIL v31 — vira a aba "Mais" (/mais e /perfil): titulo "Mais" sem setinha, rodape de 5 itens; secoes Meu MEI (CNPJ, DAS, Calcular, Declaração anual, Histórico) | Minha conta (Nome, Tipo de MEI, Abertura, WhatsApp, Permissões e integrações, Tema) | Ajuda (Suporte, Rever tutorial, Termos, Privacidade) | Sair e Excluir conta; Notas sai (tem aba propria); Limite/Já faturado/Limite restante saem (estao no velocimetro); Meu lucro fica no Calcular (Bloco 3) (v30: Ajuda: "Tutorial do app" (rever o "Como funciona" do primeiro acesso; Bloco L) (v29: Conta: linha "Permissões e integrações" (/perfil/permissoes; MOSTRAR_PERMISSOES) (v28: Meu MEI: "Simulador" vira "Calcular" (/calcular: quanto ainda posso faturar, Imposto de Renda, DAS do ano, Meu lucro; MOSTRAR_CALCULAR) (v27: "Notas fiscais" sai da Ajuda e vai para o Meu MEI, logo abaixo do DAS (Bloco E) (v26: Meu MEI: linha "DAS" (o imposto mensal do MEI, "Vence dd/mm") que abre a pagina do DAS (/das); sai o "Como pagar o DAS" da Ajuda (MOSTRAR_PAGINA_DAS) (v25: Abertura travada mostra a data do CNPJ (opcao pelo MEI), nao a do app (v24: dados que vieram do CNPJ ficam TRAVADOS: Tipo de MEI (quando bate com o CNPJ) e Abertura mostram um cadeado pequeno e "Veio do seu CNPJ"; tocar abre a pagina do CNPJ (Atualizar / Remover CNPJ) (v23: Meu MEI: linha "Simulador" (/simulador) (v22: Preferencias com o detalhe "Lembrete do DAS" (a tela voltou so com ele) (v21: Ajuda: "Notas fiscais" abre a janela nova (/notas-fiscais) (v20: Meu MEI: linha "Meu lucro" (/meu-lucro) (v19: Meu MEI: linha "CNPJ" (mascarado 12.345.•••/••01-90; sem CNPJ, "Não preenchido" com pontinho de aviso) que abre a busca/confirmacao (/perfil/cnpj) (v18: "Excluir conta" em branco (como as outras linhas); vermelho so no "Sair da conta" (pedido do Fernando) (v17: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v16: Ajuda: "Falar com o suporte" (chat dentro do app, /suporte) no lugar do Fisco no WhatsApp e "Declaracao anual"; "Excluir conta" logo abaixo do Tema (longe do Sair) (v15: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v14: os itens do Editar perfil vieram para ca, todos tocaveis (Nome, WhatsApp, Tipo de MEI, Abertura); sai a linha "Editar perfil"; "Excluir conta" no fim, tamanho normal (v13: "Falta" vira "Limite restante"; linha nova "Historico de lancamentos" (abre /historico) no Meu MEI (v12: sem a barra de baixo (MOSTRAR_BARRA_NO_PERFIL); botoes Sair/Remover em contorno vermelho (v11: sem o nome grande no topo; "Conta" primeiro (Editar perfil + Tema Preto/Branco); letras maiores (v10: lista simples estilo Pierre Finance; v9: selo "gratis"; v8: cartoes))))))))))) */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import BottomNav from "../components/BottomNav.jsx";
+import BottomNav, { ALTURA_RODAPE } from "../components/BottomNav.jsx";
 import {
-  User, Settings, Info, Shield, Users, Lock, LogOut,
-  ChevronDown, ChevronRight, UserPlus, X, Check, TrendingUp, BarChart3,
-  Trash2, FileText, ArrowUpRight, ArrowDownLeft, CalendarCheck,
+  User, Settings, Info, Shield, Lock, LogOut,
+  ChevronDown, UserPlus, X, Check, TrendingUp, BarChart3,
+  Trash2, ArrowUpRight, CalendarCheck,
+  Briefcase, CalendarDays, Sun, Moon, History, Phone, Headphones, Landmark, Building2, Wallet, Calculator,
 } from "lucide-react";
+import { Lock as Cadeado, ShieldCheck, PlayCircle } from "lucide-react";
+import { mascararCnpj, ehCnaeCaminhoneiro } from "@/lib/cnpj";
+import Calendario from "../components/Calendario.jsx";
+import ApresentacaoFisco from "../components/ApresentacaoFisco.jsx";
+import { LinhaCampo, AvisoFaleConosco, FolhaTipoMei } from "../components/PerfilFolhas.jsx";
+import {
+  DIAS_PARA_CORRIGIR_TIPO, formatarTelefone, sincronizarPerfilNoBanco,
+} from "@/lib/perfil";
+import { aplicarTema, temaEfetivo } from "./Preferencias.jsx";
 import TopoRolavel from "../components/TopoRolavel.jsx";
+import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
+import { LABEL_TIPO, LIMITE_NOME_INPUT } from "@/lib/fiscal";
 
 import { useUserState, setUserState } from "@/lib/userState";
 import {
   lerContas, lerContaAtivaId, ativarConta, removerAcessoConta,
 } from "@/lib/contas";
+import { supabase } from "@/lib/supabase";
+import { useAppState } from "@/context/AppStateContext";
+import {
+  MOSTRAR_PREFERENCIAS, MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS,
+  MOSTRAR_ADICIONAR_MOVIMENTACOES, MOSTRAR_RESUMO_ANO, MOSTRAR_SOBRE,
+  MOSTRAR_AVATAR, MOSTRAR_LOGIN_EMAIL,
+  MOSTRAR_SUPORTE, MOSTRAR_DECLARACAO_ANUAL, MOSTRAR_MEU_LUCRO, MOSTRAR_SIMULADOR, MOSTRAR_CALCULAR,
+  MOSTRAR_PAGINA_DAS, MOSTRAR_PERMISSOES, MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
+} from "@/config/piloto";
+import { proximoVencimentoDas, formatarDiaMes } from "@/lib/vencimentoDas";
+
+/* ===================================================================
+   PERFIL v14 (05/10/2026) — pedido do Fernando: "o Editar perfil ta
+   vazio, com poucos itens: passe eles pra fora, clicaveis"
+   - CONTA: Nome (toca e ja digita na linha; "Salvar" aparece embaixo
+     quando muda), WhatsApp (toca: aviso "fale com a gente", o numero e
+     o login) e Tema.
+   - MEU MEI: Tipo de MEI abre a folha "Seu tipo de MEI" (O que
+     mudou?); Abertura abre o calendario, so para quem abriu este ano
+     (como no Editar perfil). Limite, ja faturado, limite restante e o
+     Historico de lancamentos continuam.
+   - No fim: Sair da conta e "Excluir conta" no tamanho normal.
+   - A tela /editar-perfil continua existindo, sem link.
+   As folhas e a gravacao no banco sao as mesmas do Editar perfil
+   (components/PerfilFolhas.jsx e lib/perfil.js).
+   =================================================================== */
+
+/* ===================================================================
+   PERFIL v11 (05/10/2026) — pedido do Fernando
+   - Saiu o NOME GRANDE do topo (MOSTRAR_NOME_NO_TOPO = false, abaixo;
+     o codigo continua). A tela abre direto na lista, sob o titulo
+     "Perfil".
+   - Ordem nova: CONTA primeiro (Editar perfil e Tema), depois MEU MEI,
+     AJUDA, SOBRE e, por ultimo, Sair da conta.
+   - TEMA de volta, so Preto ou Branco (sem "automatico"): grava em
+     localStorage "tacerto_tema" ("escuro"/"claro") — a mesma chave que
+     o main.jsx le ao abrir o app — e aplica na hora (aplicarTema, de
+     Preferencias.jsx).
+   - Letras maiores: ListaSimples v2 e valores em 15px.
+   =================================================================== */
+const MOSTRAR_NOME_NO_TOPO = false;
+
+/* v12 (pedido do Fernando): a barra de baixo (Inicio, +, Perfil) some no
+   Perfil. Volta-se ao Inicio pela setinha do topo ou pelo gesto. */
+/* v31: o Perfil virou a aba "Mais": o rodape de 5 itens volta, igual
+   em todas as abas (a setinha de voltar saiu: e aba) */
+const MOSTRAR_BARRA_NO_PERFIL = true;
+
+/* v19: "Não preenchido" com um pontinho de aviso (amarelo apagado) */
+function NaoPreenchido() {
+  return (
+    <span className="inline-flex items-center" style={{ gap: 7 }}>
+      Não preenchido
+      <span aria-hidden className="inline-block rounded-full" style={{ width: 7, height: 7, backgroundColor: "#f59e0b", opacity: 0.85 }} />
+    </span>
+  );
+}
+
+/* v24: valor de um dado que veio do CNPJ: o valor + cadeado pequeno */
+function ValorTravado({ children }) {
+  return (
+    <span className="inline-flex items-center" style={{ gap: 6 }}>
+      {children}
+      <Cadeado size={13} strokeWidth={2.2} aria-label="Veio do seu CNPJ" style={{ color: "var(--text-tertiary)", flexShrink: 0 }} />
+    </span>
+  );
+}
+
+/* Preto | Branco, na propria linha do Tema */
+function SeletorTema({ tema, onEscolher }) {
+  const opcoes = [["escuro", "Preto"], ["claro", "Branco"]];
+  return (
+    <span className="inline-flex rounded-full" style={{ padding: 2, border: "1px solid var(--border)" }}>
+      {opcoes.map(([valor, rotulo]) => {
+        const ativo = tema === valor;
+        return (
+          <button
+            key={valor}
+            type="button"
+            onClick={() => onEscolher(valor)}
+            aria-pressed={ativo}
+            className="rounded-full font-medium transition-colors"
+            style={{
+              fontSize: 14,
+              padding: "5px 13px",
+              backgroundColor: "transparent",
+              boxShadow: ativo ? "inset 0 0 0 1px var(--text-secondary)" : "none",
+              color: ativo ? "var(--text)" : "var(--text-tertiary)",
+            }}
+          >
+            {rotulo}
+          </button>
+        );
+      })}
+    </span>
+  );
+}
+
+/* ===================================================================
+   PERFIL v10 (05/10/2026) — LISTA SIMPLES (referencia: Pierre Finance)
+   - Sem cartoes: cada item e uma linha (SecaoLista/LinhaLista, em
+     src/components/ListaSimples.jsx — o Editar perfil usa as mesmas).
+   - Topo: SO o nome. Sairam o chip verde do tipo de MEI e o WhatsApp.
+   - Saiu o selo "TaCerto! é grátis". A versao fica no rodape.
+   - WhatsApp e e-mail nao aparecem mais aqui (so no Editar perfil).
+   - MEU MEI: so informacao (sem setinha): tipo, abertura, limite do
+     ano, ja faturado e falta (ou quanto passou, em vermelho).
+   - CONTA: Editar perfil. "Alterar senha" so com MOSTRAR_LOGIN_EMAIL.
+   - AJUDA: Falar com o Fisco.ia no WhatsApp, Como emitir nota, Como
+     pagar o DAS. SOBRE: Termos de uso, Politica de privacidade.
+   - Por ultimo "Sair da conta", linha simples. O "Excluir conta" foi
+     para o fim do Editar perfil.
+   =================================================================== */
+
+/* ===================================================================
+   PERFIL v8 (04/10/2026) — pedido do Fernando, so com o que ja existe
+   (nada novo no banco; dado que nao existe, a linha nao aparece):
+   - Topo: nome em destaque, chip com o tipo de MEI e o WhatsApp.
+   - A bola redonda com a inicial (ou foto) saiu: chave MOSTRAR_AVATAR
+     em src/config/piloto.js (o codigo da foto continua aqui).
+   - Cartoes de vidro (CardSecao/Linha):
+       Meu MEI     tipo, abertura (se abriu este ano), limite do ano
+                   (proporcional se abriu este ano — limiteAtual do
+                   AppState, que usa o fiscal.js), quanto ja faturou
+                   (abre o Historico de entradas) e quanto falta (ou
+                   quanto passou, que abre a regra dos 20%).
+       Minha conta Editar perfil, WhatsApp, e-mail, Alterar senha.
+       Ajuda       Falar com o Fisco no WhatsApp, Como emitir nota,
+                   Como pagar o DAS.
+       Sobre       Termos de uso, Politica de privacidade, selo
+                   "TaCerto! é grátis" (v9; antes falava em piloto) e a versao.
+   - Por ultimo: Sair da conta e Excluir conta (vermelhos). O Excluir
+     abre a tela de exclusao que ja existia (com as confirmacoes).
+   - O CNPJ nao aparece: o perfil ainda nao guarda CNPJ.
+
+   PERFIL v7 (04/10/2026) — PILOTO
+
+   1) Itens escondidos pelas chaves de src/config/piloto.js (nada foi
+      apagado): Preferencias, Historico de saidas, Historico de DAS,
+      Historico de notas fiscais, Adicionar movimentacoes, Resumo do
+      ano e Sobre. Ficam: Editar perfil, Historico de entradas, Alterar
+      senha, Termos e Privacidade e Sair da conta.
+
+   2) "SAIR DA CONTA" NAO SAIA: so voltava para a tela de boas-vindas e
+      a sessao continuava aberta (abrindo /dashboard a pessoa estava
+      logada de novo). Agora desloga no Supabase e limpa os dados do
+      aparelho, como a Excluir conta ja fazia. Os dados continuam no
+      banco: e so entrar de novo.
+   =================================================================== */
 
 const FOTO_KEY = "tacerto_foto_usuario";
 
@@ -22,56 +183,118 @@ const FOTO_KEY = "tacerto_foto_usuario";
    com Capacitor e o gesto nativo entrar. */
 const DE_PERFIL = { state: { de: "perfil" } };
 
-function Secao({ titulo, children, primeira }) {
-  return (
-    <div
-      style={{
-        marginTop: primeira ? 0 : 18,
-        paddingTop: primeira ? 0 : 18,
-        /* A linha separa SEÇÕES, não itens — some o efeito de "grade"
-           que as divisórias entre cada opção davam. */
-        borderTop: primeira ? "none" : "1px solid var(--border)",
-      }}
-    >
-      {titulo && (
-        <p
-          className="text-[12px] font-semibold uppercase mb-1"
-          style={{ color: "var(--text-tertiary)", letterSpacing: "0.06em" }}
-        >
-          {titulo}
-        </p>
-      )}
-      <div>{children}</div>
-    </div>
-  );
-}
-
-function Item({ Icon, label, onClick, cor }) {
-  return (
-    <button
-      onClick={onClick}
-      className="toque w-full flex items-center gap-3 py-3 text-left"
-    >
-      <Icon
-        size={21}
-        strokeWidth={2}
-        style={{ color: cor || "var(--primary)" }}
-        className="shrink-0"
-      />
-      <span
-        className="flex-1 text-[15px] font-semibold"
-        style={{ color: cor || "var(--text)" }}
-      >
-        {label}
-      </span>
-      <ChevronRight size={17} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
-    </button>
-  );
-}
+const MESES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
 
 export default function Perfil() {
   const navigate = useNavigate();
-  const { nome, visitante } = useUserState();
+  const { nome, visitante, setNome: salvarNome, setTipo } = useUserState();
+  const app = useAppState();
+  const { resetarConta, tipoMEI, mesAnoAbertura, setMesAnoAbertura, email, cnpj } = app;
+
+  /* v24 (10/10/2026, Bloco C): o que veio do CNPJ nao se edita a mao.
+     Travado = CNPJ confirmado. O Tipo de MEI so fica travado quando o
+     que esta no app BATE com o CNPJ (se a pessoa corrigiu pela folha "O
+     que mudou?", continua editavel). A Abertura, quando o CNPJ tem a
+     data de opcao pelo MEI. Tocar no campo travado abre a pagina do
+     CNPJ (la estao "Atualizar dados do CNPJ" e "Remover CNPJ"). */
+  const cnpjTravado = Boolean(cnpj && app.cnpjConfirmado);
+  const caminhoneiroPeloCnpj = typeof app.cnpjDados?.pareceCaminhoneiro === "boolean"
+    ? app.cnpjDados.pareceCaminhoneiro
+    : [app.cnae, ...(app.cnaesSecundarios || [])].filter(Boolean).some((c) => ehCnaeCaminhoneiro(c));
+  const tipoTravado = cnpjTravado && (caminhoneiroPeloCnpj ? "MEI_CAMINHONEIRO" : "MEI") === tipoMEI;
+  const aberturaTravada = cnpjTravado && Boolean(app.dataOpcaoMei);
+  const abrirCnpj = () => navigate("/perfil/cnpj", DE_PERFIL);
+  const [saindo, setSaindo] = useState(false);
+  /* v30: rever o tutorial do primeiro acesso */
+  const [tutorialAberto, setTutorialAberto] = useState(false);
+
+  /* v14: dados que vieram do Editar perfil (ver o topo do arquivo) */
+  const [nomeCampo, setNomeCampo] = useState(nome || "");
+  const [nomeSalvo, setNomeSalvo] = useState(false);
+  const [whatsSalvo, setWhatsSalvo] = useState("");
+  const [criadoEm, setCriadoEm] = useState(null);
+  const [folhaTipoAberta, setFolhaTipoAberta] = useState(false);
+  const [calendarioAberto, setCalendarioAberto] = useState(false);
+  const [avisoWhats, setAvisoWhats] = useState(false);
+  useEffect(() => { setNomeCampo(nome || ""); }, [nome]);
+  const mudouNome = nomeCampo.trim() !== "" && nomeCampo.trim() !== (nome || "").trim();
+
+  /* Numero do WhatsApp (perfis.whatsapp ou o telefone do login) e a
+     data do cadastro (prazo para corrigir o tipo de MEI). */
+  useEffect(() => {
+    let ativo = true;
+    (async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        const user = userData?.user;
+        if (!user) return;
+        if (ativo) setCriadoEm(user.created_at || null);
+        const { data } = await supabase.from("perfis").select("whatsapp").eq("id", user.id).single();
+        const numero = data?.whatsapp || user.phone || "";
+        if (ativo && numero) setWhatsSalvo(formatarTelefone(String(numero).replace(/^\+?55/, "")));
+      } catch { /* sem rede: a linha mostra "Não informado" */ }
+    })();
+    return () => { ativo = false; };
+  }, []);
+
+  function salvarNomeNovo() {
+    const limpo = nomeCampo.trim();
+    if (!limpo) return;
+    salvarNome(limpo);
+    sincronizarPerfilNoBanco({ nome: limpo });
+    setNomeSalvo(true);
+    setTimeout(() => setNomeSalvo(false), 1800);
+  }
+
+  const podeCorrigirTipo =
+    !!criadoEm && Date.now() - new Date(criadoEm).getTime() <= DIAS_PARA_CORRIGIR_TIPO * 86400000;
+  function corrigirTipo(novo) {
+    setTipo(novo);
+    sincronizarPerfilNoBanco({ tipo: novo });
+    setFolhaTipoAberta(false);
+  }
+
+  /* Abertura: ano corrente grava; ano anterior apaga (so importa no 1o ano) */
+  function escolherAbertura(m, a) {
+    if (Number(a) === new Date().getFullYear()) {
+      setMesAnoAbertura(m, a);
+      sincronizarPerfilNoBanco({ mesAbertura: m, anoAbertura: a });
+    } else {
+      setMesAnoAbertura(null, null);
+      sincronizarPerfilNoBanco({ mesAbertura: null, anoAbertura: null });
+    }
+    setCalendarioAberto(false);
+  }
+
+  const cardFolha = { backgroundColor: "var(--bg)", border: "1px solid var(--border)" };
+
+  /* v11: tema Preto/Branco. "auto" (de versoes antigas) vira o que
+     estiver valendo agora. */
+  const [tema, setTema] = useState(() => {
+    try {
+      return temaEfetivo(localStorage.getItem("tacerto_tema") || "escuro");
+    } catch {
+      return "escuro";
+    }
+  });
+  function escolherTema(valor) {
+    setTema(valor);
+    try { localStorage.setItem("tacerto_tema", valor); } catch { /* ignora */ }
+    aplicarTema(valor);
+  }
+
+  /* v7: sai de verdade (ver o topo do arquivo). */
+  async function sairDaConta() {
+    if (saindo) return;
+    setSaindo(true);
+    try { await supabase.auth.signOut(); } catch {}
+    try { resetarConta(); } catch {}
+    setConfirmarSair(false);
+    navigate("/", { replace: true });
+  }
 
   const [foto, setFoto] = useState(() => {
     if (typeof window === "undefined") return null;
@@ -104,6 +327,18 @@ export default function Perfil() {
   const nomeExibido = nome && nome.trim() ? nome : "Visitante";
   const inicial = (nomeExibido || "?").trim().charAt(0).toUpperCase();
   const anoAtual = new Date().getFullYear();
+
+  /* v8: o que aparece no cartao "Meu MEI" (so dados que ja existem) */
+  const rotuloTipo = LABEL_TIPO[tipoMEI] || "";
+  const abertura = mesAnoAbertura?.mes && mesAnoAbertura?.ano
+    ? `${MESES[Number(mesAnoAbertura.mes) - 1]} de ${mesAnoAbertura.ano}`
+    : "";
+  /* v25: travada, a Abertura mostra a data do CNPJ (opcao pelo MEI), nao
+     a do app (antes: travada com "Veio do seu CNPJ" e outra data) */
+  const isoOpcaoMei = aberturaTravada ? String(app.dataOpcaoMei).slice(0, 10) : "";
+  const aberturaDoCnpj = /^\d{4}-\d{2}/.test(isoOpcaoMei)
+    ? `${MESES[Number(isoOpcaoMei.slice(5, 7)) - 1]} de ${isoOpcaoMei.slice(0, 4)}`
+    : "";
 
   function trocarConta(id) {
     const conta = ativarConta(id);
@@ -162,110 +397,220 @@ export default function Perfil() {
     >
       <div
         className="conteudo-rolavel hide-scrollbar"
-        style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: MOSTRAR_BARRA_NO_PERFIL ? `calc(${ALTURA_RODAPE + 32}px + env(safe-area-inset-bottom))` : "calc(32px + env(safe-area-inset-bottom))" }}
       >
         {/* v6: titulo sobe com a rolagem, setinha fica (transparente) */}
-        <TopoRolavel titulo="Perfil" onVoltar={() => navigate(-1)} recuo={20} />
+        <TopoRolavel titulo="Mais" recuo={20} />
 
-        <div className="px-5 pt-3 pb-5 flex flex-col items-center">
-          <div
-            className="rounded-full overflow-hidden shrink-0"
-            style={{
-              /* Tamanho travado em px + box-sizing: sem isso a borda
-                 somava ao total e a foto parecia encolher. */
-              width: 80,
-              height: 80,
-              minWidth: 80,
-              minHeight: 80,
-              boxSizing: "border-box",
-              flexShrink: 0,
-              background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
-              backdropFilter: "blur(6px) saturate(160%)",
-              WebkitBackdropFilter: "blur(6px) saturate(160%)",
-              border: "1px solid var(--vidro-borda)",
-              boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
-            }}
-          >
-            {foto && !visitante ? (
-              <img
-                src={foto}
-                alt=""
-                className="object-cover"
-                style={{ width: "100%", height: "100%", display: "block" }}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="font-bold" style={{ color: "var(--primary)", fontSize: 34 }}>
-                  {inicial || "?"}
-                </span>
-              </div>
-            )}
-          </div>
-
-          <button
-            type="button"
-            disabled={!temMultiplas}
-            onClick={() => temMultiplas && setSeletorAberto(true)}
-            className="mt-3 flex items-center gap-1.5"
-          >
-            <span className="font-bold" style={{ color: "var(--text)", fontSize: 20 }}>
-              {nomeExibido}
-            </span>
-            {temMultiplas && (
-              <ChevronDown size={17} style={{ color: "var(--text-secondary)" }} />
-            )}
-          </button>
-        </div>
-
-        <div className="px-5">
-          <Secao titulo="Geral" primeira>
-            <Item Icon={User} label="Editar perfil" onClick={() => navigate("/editar-perfil", DE_PERFIL)} />
-            <Item Icon={Settings} label="Preferências" onClick={() => navigate("/preferencias", DE_PERFIL)} />
-            {contaItem && <Item Icon={contaItem.Icon} label={contaItem.label} onClick={contaItem.onClick} />}
-          </Secao>
-
-          <Secao titulo="Meu MEI">
-            {/* v5/v6: entrada = seta para BAIXO (dinheiro chegando), saida = seta para CIMA */}
-            <Item Icon={ArrowDownLeft} label="Histórico de entradas" onClick={() => navigate("/historico", DE_PERFIL)} />
-            {/* v2/v3 (28/09/2026): o que saiu da conta + "Lançar saída" + parte isenta do IR */}
-            <Item Icon={ArrowUpRight} label="Histórico de saídas" onClick={() => navigate("/saidas", DE_PERFIL)} />
-            {/* v4 (28/09/2026): mes a mes, com o comprovante de cada DAS paga */}
-            <Item Icon={CalendarCheck} label="Histórico de DAS" onClick={() => navigate("/das", DE_PERFIL)} />
-            <Item Icon={FileText} label="Histórico de notas fiscais" onClick={() => navigate("/notas-fiscais", DE_PERFIL)} />
-            {/* v6: antes "Adicionar faturamento" — agora cobre entradas E saidas (e o banco) */}
-            <Item Icon={TrendingUp} label="Adicionar movimentações" onClick={() => navigate("/adicionar-faturamento", DE_PERFIL)} />
-            <Item Icon={BarChart3} label={`Resumo de ${anoAtual}`} onClick={() => navigate("/perfil/resumo", DE_PERFIL)} />
-          </Secao>
-
-          <Secao titulo="Segurança e Privacidade">
-            {!visitante && (
-              <Item Icon={Lock} label="Alterar senha" onClick={() => navigate("/alterar-senha", DE_PERFIL)} />
-            )}
-            <Item Icon={Shield} label="Termos e Privacidade" onClick={() => navigate("/termos", DE_PERFIL)} />
-            <Item Icon={Info} label="Sobre o TaCerto!" onClick={() => navigate("/sobre", DE_PERFIL)} />
-          </Secao>
-
-          <Secao>
-            <button
-              onClick={() => setConfirmarSair(true)}
-              className="toque w-full flex items-center gap-3 py-3 text-left"
-            >
-              <LogOut size={21} strokeWidth={2} style={{ color: "var(--danger)" }} className="shrink-0" />
-              <span className="flex-1 text-[15px] font-semibold" style={{ color: "var(--danger)" }}>
-                Sair da conta
-              </span>
-            </button>
-            <p
-              className="text-center"
+        {/* v8: bola com foto/inicial escondida (MOSTRAR_AVATAR) */}
+        {MOSTRAR_AVATAR && (
+          <div className="px-5 pt-3 flex flex-col items-center">
+            <div
+              className="rounded-full overflow-hidden shrink-0"
               style={{
-                color: "var(--text-tertiary)",
-                fontSize: 11,
-                marginTop: 10,
+                /* Tamanho travado em px + box-sizing: sem isso a borda
+                   somava ao total e a foto parecia encolher. */
+                width: 80,
+                height: 80,
+                minWidth: 80,
+                minHeight: 80,
+                boxSizing: "border-box",
+                flexShrink: 0,
+                background: "linear-gradient(160deg, var(--vidro-brilho-1) 0%, var(--vidro-brilho-2) 24%, transparent 58%), var(--vidro-bg)",
+                backdropFilter: "blur(6px) saturate(160%)",
+                WebkitBackdropFilter: "blur(6px) saturate(160%)",
+                border: "1px solid var(--vidro-borda)",
+                boxShadow: "inset 0 1.5px 0 0 var(--vidro-topo-forte), inset 0 9px 20px -8px var(--vidro-topo-medio), inset 0 -1.5px 0 0 var(--vidro-base), 0 8px 24px var(--vidro-sombra)",
               }}
             >
-              v0.1
-            </p>
-          </Secao>
+              {foto && !visitante ? (
+                <img
+                  src={foto}
+                  alt=""
+                  className="object-cover"
+                  style={{ width: "100%", height: "100%", display: "block" }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="font-bold" style={{ color: "var(--primary)", fontSize: 34 }}>
+                    {inicial || "?"}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="px-5">
+          {/* ===== v31: MEU MEI (CNPJ, DAS, Calcular, Declaração anual) ===== */}
+          {!visitante && (
+            <SecaoLista titulo="Meu MEI" style={{ marginTop: 8 }}>
+              {/* v19: CNPJ. Sem CNPJ: "Não preenchido" + pontinho de aviso */}
+              <LinhaLista
+                Icon={Building2}
+                rotulo="CNPJ"
+                valor={cnpj ? mascararCnpj(cnpj) : <NaoPreenchido />}
+                onClick={() => navigate("/perfil/cnpj", DE_PERFIL)}
+              />
+              {/* v26: pagina do DAS (vencimento, como pagar, historico) */}
+              {MOSTRAR_PAGINA_DAS && (
+                <LinhaLista
+                  Icon={CalendarCheck}
+                  rotulo="DAS"
+                  detalhe="O imposto mensal do MEI"
+                  valor={`Vence ${formatarDiaMes(proximoVencimentoDas())}`}
+                  onClick={() => navigate("/das", DE_PERFIL)}
+                />
+              )}
+              {/* v28: Calcular (quanto ainda posso faturar, IR, DAS do ano, Meu lucro) */}
+              {MOSTRAR_CALCULAR ? (
+                <LinhaLista Icon={Calculator} rotulo="Calcular" onClick={() => navigate("/calcular", DE_PERFIL)} />
+              ) : MOSTRAR_SIMULADOR && (
+                <LinhaLista Icon={Calculator} rotulo="Simulador" onClick={() => navigate("/simulador", DE_PERFIL)} />
+              )}
+              {MOSTRAR_DECLARACAO_ANUAL && (
+                <LinhaLista Icon={Landmark} rotulo="Declaração anual" onClick={() => navigate("/declaracao-anual", DE_PERFIL)} />
+              )}
+              {/* v13: historico de lancamentos (entradas, com o selo da nota) */}
+              <LinhaLista Icon={History} rotulo="Histórico de lançamentos" onClick={() => navigate("/historico", DE_PERFIL)} />
+              {/* v20: Meu lucro so quando o Calcular esta desligado (com ele, fica la dentro) */}
+              {MOSTRAR_MEU_LUCRO && !MOSTRAR_CALCULAR && (
+                <LinhaLista Icon={Wallet} rotulo="Meu lucro" onClick={() => navigate("/meu-lucro", DE_PERFIL)} />
+              )}
+              {/* Telas escondidas no piloto (chaves em src/config/piloto.js) */}
+              {MOSTRAR_SAIDAS && (
+                <LinhaLista Icon={ArrowUpRight} rotulo="Histórico de saídas" onClick={() => navigate("/saidas", DE_PERFIL)} />
+              )}
+              {MOSTRAR_HISTORICO_DAS && (
+                <LinhaLista Icon={CalendarCheck} rotulo="Histórico de DAS" onClick={() => navigate("/das/historico", DE_PERFIL)} />
+              )}
+              {MOSTRAR_ADICIONAR_MOVIMENTACOES && (
+                <LinhaLista Icon={TrendingUp} rotulo="Adicionar movimentações" onClick={() => navigate("/adicionar-faturamento", DE_PERFIL)} />
+              )}
+              {MOSTRAR_RESUMO_ANO && (
+                <LinhaLista Icon={BarChart3} rotulo={`Resumo de ${anoAtual}`} onClick={() => navigate("/perfil/resumo", DE_PERFIL)} />
+              )}
+            </SecaoLista>
+          )}
+
+          {/* ===== v31: MINHA CONTA (meus dados, WhatsApp, Permissões, Tema) ===== */}
+          <SecaoLista titulo="Minha conta" style={visitante ? { marginTop: 8 } : undefined}>
+            {contaItem && <LinhaLista Icon={contaItem.Icon} rotulo={contaItem.label} onClick={contaItem.onClick} />}
+            {/* meus dados: Nome (digita na linha), Tipo de MEI e Abertura */}
+            {!visitante && (
+              <LinhaCampo Icon={User} rotulo="Nome">
+                <input
+                  value={nomeCampo}
+                  maxLength={LIMITE_NOME_INPUT}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  onChange={(e) => setNomeCampo(e.target.value)}
+                  placeholder="Seu nome"
+                  className="flex-1 min-w-0 bg-transparent text-right outline-none"
+                  style={{ color: "var(--text-secondary)", fontSize: 16, border: "none", boxShadow: "none" }}
+                />
+              </LinhaCampo>
+            )}
+            {/* v24: o que veio do CNPJ fica travado (cadeado; toca e abre o CNPJ) */}
+            {!visitante && (tipoTravado ? (
+              <LinhaLista Icon={Briefcase} rotulo="Tipo de MEI" detalhe="Veio do seu CNPJ" valor={<ValorTravado>{rotuloTipo}</ValorTravado>} onClick={abrirCnpj} />
+            ) : (
+              <LinhaLista Icon={Briefcase} rotulo="Tipo de MEI" valor={rotuloTipo} onClick={() => setFolhaTipoAberta(true)} />
+            ))}
+            {!visitante && (aberturaDoCnpj || abertura) && (aberturaDoCnpj ? (
+              <LinhaLista Icon={CalendarDays} rotulo="Abertura" detalhe="Veio do seu CNPJ" valor={<ValorTravado>{aberturaDoCnpj}</ValorTravado>} onClick={abrirCnpj} />
+            ) : (
+              <LinhaLista
+                Icon={CalendarDays}
+                rotulo="Abertura"
+                valor={abertura}
+                onClick={Number(mesAnoAbertura?.ano) === anoAtual ? () => setCalendarioAberto(true) : undefined}
+              />
+            ))}
+            {!visitante && (
+              <LinhaLista
+                Icon={Phone}
+                rotulo="WhatsApp"
+                valor={whatsSalvo ? `+55 ${whatsSalvo}` : "Não informado"}
+                onClick={() => setAvisoWhats(true)}
+              />
+            )}
+            {/* v10: so com o login por e-mail ligado (MOSTRAR_LOGIN_EMAIL) */}
+            {!visitante && MOSTRAR_LOGIN_EMAIL && (
+              <LinhaLista Icon={Lock} rotulo="Alterar senha" onClick={() => navigate("/alterar-senha", DE_PERFIL)} />
+            )}
+            {/* v29: o que o TaCerto usa (WhatsApp, CNPJ, notificacao) */}
+            {MOSTRAR_PERMISSOES && (
+              <LinhaLista Icon={ShieldCheck} rotulo="Permissões e integrações" onClick={() => navigate("/perfil/permissoes", DE_PERFIL)} />
+            )}
+            {/* v31: Preferencias (Lembrete do DAS) so sem a pagina do DAS (com ela, fica la dentro) */}
+            {MOSTRAR_PREFERENCIAS && !MOSTRAR_PAGINA_DAS && (
+              <LinhaLista Icon={Settings} rotulo="Preferências" detalhe="Lembrete do DAS" onClick={() => navigate("/preferencias", DE_PERFIL)} />
+            )}
+            <LinhaLista
+              Icon={tema === "claro" ? Sun : Moon}
+              rotulo="Tema"
+              valor={<SeletorTema tema={tema} onEscolher={escolherTema} />}
+            />
+          </SecaoLista>
+
+          {/* v14: "Salvar" do nome, so quando o nome mudou */}
+          {(mudouNome || nomeSalvo) && (
+            <button
+              type="button"
+              onClick={salvarNomeNovo}
+              disabled={nomeSalvo}
+              className={`${nomeSalvo ? "" : "botao-confirmar "}toque w-full rounded-2xl font-semibold`}
+              style={{
+                marginTop: 10,
+                padding: "13px 0",
+                fontSize: 15.5,
+                color: "var(--primary)",
+                backgroundColor: "transparent",
+              }}
+            >
+              {nomeSalvo ? "Nome salvo" : "Salvar nome"}
+            </button>
+          )}
+
+          {/* ===== v31: AJUDA (Suporte, Rever tutorial, Termos, Privacidade) ===== */}
+          <SecaoLista titulo="Ajuda">
+            {MOSTRAR_SUPORTE && (
+              <LinhaLista Icon={Headphones} rotulo="Suporte" onClick={() => navigate("/suporte", DE_PERFIL)} />
+            )}
+            {/* v30: o tutorial do primeiro acesso, de novo */}
+            <LinhaLista Icon={PlayCircle} rotulo="Rever tutorial" onClick={() => setTutorialAberto(true)} />
+            <LinhaLista Icon={Shield} rotulo="Termos de uso" onClick={() => navigate("/termos-de-uso", DE_PERFIL)} />
+            <LinhaLista Icon={Lock} rotulo="Privacidade" onClick={() => navigate("/privacidade", DE_PERFIL)} />
+            {MOSTRAR_SOBRE && (
+              <LinhaLista Icon={Info} rotulo="Sobre o TaCerto!" onClick={() => navigate("/sobre", DE_PERFIL)} />
+            )}
+          </SecaoLista>
+
+          {/* ===== v31: Sair e Excluir conta, por ultimo (Sair em vermelho) ===== */}
+          {!visitante && (
+            <SecaoLista>
+              <LinhaLista
+                Icon={LogOut}
+                rotulo="Sair da conta"
+                cor="var(--danger)"
+                semSeta
+                onClick={() => setConfirmarSair(true)}
+              />
+              <LinhaLista
+                Icon={Trash2}
+                rotulo="Excluir conta"
+                semSeta
+                onClick={() => navigate("/excluir-conta", DE_PERFIL)}
+              />
+            </SecaoLista>
+          )}
+
+          {/* Versao do app no rodape */}
+          <p className="text-center" style={{ color: "var(--text-tertiary)", fontSize: 11, marginTop: 24 }}>
+            v0.1
+          </p>
         </div>
       </div>
 
@@ -376,7 +721,7 @@ export default function Perfil() {
           <div
             onClick={(e) => e.stopPropagation()}
             className="w-full max-w-sm rounded-2xl p-5 space-y-3"
-            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
+            style={{ backgroundColor: "var(--bg)", border: "1px solid var(--border)" }}
           >
             <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
               Remover acesso?
@@ -396,13 +741,13 @@ export default function Perfil() {
               <button
                 onClick={() => setContaARemover(null)}
                 className="toque flex-1 py-3 rounded-xl font-semibold"
-                style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
+                style={{ border: "1px solid var(--border)", color: "var(--text)" }}
               >
                 Cancelar
               </button>
               <button
                 onClick={confirmarRemocao}
-                className="toque flex-1 py-3 rounded-xl font-semibold"
+                className="botao-perigo toque flex-1 py-3 rounded-xl font-semibold"
                 style={{ backgroundColor: "#ef4444", color: "#fff" }}
               >
                 Remover
@@ -419,7 +764,7 @@ export default function Perfil() {
         >
           <div
             className="w-full max-w-sm rounded-2xl p-5 space-y-4"
-            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}
+            style={{ backgroundColor: "var(--bg)", border: "1px solid var(--border)" }}
           >
             <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
               Quer sair da conta?
@@ -428,23 +773,66 @@ export default function Perfil() {
               <button
                 onClick={() => setConfirmarSair(false)}
                 className="toque flex-1 py-3 rounded-xl font-semibold"
-                style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
+                style={{ border: "1px solid var(--border)", color: "var(--text)" }}
               >
                 Cancelar
               </button>
               <button
-                onClick={() => { setConfirmarSair(false); navigate("/"); }}
-                className="toque flex-1 py-3 rounded-xl font-semibold"
+                onClick={sairDaConta}
+                disabled={saindo}
+                className="botao-perigo toque flex-1 py-3 rounded-xl font-semibold"
                 style={{ backgroundColor: "#ef4444", color: "#fff" }}
               >
-                Sair
+                {saindo ? "Saindo..." : "Sair"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      <BottomNav ativo="perfil" />
+      {/* v14: folhas que vieram do Editar perfil */}
+      <Calendario
+        aberto={calendarioAberto}
+        modo="mesAno"
+        mes={mesAnoAbertura?.mes || null}
+        ano={mesAnoAbertura?.ano || null}
+        onFechar={() => setCalendarioAberto(false)}
+        onSelecionarMesAno={escolherAbertura}
+      />
+      {folhaTipoAberta && (
+        <FolhaTipoMei
+          tipo={tipoMEI}
+          podeCorrigir={podeCorrigirTipo}
+          onFechar={() => setFolhaTipoAberta(false)}
+          onCorrigir={corrigirTipo}
+          cardStyle={cardFolha}
+        />
+      )}
+      {avisoWhats && (
+        <AvisoFaleConosco
+          texto="Seu número é usado para entrar no app. Para trocar, fale com a gente."
+          onWhatsApp={() => {
+            abrirWhatsAppFisco(MENSAGENS_WHATSAPP.trocarNumero(dadosParaWhatsApp({ ...app, nome: nomeCampo.trim() || nome })));
+            setAvisoWhats(false);
+          }}
+          onFechar={() => setAvisoWhats(false)}
+          cardStyle={cardFolha}
+        />
+      )}
+
+      {/* v30: tutorial do primeiro acesso (rever) */}
+      <ApresentacaoFisco
+        modo="tutorial"
+        aberto={tutorialAberto}
+        onFechar={() => setTutorialAberto(false)}
+        onEnviarExtrato={() => {
+          setTutorialAberto(false);
+          navigate("/enviar-extrato", DE_PERFIL);
+        }}
+      />
+
+      {/* v12: sem a barra de baixo no Perfil (MOSTRAR_BARRA_NO_PERFIL) */}
+      {MOSTRAR_BARRA_NO_PERFIL && <BottomNav ativo="mais" />}
     </div>
   );
 }

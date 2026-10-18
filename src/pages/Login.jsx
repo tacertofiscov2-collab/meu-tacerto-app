@@ -1,9 +1,20 @@
+/* LOGIN v5 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v4: vira o plano B em /entrar-email: "Esqueceu sua senha?" e "Nao tem conta?" so com MOSTRAR_LOGIN_EMAIL; "ou" + Google so com MOSTRAR_LOGIN_GOOGLE) */
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { ArrowLeft, Eye, EyeOff, Mail, Gauge } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Gauge } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import AuthError, { translateAuthError } from "@/components/AuthError";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
+import { MOSTRAR_LOGIN_EMAIL, MOSTRAR_LOGIN_GOOGLE } from "@/config/piloto";
+
+/* ===================================================================
+   LOGIN v4 (05/10/2026): o app agora entra pelo WhatsApp
+   (EntrarWhatsApp.jsx em /login). Esta tela continua existindo em
+   /entrar-email, sem link em lugar nenhum: e por ela que o Fernando
+   entra com a conta de e-mail nos testes e se a Z-API cair. Com as
+   chaves de src/config/piloto.js desligadas, some o "Esqueceu sua
+   senha?", o "Nao tem conta?" e o Google. Nada foi apagado.
+   =================================================================== */
 
 /* ===================================================================
    LOGIN v3 — setinha volta sempre para a Welcome (tela dos slides)
@@ -114,10 +125,10 @@ export default function Login() {
         <button
           onClick={() => navigate("/", { replace: true })}
           aria-label="Voltar"
-          className="w-10 h-10 flex items-center justify-center rounded-lg transition-opacity hover:opacity-80"
+          className="w-[46px] h-[46px] flex items-center justify-center rounded-lg transition-opacity hover:opacity-80"
           style={{ color: "var(--text)" }}
         >
-          <ArrowLeft size={22} strokeWidth={2} />
+          <ArrowLeft size={26} strokeWidth={2} />
         </button>
       </div>
 
@@ -180,6 +191,7 @@ export default function Login() {
                   {loading ? "Aguarde..." : "Continuar"}
                 </button>
 
+                {MOSTRAR_LOGIN_EMAIL && (
                 <button
                   onClick={() => navigate("/esqueci-senha")}
                   className="w-full text-center text-sm pt-1"
@@ -187,7 +199,9 @@ export default function Login() {
                 >
                   Esqueceu sua senha?
                 </button>
+                )}
 
+                {MOSTRAR_LOGIN_GOOGLE && (<>
                 <div className="flex items-center gap-3 py-4">
                   <div className="flex-1 h-px" style={{ backgroundColor: "var(--border)" }} />
                   <span className="text-base font-medium" style={{ color: "var(--text-secondary)" }}>ou</span>
@@ -212,8 +226,10 @@ export default function Login() {
                   </span>
                   Continuar com Google
                 </button>
+                </>)}
 
                 {/* Saida para quem ainda nao tem conta */}
+                {MOSTRAR_LOGIN_EMAIL && (
                 <button
                   onClick={() => navigate("/cadastro", { replace: true })}
                   className="w-full text-center text-sm pt-3"
@@ -222,6 +238,7 @@ export default function Login() {
                   Não tem conta?{" "}
                   <span style={{ color: "var(--primary)", fontWeight: 600 }}>Cadastre-se</span>
                 </button>
+                )}
 
               </div>
           </>

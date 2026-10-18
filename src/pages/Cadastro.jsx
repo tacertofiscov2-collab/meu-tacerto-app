@@ -1,4 +1,4 @@
-/* CADASTRO v13 — topo que rola (setinha fica parada e transparente) */
+/* CADASTRO v14 — piloto: rodape com um link para os Termos de Uso (/termos-de-uso) e outro para a Politica de Privacidade (/privacidade); nada mais mudou */
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useRef } from "react";
 import { Eye, EyeOff, Mail, Gauge, MailCheck } from "lucide-react";
@@ -850,12 +850,21 @@ export default function Cadastro() {
           style={{ color: "var(--text-secondary)" }}
         >
           Ao continuar, você concorda com nossos{" "}
+          {/* v14 (piloto): um link para cada documento */}
           <button
-            onClick={() => navigate("/termos")}
+            onClick={() => navigate("/termos-de-uso")}
             className="font-medium"
             style={{ color: "var(--primary)" }}
           >
-            Termos de Uso e Política de Privacidade
+            Termos de Uso
+          </button>
+          {" "}e{" "}
+          <button
+            onClick={() => navigate("/privacidade")}
+            className="font-medium"
+            style={{ color: "var(--primary)" }}
+          >
+            Política de Privacidade
           </button>
         </p>
       </div>

@@ -1,18 +1,48 @@
-/* EDITARPERFIL v13 — topo que rola (titulo sobe, setinha fica transparente) */
+/* EDITARPERFIL v18 — sem link no app (os itens foram para o Perfil); folha do tipo de MEI, aviso e linha do Nome agora em components/PerfilFolhas.jsx e lib/perfil.js, iguais ao Perfil (v17: sem a linha do e-mail (MOSTRAR_EMAIL_NO_EDITAR) e botoes minimalistas (botao-confirmar) (v16: linha do Nome no tamanho novo da lista (letras maiores, ListaSimples v2) (v15: lista simples (igual ao Perfil): nome editavel, WhatsApp abre aviso "fale com a gente", e-mail so se existir, Excluir conta no fim; layout antigo atras de MOSTRAR_LOGIN_EMAIL */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Trash2, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Lock, X,
+  Trash2, ChevronRight, CheckCircle2, AlertCircle, Lock,
+  User, Phone, Mail, Briefcase, CalendarDays,
 } from "lucide-react";
 import TopoRolavel from "../components/TopoRolavel.jsx";
+import { SecaoLista, LinhaLista } from "../components/ListaSimples.jsx";
 
-import Valor from "../components/Valor.jsx";
 import Calendario from "../components/Calendario.jsx";
 import { useUserState } from "@/lib/userState";
 import { useAppState } from "@/context/AppStateContext";
 import { supabase } from "@/lib/supabase";
-import { LIMITES_ANUAIS, LIMITE_NOME_INPUT } from "@/lib/fiscal";
+import { LIMITE_NOME_INPUT } from "@/lib/fiscal";
+import {
+  LABEL_PERFIL, DIAS_PARA_CORRIGIR_TIPO, formatarTelefone, sincronizarPerfilNoBanco,
+} from "@/lib/perfil";
+import { LinhaCampo, AvisoFaleConosco, FolhaTipoMei } from "../components/PerfilFolhas.jsx";
 import { EMAIL_VERIFICACAO_ATIVA } from "@/lib/flags";
+import {
+  MOSTRAR_AVATAR, MOSTRAR_LOGIN_EMAIL,
+  MENSAGENS_WHATSAPP, dadosParaWhatsApp, abrirWhatsAppFisco,
+} from "@/config/piloto";
+
+/* ===================================================================
+   EDITARPERFIL v15 (05/10/2026) — LISTA SIMPLES + LOGIN PELO WHATSAPP
+
+   Com MOSTRAR_LOGIN_EMAIL = false (src/config/piloto.js) a tela vira
+   uma lista no mesmo estilo do Perfil (SecaoLista/LinhaLista):
+     DADOS PESSOAIS  Nome (editavel na propria linha), WhatsApp e
+                     E-mail (so se a conta tiver e-mail).
+     MEU MEI         Tipo de MEI (folha "O que mudou?", como antes) e
+                     Data de abertura (so quem abriu este ano).
+     No fim, separado: "Excluir conta" em vermelho (veio do Perfil).
+   O numero agora e o LOGIN da pessoa, entao nao se troca por aqui:
+   tocar no WhatsApp abre o aviso "Seu numero e usado para entrar no
+   app. Para trocar, fale com a gente." com o botao do WhatsApp
+   (mensagem trocarNumero). O e-mail abre um aviso parecido; o e-mail
+   do Auth nao e alterado.
+   Numero mostrado: perfis.whatsapp; se vazio, o telefone do login
+   (user.phone).
+   O layout antigo (e-mail com verificacao, WhatsApp que pede senha)
+   continua aqui, atras de MOSTRAR_LOGIN_EMAIL. Nada foi apagado.
+   =================================================================== */
 
 /* ===================================================================
    EDITARPERFIL v13 (28/09/2026): o cabecalho passou para DENTRO da area
@@ -57,16 +87,15 @@ import { EMAIL_VERIFICACAO_ATIVA } from "@/lib/flags";
      que veio do Google.
    =================================================================== */
 
+/* v17: a linha do e-mail fica escondida (pedido do Fernando, 05/10) */
+const MOSTRAR_EMAIL_NO_EDITAR = false;
+
 /* Segundos de espera entre um envio e o proximo. */
 const ESPERA_REENVIO = 60;
 
 /* Folga no fim do conteudo, para o teclado ter para onde empurrar.
    Maior que a altura de qualquer teclado de iPhone. */
 const FOLGA_TECLADO = 340;
-
-/* Dias depois do cadastro em que a pessoa ainda pode corrigir o tipo
-   de MEI sozinha ("Escolhi errado no cadastro"). */
-const DIAS_PARA_CORRIGIR_TIPO = 7;
 
 // ---------------------------------------------------------------------
 // Espaçamentos ajustáveis desta tela.
@@ -77,24 +106,10 @@ const ESPACO_ACIMA_AVATAR = 28;
 const ESPACO_ABAIXO_AVATAR = 28;
 const ESPACO_ENTRE_SECOES = 26;
 
-const LABEL_PERFIL = {
-  MEI: "MEI (outras atividades)",
-  MEI_CAMINHONEIRO: "MEI Caminhoneiro",
-};
-
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
-
-/* Formata enquanto digita: (11) 98765-4321 */
-function formatarTelefone(valor) {
-  const d = String(valor).replace(/\D/g, "").slice(0, 11);
-  if (d.length <= 2) return d;
-  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
-  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
-  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
-}
 
 /* Checagem simples de formato. Nao tenta validar se o endereco existe —
    quem faz isso e o link de confirmacao. Serve so para evitar o envio
@@ -113,36 +128,6 @@ function contaVeioDoGoogle(user) {
   if (Array.isArray(lista) && lista.includes("google")) return true;
   const identidades = user.identities || [];
   return identidades.some((i) => i?.provider === "google");
-}
-
-/**
- * Grava os campos de perfil na tabela `perfis` do Supabase.
- *
- * Recebe os valores JÁ RESOLVIDOS (não lê do estado do React), porque
- * setState é assíncrono: logo após um setTipo/setAbertura o estado ainda
- * tem o valor antigo. Passando explícito, gravamos o que o usuário
- * acabou de escolher.
- *
- * Só grava os campos presentes no patch (undefined é ignorado; null
- * grava vazio — é assim que a data de abertura é apagada).
- * Silencioso para visitante (sem sessão) — igual ao resto do app.
- */
-async function sincronizarPerfilNoBanco(patch) {
-  try {
-    const { data } = await supabase.auth.getUser();
-    if (!data?.user) return; // visitante: nada a fazer
-
-    const update = { atualizado_em: new Date().toISOString() };
-    if (patch.nome !== undefined) update.nome = patch.nome;
-    if (patch.tipo !== undefined) update.tipo_mei = patch.tipo;
-    if (patch.mesAbertura !== undefined) update.mes_abertura = patch.mesAbertura;
-    if (patch.anoAbertura !== undefined) update.ano_abertura = patch.anoAbertura;
-    if (patch.whatsapp !== undefined) update.whatsapp = patch.whatsapp;
-
-    await supabase.from("perfis").update(update).eq("id", data.user.id);
-  } catch {
-    /* falha de rede/visitante — não quebra a tela */
-  }
 }
 
 /* Titulo de secao: caixa normal, cinza, discreto. */
@@ -196,219 +181,6 @@ function CampoEscolha({ rotulo, valor, onClick, travado = false }) {
   );
 }
 
-/* ===================================================================
-   FOLHA "SEU TIPO DE MEI" (v12)
-
-   Passos: "inicio" (O que mudou?) -> "atividade" | "novoCnpj" |
-   "errado" -> "confirmar" (so quando pode corrigir sozinho).
-   =================================================================== */
-function FolhaTipoMei({ tipo, podeCorrigir, onFechar, onCorrigir, cardStyle }) {
-  const [passo, setPasso] = useState("inicio");
-
-  const outroTipo = tipo === "MEI_CAMINHONEIRO" ? "MEI" : "MEI_CAMINHONEIRO";
-  const nomeOutro = outroTipo === "MEI" ? "MEI comum" : "MEI Caminhoneiro";
-
-  const texto = { color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.55 };
-  const avisoEquipe = (
-    <p style={{ ...texto, marginTop: 12, color: "var(--text-tertiary)", fontSize: 13 }}>
-      Quando a troca valer no seu CNPJ, a equipe TaCerto atualiza seu tipo aqui
-      no app.
-    </p>
-  );
-
-  const botaoPrincipal = (rotulo, aoTocar) => (
-    <button
-      onClick={aoTocar}
-      className="w-full py-3 rounded-xl font-semibold transition active:scale-[0.99]"
-      style={{
-        marginTop: 16,
-        backgroundColor: "var(--primary)",
-        color: "var(--primary-contrast)",
-        fontSize: 15,
-      }}
-    >
-      {rotulo}
-    </button>
-  );
-
-  const voltar = (
-    <button
-      onClick={() => setPasso("inicio")}
-      className="flex items-center gap-1 active:opacity-70 transition"
-      style={{ color: "var(--text-secondary)", fontSize: 13.5, marginBottom: 10 }}
-    >
-      <ChevronLeft size={16} />
-      Voltar
-    </button>
-  );
-
-  const opcao = (rotulo, destino) => (
-    <button
-      key={destino}
-      onClick={() => setPasso(destino)}
-      className="w-full rounded-xl px-4 py-3.5 flex items-center gap-3 text-left active:opacity-75 transition"
-      style={{ backgroundColor: "var(--field)" }}
-    >
-      <span className="flex-1 text-[14.5px] font-semibold" style={{ color: "var(--text)" }}>
-        {rotulo}
-      </span>
-      <ChevronRight size={17} style={{ color: "var(--text-tertiary)" }} className="shrink-0" />
-    </button>
-  );
-
-  let conteudo;
-
-  if (passo === "inicio") {
-    conteudo = (
-      <>
-        <div className="rounded-xl px-4 py-3" style={{ backgroundColor: "var(--field)" }}>
-          <p className="text-[15.5px] font-bold" style={{ color: "var(--text)" }}>
-            {LABEL_PERFIL[tipo] || "MEI"}
-          </p>
-          <p
-            className="text-[13px] mt-0.5 flex items-center gap-1"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Limite de <Valor tamanho="sm">{LIMITES_ANUAIS[tipo] || LIMITES_ANUAIS.MEI}</Valor> no ano
-          </p>
-        </div>
-
-        <p style={{ ...texto, marginTop: 12 }}>
-          O tipo segue o que está registrado no seu CNPJ e define o seu limite. Por
-          isso ele não muda por aqui.
-        </p>
-
-        <p
-          className="text-[14px] font-semibold"
-          style={{ color: "var(--text)", marginTop: 16, marginBottom: 8 }}
-        >
-          O que mudou?
-        </p>
-        <div className="space-y-2">
-          {opcao("Mudei de atividade no mesmo CNPJ", "atividade")}
-          {opcao("Fechei meu MEI e abri outro CNPJ", "novoCnpj")}
-          {opcao("Escolhi errado no cadastro", "errado")}
-        </div>
-      </>
-    );
-  } else if (passo === "atividade") {
-    conteudo = (
-      <>
-        {voltar}
-        <p className="text-[15.5px] font-bold" style={{ color: "var(--text)" }}>
-          Mudei de atividade no mesmo CNPJ
-        </p>
-        <p style={{ ...texto, marginTop: 8 }}>
-          {tipo === "MEI_CAMINHONEIRO"
-            ? "Se você passou a fazer outra atividade além do transporte de cargas, seu CNPJ vira MEI comum e o limite cai para R$ 81.000, já neste ano."
-            : "A troca para MEI Caminhoneiro é feita no Portal do Empreendedor, e só em janeiro. Feita em janeiro, vale para o ano todo. Fora de janeiro, só passa a valer no ano seguinte."}
-        </p>
-        {avisoEquipe}
-        {botaoPrincipal("Entendi", onFechar)}
-      </>
-    );
-  } else if (passo === "novoCnpj") {
-    conteudo = (
-      <>
-        {voltar}
-        <p className="text-[15.5px] font-bold" style={{ color: "var(--text)" }}>
-          Fechei meu MEI e abri outro CNPJ
-        </p>
-        <p style={{ ...texto, marginTop: 8 }}>
-          O MEI fechado não volta, e o novo começa do zero, com limite proporcional
-          aos meses que faltam no ano. O CNPJ antigo ainda precisa entregar a
-          declaração de extinção.
-        </p>
-        {avisoEquipe}
-        {botaoPrincipal("Entendi", onFechar)}
-      </>
-    );
-  } else if (passo === "errado") {
-    conteudo = (
-      <>
-        {voltar}
-        <p className="text-[15.5px] font-bold" style={{ color: "var(--text)" }}>
-          Escolhi errado no cadastro
-        </p>
-        {podeCorrigir ? (
-          <>
-            <p style={{ ...texto, marginTop: 8 }}>
-              Nos primeiros {DIAS_PARA_CORRIGIR_TIPO} dias depois do cadastro, você
-              mesmo pode corrigir.
-            </p>
-            {botaoPrincipal(`Trocar para ${nomeOutro}`, () => setPasso("confirmar"))}
-          </>
-        ) : (
-          <>
-            <p style={{ ...texto, marginTop: 8 }}>
-              O prazo para corrigir sozinho passou ({DIAS_PARA_CORRIGIR_TIPO} dias
-              depois do cadastro). Avise a equipe TaCerto e a gente corrige para você.
-            </p>
-            {botaoPrincipal("Entendi", onFechar)}
-          </>
-        )}
-      </>
-    );
-  } else {
-    // "confirmar"
-    conteudo = (
-      <>
-        <p className="text-[15.5px] font-bold" style={{ color: "var(--text)" }}>
-          Trocar para {nomeOutro}?
-        </p>
-        <p className="text-sm flex items-center gap-1 flex-wrap" style={{ ...texto, marginTop: 8 }}>
-          O limite passa a ser <Valor tamanho="sm">{LIMITES_ANUAIS[outroTipo]}</Valor>.
-        </p>
-        <div className="flex gap-2" style={{ marginTop: 16 }}>
-          <button
-            onClick={() => setPasso("errado")}
-            className="flex-1 py-3 rounded-xl font-semibold"
-            style={{ backgroundColor: "var(--field)", color: "var(--text)" }}
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={() => onCorrigir(outroTipo)}
-            className="flex-1 py-3 rounded-xl font-semibold"
-            style={{ backgroundColor: "var(--primary)", color: "var(--primary-contrast)" }}
-          >
-            Confirmar
-          </button>
-        </div>
-      </>
-    );
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-40 flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
-      onClick={onFechar}
-    >
-      <div
-        className="w-full max-w-sm rounded-2xl p-5 relative"
-        style={{ ...cardStyle, maxHeight: "calc(100dvh - 32px)", overflowY: "auto" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
-          <h3 className="text-base font-bold" style={{ color: "var(--text)" }}>
-            Seu tipo de MEI
-          </h3>
-          <button
-            onClick={onFechar}
-            aria-label="Fechar"
-            className="rounded-full flex items-center justify-center shrink-0 active:scale-95 transition"
-            style={{ width: 30, height: 30, backgroundColor: "var(--field)" }}
-          >
-            <X size={15} style={{ color: "var(--text-secondary)" }} />
-          </button>
-        </div>
-        {conteudo}
-      </div>
-    </div>
-  );
-}
-
 export default function EditarPerfil() {
   const navigate = useNavigate();
 
@@ -418,7 +190,10 @@ export default function EditarPerfil() {
   } = useUserState();
 
   /* Data de abertura: fonte unica no AppStateContext (ver topo). */
-  const { mesAnoAbertura, setMesAnoAbertura } = useAppState();
+  const app = useAppState();
+  const { mesAnoAbertura, setMesAnoAbertura } = app;
+  /* v15: aviso aberto: null | "whatsapp" | "email" */
+  const [aviso, setAviso] = useState(null);
   const mesAbertura = mesAnoAbertura?.mes || null;
   const anoAbertura = mesAnoAbertura?.ano || null;
   const anoAtual = new Date().getFullYear();
@@ -511,8 +286,11 @@ export default function EditarPerfil() {
           .eq("id", user.id)
           .single();
         if (!ativo) return;
-        if (data?.whatsapp) {
-          const local = formatarTelefone(String(data.whatsapp).replace(/^\+55/, ""));
+        /* v15: sem numero no perfil, usa o telefone do login (conta que
+           entrou pelo WhatsApp: user.phone vem como "5537999998888") */
+        const numero = data?.whatsapp || user.phone || "";
+        if (numero) {
+          const local = formatarTelefone(String(numero).replace(/^\+?55/, ""));
           setWhats(local);
           setWhatsSalvo(local);
         }
@@ -585,10 +363,13 @@ export default function EditarPerfil() {
     const nomeLimpo = nome.trim();
     const digitos = whats.replace(/\D/g, "");
     salvarNome(nomeLimpo);
-    sincronizarPerfilNoBanco({
-      nome: nomeLimpo,
-      whatsapp: digitos ? `+55${digitos}` : null,
-    });
+    /* v15: na lista nova o WhatsApp nao e editavel (e o login), entao so
+       o nome vai para o banco — sem risco de apagar o numero. */
+    sincronizarPerfilNoBanco(
+      MOSTRAR_LOGIN_EMAIL
+        ? { nome: nomeLimpo, whatsapp: digitos ? `+55${digitos}` : null }
+        : { nome: nomeLimpo }
+    );
     setWhatsSalvo(whats);
     setSalvo(true);
     setTimeout(() => setSalvo(false), 1800);
@@ -639,7 +420,11 @@ export default function EditarPerfil() {
         <TopoRolavel titulo="Editar perfil" onVoltar={() => navigate(-1)} />
 
         {/* Avatar: só a inicial. A opção de foto foi retirada no piloto
-            (será reativada quando o app for empacotado como nativo). */}
+            (será reativada quando o app for empacotado como nativo).
+            v14: a bola toda fica escondida (MOSTRAR_AVATAR); no lugar,
+            so um respiro antes de "Informações pessoais". */}
+        {!MOSTRAR_AVATAR && <div aria-hidden style={{ height: 12 }} />}
+        {MOSTRAR_AVATAR && (
         <div
           className="flex flex-col items-center"
           style={{ paddingTop: ESPACO_ACIMA_AVATAR, paddingBottom: ESPACO_ABAIXO_AVATAR }}
@@ -666,7 +451,86 @@ export default function EditarPerfil() {
             </span>
           </div>
         </div>
+        )}
 
+        {/* v15: com o login so pelo WhatsApp, a lista nova. O layout
+            antigo (abaixo, depois do ":") volta com MOSTRAR_LOGIN_EMAIL. */}
+        {!MOSTRAR_LOGIN_EMAIL ? (
+          <>
+            <SecaoLista titulo="Dados pessoais" style={{ marginTop: 8 }}>
+              <LinhaCampo Icon={User} rotulo="Nome">
+                <input
+                  value={nome}
+                  maxLength={LIMITE_NOME_INPUT}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  onChange={(e) => setNome(e.target.value)}
+                  placeholder="Seu nome"
+                  className="flex-1 min-w-0 bg-transparent text-right outline-none"
+                  style={{ color: "var(--text-secondary)", fontSize: 16, border: "none", boxShadow: "none" }}
+                />
+              </LinhaCampo>
+              <LinhaLista
+                Icon={Phone}
+                rotulo="WhatsApp"
+                valor={whatsSalvo ? `+55 ${whatsSalvo}` : "Não informado"}
+                onClick={() => setAviso("whatsapp")}
+              />
+              {/* v17: e-mail escondido (MOSTRAR_EMAIL_NO_EDITAR), pedido do Fernando */}
+              {MOSTRAR_EMAIL_NO_EDITAR && !visitante && email && (
+                <LinhaLista Icon={Mail} rotulo="E-mail" valor={email} onClick={() => setAviso("email")} />
+              )}
+            </SecaoLista>
+
+            {(mudouNome || salvo) && (
+              <div className="pt-4">
+                <button
+                  onClick={salvarAlteracoes}
+                  disabled={salvo}
+                  className={`${salvo ? "" : "botao-confirmar "}w-full py-3.5 rounded-2xl font-semibold text-sm transition active:scale-[0.99]`}
+                  style={{
+                    backgroundColor: salvo ? "var(--field)" : "var(--primary)",
+                    color: salvo ? "var(--primary)" : "var(--primary-contrast)",
+                  }}
+                >
+                  {salvo ? "Alterações salvas" : "Salvar alterações"}
+                </button>
+              </div>
+            )}
+
+            <SecaoLista titulo="Meu MEI">
+              <LinhaLista
+                Icon={Briefcase}
+                rotulo="Tipo de MEI"
+                valor={LABEL_PERFIL[tipo] || "Não informado"}
+                onClick={() => setFolhaTipoAberta(true)}
+              />
+              {abriuEsteAno && (
+                <LinhaLista
+                  Icon={CalendarDays}
+                  rotulo="Data de abertura"
+                  valor={subAbertura}
+                  onClick={() => setCalendarioAberto(true)}
+                />
+              )}
+            </SecaoLista>
+
+            {/* Excluir conta: no fim, separado, so texto vermelho */}
+            {!visitante && (
+              <div style={{ marginTop: 44 }}>
+                <button
+                  onClick={() => navigate("/excluir-conta")}
+                  className="active:opacity-70 transition font-medium"
+                  style={{ color: "var(--danger)", fontSize: 15 }}
+                >
+                  Excluir conta
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+        <>
         {/* ================= INFORMACOES PESSOAIS ================= */}
         <TituloSecao primeiro>Informações pessoais</TituloSecao>
 
@@ -809,7 +673,7 @@ export default function EditarPerfil() {
             <button
               onClick={salvarAlteracoes}
               disabled={salvo}
-              className="w-full py-3.5 rounded-2xl font-semibold text-sm transition active:scale-[0.99]"
+              className={`${salvo ? "" : "botao-confirmar "}w-full py-3.5 rounded-2xl font-semibold text-sm transition active:scale-[0.99]`}
               style={{
                 backgroundColor: salvo ? "var(--field)" : "var(--primary)",
                 color: salvo ? "var(--primary)" : "var(--primary-contrast)",
@@ -852,6 +716,8 @@ export default function EditarPerfil() {
             </span>
           </button>
         </div>
+        </>
+        )}
       </div>
 
       <Calendario
@@ -869,6 +735,27 @@ export default function EditarPerfil() {
           podeCorrigir={podeCorrigirTipo}
           onFechar={() => setFolhaTipoAberta(false)}
           onCorrigir={corrigirTipo}
+          cardStyle={cardStyle}
+        />
+      )}
+
+      {aviso && (
+        <AvisoFaleConosco
+          texto={
+            aviso === "whatsapp"
+              ? "Seu número é usado para entrar no app. Para trocar, fale com a gente."
+              : "Para trocar o e-mail, fale com a gente."
+          }
+          onWhatsApp={() => {
+            const dados = dadosParaWhatsApp({ ...app, nome: nome.trim() || nomeSalvo });
+            abrirWhatsAppFisco(
+              aviso === "whatsapp"
+                ? MENSAGENS_WHATSAPP.trocarNumero(dados)
+                : MENSAGENS_WHATSAPP.falarComFisco(dados)
+            );
+            setAviso(null);
+          }}
+          onFechar={() => setAviso(null)}
           cardStyle={cardStyle}
         />
       )}

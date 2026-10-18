@@ -1,4 +1,4 @@
-/* INDEX-CSS v3 — foco discreto, sem brilho verde nas barras */
+/* INDEX-CSS v4 — classes botao-confirmar e botao-perigo (botoes minimalistas) (v3: foco discreto, sem brilho verde nas barras) */
 @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@1,700&display=swap');
 
 @tailwind base;
@@ -442,4 +442,23 @@ button:active:not(:disabled),
   #root > *::-webkit-scrollbar {
     display: none !important;
   }
+}
+/* ===================================================================
+   BOTOES MINIMALISTAS (05/10/2026) — pedido do Fernando
+   Confirmar/salvar: so contorno verde fino e texto verde (sem o verde
+   cheio). Apagar/sair: contorno vermelho. Use className "botao-confirmar"
+   ou "botao-perigo" no botao. O !important vence o estilo inline antigo
+   (backgroundColor verde/vermelho), entao basta acrescentar a classe.
+   =================================================================== */
+.botao-confirmar {
+  background: transparent !important;
+  color: var(--primary) !important;
+  border: 1px solid var(--primary) !important;
+  box-shadow: none !important;
+}
+.botao-perigo {
+  background: transparent !important;
+  color: var(--danger) !important;
+  border: 1px solid var(--danger) !important;
+  box-shadow: none !important;
 }

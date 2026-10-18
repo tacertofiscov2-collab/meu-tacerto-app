@@ -1,5 +1,7 @@
-/* OPENFINANCE v8 — SAIDAS: guardadas sozinhas ao sincronizar + lancar saida a mao + segmento do IR */
+/* OPENFINANCE v11 — classificarGrupo grava em partes de 100 ids (v10: conferencia com CATEGORIA (frete, reembolso, vale-pedagio...): classificarGrupo grava a categoria e pode entregar as confirmadas de uma vez (aoConfirmar, para lancar sem contar duas vezes); a regra do pagador NAO confirma sozinha entrada com cara de vale-pedagio, estorno ou emprestimo (v9: piloto: PLUGGY_ATIVO = false (antes true); o resto igual a v8) */
 import { supabase } from "@/lib/supabase";
+import { sugerirCategoriaEntrada } from "@/lib/categorias";
+import { erroDeColunaFaltando } from "@/lib/perfil";
 
 /* ===================================================================
    OPEN FINANCE — a camada que traz o que caiu na conta
@@ -34,8 +36,13 @@ import { supabase } from "@/lib/supabase";
    =================================================================== */
 
 /* true  = fala com a Pluggy de verdade (via Edge Function `pluggy`).
-   false = devolve os dados falsos abaixo. */
-export const PLUGGY_ATIVO = true;
+   false = devolve os dados falsos abaixo.
+
+   v9 (04/10/2026, PILOTO): DESLIGADA. No piloto nao ha conexao com
+   banco: as telas do banco estao escondidas por MOSTRAR_OPEN_FINANCE
+   (src/config/piloto.js) e nada no app chama `sincronizar`. Ao religar
+   o Open Finance, troque as DUAS chaves juntas. */
+export const PLUGGY_ATIVO = false;
 
 /* -------------------------------------------------------------------
    DADOS FALSOS
@@ -557,35 +564,63 @@ export async function classificar(
    Descrição do lançamento = nome do pagador; sem nome (depósito,
    algumas TEDs), usa a descrição do extrato.
    ------------------------------------------------------------------- */
+/* v10 (10/10/2026):
+   - `categoria` (frete, reembolso, vale_pedagio, emprestimo, estorno,
+     pessoal — src/lib/categorias.js) vai junto para a entrada. Sem a
+     coluna no banco, grava sem ela.
+   - `aoConfirmar(efetivas)`: se vier, as que viraram faturamento sao
+     entregues DE UMA VEZ para quem chamou lancar (com a regra de nao
+     contar duas vezes — lancarEntradasConfirmadas, em
+     src/lib/importarExtrato.js). Sem ele, cria um lancamento por
+     entrada, como antes. */
 export async function classificarGrupo(
   userId,
   entradas,
   decisao, // 'faturamento' | 'ignorada'
-  { criarLancamento, por = "usuario" } = {},
+  { criarLancamento, por = "usuario", categoria = null, aoConfirmar } = {},
 ) {
   if (!userId || !Array.isArray(entradas) || entradas.length === 0) {
-    return { ok: true, total: 0 };
+    return { ok: true, total: 0, efetivas: [] };
   }
 
-  const { data: mudadas, error } = await supabase
-    .from("entradas")
-    .update({
-      status: decisao,
-      lancamento_id: null,
-      classificada_por: por,
-      classificada_em: new Date().toISOString(),
-    })
-    .in("id", entradas.map((e) => e.id))
-    .eq("user_id", userId)
-    .eq("status", "pendente")
-    .select("id");
+  const patch = {
+    status: decisao,
+    lancamento_id: null,
+    classificada_por: por,
+    classificada_em: new Date().toISOString(),
+  };
+  /* v11: em partes de 100 (centenas de ids de uma vez estouram o
+     tamanho do endereco do pedido) */
+  const ids = entradas.map((e) => e.id);
+  const atualizar = async (dados) => {
+    const todas = [];
+    for (let i = 0; i < ids.length; i += 100) {
+      const { data, error } = await supabase
+        .from("entradas")
+        .update(dados)
+        .in("id", ids.slice(i, i + 100))
+        .eq("user_id", userId)
+        .eq("status", "pendente")
+        .select("id");
+      if (error) return { data: todas, error };
+      todas.push(...(data || []));
+    }
+    return { data: todas, error: null };
+  };
+
+  let { data: mudadas, error } = await atualizar(categoria ? { ...patch, categoria } : patch);
+  if (error && categoria && erroDeColunaFaltando(error)) {
+    ({ data: mudadas, error } = await atualizar(patch));
+  }
 
   if (error) throw error;
 
   const idsMudados = new Set((mudadas || []).map((m) => m.id));
   const efetivas = entradas.filter((e) => idsMudados.has(e.id));
 
-  if (decisao === "faturamento" && typeof criarLancamento === "function") {
+  if (decisao === "faturamento" && typeof aoConfirmar === "function") {
+    await aoConfirmar(efetivas);
+  } else if (decisao === "faturamento" && typeof criarLancamento === "function") {
     for (const e of efetivas) {
       criarLancamento({
         descricao: nomeParaDescricao(e.pagador_nome || e.descricao),
@@ -596,7 +631,7 @@ export async function classificarGrupo(
   }
 
   const total = efetivas.reduce((s, e) => s + (Number(e.valor) || 0), 0);
-  return { ok: true, total, quantidade: efetivas.length };
+  return { ok: true, total, quantidade: efetivas.length, efetivas };
 }
 
 /* -------------------------------------------------------------------
@@ -614,7 +649,13 @@ export async function classificarGrupo(
    Rodar duas vezes ao mesmo tempo não duplica nada (classificarGrupo
    só mexe no que ainda está pendente).
    ------------------------------------------------------------------- */
-export async function organizarPelasRegras(userId, { criarLancamento } = {}) {
+/* v10: `aoConfirmar` igual ao do classificarGrupo. E a regra de
+   "faturamento" do pagador NAO confirma sozinha a entrada cuja descricao
+   tem cara de NAO faturamento (vale-pedagio, estorno, emprestimo,
+   resgate... — sugerirCategoriaEntrada) ou que ja chegou com categoria
+   sugerida: a mesma transportadora que paga o frete paga o
+   vale-pedagio, e esse nao conta. Essas vao para a pessoa responder. */
+export async function organizarPelasRegras(userId, { criarLancamento, aoConfirmar, tipoMEI } = {}) {
   if (!userId) return { organizadas: 0, pendentes: [] };
 
   const [pendentes, regras] = await Promise.all([
@@ -627,7 +668,8 @@ export async function organizarPelasRegras(userId, { criarLancamento } = {}) {
   for (const e of pendentes) {
     const doc = String(e.pagador_documento || "").replace(/\D/g, "");
     const regra = doc ? regras[doc] : null;
-    if (regra?.acao === "faturamento") porRegra.faturamento.push(e);
+    const pareceNaoFaturamento = !!(e.categoria || sugerirCategoriaEntrada(e.descricao, tipoMEI));
+    if (regra?.acao === "faturamento" && !pareceNaoFaturamento) porRegra.faturamento.push(e);
     else if (regra?.acao === "ignorar") porRegra.ignorada.push(e);
     else restantes.push(e);
   }
@@ -636,13 +678,14 @@ export async function organizarPelasRegras(userId, { criarLancamento } = {}) {
   for (const decisao of ["faturamento", "ignorada"]) {
     const lista = porRegra[decisao];
     if (!lista.length) continue;
+    const categoria = decisao === "faturamento" ? "frete" : null;
     try {
       let r;
       try {
-        r = await classificarGrupo(userId, lista, decisao, { criarLancamento, por: "regra" });
+        r = await classificarGrupo(userId, lista, decisao, { criarLancamento, aoConfirmar, categoria, por: "regra" });
       } catch {
         // se o banco nao aceitar "regra" como origem, grava como "usuario"
-        r = await classificarGrupo(userId, lista, decisao, { criarLancamento });
+        r = await classificarGrupo(userId, lista, decisao, { criarLancamento, aoConfirmar, categoria });
       }
       organizadas += r?.quantidade || 0;
     } catch {

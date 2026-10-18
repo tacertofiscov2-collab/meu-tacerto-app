@@ -1,4 +1,4 @@
-/* HISTORICONOTAS v2 — "Lançar nota" manual; meses com nota acesos; anos so desde o inicio do uso */
+/* HISTORICONOTAS v6 — voltar sem historico leva para a aba Notas (/notas) (v5: vira "Minhas notas" da pagina Notas fiscais (/notas-fiscais/minhas): "Guardar uma nota" (arquivo primeiro; a folha e exportada para a pagina usar) e, guardada uma nota deste ano, a pergunta "Posso somar no velocímetro?" sem contar duas vezes (FolhaSomarNoVelocimetro); nota somada mostra "No velocímetro"; visual de hoje (sem verde, Guardar em contorno, sem a barra de baixo) (v4: prop titulo (a janela Notas fiscais usa "Minhas notas" quando o certificado esta ativo) (v3: setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v2: "Lançar nota" manual; meses com nota acesos; anos so desde o inicio do uso))) */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
@@ -7,11 +7,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import BottomNav from "../components/BottomNav.jsx";
 import Valor from "../components/Valor.jsx";
+import FolhaSomarNoVelocimetro from "../components/FolhaSomarNoVelocimetro.jsx";
 import { supabase } from "@/lib/supabase";
 import useAnoInicio from "@/hooks/useAnoInicio";
-import { listarNotasDoAno, lancarNota, apagarNota } from "@/lib/notas";
+import {
+  listarNotasDoAno, lancarNota, apagarNota, ligarNotaAoLancamento, lancamentoDaNota, descricaoDoLancamentoDaNota,
+} from "@/lib/notas";
 
 /* ===================================================================
    HISTORICO DE NOTAS FISCAIS v2 (28/09/2026)
@@ -90,7 +92,7 @@ function ehImagem(n) {
 
 /* ============================== TELA ============================== */
 
-export default function HistoricoNotas() {
+export default function HistoricoNotas({ titulo = "Histórico de notas" } = {}) {
   const navigate = useNavigate();
   const anoInicio = useAnoInicio();
   const hoje = new Date();
@@ -110,6 +112,8 @@ export default function HistoricoNotas() {
   const [paraApagar, setParaApagar] = useState(null);
   const [apagando, setApagando] = useState(false);
   const [vendo, setVendo] = useState(null);
+  // v5: nota recem-guardada que pode ir para o velocimetro
+  const [somar, setSomar] = useState(null);
 
   useEffect(() => {
     let ativo = true;
@@ -176,7 +180,9 @@ export default function HistoricoNotas() {
       setNotas((l) => [nova, ...l].sort((a, b) => new Date(b.data) - new Date(a.data)));
     }
     setLancando(null);
-    toast.success("Nota lançada");
+    toast.success("Nota guardada");
+    // v5: nota deste ano -> "Posso somar no velocímetro?" (o velocimetro e do ano)
+    if (new Date(nova.data).getFullYear() === anoAtual) setSomar(nova);
   }
 
   async function confirmarApagar() {
@@ -208,15 +214,15 @@ export default function HistoricoNotas() {
     >
       <header className="px-5 pt-6 pb-2 flex items-center gap-3 shrink-0">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => ((window.history.state?.idx ?? 0) > 0 ? navigate(-1) : navigate("/notas", { replace: true }))}
           aria-label="Voltar"
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80"
+          className="w-[46px] h-[46px] rounded-full flex items-center justify-center hover:opacity-80"
           style={{ border: "1px solid var(--border)", backgroundColor: "transparent" }}
         >
-          <ArrowLeft size={20} style={{ color: "var(--text)" }} />
+          <ArrowLeft size={24} style={{ color: "var(--text)" }} />
         </button>
         <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-          Histórico de notas
+          {titulo}
         </h1>
       </header>
 
@@ -230,8 +236,9 @@ export default function HistoricoNotas() {
                 onClick={() => { setAno(a); setNotas([]); }}
                 className="px-3 py-1.5 rounded-lg text-[13px] shrink-0"
                 style={{
-                  backgroundColor: a === ano ? "var(--primary)" : "var(--field)",
-                  color: a === ano ? "var(--primary-contrast)" : "var(--text)",
+                  background: "none",
+                  border: `1px solid ${a === ano ? "var(--text-secondary)" : "var(--border)"}`,
+                  color: a === ano ? "var(--text)" : "var(--text-tertiary)",
                   fontWeight: a === ano ? 700 : 400,
                 }}
               >
@@ -254,9 +261,9 @@ export default function HistoricoNotas() {
           className="card-tacerto w-full rounded-2xl flex items-center gap-3 px-4 active:opacity-80 disabled:opacity-40"
           style={{ minHeight: 50 }}
         >
-          <Plus size={20} strokeWidth={2.2} style={{ color: "var(--primary)" }} className="shrink-0" />
+          <Plus size={20} strokeWidth={2.2} style={{ color: "var(--text-secondary)" }} className="shrink-0" />
           <span className="text-[15px] font-semibold" style={{ color: "var(--text)" }}>
-            Lançar nota
+            Guardar uma nota
           </span>
         </button>
       </div>
@@ -264,7 +271,7 @@ export default function HistoricoNotas() {
       {/* GRADE 3x4 — ocupa o espaco que sobra, sem rolagem */}
       <div
         className="flex-1 px-5 grid grid-cols-3 grid-rows-4 gap-2.5"
-        style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
       >
         {MESES.map((mes, i) => {
           const futuro = ano > anoAtual || (ano === anoAtual && i > mesAtualIdx);
@@ -278,16 +285,17 @@ export default function HistoricoNotas() {
               className="card-tacerto rounded-2xl flex flex-col items-center justify-center gap-1 active:opacity-80"
               style={{
                 opacity: futuro ? 0.22 : acesa ? 1 : 0.45,
-                ...(acesa ? { backgroundColor: "rgba(34,197,94,0.12)", borderColor: "rgba(34,197,94,0.55)" } : {}),
+                /* v5: sem verde: mes com nota = borda clara */
+                ...(acesa ? { borderColor: "var(--text-secondary)" } : {}),
                 transition: "opacity 200ms ease",
               }}
             >
-              <FileText size={21} strokeWidth={2} style={{ color: acesa ? "var(--primary)" : "var(--text-tertiary)" }} />
+              <FileText size={21} strokeWidth={2} style={{ color: acesa ? "var(--text)" : "var(--text-tertiary)" }} />
               <span className="text-[15px] font-semibold" style={{ color: "var(--text)" }}>
                 {MESES_CURTO[i]}
               </span>
               {acesa && (
-                <span className="text-[11.5px] font-semibold" style={{ color: "var(--primary)" }}>
+                <span className="text-[11.5px] font-semibold" style={{ color: "var(--text-secondary)" }}>
                   {qtd === 1 ? "1 nota" : `${qtd} notas`}
                 </span>
               )}
@@ -357,10 +365,10 @@ export default function HistoricoNotas() {
                   <button
                     onClick={() => abrirLancar(mesAberto)}
                     className="flex items-center gap-1.5 text-sm font-semibold active:opacity-70"
-                    style={{ color: "var(--primary)" }}
+                    style={{ color: "var(--text)" }}
                   >
                     <Plus size={16} strokeWidth={2.4} />
-                    Lançar nota
+                    Guardar uma nota
                   </button>
                 </div>
               ) : (
@@ -376,7 +384,7 @@ export default function HistoricoNotas() {
                         <FileText
                           size={19}
                           strokeWidth={2}
-                          style={{ color: "var(--primary)" }}
+                          style={{ color: "var(--text-secondary)" }}
                           className="shrink-0"
                         />
                         <div className="flex-1 min-w-0">
@@ -414,13 +422,14 @@ export default function HistoricoNotas() {
                           )}
                           {n.descricao && <LinhaDetalhe rotulo="Descrição" valor={n.descricao} />}
                           <LinhaDetalhe rotulo="Data" valor={labelData(n.data)} />
+                          {lancamentoDaNota(n) && <LinhaDetalhe rotulo="No velocímetro" valor="Sim" />}
 
                           <div className="flex items-center gap-4 pt-1">
                             {n.url && (
                               <button
                                 onClick={() => verArquivo(n)}
                                 className="text-sm font-semibold active:opacity-70"
-                                style={{ color: "var(--primary)" }}
+                                style={{ color: "var(--text)" }}
                               >
                                 Ver nota
                               </button>
@@ -508,7 +517,15 @@ export default function HistoricoNotas() {
         </div>
       )}
 
-      <BottomNav ativo="perfil" />
+      {/* v5: "Posso somar no velocímetro?" (sem contar duas vezes) */}
+      <FolhaSomarNoVelocimetro
+        aberto={Boolean(somar)}
+        valor={somar?.valor}
+        data={somar?.data}
+        descricao={descricaoDoLancamentoDaNota(somar || {})}
+        onLigar={(idLancamento) => ligarNotaAoLancamento(userId, somar.id, idLancamento)}
+        onFechar={() => setSomar(null)}
+      />
     </div>
   );
 }
@@ -527,9 +544,11 @@ function LinhaDetalhe({ rotulo, valor }) {
   );
 }
 
-/* Folha "Lançar nota". Acompanha o teclado do iPhone (mesma tecnica das
-   outras folhas): o miolo rola e o botao fica sempre no rodape. */
-function FolhaLancarNota({ userId, anoMin, dataInicial, onFechar, onLancou }) {
+/* Folha "Guardar uma nota" (v5; antes "Lançar nota"). Acompanha o teclado
+   do iPhone (mesma tecnica das outras folhas): o miolo rola e o botao
+   fica sempre no rodape. v5: exportada (a pagina Notas fiscais abre ela
+   direto) e o arquivo vem primeiro (foto ou PDF). */
+export function FolhaLancarNota({ userId, anoMin, dataInicial, onFechar, onLancou }) {
   const [centavos, setCentavos] = useState(0);
   const [data, setData] = useState(dataInicial || hojeLocal());
   const [numero, setNumero] = useState("");
@@ -650,21 +669,21 @@ function FolhaLancarNota({ userId, anoMin, dataInicial, onFechar, onLancou }) {
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Lançar nota"
-          className="folha-nota w-full mx-auto flex flex-col"
+          aria-label="Guardar uma nota"
+          className="folha-nota w-full mx-auto flex flex-col rounded-t-3xl"
           style={{
             pointerEvents: "auto",
             maxWidth: 480,
             maxHeight: "100%",
-            backgroundColor: "var(--surface)",
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+            backgroundColor: "var(--bg)",
+            border: "1px solid var(--card-borda)",
+            borderBottom: "none",
             animation: "folhaNotaSobe 280ms cubic-bezier(0.22,0.61,0.36,1)",
           }}
         >
           <div className="shrink-0 flex items-center justify-between" style={{ padding: "16px 18px 8px" }}>
-            <p className="text-base font-bold" style={{ color: "var(--text)" }}>
-              Lançar nota
+            <p className="font-bold" style={{ color: "var(--text)", fontSize: 18 }}>
+              Guardar uma nota
             </p>
             <button
               onClick={onFechar}
@@ -682,6 +701,47 @@ function FolhaLancarNota({ userId, anoMin, dataInicial, onFechar, onLancou }) {
             className="flex-1 min-h-0 overflow-y-auto hide-scrollbar"
             style={{ padding: "4px 18px 14px", overscrollBehavior: "contain" }}
           >
+            <Rotulo>Foto ou PDF da nota</Rotulo>
+            <input
+              ref={inputArquivoRef}
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={(e) => {
+                setErro("");
+                setArquivo(e.target.files?.[0] || null);
+              }}
+              style={{ display: "none" }}
+            />
+            <button
+              onClick={() => inputArquivoRef.current?.click()}
+              disabled={salvando}
+              className="w-full rounded-2xl flex flex-col items-center justify-center text-center overflow-hidden transition active:opacity-80"
+              style={{
+                minHeight: 96,
+                padding: previa ? 0 : 12,
+                border: "1.5px dashed var(--border)",
+                backgroundColor: "var(--field)",
+              }}
+            >
+              {previa ? (
+                <img src={previa} alt="" style={{ width: "100%", maxHeight: 180, objectFit: "contain" }} />
+              ) : arquivo ? (
+                <>
+                  <FileText size={26} style={{ color: "var(--text-secondary)" }} />
+                  <span className="font-semibold truncate" style={{ fontSize: 14, marginTop: 6, maxWidth: "100%" }}>
+                    {arquivo.name}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Camera size={26} style={{ color: "var(--text-secondary)" }} />
+                  <span className="font-semibold" style={{ fontSize: 14.5, marginTop: 6 }}>
+                    Tirar foto ou escolher PDF
+                  </span>
+                </>
+              )}
+            </button>
+
             <Rotulo>Valor</Rotulo>
             <input
               value={centavos ? reais(centavos / 100) : ""}
@@ -759,47 +819,6 @@ function FolhaLancarNota({ userId, anoMin, dataInicial, onFechar, onLancou }) {
               style={{ ...campo, padding: "12px 14px" }}
             />
 
-            <Rotulo>Arquivo da nota</Rotulo>
-            <input
-              ref={inputArquivoRef}
-              type="file"
-              accept="image/*,application/pdf"
-              onChange={(e) => {
-                setErro("");
-                setArquivo(e.target.files?.[0] || null);
-              }}
-              style={{ display: "none" }}
-            />
-            <button
-              onClick={() => inputArquivoRef.current?.click()}
-              disabled={salvando}
-              className="w-full rounded-2xl flex flex-col items-center justify-center text-center overflow-hidden transition active:opacity-80"
-              style={{
-                minHeight: 96,
-                padding: previa ? 0 : 12,
-                border: "1.5px dashed var(--border)",
-                backgroundColor: "var(--field)",
-              }}
-            >
-              {previa ? (
-                <img src={previa} alt="" style={{ width: "100%", maxHeight: 180, objectFit: "contain" }} />
-              ) : arquivo ? (
-                <>
-                  <FileText size={26} style={{ color: "var(--text-secondary)" }} />
-                  <span className="font-semibold truncate" style={{ fontSize: 14, marginTop: 6, maxWidth: "100%" }}>
-                    {arquivo.name}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <Camera size={26} style={{ color: "var(--primary)" }} />
-                  <span className="font-semibold" style={{ fontSize: 14.5, marginTop: 6 }}>
-                    PDF ou foto (opcional)
-                  </span>
-                </>
-              )}
-            </button>
-
             {erro && (
               <p className="text-[13px]" style={{ color: "var(--danger)", marginTop: 12 }}>
                 {erro}
@@ -818,17 +837,11 @@ function FolhaLancarNota({ userId, anoMin, dataInicial, onFechar, onLancou }) {
             <button
               onClick={salvar}
               disabled={!podeSalvar}
-              className="w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center transition active:scale-[0.99] disabled:opacity-40"
-              style={{
-                gap: 8,
-                backgroundColor: "var(--primary)",
-                color: "var(--primary-contrast)",
-                fontSize: 16,
-                lineHeight: "22px",
-              }}
+              className="botao-confirmar w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center transition active:scale-[0.99] disabled:opacity-40"
+              style={{ gap: 8, fontSize: 16, lineHeight: "22px" }}
             >
               {salvando && <Loader2 size={18} className="animate-spin" />}
-              {salvando ? "Salvando..." : "Salvar nota"}
+              {salvando ? "Guardando..." : "Guardar nota"}
             </button>
           </div>
         </div>

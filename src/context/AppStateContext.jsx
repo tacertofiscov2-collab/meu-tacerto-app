@@ -1,4 +1,4 @@
-/* APPSTATE v2 — mediaMensal vira o RITMO do ano (faturado / meses que passaram) + mediaLimite */
+/* APPSTATE v8 — tem_nota no banco com tentativa sem coluna e copia local por conta (v7: lancamentosCarregados) */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   LIMITES_ANUAIS,
@@ -7,6 +7,99 @@ import {
   faixaDoVelocimetro,
 } from "@/lib/fiscal";
 import { supabase } from "@/lib/supabase";
+import {
+  COLUNAS_PERFIL_NOVAS, perfilNovoDoBanco, gravarPerfilNovo,
+  COLUNAS_PERFIL_10_10, CAMPOS_PERFIL_10_10,
+} from "@/lib/perfil";
+
+/* ===================================================================
+   CAMPOS NOVOS DO PERFIL (v3 — 10/10/2026)
+
+   CNPJ, CNAE, "MEI desde", CNPJ confirmado, data/hora da ultima
+   atualizacao do velocimetro, dias/horario do lembrete do DAS e "nota
+   automatica ligada". Vem de colunas novas de `perfis` (SQL de 08-10).
+
+   ANTES DO SQL RODAR as colunas nao existem: a leitura delas e SEPARADA
+   (se falhar, o resto do perfil carrega normal) e o que a pessoa
+   preencher fica guardado no aparelho, marcado com o id da conta
+   (`donoExtras`) — assim outra conta no mesmo celular nao herda o CNPJ.
+   DEPOIS DO SQL, ao abrir o app, o que so existia no aparelho vai para
+   o banco sozinho ("empurrar"), e dali em diante o banco manda.
+   =================================================================== */
+const EXTRAS_VAZIOS = {
+  cnpj: "",
+  cnae: "",
+  cnaesSecundarios: [],
+  dataOpcaoMei: null,
+  cnpjConfirmado: false,
+  velocimetroAtualizadoEm: null,
+  lembreteDasDias: [7, 2, 0],
+  lembreteDasHora: null,
+  notaAutomaticaAtiva: false,
+};
+
+/* Junta o banco com o aparelho: o banco ganha quando tem valor; o
+   aparelho so preenche o que o banco ainda nao tem. Devolve tambem o
+   que precisa subir para o banco. */
+function mesclarExtras(doBanco, local) {
+  const mesclado = { ...EXTRAS_VAZIOS };
+  const subir = {};
+  for (const campo of Object.keys(EXTRAS_VAZIOS)) {
+    const b = doBanco[campo];
+    const l = local[campo];
+    const bancoVazio = b === null || b === undefined || b === "";
+    const localTem = !(l === null || l === undefined || l === "" || (Array.isArray(l) && l.length === 0 && campo !== "lembreteDasDias"));
+    if (!bancoVazio) mesclado[campo] = b;
+    else if (localTem) {
+      mesclado[campo] = l;
+      subir[campo] = l;
+    }
+  }
+  // CNPJ confirmado no aparelho e "false" no banco (padrao da coluna):
+  // vale o do aparelho se o CNPJ tambem veio do aparelho.
+  if (subir.cnpj && local.cnpjConfirmado) {
+    mesclado.cnpjConfirmado = true;
+    subir.cnpjConfirmado = true;
+  }
+  return { mesclado, subir };
+}
+
+/* ===================================================================
+   CAMPOS DE 10-10 (v5 — 10/10/2026, tarefa de 10-10)
+   Mesma ideia dos de 08-10, num grupo e numa leitura SEPARADOS (ver
+   src/lib/perfil.js, CAMPOS_PERFIL_10_10): antes do SQL de 10-10, a
+   leitura deles falha sozinha e o resto carrega normal. O que a pessoa
+   escolher fica no aparelho (dono: donoExtras10) e sobe depois.
+   =================================================================== */
+const EXTRAS_10_10 = {
+  cnpjDados: null,
+  cnpjConsultadoEm: null,
+  tutorialVisto: false,
+  avisosWhatsapp: true,
+  dasForma: null,
+};
+
+/* Junta banco e aparelho. O banco ganha quando tem um valor diferente
+   do padrao da coluna; se o banco esta no padrao (ou vazio) e o
+   aparelho tem outro valor, vale o do aparelho e ele sobe. (Ex.: viu o
+   tutorial antes do SQL rodar: no banco fica false, o padrao.) */
+function mesclarExtras10(doBanco, local) {
+  const mesclado = { ...EXTRAS_10_10 };
+  const subir = {};
+  for (const campo of Object.keys(EXTRAS_10_10)) {
+    const padrao = EXTRAS_10_10[campo];
+    const b = doBanco[campo];
+    const l = local[campo];
+    const bancoNoPadrao = b === null || b === undefined || b === "" || b === padrao;
+    const localDiferente = !(l === null || l === undefined || l === "" || l === padrao);
+    if (!bancoNoPadrao) mesclado[campo] = b;
+    else if (localDiferente) {
+      mesclado[campo] = l;
+      subir[campo] = l;
+    }
+  }
+  return { mesclado, subir };
+}
 
 const STORAGE_KEY = "tacerto_app_state";
 const EVT = "tacerto-user-changed";
@@ -25,6 +118,23 @@ function ordinal(n) {
   return `${n}º`;
 }
 
+// Metadados por conta e id: sobrevivem a recarga antes do SQL do Bloco 4.
+function lerNotasLocais(userId) {
+  try { return JSON.parse(localStorage.getItem(`tacerto_notas_recebimentos:${userId}`) || "{}") || {}; }
+  catch { return {}; }
+}
+
+function guardarNotaLocal(userId, id, dados) {
+  const notas = lerNotasLocais(userId);
+  notas[id] = { ...notas[id], ...dados };
+  try { localStorage.setItem(`tacerto_notas_recebimentos:${userId}`, JSON.stringify(notas)); } catch {}
+}
+
+function colunaTemNotaAusente(erro) {
+  return ["42703", "PGRST204"].includes(erro?.code) &&
+    `${erro.message || ""} ${erro.details || ""}`.includes("tem_nota");
+}
+
 function normalizarTipo(v) {
   return String(v || "MEI").toUpperCase() === "MEI_CAMINHONEIRO"
     ? "MEI_CAMINHONEIRO"
@@ -40,6 +150,12 @@ const DEFAULT_STATE = {
   mesAnoAbertura: null,
   modoSimulacao: false,
   faturamentoSimulado: 0,
+  /* v3: campos novos do perfil + de qual conta eles sao */
+  ...EXTRAS_VAZIOS,
+  donoExtras: null,
+  /* v5: campos de 10-10 + de qual conta eles sao */
+  ...EXTRAS_10_10,
+  donoExtras10: null,
 };
 
 function hidratar() {
@@ -83,6 +199,18 @@ const AppStateContext = createContext(null);
 export function AppStateProvider({ children }) {
   const [state, setState] = useState(hidratar);
   const first = useRef(true);
+  /* v3: estado atual e conta logada, para os efeitos assincronos */
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const userIdRef = useRef(null);
+  const timerVelocimetroRef = useRef(null);
+  /* v6: os campos de 10-10 desta conta ja foram lidos nesta sessao (nao
+     vai para o aparelho: comeca false a cada abertura do app) */
+  const [extras10Prontos, setExtras10Prontos] = useState(false);
+  /* v7: os lancamentos desta conta ja foram lidos (ou e visitante): o
+     "Ultimos lancamentos" do Inicio so decide o que mostrar depois disso
+     (sem piscar "Comece pelo extrato" para quem ja tem lancamentos) */
+  const [lancamentosCarregados, setLancamentosCarregados] = useState(false);
 
   // ------------------------------------------------------------------
   // PONTE COM O SUPABASE AUTH
@@ -102,9 +230,12 @@ export function AppStateProvider({ children }) {
       if (!user) {
         // Sem sessão → visitante. Não apaga lançamentos locais (modo demo).
         if (!ativo) return;
+        userIdRef.current = null;
         setState((s) => ({ ...s, visitante: true, email: null }));
+        setLancamentosCarregados(true);
         return;
       }
+      userIdRef.current = user.id;
       // Tem sessão → busca o perfil no banco
       try {
         const { data: perfil } = await supabase
@@ -128,24 +259,88 @@ export function AppStateProvider({ children }) {
         }));
 
         // Busca os lançamentos do usuário no banco e substitui os locais.
+        // v3: com criado_em (plano B do "Atualizado em" do velocimetro)
         const { data: lancs } = await supabase
           .from("lancamentos")
-          .select("id, descricao, valor, data")
+          .select("*")
           .eq("user_id", user.id)
           .order("data", { ascending: false });
 
         if (!ativo) return;
+        const notasLocais = lerNotasLocais(user.id);
         setState((s) => ({
           ...s,
           lancamentos: Array.isArray(lancs)
-            ? lancs.map((l) => ({ ...l, valor: Number(l.valor) || 0 }))
+            ? lancs.map((l) => ({
+                ...l,
+                valor: Number(l.valor) || 0,
+                tem_nota: typeof l.tem_nota === "boolean" ? l.tem_nota : notasLocais[l.id]?.tem_nota,
+                tipoPagador: notasLocais[l.id]?.tipoPagador || "",
+              }))
             : s.lancamentos,
         }));
+        setLancamentosCarregados(true);
+
+        // v3: campos novos do perfil, numa consulta SEPARADA (ver topo)
+        await carregarExtras(user.id);
+        // v5: campos de 10-10, em outra consulta separada
+        await carregarExtras10(user.id);
       } catch {
         // Falha ao buscar perfil não deve derrubar a sessão.
         if (!ativo) return;
         setState((s) => ({ ...s, visitante: false, email: user.email || s.email }));
+        setLancamentosCarregados(true);
       }
+    }
+
+    /* v3: le os campos novos. Coluna ainda nao existe (SQL nao rodou):
+       fica com o que o aparelho guardou, se for desta conta. Existe:
+       junta banco + aparelho e sobe para o banco o que so estava aqui. */
+    async function carregarExtras(userId) {
+      const local = stateRef.current.donoExtras === userId ? stateRef.current : EXTRAS_VAZIOS;
+      let linha = null;
+      try {
+        const { data, error } = await supabase
+          .from("perfis")
+          .select(COLUNAS_PERFIL_NOVAS)
+          .eq("id", userId)
+          .single();
+        if (!error) linha = data;
+      } catch { /* sem rede */ }
+      if (!ativo) return;
+
+      if (!linha) {
+        setState((s) => (s.donoExtras === userId ? s : { ...s, ...EXTRAS_VAZIOS, donoExtras: userId }));
+        return;
+      }
+      const { mesclado, subir } = mesclarExtras(perfilNovoDoBanco(linha), local);
+      setState((s) => ({ ...s, ...mesclado, donoExtras: userId }));
+      if (Object.keys(subir).length) gravarPerfilNovo(subir);
+    }
+
+    /* v5: campos de 10-10 (mesma regra, grupo proprio) */
+    async function carregarExtras10(userId) {
+      const local = stateRef.current.donoExtras10 === userId ? stateRef.current : EXTRAS_10_10;
+      let linha = null;
+      try {
+        const { data, error } = await supabase
+          .from("perfis")
+          .select(COLUNAS_PERFIL_10_10)
+          .eq("id", userId)
+          .single();
+        if (!error) linha = data;
+      } catch { /* sem rede */ }
+      if (!ativo) return;
+
+      if (!linha) {
+        setState((s) => (s.donoExtras10 === userId ? s : { ...s, ...EXTRAS_10_10, donoExtras10: userId }));
+        setExtras10Prontos(true);
+        return;
+      }
+      const { mesclado, subir } = mesclarExtras10(perfilNovoDoBanco(linha, CAMPOS_PERFIL_10_10), local);
+      setState((s) => ({ ...s, ...mesclado, donoExtras10: userId }));
+      setExtras10Prontos(true);
+      if (Object.keys(subir).length) gravarPerfilNovo(subir);
     }
 
     // 1) Estado inicial: já tem sessão salva?
@@ -254,67 +449,165 @@ export function AppStateProvider({ children }) {
     };
   }, []);
 
+  /* ------------------------------------------------------------------
+     v3 — "ATUALIZADO EM" DO VELOCIMETRO
+     Toda mudanca nos lancamentos (lancar, editar, apagar, extrato
+     conferido) marca a data e hora. Aparece no Inicio ("Atualizado em
+     08/10 às 14:32") e vai para perfis.velocimetro_atualizado_em.
+     A gravacao no banco espera 0,8 s: a conferencia do extrato cria
+     varios lancamentos de uma vez, e assim vai UMA gravacao so.
+     ------------------------------------------------------------------ */
+  const marcarVelocimetroAtualizado = useCallback(() => {
+    const agora = new Date().toISOString();
+    setState((s) => ({ ...s, velocimetroAtualizadoEm: agora, donoExtras: userIdRef.current || s.donoExtras }));
+    clearTimeout(timerVelocimetroRef.current);
+    timerVelocimetroRef.current = setTimeout(() => {
+      gravarPerfilNovo({ velocimetroAtualizadoEm: agora });
+    }, 800);
+  }, []);
+
+  /* v3: CNPJ confirmado (ou so digitado) — Onboarding e Perfil.
+     `dados`: { cnpj, cnae, cnaesSecundarios, dataOpcaoMei, cnpjConfirmado }
+     v5: tambem { cnpjDados, cnpjConsultadoEm } (resumo e data da
+     consulta; cnpjDados sem data = agora). */
+  const salvarDadosCnpj = useCallback(async (dados = {}) => {
+    const patch = {};
+    for (const campo of ["cnpj", "cnae", "cnaesSecundarios", "dataOpcaoMei", "cnpjConfirmado", "cnpjDados", "cnpjConsultadoEm"]) {
+      if (dados[campo] !== undefined) patch[campo] = dados[campo];
+    }
+    if (patch.cnpjDados && patch.cnpjConsultadoEm === undefined) patch.cnpjConsultadoEm = new Date().toISOString();
+    setState((s) => ({
+      ...s,
+      ...patch,
+      donoExtras: userIdRef.current || s.donoExtras,
+      donoExtras10: userIdRef.current || s.donoExtras10,
+    }));
+    return gravarPerfilNovo(patch);
+  }, []);
+
+  /* v5: "Remover CNPJ" (Perfil > CNPJ e Permissoes): apaga o CNPJ e os
+     dados que vieram dele. Tipo de MEI e abertura ficam como estao, mas
+     voltam a ser editaveis (deixam de estar "travados"). No banco o CNPJ
+     vira vazio (null). */
+  const removerCnpj = useCallback(async () => {
+    setState((s) => ({
+      ...s,
+      cnpj: "",
+      cnae: "",
+      cnaesSecundarios: [],
+      dataOpcaoMei: null,
+      cnpjConfirmado: false,
+      cnpjDados: null,
+      cnpjConsultadoEm: null,
+      donoExtras: userIdRef.current || s.donoExtras,
+      donoExtras10: userIdRef.current || s.donoExtras10,
+    }));
+    return gravarPerfilNovo({
+      cnpj: null, cnae: null, cnaesSecundarios: [], dataOpcaoMei: null, cnpjConfirmado: false,
+      cnpjDados: null, cnpjConsultadoEm: null,
+    });
+  }, []);
+
+  /* v5: tutorial visto, avisos no WhatsApp, forma de pagar o DAS */
+  const salvarExtras = useCallback(async (dados = {}) => {
+    const patch = {};
+    for (const campo of ["tutorialVisto", "avisosWhatsapp", "dasForma"]) {
+      if (dados[campo] !== undefined) patch[campo] = dados[campo];
+    }
+    setState((s) => ({ ...s, ...patch, donoExtras10: userIdRef.current || s.donoExtras10 }));
+    return gravarPerfilNovo(patch);
+  }, []);
+
+  /* v3: lembrete do DAS (Preferencias). dias = [] e "nao quero lembretes" */
+  const salvarLembreteDas = useCallback(async ({ dias, hora } = {}) => {
+    const patch = {};
+    if (dias !== undefined) patch.lembreteDasDias = dias;
+    if (hora !== undefined) patch.lembreteDasHora = hora;
+    setState((s) => ({ ...s, ...patch, donoExtras: userIdRef.current || s.donoExtras }));
+    return gravarPerfilNovo(patch);
+  }, []);
+
+  /* v5: devolve uma Promise com o id do lancamento no banco (ou o id
+     local, sem login/sem rede) — para ligar nota ou comprovante a ele.
+     Quem nao precisa do id simplesmente ignora o retorno. */
   const adicionarLancamento = useCallback((l) => {
     // id temporário local — o banco gera o id definitivo; reconciliamos abaixo.
     const idLocal = uuid();
-    let novo;
-    setState((s) => {
-      const data = l.data || new Date().toISOString();
-      const d = new Date(data);
-      const mesmoMes = s.lancamentos.filter((x) => {
-        const dx = new Date(x.data);
-        return dx.getMonth() === d.getMonth() && dx.getFullYear() === d.getFullYear();
-      }).length;
-      const descricao =
-        (l.descricao && l.descricao.trim()) ||
-        `${ordinal(mesmoMes + 1)} Lançamento de ${MESES[d.getMonth()]}`;
-      novo = {
-        id: idLocal,
-        descricao,
-        valor: Number(l.valor) || 0,
-        data,
-      };
-      return { ...s, lancamentos: [novo, ...s.lancamentos] };
-    });
+    /* v4: o lancamento e montado AQUI, antes do setState. Antes ele era
+       montado dentro do setState, e o React 18 pode adiar essa funcao
+       (varios lancamentos de uma vez, ex.: conferencia do extrato): a
+       gravacao no banco rodava com o lancamento ainda vazio e NAO
+       gravava (ficava so no aparelho). */
+    const data = l.data || new Date().toISOString();
+    const d = new Date(data);
+    const mesmoMes = (stateRef.current.lancamentos || []).filter((x) => {
+      const dx = new Date(x.data);
+      return dx.getMonth() === d.getMonth() && dx.getFullYear() === d.getFullYear();
+    }).length;
+    const descricao =
+      (l.descricao && l.descricao.trim()) ||
+      `${ordinal(mesmoMes + 1)} Lançamento de ${MESES[d.getMonth()]}`;
+    const novo = {
+      id: idLocal,
+      descricao,
+      valor: Number(l.valor) || 0,
+      data,
+      criado_em: new Date().toISOString(),
+      ...(typeof l.tem_nota === "boolean" ? { tem_nota: l.tem_nota } : {}),
+      ...(l.tipoPagador !== undefined ? { tipoPagador: l.tipoPagador } : {}),
+    };
+    setState((s) => ({ ...s, lancamentos: [novo, ...s.lancamentos] }));
+    marcarVelocimetroAtualizado();
 
     // Grava no banco (se logado) e troca o id local pelo id real do banco.
-    (async () => {
+    return (async () => {
       try {
         const { data: userData } = await supabase.auth.getUser();
         const user = userData?.user;
-        if (!user || !novo) return;
-        const { data: inserido } = await supabase
-          .from("lancamentos")
-          .insert({
+        if (!user || !novo) return idLocal;
+        const payload = {
             user_id: user.id,
             descricao: novo.descricao,
             valor: novo.valor,
             data: novo.data,
-          })
-          .select("id")
-          .single();
+            ...(typeof novo.tem_nota === "boolean" ? { tem_nota: novo.tem_nota } : {}),
+        };
+        const inserir = () => supabase.from("lancamentos").insert(payload).select("id").single();
+        let resultado = await inserir();
+        if (colunaTemNotaAusente(resultado.error) && "tem_nota" in payload) {
+          delete payload.tem_nota;
+          resultado = await inserir();
+        }
+        const inserido = resultado.data;
         if (inserido?.id) {
+          if (typeof novo.tem_nota === "boolean") {
+            guardarNotaLocal(user.id, inserido.id, { tem_nota: novo.tem_nota, tipoPagador: novo.tipoPagador });
+          }
           setState((s) => ({
             ...s,
             lancamentos: s.lancamentos.map((x) =>
               x.id === idLocal ? { ...x, id: inserido.id } : x,
             ),
           }));
+          return inserido.id;
         }
+        return idLocal;
       } catch {
         /* visitante ou falha de rede — segue só no local */
+        return idLocal;
       }
     })();
-  }, []);
+  }, [marcarVelocimetroAtualizado]);
 
   const atualizarLancamento = useCallback((id, dados) => {
     setState((s) => ({
       ...s,
       lancamentos: s.lancamentos.map((l) => (l.id === id ? { ...l, ...dados } : l)),
     }));
+    marcarVelocimetroAtualizado();
 
     // Espelha a edição no banco (só os campos que o banco conhece).
-    (async () => {
+    return (async () => {
       try {
         const { data: userData } = await supabase.auth.getUser();
         if (!userData?.user) return;
@@ -322,16 +615,25 @@ export function AppStateProvider({ children }) {
         if (dados.descricao !== undefined) patch.descricao = dados.descricao;
         if (dados.valor !== undefined) patch.valor = Number(dados.valor) || 0;
         if (dados.data !== undefined) patch.data = dados.data;
+        if (typeof dados.tem_nota === "boolean") {
+          patch.tem_nota = dados.tem_nota;
+          guardarNotaLocal(userData.user.id, id, { tem_nota: dados.tem_nota, tipoPagador: dados.tipoPagador });
+        }
         if (Object.keys(patch).length === 0) return;
-        await supabase.from("lancamentos").update(patch).eq("id", id);
+        const { error } = await supabase.from("lancamentos").update(patch).eq("id", id);
+        if (colunaTemNotaAusente(error) && "tem_nota" in patch) {
+          delete patch.tem_nota;
+          if (Object.keys(patch).length) await supabase.from("lancamentos").update(patch).eq("id", id);
+        }
       } catch {
         /* visitante ou falha de rede — segue só no local */
       }
     })();
-  }, []);
+  }, [marcarVelocimetroAtualizado]);
 
   const removerLancamento = useCallback((id) => {
     setState((s) => ({ ...s, lancamentos: s.lancamentos.filter((l) => l.id !== id) }));
+    marcarVelocimetroAtualizado();
 
     // Espelha a remoção no banco.
     (async () => {
@@ -343,10 +645,11 @@ export function AppStateProvider({ children }) {
         /* visitante ou falha de rede — segue só no local */
       }
     })();
-  }, []);
+  }, [marcarVelocimetroAtualizado]);
 
   const removerTodosLancamentos = useCallback(() => {
     setState((s) => ({ ...s, lancamentos: [] }));
+    marcarVelocimetroAtualizado();
 
     // Espelha no banco: apaga todos os lançamentos do usuário logado.
     (async () => {
@@ -359,7 +662,7 @@ export function AppStateProvider({ children }) {
         /* visitante ou falha de rede — segue só no local */
       }
     })();
-  }, []);
+  }, [marcarVelocimetroAtualizado]);
 
   const setTipoMEI = useCallback((t) => {
     setState((s) => ({ ...s, tipoMEI: normalizarTipo(t) }));
@@ -474,8 +777,28 @@ export function AppStateProvider({ children }) {
     return faturamentoAtual + mediaMensal * mesesRestantes;
   }, [faturamentoAtual, mediaMensal]);
 
+  /* v3: quando o velocimetro foi atualizado pela ultima vez. Sem a
+     coluna nova (SQL nao rodou) ou sem marca ainda: o lancamento criado
+     mais recentemente. Nenhum lancamento: null. */
+  const ultimaAtualizacaoVelocimetro = useMemo(() => {
+    let maior = state.velocimetroAtualizadoEm ? new Date(state.velocimetroAtualizadoEm).getTime() : 0;
+    for (const l of state.lancamentos) {
+      const t = l.criado_em ? new Date(l.criado_em).getTime() : 0;
+      if (t > maior) maior = t;
+    }
+    return maior > 0 ? new Date(maior).toISOString() : null;
+  }, [state.velocimetroAtualizadoEm, state.lancamentos]);
+
   const value = {
     ...state,
+    marcarVelocimetroAtualizado,
+    salvarDadosCnpj,
+    removerCnpj,
+    salvarExtras,
+    extras10Prontos,
+    lancamentosCarregados,
+    salvarLembreteDas,
+    ultimaAtualizacaoVelocimetro,
     adicionarLancamento,
     atualizarLancamento,
     removerLancamento,

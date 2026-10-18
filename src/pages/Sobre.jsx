@@ -1,4 +1,4 @@
-/* SOBRE v3 — topo que rola (setinha fica parada e transparente ao rolar) */
+/* SOBRE v4 — "evitar surpresas com o imposto" (antes "com o Leão"; decisao do Fernando, 12/10: nada fala da Receita) (v3: topo que rola (setinha fica parada e transparente ao rolar)) */
 import { useNavigate } from "react-router-dom";
 import { Gauge, CheckCircle2, Info } from "lucide-react";
 import Brand from "@/components/Brand";
@@ -60,7 +60,7 @@ export default function Sobre() {
           <p className="text-sm leading-relaxed mt-5" style={{ color: "var(--text-secondary)" }}>
             O <Brand /> é seu assistente de educação fiscal para MEI e MEI Caminhoneiro.
             Ajudamos você a acompanhar seu faturamento, entender seu limite anual e evitar
-            surpresas com o Leão.
+            surpresas com o imposto.
           </p>
 
           <p className="text-sm leading-relaxed mt-3" style={{ color: "var(--text-secondary)" }}>
