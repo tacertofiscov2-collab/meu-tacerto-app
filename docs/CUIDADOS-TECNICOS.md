@@ -48,8 +48,10 @@ Leia antes de mexer na parte citada. Atualizado em 17/10/2026.
   `node scripts/gerar-base-mei.mjs` (editar só o `base-mei.md`).
 - **`package-lock.json` tem endereços antigos do Lovable**: na nuvem, os
   pacotes vêm do `registry.npmjs.org` (o Codex já resolve sozinho).
-- **Codex na nuvem não troca de branch** (só enxerga a `main`). Usar o
-  Codex do VS Code (Work locally), que trabalha na branch certa.
+- **Codex na nuvem:** ao criar a tarefa, escolher a branch
+  **`piloto-simplificado`** (antes ele só via a `main`). Se o PR sair com
+  destino `main`, a Central mostra "destino errado" e troca para a
+  `piloto-simplificado` com um toque. Nunca juntar PR do Codex na `main`.
 
 ## Testar sem login
 

@@ -9,8 +9,8 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-<!-- AGENTS v3 — fluxo por blocos (codex/bloco-N), mapa de pastas com docs/
-     e docs/historico/, leitura mínima (v2: regras de código e mapa de pastas) -->
+<!-- AGENTS v4 — papéis (docs/PAPEIS.md), diário e Central (v3: fluxo por blocos
+     codex/bloco-N, mapa de pastas com docs/ e docs/historico/) -->
 
 # TaCerto! — regras para agentes de código
 
@@ -19,6 +19,13 @@ programador: fale com ele em português do Brasil simples. Leia antes o
 `CLAUDE.md` (curto) e o `docs/HANDOFF.md` (estado atual). Antes de mexer
 numa área, veja `docs/CUIDADOS-TECNICOS.md`. **Não leia `docs/historico/`**
 a não ser que a tarefa peça: é passado e só gasta tempo.
+
+## Seu papel (leia primeiro)
+
+Você é o **operário**. O que é e o que NÃO é função sua está em
+**`docs/PAPEIS.md`** — leia antes de começar. Pedido fora do seu papel:
+responda "Isso é com o Claude: <motivo>." e pare. Ao terminar: uma linha
+no `docs/DIARIO.md` e o texto `Pedido #N` no resumo final.
 
 ## Como cada tarefa roda
 

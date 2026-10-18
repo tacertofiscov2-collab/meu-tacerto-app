@@ -6,6 +6,8 @@
 | `HANDOFF.md` | Estado atual do projeto, blocos, Supabase, contas de teste |
 | `LANCAMENTO-CHECKLIST.md` | Tudo o que falta antes do piloto, em ordem |
 | `CUIDADOS-TECNICOS.md` | Erros que já aconteceram e como evitar |
+| `PAPEIS.md` | Quem faz o quê (Fernando, ChatGPT, Claude, Central) |
+| `DIARIO.md` | Uma linha por pedido feito (mais novo em cima) |
 
 ## Passo a passo (quando for fazer aquilo)
 | Arquivo | Para quê |
