@@ -47,3 +47,31 @@ estão grandes demais e ainda sobra muito espaço vazio dentro deles.
    npx vite build sem erro; node scripts/checar-whatsapp.mjs passando.
 6. Commit "ui: celulares dos slides menores e sem espaço sobrando" e git push origin codex/bloco-8.
    Resposta curta aqui no chat com o commit.
+
+## PROMPT 5 — SLIDES: celulares só um pouco menores (branch codex/bloco-8, git pull)
+O Fernando quer os slides EXATAMENTE como estão agora (celular colado no card de baixo, moldura inteira),
+só que com o celular MENOR. As 2 tentativas anteriores (v22 e "moldura inteira") foram desfeitas: não repita.
+- Mude SÓ a constante MOLDURA_MAX de 390 para 350 em src/pages/Welcome.jsx. Nada mais (nem ZOOM_SLIDES,
+  nem a conta de altura, nem o posicionamento).
+- Print de todos os slides em 375x635 (iPhone XS no Safari): o celular continua encostado no card de baixo,
+  borda inteira, só menor. Se não ficar assim, NÃO faça commit: responda o que aconteceu.
+- Commit "ui: celular dos slides um pouco menor" e push.
+
+## PROMPT 6 — SITE v5: futurista, sem cara de feito por IA (branch codex/site)
+O Fernando quer o site com cara FUTURISTA e que NÃO pareça feito por IA. Mantenha textos, seções e simulador.
+Evite os vícios de site gerado por IA: tudo centralizado igual, cartões cinza com borda fina repetidos, brilho
+verde genérico, ícones de linha padrão em todo cartão, selo "eyebrow" em cima de todo título.
+Direção:
+- Tipografia como protagonista: títulos enormes (até 120px no PC), alinhados à esquerda em algumas seções,
+  números em fonte mono (ex.: "JetBrains Mono" ou "Geist Mono" do Google Fonts) para valores e horários.
+- Detalhes de "painel de caminhão/instrumento": grade fina de fundo bem sutil, marcações de régua no velocímetro,
+  linhas de 1px que guiam o olho entre seções, contadores e horários em mono.
+- Um elemento marcante no hero: o velocímetro GRANDE (não só dentro do celular), desenhado em SVG com
+  ponteiro que reage à rolagem da página (0% no topo → 58% quando o celular aparece).
+- Cores: preto profundo, branco, verde só em 1-2 pontos por tela; um único acento extra permitido (âmbar
+  #F5B544, só para "atenção" no simulador).
+- Variar o layout: seções assimétricas (texto 5 colunas / visual 7), não tudo em grade igual.
+- Movimento só onde tem sentido (ponteiro, números), sem animar tudo.
+Conferir: prints 1440x900 e 375x635, comparar com pierre.finance, e perguntar honestamente "parece feito por
+IA?" — se sim, ajustar. Publicar SÓ no tacerto-site-teste (como no PROMPT 2). Commit "feat: site v5" e push.
+Resposta curta aqui no chat.
