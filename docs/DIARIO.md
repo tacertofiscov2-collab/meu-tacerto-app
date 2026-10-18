@@ -8,4 +8,4 @@ Quem chega para um caso grave lê só as últimas linhas daqui e o
 
 ## Registro
 
-- 2026-10-18 · Claude · — · claude/central-papeis · criou PAPEIS.md, este diário e o robô de prints (prints.yml)
+- 2026-10-18 · Claude · — · claude/central-papeis · criou PAPEIS.md, este diário e o robô de prints (prints.yml); prints usam o endereço fixo da branch

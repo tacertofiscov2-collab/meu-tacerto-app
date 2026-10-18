@@ -1,4 +1,4 @@
-/* PRINTS v1 — robô de prints da Central: abre cada rota da prévia no
+/* PRINTS v2 — avisa quando a prévia pede login da Vercel (v1: robô de prints) da Central: abre cada rota da prévia no
    tamanho do iPhone (390 x 844) e salva PNG + info.json.
    Uso: node prints.mjs <arquivo-de-rotas> <pasta-de-saida>
    Variáveis: URL (obrigatória), BRANCH, SHA, VERCEL_BYPASS (opcional). */
@@ -47,6 +47,9 @@ for (const [i, r] of rotas.entries()) {
   try {
     await pagina.goto(base + r.caminho, { waitUntil: "networkidle", timeout: 30000 });
     await pagina.waitForTimeout(1500); // animações de entrada
+    if (/vercel\.com/.test(new URL(pagina.url()).hostname)) {
+      erros.unshift("A prévia pediu login da Vercel (proteção ligada).");
+    }
     await pagina.screenshot({ path: join(saida, arquivo) });
     feitos.push({ arquivo, nome: r.nome, caminho: r.caminho, erros: erros.slice(0, 5) });
     console.log("ok", r.caminho);

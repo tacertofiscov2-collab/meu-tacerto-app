@@ -1,4 +1,5 @@
-# prints.yml v1 — robô de prints: tira print no tamanho do iPhone (390 x 844)
+# prints.yml v2 — usa o endereço fixo da branch (abre sem login) (v1: robô de prints).
+# Robô de prints: tira print no tamanho do iPhone (390 x 844)
 # de cada prévia do app na Vercel e guarda como artefato por 14 dias.
 # A Central (pasta central/) lista e mostra esses prints.
 # Roda sozinho quando a Vercel termina uma prévia, ou pela Central
@@ -62,11 +63,19 @@ jobs:
           URL_VERCEL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
           SHA: ${{ github.event.deployment.sha || github.sha }}
         run: |
-          URL="${URL_MANUAL:-$URL_VERCEL}"
           BRANCH="$BRANCH_MANUAL"
           if [ -z "$BRANCH" ]; then
             BRANCH=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${SHA}/branches-where-head" --jq '.[0].name' 2>/dev/null || true)
           fi
+          # Endereço fixo da branch (o endereço único de cada deploy pede login da Vercel).
+          URL="$URL_MANUAL"
+          if [ -z "$URL" ] && [ -n "$BRANCH" ]; then
+            SLUG=$(echo "$BRANCH" | tr 'A-Z' 'a-z' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//g')
+            CANDIDATA="https://meu-tacerto-app-git-${SLUG}-tacerto1.vercel.app"
+            SUB="${CANDIDATA#https://}"; SUB="${SUB%%.*}"
+            [ ${#SUB} -le 63 ] && URL="$CANDIDATA"
+          fi
+          [ -z "$URL" ] && URL="$URL_VERCEL"
           [ -z "$BRANCH" ] && BRANCH="sem-branch"
           NOME=$(echo "$BRANCH" | tr -c 'A-Za-z0-9._-' '-' | sed 's/-*$//')
           echo "url=$URL" >> "$GITHUB_OUTPUT"
