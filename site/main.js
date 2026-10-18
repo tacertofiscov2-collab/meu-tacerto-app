@@ -1,4 +1,4 @@
-/* MAIN v3 — média mensal arredondada e menu no tablet (v2: simulador, links e movimento) */
+/* MAIN v5 — redução de movimento também limpa a digitação (v4: narrativa e animações) */
 const APP_URL = "https://meu-tacerto-app.vercel.app";
 
 document.querySelectorAll("a[data-app]").forEach(link => {
@@ -32,7 +32,11 @@ document.querySelectorAll("a[data-app]").forEach(link => {
       excess: `Passou mais de 20%: procure um contador o quanto antes. Você deixa de ser MEI desde ${opened ? "a abertura" : "1º de janeiro do mesmo ano"}. Os impostos são recalculados com multa e juros.`
     };
     document.querySelector("#sim-percent").textContent = `Você já usou ${percentage.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% do limite`;
-    document.querySelector("#sim-remaining").textContent = `Ainda pode faturar ${money(remaining)}`;
+    const remainingLabel = document.createElement("span");
+    remainingLabel.textContent = "Ainda pode faturar ";
+    const remainingValue = document.createElement("strong");
+    remainingValue.textContent = money(remaining);
+    document.querySelector("#sim-remaining").replaceChildren(remainingLabel, remainingValue);
     document.querySelector("#sim-average").textContent = `Dá uma média de ${money(Math.round(remaining / (12 - currentMonth)))} por mês até dezembro`;
     document.querySelector("#sim-warning").textContent = warnings[band];
     document.querySelector("#sim-limit").textContent = `Limite ${opened ? "proporcional" : "anual"} de ${now.getFullYear()}: ${money(limit)}.${opened ? " O mês da abertura conta inteiro." : ""}`;
@@ -40,6 +44,7 @@ document.querySelectorAll("a[data-app]").forEach(link => {
     const angle = Math.min(100, percentage) * 1.8;
     document.querySelector("#sim-needle").style.transform = `rotate(${angle}deg)`;
     document.querySelector("#sim-fill").setAttribute("stroke-dasharray", `${Math.min(100, percentage)} 100`);
+    document.querySelector("#sim-fill").style.opacity = received === 0 ? "0" : "1";
   }
   input.addEventListener("input", () => {
     const digits = input.value.replace(/\D/g, "").replace(/^0+/, "").slice(0, 12);
@@ -57,20 +62,104 @@ document.querySelectorAll("a[data-app]").forEach(link => {
     card.querySelector(".device-note").hidden = false;
   }
 
-  const needle = document.querySelector(".hero-needle");
-  const fill = document.querySelector(".hero .gauge-fill");
-  function animateHero() {
-    if (reduced.matches) return;
-    needle.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(104.4deg)" }], { duration: 1100, easing: "cubic-bezier(.2,.7,.2,1)" });
-    fill.animate([{ strokeDasharray: "0 100" }, { strokeDasharray: "58 100" }], { duration: 1100, easing: "cubic-bezier(.2,.7,.2,1)" });
+  const reveals = document.querySelectorAll(".section-heading, .bento-card, .timeline-item, .sim-card, .isa-copy, .conversation, .security-grid article, .plan-card, .install-card, .faq-list");
+  const bubbles = document.querySelectorAll(".chat-messages .bubble");
+  const motionAnimations = [];
+  const timers = new Set();
+  function pause(ms) {
+    return new Promise(resolve => {
+      const id = setTimeout(() => { timers.delete(id); resolve(); }, ms);
+      timers.add(id);
+    });
   }
-  animateHero();
-  const reveals = document.querySelectorAll("main > section:not(.hero):not(.facts)");
+  function showAll() {
+    reveals.forEach(el => el.classList.remove("reveal-pending"));
+    document.querySelector(".conversation").classList.remove("chat-ready");
+    bubbles.forEach(el => { el.classList.remove("pending-answer"); el.classList.add("is-visible"); });
+    document.querySelectorAll(".answer-dots").forEach(el => el.remove());
+    motionAnimations.forEach(animation => animation.finish());
+  }
   if ("IntersectionObserver" in window) {
-    const observer = new IntersectionObserver(entries => entries.forEach(entry => {
-      if (entry.isIntersecting) { entry.target.classList.remove("reveal-pending"); observer.unobserve(entry.target); }
-    }), { threshold: 0.04 });
-    if (!reduced.matches) reveals.forEach(section => { section.classList.add("reveal-pending"); observer.observe(section); });
+    const revealObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.remove("reveal-pending");
+        revealObserver.unobserve(entry.target);
+      }
+    }), { threshold: 0.07 });
+    if (!reduced.matches) reveals.forEach(el => {
+      el.classList.add("reveal", "reveal-pending");
+      revealObserver.observe(el);
+    });
+
+    const gaugeObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      if (!reduced.matches) {
+        motionAnimations.push(entry.target.animate(
+          [{ transform: "rotate(0deg)" }, { transform: "rotate(104.4deg)" }],
+          { duration: 1250, easing: "cubic-bezier(.2,.7,.2,1)" }
+        ));
+      }
+      gaugeObserver.unobserve(entry.target);
+    }), { threshold: 0.4 });
+    document.querySelectorAll(".animated-needle").forEach(el => gaugeObserver.observe(el));
+
+    const countObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      countObserver.unobserve(entry.target);
+      if (reduced.matches) return;
+      const target = Number(entry.target.dataset.count);
+      let startTime;
+      const draw = time => {
+        if (!startTime) startTime = time;
+        const progress = reduced.matches ? 1 : Math.min(1, (time - startTime) / 1000);
+        const value = Math.round(target * (1 - Math.pow(1 - progress, 3)));
+        entry.target.textContent = (entry.target.dataset.format === "currency" ? "R$ " : "") + value.toLocaleString("pt-BR");
+        if (progress < 1) requestAnimationFrame(draw);
+      };
+      requestAnimationFrame(draw);
+    }), { threshold: 0.6 });
+    document.querySelectorAll("[data-count]").forEach(el => countObserver.observe(el));
+
+    const timelineObserver = new IntersectionObserver(entries => {
+      const active = entries.filter(entry => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top).at(-1);
+      if (!active) return;
+      const index = active.target.dataset.step;
+      document.querySelectorAll(".timeline-item").forEach(el => el.classList.toggle("is-active", el.dataset.step === index));
+      document.querySelectorAll(".day-notification").forEach(el => {
+        const selected = el.dataset.notification === index;
+        el.classList.toggle("is-active", selected);
+        el.setAttribute("aria-hidden", String(!selected));
+      });
+      document.querySelector(".day-clock").textContent = ["06:00", "11:00", "15:00", "21:00"][index];
+    }, { rootMargin: "-30% 0px -40% 0px", threshold: 0 });
+    document.querySelectorAll(".timeline-item").forEach(el => timelineObserver.observe(el));
+
+    if (!reduced.matches) {
+      document.querySelector(".conversation").classList.add("chat-ready");
+      let queue = Promise.resolve();
+      const chatObserver = new IntersectionObserver(entries => {
+        entries.filter(entry => entry.isIntersecting).sort((a,b) => Number(a.target.dataset.message) - Number(b.target.dataset.message)).forEach(entry => {
+          chatObserver.unobserve(entry.target);
+          queue = queue.then(async () => {
+            const bubble = entry.target;
+            if (reduced.matches) { bubble.classList.add("is-visible"); return; }
+            if (bubble.classList.contains("bubble-isa")) {
+              const dots = document.createElement("span");
+              dots.className = "answer-dots";
+              dots.setAttribute("aria-hidden", "true");
+              dots.textContent = "••• digitando...";
+              bubble.append(dots);
+              bubble.classList.add("pending-answer");
+              await pause(600);
+              dots.remove();
+              bubble.classList.remove("pending-answer");
+            } else await pause(120);
+            bubble.classList.add("is-visible");
+          });
+        });
+      }, { threshold: 0.15 });
+      bubbles.forEach(el => chatObserver.observe(el));
+    }
     const bar = document.querySelector(".mobile-cta");
     const hero = document.querySelector(".hero");
     const final = document.querySelector(".final-cta");
@@ -83,12 +172,7 @@ document.querySelectorAll("a[data-app]").forEach(link => {
     addEventListener("resize", updateBar, { passive: true });
     updateBar();
   }
-  reduced.addEventListener("change", () => {
-    if (reduced.matches) {
-      document.getAnimations().forEach(animation => animation.finish());
-      reveals.forEach(section => section.classList.remove("reveal-pending"));
-    }
-  });
+  reduced.addEventListener("change", () => { if (reduced.matches) showAll(); });
 })();
 (() => {
   const button = document.querySelector(".menu-toggle");
@@ -113,5 +197,5 @@ document.querySelectorAll("a[data-app]").forEach(link => {
   document.addEventListener("click", (event) => {
     if (!event.target.closest(".site-header")) setOpen(false);
   });
-  window.matchMedia("(min-width: 1001px)").addEventListener?.("change", () => setOpen(false));
+  window.matchMedia("(min-width: 901px)").addEventListener?.("change", () => setOpen(false));
 })();
