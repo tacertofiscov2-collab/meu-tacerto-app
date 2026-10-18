@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <!-- CENTRAL index v1 — PWA de cada projeto (pedidos, aprovar, prints) -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0A0A0A">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Central">
+  <title>Central</title>
+  <link rel="manifest" href="/api/manifest">
+  <link rel="apple-touch-icon" href="/icones/tacerto-180.png">
+  <link rel="icon" type="image/png" href="/icones/tacerto-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main id="tela" aria-live="polite"></main>
+  <nav id="abas" class="abas" hidden>
+    <button data-aba="inicio" class="aba">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>
+      <span>Início</span>
+    </button>
+    <button data-aba="pedir" class="aba">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      <span>Pedir</span>
+    </button>
+    <button data-aba="aprovar" class="aba">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>
+      <span>Aprovar</span>
+      <b class="bolinha" id="bolinha-aprovar" hidden></b>
+    </button>
+    <button data-aba="conferir" class="aba">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg>
+      <span>Conferir</span>
+    </button>
+  </nav>
+  <div id="folha-fundo" class="folha-fundo" hidden></div>
+  <section id="folha" class="folha" role="dialog" aria-modal="true" hidden></section>
+  <div id="aviso" class="aviso" role="status" hidden></div>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>
