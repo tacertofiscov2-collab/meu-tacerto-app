@@ -664,3 +664,222 @@ on conflict (user_id, pluggy_transaction_id) do nothing;
 
 -- Para limpar e testar de novo:
 -- delete from entradas where pluggy_transaction_id like 'tx-00%';
+
+-- =================================================================
+-- PARTE 18-10-2026 — rodado por Claude via conector do Supabase (com o OK do Fernando)
+-- 1) SQL-PENDENTE-10-10 (inteiro)  2) SQL-PENDENTE-BLOCO4  3) SQL-PENDENTE-NOTIFICACOES (só PARTE 1)
+-- 4) SQL-PENDENTE-BLOCO6. Tudo só acrescenta; nenhum dado mudou. Advisors: sem alerta novo.
+-- Funções publicadas: excluir-conta v6 (limpa arquivos), ler-comprovante v1, isa-chat v1 (app com ISA_IA_ATIVA=false).
+-- Faltam: aviso-semanal (precisa das chaves VAPID) e a PARTE 2 das notificações.
+-- =================================================================
+alter table public.perfis add column if not exists cnpj_dados         jsonb;
+alter table public.perfis add column if not exists cnpj_consultado_em timestamptz;
+alter table public.perfis add column if not exists tutorial_visto     boolean default false;
+alter table public.perfis add column if not exists avisos_whatsapp    boolean default true;
+alter table public.perfis add column if not exists das_forma          text;
+
+-- das_forma so aceita 'isa' ou 'sozinho' (ou vazio). Criada so se ainda
+-- nao existir (sem DROP).
+do $$
+begin
+  if not exists (select 1 from pg_constraint
+                 where conname = 'perfis_das_forma_valida'
+                   and conrelid = 'public.perfis'::regclass) then
+    alter table public.perfis
+      add constraint perfis_das_forma_valida
+      check (das_forma is null or das_forma in ('isa', 'sozinho'));
+  end if;
+end $$;
+
+
+-- -------------------------------------------------------------------
+-- 2) NOTA / COMPROVANTE LIGADO AO LANCAMENTO (Blocos E e J)
+-- Igual ao entradas.lancamento_id que ja existe: so o id, sem chave
+-- estrangeira (apagar um lancamento nunca apaga a nota).
+-- -------------------------------------------------------------------
+alter table public.notas_fiscais add column if not exists lancamento_id uuid;
+alter table public.comprovantes  add column if not exists lancamento_id uuid;
+create index if not exists notas_fiscais_lancamento on public.notas_fiscais (lancamento_id) where lancamento_id is not null;
+create index if not exists comprovantes_lancamento  on public.comprovantes  (lancamento_id) where lancamento_id is not null;
+
+
+-- -------------------------------------------------------------------
+-- 3) O app (PostgREST) enxergar as colunas novas na hora
+-- -------------------------------------------------------------------
+notify pgrst, 'reload schema';
+/* SQL-PENDENTE-BLOCO4 v1 — coluna opcional da nota fiscal no recebimento; NAO executado */
+-- Pendente de autorizacao do Fernando. Sem valor padrao: antigos ficam sem selo.
+alter table public.lancamentos add column if not exists tem_nota boolean;
+create table if not exists public.inscricoes_push (
+  id              uuid primary key default gen_random_uuid(),
+  user_id         uuid not null references auth.users(id) on delete cascade,
+  endpoint        text not null,      -- "endereço" do celular na Apple/Google
+  p256dh          text not null,      -- chave do celular que tranca a mensagem
+  auth            text not null,      -- segredo do celular que tranca a mensagem
+  ativa           boolean not null default true,
+  criado_em       timestamptz not null default now(),
+  atualizado_em   timestamptz not null default now(),
+  ultimo_envio_em timestamptz,        -- quando a última da semana saiu
+  unique (user_id, endpoint)
+);
+
+-- Índice por pessoa, só dos celulares ativos (é o que a função lê).
+-- (A trava "unique" acima já ajuda nas buscas por pessoa em geral.)
+create index if not exists inscricoes_push_user_ativa
+  on public.inscricoes_push (user_id)
+  where ativa;
+
+-- GRANT abre a porta. POLICY diz quem passa. Precisa dos dois.
+-- Primeiro tira tudo desta tabela NOVA (para garantir que ninguém ficou
+-- com mais do que devia) e depois dá só o necessário:
+--   app (authenticated): ler, criar e atualizar — SEM apagar;
+--   quem não está logado (anon): nada;
+--   servidor (service_role): ler e atualizar (a função aviso-semanal).
+revoke all on public.inscricoes_push from anon, authenticated;
+grant select, insert, update on public.inscricoes_push to authenticated;
+grant select, update on public.inscricoes_push to service_role;
+
+alter table public.inscricoes_push enable row level security;
+
+-- Políticas "só as próprias linhas" (criadas só se ainda não existirem;
+-- sem DROP). "(select auth.uid())" é o mesmo que auth.uid(), no jeito
+-- que o Supabase recomenda (mais rápido: calcula uma vez só).
+-- Sem política de apagar: o app não apaga, só desliga.
+do $$
+begin
+  if not exists (select 1 from pg_policies where schemaname = 'public'
+                 and tablename = 'inscricoes_push' and policyname = 'inscricoes_push: ver as proprias') then
+    create policy "inscricoes_push: ver as proprias" on public.inscricoes_push
+      for select to authenticated using ((select auth.uid()) = user_id);
+  end if;
+  if not exists (select 1 from pg_policies where schemaname = 'public'
+                 and tablename = 'inscricoes_push' and policyname = 'inscricoes_push: inserir as proprias') then
+    create policy "inscricoes_push: inserir as proprias" on public.inscricoes_push
+      for insert to authenticated with check ((select auth.uid()) = user_id);
+  end if;
+  if not exists (select 1 from pg_policies where schemaname = 'public'
+                 and tablename = 'inscricoes_push' and policyname = 'inscricoes_push: atualizar as proprias') then
+    create policy "inscricoes_push: atualizar as proprias" on public.inscricoes_push
+      for update to authenticated
+      using ((select auth.uid()) = user_id)
+      with check ((select auth.uid()) = user_id);
+  end if;
+end $$;
+
+
+-- -------------------------------------------------------------------
+-- 2) FUNÇÃO faturado_ano_para_aviso(ano)
+--    Devolve, para cada pessoa com celular ATIVO, quanto ela faturou no
+--    ano (soma dos lançamentos). Quem não lançou nada vem com 0.
+--
+--    Igual ao app (src/context/AppStateContext.jsx, faturamentoAtual):
+--    o velocímetro soma o "valor" de TODOS os lançamentos da pessoa
+--    (tabela lancamentos: user_id, valor, data) cuja data cai no ano
+--    corrente. O app usa o relógio do celular; aqui usamos o horário de
+--    Brasília (America/Sao_Paulo). Só muda algo para quem lançar perto
+--    da meia-noite do dia 31/12 e morar em outro fuso.
+--
+--    ⚠️ SUPOSIÇÕES A CONFERIR NO BANCO (só leitura) antes de rodar —
+--    a tabela lancamentos não está no migrations.sql:
+--      - lancamentos tem as colunas user_id (uuid), valor (número) e
+--        data. O app grava "data" como data e hora (ex.:
+--        2026-10-12T15:00:00.000Z) e às vezes só a data (2026-10-12).
+--        A conta abaixo funciona se "data" for timestamptz, timestamp,
+--        date ou texto nesse formato (ela converte tudo para data e
+--        hora, no horário de Brasília).
+--      - a service_role (chave do servidor) pode ler lancamentos e
+--        perfis (o GRANT logo abaixo garante; repetir não muda nada).
+--      Conferir com:
+--        select column_name, data_type from information_schema.columns
+--         where table_schema = 'public' and table_name = 'lancamentos'
+--         order by ordinal_position;
+--
+--    POR QUE SEM "security definer": a função roda com as permissões de
+--    QUEM CHAMA. Quem chama é o servidor (service_role), que já pode ler
+--    tudo. Se um dia alguém liberasse a função para o app por engano, o
+--    RLS continuaria valendo e cada pessoa só veria a própria soma.
+--    Com "security definer" ela rodaria como dona do banco, e o mesmo
+--    engano mostraria o faturamento de TODO MUNDO. Por isso: sem.
+--    "search_path = ''" trava os nomes (public.lancamentos etc.) e tira
+--    o aviso dos advisors de segurança.
+-- -------------------------------------------------------------------
+create or replace function public.faturado_ano_para_aviso(p_ano int)
+returns table (user_id uuid, faturado numeric)
+language sql
+stable
+set search_path = ''
+set timezone = 'America/Sao_Paulo'
+as $$
+  select i.user_id,
+         coalesce(sum(l.valor), 0)::numeric as faturado
+    from (select distinct ip.user_id
+            from public.inscricoes_push ip
+           where ip.ativa) as i
+    left join public.lancamentos l
+      on l.user_id = i.user_id
+     and l.data::timestamptz >= make_timestamptz(p_ano,     1, 1, 0, 0, 0, 'America/Sao_Paulo')
+     and l.data::timestamptz <  make_timestamptz(p_ano + 1, 1, 1, 0, 0, 0, 'America/Sao_Paulo')
+   group by i.user_id;
+$$;
+
+-- Só o servidor pode usar (o app e quem não está logado, não)
+revoke execute on function public.faturado_ano_para_aviso(int) from public, anon, authenticated;
+grant  execute on function public.faturado_ano_para_aviso(int) to service_role;
+
+-- A função lê lancamentos e inscricoes_push; a aviso-semanal lê perfis.
+-- A service_role provavelmente já pode ler as duas primeiras; repetir
+-- não muda nada (o app continua igual).
+grant select on public.lancamentos to service_role;
+grant select on public.perfis      to service_role;
+
+
+-- -------------------------------------------------------------------
+-- 3) O app (PostgREST) enxergar a tabela e a função novas na hora
+-- -------------------------------------------------------------------
+notify pgrst, 'reload schema';
+
+-- ======================= FIM DA PARTE 1 ============================
+/* SQL-PENDENTE-BLOCO6 v1 — uso diário e dúvidas da Isa; NÃO executado */
+-- Executar somente após autorização do Fernando, com a rotina do CLAUDE.md.
+-- A função isa-chat grava com service_role. O app só lê os próprios dados.
+begin;
+
+create table if not exists public.isa_uso (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  dia date not null,
+  perguntas integer not null default 0 check (perguntas between 0 and 30),
+  primary key (user_id, dia)
+);
+
+create table if not exists public.isa_duvidas_pendentes (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  pergunta text not null check (char_length(pergunta) between 1 and 300),
+  criado_em timestamptz not null default now(),
+  respondida boolean not null default false,
+  resposta text default null
+);
+create index if not exists isa_duvidas_pendentes_pessoa_data
+  on public.isa_duvidas_pendentes (user_id, criado_em desc);
+
+alter table public.isa_uso enable row level security;
+alter table public.isa_duvidas_pendentes enable row level security;
+
+do $$
+begin
+  if not exists (select 1 from pg_policies where schemaname = 'public'
+    and tablename = 'isa_uso' and policyname = 'isa_uso_leitura_propria') then
+    create policy isa_uso_leitura_propria on public.isa_uso
+      for select to authenticated using ((select auth.uid()) = user_id);
+  end if;
+  if not exists (select 1 from pg_policies where schemaname = 'public'
+    and tablename = 'isa_duvidas_pendentes' and policyname = 'isa_duvidas_leitura_propria') then
+    create policy isa_duvidas_leitura_propria on public.isa_duvidas_pendentes
+      for select to authenticated using ((select auth.uid()) = user_id);
+  end if;
+end $$;
+
+revoke all on public.isa_uso, public.isa_duvidas_pendentes from public, anon, authenticated;
+grant select on public.isa_uso, public.isa_duvidas_pendentes to authenticated;
+grant all on public.isa_uso, public.isa_duvidas_pendentes to service_role;
+commit;
