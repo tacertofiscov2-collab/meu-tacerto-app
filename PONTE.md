@@ -1,108 +1,134 @@
 # PONTE — fila de prompts do Claude (patrão) para o Codex (operário)
 
-NUMERO: 1
+NUMERO: 2
 BRANCH: codex/site
 STATUS: novo
 
-## PROMPT
+## PROMPT 2 — SITE v4: REDESENHO COMPLETO (o v3 foi reprovado pelo Fernando: "design ruim, mal feito")
 
-SITE v3 — deixar o site de apresentação (pasta site/) muito bom.
-Você trabalha sozinho; o Fernando não está no PC. Trabalhe até o fim.
+O problema do v3: parece modelo pronto. Muito texto pequeno, cartões cinza iguais, quase nenhuma tela do
+produto, tudo à esquerda, seções monótonas, velocímetro do simulador esquisito em 0%.
+Referências aprovadas pelo Fernando: pierre.finance, meuassessor.com, organizze.com.br.
 
-### Regras
-- Leia AGENTS.md. Nunca force-push/rebase/squash/amend; push só da codex/site.
-- HTML/CSS/JS puro, sem build, sem framework, sem biblioteca externa (só a fonte Geist que já usa).
-- Mantenha a identidade aprovada: fundo preto, branco, verde só em destaque/CTA, fonte Geist,
-  muito espaço, poucas palavras. Inspiração: Pierre Finance, Linear, Mercury, Cora — minimalista, premium.
-- Proibido: link ou botão para WhatsApp; "Receita Federal"; certificado A1; depoimento,
-  nota de avaliação, número de usuários ou logo de parceiro inventados; promessa de "zero imposto".
-- A Isa é "assistente virtual com IA", nunca contadora nem pessoa.
-- Português do Brasil simples, frases curtas, falando com caminhoneiro ("você").
-- Todos os links do app num lugar só: em main.js, const APP_URL = "https://meu-tacerto-app.vercel.app";
-  os links /cadastro, /login, /termos-de-uso, /privacidade são montados a partir dele.
+### 0. Estude as referências ANTES de codar
+- Com Playwright (já usado antes), tire print de página inteira de https://pierre.finance e
+  https://meuassessor.com em 1440x900 e 390x844. Salve em C:\Users\ferna\AppData\Local\Temp\tacerto-ref\
+  (fora do repositório). Olhe com atenção: o que faz eles parecerem caros.
+- O que eles têm e nós não (copie a LINGUAGEM, nunca textos, marcas, imagens ou ícones deles):
+  a) Menu em "pílula" flutuante, centralizado, com fundo translúcido (backdrop-filter: blur) e borda fina.
+  b) Hero CENTRALIZADO: título grande e leve (peso 500, letter-spacing -0.04em), subtítulo curto, UM botão
+     em pílula. Embaixo, o celular no centro com CARTÕES FLUTUANDO em volta (transações, gráfico, avisos).
+  c) O produto aparece o tempo todo: cada recurso tem uma mini-tela do app desenhada em HTML/CSS.
+  d) Grade "bento" de recursos com tamanhos diferentes (2 grandes + 4 pequenos), não 4 colunas iguais.
+  e) Ritmo: seções escuras alternando com 1-2 seções claras (fundo #F4F4F0, texto #0A0A0A), como o Meu Assessor.
+  f) Seção narrativa "um dia normal" com horários e notificações do celular.
+  g) Cartão de plano bem desenhado. Perguntas em 2 colunas no PC. CTA final grande com brilho verde.
+  h) Botões em pílula (border-radius 999px). Muito espaço. Título sempre maior que tudo.
 
-### Dados oficiais (use exatamente estes; 2026)
-- Limite anual: MEI comum R$ 81.000; MEI Caminhoneiro R$ 251.600.
-- Ano em que abriu: proporcional aos meses, contando o mês da abertura inteiro:
-  R$ 6.750/mês (comum) e R$ 20.966,67/mês (Caminhoneiro).
-- Conta no faturamento: tudo que entra pelo CNPJ (Pix, dinheiro, cartão, transferência), com ou sem nota,
-  pela data em que recebeu. Não conta: salário de carteira, aposentadoria, aluguel, ganho da pessoa física.
-- Até 20% acima (até R$ 97.200 comum; até R$ 301.920 Caminhoneiro): continua MEI até 31/12, paga uma guia
-  extra (DAS complementar) sobre o que passou; em 1º de janeiro vira Microempresa.
-- Mais de 20% acima: deixa de ser MEI desde 1º de janeiro do mesmo ano (no ano da abertura, desde a
-  abertura), impostos recalculados com multa e juros — procurar um contador o quanto antes.
-- DAS vence dia 20 (fim de semana/feriado: próximo dia útil). Valores 2026:
-  Caminhoneiro: frete entre cidades/estados R$ 195,52; só na mesma cidade R$ 199,52; os dois R$ 200,52.
-  MEI comum: comércio/indústria R$ 82,05; serviços R$ 86,05; comércio e serviços R$ 87,05.
-- Declaração anual (DASN-SIMEI): até 31 de maio.
-- Rodapé de dados: "Valores de 2026. Fonte: regras do MEI e salário mínimo de 2026."
+### Regras (as mesmas de sempre)
+- HTML/CSS/JS puro na pasta site/, sem framework, sem biblioteca nova. Fonte Geist (já usada).
+- Proibido: link/botão para WhatsApp (pode CITAR que a Isa avisa no WhatsApp, sem link); "Receita Federal";
+  certificado A1; depoimento, nota, número de usuários, logo de imprensa ou parceiro inventados.
+- Valores nas mini-telas são ilustrativos e coerentes entre si (limite do Caminhoneiro R$ 251.600; 58% = R$ 145.928).
+  Escreva "Valores ilustrativos." discretamente perto do hero.
+- APP_URL continua em main.js. Mantenha o simulador (lógica do v3 está certa — NÃO mude as contas),
+  JSON-LD, og.png, robots, sitemap, 404, acessibilidade (labels, foco visível, contraste AA, alt).
+- Cores: fundo #0A0A0A; superfícies #121212/#171717; bordas rgba(255,255,255,.08); texto #FAFAFA;
+  texto secundário #A1A1AA; verde do app (var(--green) atual) só em destaque, números positivos e CTA.
 
-### O que fazer (em ordem)
-1. CONSERTO URGENTE: a pergunta "Quanto custa?" mostra "[PREÇO A DEFINIR]" no site no ar.
-   Troque por: "Nada. O TaCerto é grátis." (o app já diz "Tudo isso, grátis").
+### 1. Estrutura nova (nesta ordem) e os textos EXATOS
 
-2. NOVA SEÇÃO — SIMULADOR DO LIMITE (a estrela do site; logo depois dos 3 números do hero, id="simulador").
-   - Título: "Quanto você ainda pode faturar?" Subtítulo curto.
-   - Campos: tipo (botões "Caminhoneiro" [padrão] / "MEI comum"); "Abriu o MEI este ano?" (Não [padrão] /
-     Sim + mês de abertura em <select>); "Quanto já recebeu este ano?" (campo em reais, máscara R$ 1.234,56,
-     inputmode="decimal", fonte ≥ 16px para o iPhone não dar zoom).
-   - Resultado ao vivo (sem botão): velocímetro igual ao do hero (SVG) com a agulha animando até a %,
-     "Você já usou X% do limite", "Ainda pode faturar R$ Y", e "Dá uma média de R$ Z por mês até dezembro"
-     (meses restantes contando o mês atual; use a data do aparelho).
-   - Faixas: até 79% verde; 80–100% aviso "Fique de olho"; 100–120% "Passou, mas até 20%: continua MEI até
-     dezembro e paga uma guia extra. Em janeiro vira Microempresa."; >120% "Passou mais de 20%: procure um
-     contador o quanto antes." (sem vermelho gritante; use tons discretos).
-   - Abaixo: "Simulação. Nada do que você digita sai do seu celular." e CTA "Acompanhar no app".
-   - Nada é salvo nem enviado (nem localStorage). Acessível: labels, aria-live="polite" no resultado.
+**Menu (pílula flutuante):** logo TaCerto! · Recursos · Simulador · A Isa · Perguntas · [Entrar] (link) · [Começar grátis] (pílula verde).
+No celular: logo + botão "Começar grátis" pequeno + menu.
 
-3. NOVA SEÇÃO — "O que conta no faturamento" (curta, 2 colunas: "Conta" / "Não conta", ícones simples),
-   com a frase "Com ou sem nota, o que vale é a data em que o dinheiro entrou."
+**1. Hero (centralizado)**
+- Selo pequeno em pílula: "Feito para o MEI Caminhoneiro"
+- H1: "Um app que cuida do seu MEI enquanto você cuida da estrada."
+- Sub: "Veja quanto já faturou, quanto ainda pode faturar e nunca mais perca o DAS. A Isa te avisa antes de virar problema."
+- Botão: "Começar grátis" → cadastro. Abaixo, linha pequena: "Grátis · Sem senha do banco · Funciona no celular"
+- Celular centralizado com a tela Início (a que já existe: velocímetro 58%, Últimos lançamentos, rodapé).
+- Cartões flutuando em volta (no PC 4 cartões; no celular só 2, menores, sem cobrir o velocímetro):
+  esquerda alto: "Frete recebido" · "Pix · hoje, 10:32" · "+ R$ 3.200,00" (verde)
+  esquerda baixo: "Nota guardada" · "Frete BH → SP" · selo "com nota"
+  direita alto: "DAS de outubro" · "Vence dia 20" · "R$ 195,52"
+  direita baixo: avatar da Isa (círculo verde com "I") + balão "Você já usou 58% do limite do ano. Tudo certo."
+  Animação: flutuar 6px pra cima e pra baixo, devagar (6-8s), cada um num tempo diferente. Desligar com reduced-motion.
+- Faixa de 3 números logo abaixo (centralizada, números grandes): "R$ 251.600" limite do Caminhoneiro ·
+  "Dia 20" vencimento do DAS · "31 de maio" declaração anual.
 
-4. NOVA SEÇÃO — "DAS de 2026" (id="das"): os valores acima em lista limpa, Caminhoneiro em destaque,
-   "Vence todo dia 20" e "O app te lembra antes do vencimento."
+**2. Recursos — grade bento (id="recursos")** Título: "Tudo do seu MEI em um lugar só."
+Cada cartão tem título, 1 frase e uma MINI-TELA desenhada:
+  - GRANDE: "Velocímetro do limite" — "Quanto já usou e quanto ainda pode faturar no ano." (velocímetro animando de 0 a 58% ao aparecer)
+  - GRANDE: "É faturamento?" — "Mande o extrato do banco. Você confirma o que entra na conta." (mini-lista de 3 entradas,
+    a primeira com dois botões "Sim" / "Não", a segunda já confirmada com ✓)
+  - "DAS no automático" — "Valor certo da sua atividade e lembrete antes do dia 20." (cartão DAS R$ 195,52, vence 20/11)
+  - "Notas organizadas" — "Foto ou PDF, com selo com nota ou sem nota." (2 linhas com selos)
+  - "Quem pagou?" — "Saiba de qual cliente veio cada frete." (linha com nome de cliente fictício genérico, ex.: "Transportes Silva")
+  - "Isa, sua assistente" — "Tira dúvida de MEI na hora, aqui no app." (2 balões curtos)
 
-5. NOVA SEÇÃO — "Instale em 10 segundos" (o app é PWA, não está em loja): dois cartões
-   iPhone (Safari → Compartilhar → Adicionar à Tela de Início) e Android (Chrome → menu → Instalar app),
-   com ícones desenhados em SVG simples. Detecte o aparelho e destaque o cartão certo.
+**3. "Um dia na estrada" (SEÇÃO CLARA, fundo #F4F4F0)** Título: "Você dirige. O TaCerto faz o resto."
+Linha do tempo vertical à esquerda + celular à direita mostrando a notificação do horário ativo (troca ao rolar;
+no celular, cada horário tem sua notificação embaixo):
+  - "6h — Pé na estrada." / "O app fica quietinho no seu bolso."
+  - "11h — Caiu o Pix do frete." / "O TaCerto pergunta: é faturamento? Um toque e pronto."
+  - "15h — Lembrete do DAS." / "A Isa avisa que vence dia 20. O boleto já está no app."
+  - "21h — Tudo no lugar." / "Você abre o app e vê: 58% do limite usado. Pode dormir tranquilo."
 
-6. PERGUNTAS: mantenha as 4 e acrescente (respostas curtas e corretas pelos dados acima):
-   "Preciso de contador para usar?", "Funciona no Android e no iPhone?", "Passei do limite. E agora?",
-   "O app emite nota fiscal?" (resposta: "Por enquanto, o app mostra o passo a passo no gov.br e guarda
-   suas notas. A Isa tira suas dúvidas."), "O que é a Isa?".
-   Gere JSON-LD FAQPage com as mesmas perguntas e respostas.
+**4. Simulador (id="simulador")** Título: "Quanto você ainda pode faturar?" Sub: "Faça a conta em segundos. Nada sai do seu celular."
+Mesma lógica do v3, dentro de UM cartão grande e bonito (campos à esquerda, resultado à direita no PC; empilhado no celular).
+O velocímetro tem que ser IGUAL ao do app: arco cinza de fundo + arco verde preenchido + agulha com pivô; em 0% fica
+bonito (agulha deitada à esquerda, sem bolinhas soltas). Valor "Ainda pode faturar" bem grande. Botão "Acompanhar no app".
 
-7. NAVEGAÇÃO: links "Simulador", "Como funciona", "A Isa", "Perguntas". No celular, depois que o hero sai da
-   tela, mostre uma barra fixa embaixo com "Criar conta" (some quando o CTA final aparece; respeita a
-   área segura do iPhone: env(safe-area-inset-bottom)).
+**5. A Isa (id="isa")** Título: "Dúvida de MEI? A Isa responde na hora."
+Celular (ou cartão alto) com conversa que vai aparecendo balão por balão ao rolar (com "digitando..." de 600ms):
+  - Você: "Se eu passar do limite, perco o CNPJ?"
+    Isa: "Não. Até 20% acima você continua MEI até dezembro e paga uma guia extra. Em janeiro vira Microempresa."
+  - Você: "Frete pago em dinheiro conta no faturamento?"
+    Isa: "Conta. Tudo que entra pelo CNPJ conta, com ou sem nota: Pix, dinheiro, cartão ou transferência."
+  - Você: "Quando vence o DAS?"
+    Isa: "Todo dia 20. Se cair em fim de semana ou feriado, vence no próximo dia útil."
+Ao lado: 3 tópicos curtos ("Responde em segundos", "Fala a sua língua", "Conhece as regras do MEI de 2026") e
+"A Isa é uma assistente virtual com IA, não é contadora."
 
-8. MOVIMENTO (discreto): agulha do velocímetro do hero anima de 0 a 58% ao carregar; seções aparecem com
-   fade+subida de 12px ao rolar (IntersectionObserver); tudo desligado com prefers-reduced-motion.
+**6. Segurança (SEÇÃO CLARA)** Título: "Você confirma. Você tem o controle."
+3 colunas com ícone: "Sem senha do banco" (nem do cartão, nem do gov.br) · "Nada entra sem você confirmar"
+(o faturamento só soma o que você aprovar) · "Apague quando quiser" (sua conta e seus arquivos, direto no app).
 
-9. COMPARTILHAMENTO (importante: o link vai ser mandado no WhatsApp):
-   - Crie site/og.png 1200x630: fundo preto, "Seu MEI no controle." grande em branco, velocímetro verde,
-     "TaCerto!" e "Feito para o MEI Caminhoneiro". Gere com um script (ex.: Playwright tirando print de
-     um HTML temporário fora da pasta site/), sem dependência nova no projeto. PNG < 200 KB.
-   - og:image e twitter:image apontando para https://tacerto-site.vercel.app/og.png (1200x630),
-     twitter:card summary_large_image.
+**7. Plano** Título: "Grátis. Sem pegadinha." Um cartão central destacado (borda verde fina e brilho suave):
+"TaCerto" · "R$ 0" grande · "/mês" · lista com ✓: Velocímetro do limite · Extrato organizado · Lembrete do DAS ·
+Notas em um lugar · Isa, assistente com IA · Instala no celular. Botão "Começar grátis". Linha: "Sem cartão de crédito."
 
-10. SEO e técnico: canonical, JSON-LD SoftwareApplication (name TaCerto!, applicationCategory
-    FinanceApplication, operatingSystem "iOS, Android, Web", offers price 0 BRL), robots.txt, sitemap.xml,
-    404.html no mesmo estilo, title/description revisados com "MEI Caminhoneiro" e "limite do MEI".
+**8. Instalar** (compacto, como no v3, mas com o visual novo): "Instale em 10 segundos." iPhone / Android, destacando o aparelho certo.
 
-### Conferir (obrigatório, antes de publicar)
-- Prints em 390x844, 375x667 e 1440x900 de cada seção nova. Nada cortado, sem rolagem lateral.
-- Simulador: teste 0, 125.800 (50%), 230.000 (~91%), 270.000 (~107%), 320.000 (~127%), MEI comum 81.000
-  (100%), e abertura em julho (limite proporcional Caminhoneiro = 6 × 20.966,67 = R$ 125.800,02).
-  Confira as contas à mão no relatório.
-- Console sem erro; página principal < 400 KB sem a fonte; Lighthouse (npx lighthouse, uma vez só,
-  mobile) ≥ 95 em Performance, Acessibilidade, Boas práticas e SEO — se não der, diga quanto deu.
-- Procure no site/ por "WhatsApp", "wa.me", "Receita", "A1", "[": nenhuma ocorrência indevida.
-- Commit(s) em português ("feat: site v3 com simulador do limite, DAS 2026 e instalação") e push.
+**9. Perguntas (id="perguntas")** Título: "Dúvidas? A gente responde." 2 colunas no PC, 1 no celular. As mesmas 9 do v3.
 
-### Publicar
-- PRÉVIA primeiro (não produção): cd site; npx vercel@latest deploy --yes  → anote o endereço da prévia.
-- NÃO rode --prod. O Claude revisa a prévia e manda o próximo prompt para publicar.
+**10. CTA final** fundo com brilho verde radial suave atrás: "Pronto pra deixar seu MEI no controle?" /
+"Leva poucos minutos e é grátis." / botão "Começar grátis".
 
-### Resposta (no fim deste arquivo, como "## RESPOSTA 1")
-- Endereço da prévia; hashes dos commits; resultado dos testes do simulador (com as contas);
-  notas do Lighthouse; o que ficou de fora e por quê.
+**11. Rodapé** com 3 colunas (Produto: Recursos, Simulador, A Isa · Ajuda: Perguntas, Instalar · Legal: Termos,
+Privacidade) + logo e "© 2026 TaCerto!". No celular, a barra fixa "Começar grátis" do v3 continua.
+
+### 2. Movimento (discreto e caprichado)
+Revelar seções (fade + 16px) ao rolar; números da faixa contam do 0 ao valor; cartões do hero flutuam; velocímetros
+animam; balões da Isa aparecem em sequência. Tudo desligado com prefers-reduced-motion. Sem travar: só transform/opacity.
+
+### 3. Conferir (obrigatório)
+- Prints de página inteira em 1440x900, 390x844 e 375x667. Coloque lado a lado com os prints do Pierre e do Meu Assessor
+  e se pergunte com honestidade: "parece do mesmo nível?". Se não, ajuste antes de publicar (espaço, tamanho de título,
+  alinhamento, mini-telas). Faça pelo menos 2 rodadas dessa comparação.
+- Nada cortado, sem rolagem lateral, cartões do hero não cobrem o velocímetro no celular.
+- Simulador: os mesmos testes do v3 com as mesmas contas.
+- Busca no site/: "WhatsApp" só como texto (nenhum href), nada de "wa.me", "Receita", "A1", "[".
+- Console sem erro. Lighthouse mobile uma vez (diga as 4 notas).
+- Commit: "feat: site v4 redesenhado (hero central, bento, um dia na estrada, plano)" e push na codex/site.
+
+### 4. Publicar para o Fernando ver SEM pedir login (a prévia da Vercel pede verificação de e-mail)
+- NÃO use a prévia normal. Copie a pasta site\ para C:\Users\ferna\AppData\Local\Temp\tacerto-site-teste\
+  (sem a subpasta .vercel), e nessa cópia:
+  npx vercel@latest link --yes --project tacerto-site-teste
+  npx vercel@latest deploy --prod --yes
+- Abra o endereço em aba anônima e confirme que abre sem login. Isso NÃO mexe no site oficial (tacerto-site).
+- NÃO publique no tacerto-site oficial: só depois que o Fernando aprovar.
+
+### 5. Resposta (aqui no chat, curta)
+Endereço do site de teste · commit · notas do Lighthouse · o que ficou de fora.
