@@ -1,0 +1,4 @@
+# ROBOTS v1 — indexação do site de apresentação
+User-agent: *
+Allow: /
+Sitemap: https://tacerto-site.vercel.app/sitemap.xml

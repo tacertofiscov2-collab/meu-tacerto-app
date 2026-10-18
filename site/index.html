@@ -1,20 +1,26 @@
-<!-- INDEX v2 — compartilhamento com icone.png (v1: apresentação estática separada do app) -->
+<!-- INDEX v3 — simulador, DAS, instalação e SEO (v2: compartilhamento com ícone) -->
 <!doctype html>
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#0A0A0A">
-    <title>TaCerto! — Seu MEI no controle.</title>
-    <meta name="description" content="Acompanhe o limite do seu MEI, organize seus fretes, guarde notas e receba os avisos do DAS. Feito para o MEI Caminhoneiro.">
+    <title>TaCerto! — MEI Caminhoneiro e limite do MEI no controle</title>
+    <meta name="description" content="Simule o limite do MEI, confira o DAS de 2026 e organize seus fretes. App grátis para MEI Caminhoneiro, com a Isa, assistente virtual com IA.">
+    <link rel="canonical" href="https://tacerto-site.vercel.app/">
+    <meta property="og:url" content="https://tacerto-site.vercel.app/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TaCerto! — Seu MEI no controle.">
+    <meta name="twitter:description" content="Simule seu limite do MEI. Feito para o MEI Caminhoneiro.">
+    <meta name="twitter:image" content="https://tacerto-site.vercel.app/og.png">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="pt_BR">
     <meta property="og:title" content="TaCerto! — Seu MEI no controle.">
     <meta property="og:description" content="Seus fretes, seu limite e seu DAS. Tudo mais claro, em um só app. Feito para o MEI Caminhoneiro.">
-    <meta property="og:image" content="https://tacerto-site.vercel.app/icone.png">
-    <meta property="og:image:alt" content="Ícone do TaCerto: um velocímetro verde em fundo preto.">
-    <meta property="og:image:width" content="192">
-    <meta property="og:image:height" content="192">
+    <meta property="og:image" content="https://tacerto-site.vercel.app/og.png">
+    <meta property="og:image:alt" content="Seu MEI no controle. TaCerto! Feito para o MEI Caminhoneiro.">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <link rel="icon" type="image/png" sizes="192x192" href="./icone.png">
     <link rel="apple-touch-icon" href="./icone.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,6 +28,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;450;500;550;600;650;700;750&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
     <script src="./main.js" defer></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"O TaCerto é um contador?","acceptedAnswer":{"@type":"Answer","text":"Não. É um app de gestão. A Isa orienta, mas não substitui um contador."}},{"@type":"Question","name":"Serve para MEI comum?","acceptedAnswer":{"@type":"Answer","text":"Sim, mas foi pensado primeiro para o MEI Caminhoneiro."}},{"@type":"Question","name":"Meus dados ficam seguros?","acceptedAnswer":{"@type":"Answer","text":"Não pedimos senha do banco, do cartão nem do gov.br. Nada entra no seu faturamento sem você confirmar."}},{"@type":"Question","name":"Quanto custa?","acceptedAnswer":{"@type":"Answer","text":"Nada. O TaCerto é grátis."}},{"@type":"Question","name":"Preciso de contador para usar?","acceptedAnswer":{"@type":"Answer","text":"Não. Você pode usar o TaCerto sozinho para organizar seu MEI. Se passar do limite, procure orientação de um contador."}},{"@type":"Question","name":"Funciona no Android e no iPhone?","acceptedAnswer":{"@type":"Answer","text":"Sim. Abra no navegador e adicione à tela de início. Não precisa baixar em uma loja."}},{"@type":"Question","name":"Passei do limite. E agora?","acceptedAnswer":{"@type":"Answer","text":"Até 20% acima, você continua MEI até 31/12 e paga uma guia extra (DAS complementar) sobre o que passou. Em 1º de janeiro vira Microempresa. Mais de 20% acima, deixa de ser MEI desde 1º de janeiro do mesmo ano ou, no ano da abertura, desde a abertura. Os impostos são recalculados com multa e juros. Procure um contador o quanto antes."}},{"@type":"Question","name":"O app emite nota fiscal?","acceptedAnswer":{"@type":"Answer","text":"Por enquanto, o app mostra o passo a passo no gov.br e guarda suas notas. A Isa tira suas dúvidas."}},{"@type":"Question","name":"O que é a Isa?","acceptedAnswer":{"@type":"Answer","text":"É a assistente virtual com IA do TaCerto. Ela tira dúvidas de MEI dentro do app. Não é uma pessoa nem uma contadora."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"TaCerto!","applicationCategory":"FinanceApplication","operatingSystem":"iOS, Android, Web","offers":{"@type":"Offer","price":0,"priceCurrency":"BRL"}}</script>
   </head>
   <body id="topo">
     <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
@@ -37,13 +45,14 @@
         </button>
         <nav id="navegacao" class="navigation" aria-label="Navegação principal">
           <div class="nav-links">
+            <a href="#simulador">Simulador</a>
             <a href="#como-funciona">Como funciona</a>
             <a href="#isa">A Isa</a>
             <a href="#perguntas">Perguntas</a>
           </div>
           <div class="nav-actions">
-            <a class="login-link" href="https://meu-tacerto-app.vercel.app/login">Entrar</a>
-            <a class="button button-small" href="https://meu-tacerto-app.vercel.app/cadastro">Criar conta <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M6 6h12v12"/></svg></a>
+            <a class="login-link" href="#" data-app="login">Entrar</a>
+            <a class="button button-small" href="#" data-app="cadastro">Criar conta <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M6 6h12v12"/></svg></a>
           </div>
         </nav>
       </div>
@@ -56,7 +65,7 @@
           <h1 id="hero-title">Seu MEI<br>no controle.</h1>
           <p class="hero-description">Veja quanto já faturou, quanto ainda pode faturar e não perca o DAS de vista.</p>
           <div class="hero-actions">
-            <a class="button" href="https://meu-tacerto-app.vercel.app/cadastro">Começar agora <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+            <a class="button" href="#" data-app="cadastro">Começar agora <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
             <a class="text-link" href="#como-funciona">Como funciona <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m-6-6 6 6 6-6"/></svg></a>
           </div>
           <div class="hero-note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg> Mais clareza para seguir seu caminho.</div>
@@ -73,7 +82,7 @@
                 <svg class="gauge" viewBox="0 0 280 166" aria-hidden="true">
                   <path class="gauge-track" d="M28 142a112 112 0 0 1 224 0" pathLength="100"/>
                   <path class="gauge-fill" d="M28 142a112 112 0 0 1 224 0" pathLength="100" stroke-dasharray="58 100"/>
-                  <g transform="rotate(104.4 140 142)"><path class="gauge-needle" d="m140 136-78 6 78 6Z"/></g>
+                  <g class="hero-needle" transform="rotate(104.4 140 142)"><path class="gauge-needle" d="m140 136-78 6 78 6Z"/></g>
                   <circle cx="140" cy="142" r="8" fill="#FAFAFA"/><circle cx="140" cy="142" r="3" fill="#0A0A0A"/>
                 </svg>
                 <div class="gauge-number">58<span>%</span></div>
@@ -105,6 +114,20 @@
         <p><strong>31 de maio</strong><span>Prazo da declaração anual</span></p>
       </section>
 
+<section class="section container" id="simulador" aria-labelledby="sim-title">
+<div class="section-heading"><p class="eyebrow">Seu próximo frete, com clareza</p><h2 id="sim-title">Quanto você ainda<br>pode faturar?</h2><p class="section-description">Faça a conta do seu limite em segundos.</p></div>
+<div class="sim-layout"><form class="sim-form" onsubmit="return false">
+<fieldset><legend>Qual é seu tipo de MEI?</legend><div class="segments"><label><input type="radio" name="tipo" value="caminhoneiro" checked><span>Caminhoneiro</span></label><label><input type="radio" name="tipo" value="comum"><span>MEI comum</span></label></div></fieldset>
+<fieldset><legend>Abriu o MEI este ano?</legend><div class="segments"><label><input type="radio" name="abertura" value="nao" checked><span>Não</span></label><label><input type="radio" name="abertura" value="sim"><span>Sim</span></label></div></fieldset>
+<div id="month-field" hidden><label for="mes">Mês de abertura</label><select id="mes"><option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option><option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option><option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option><option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option></select></div>
+<div><label for="recebido">Quanto já recebeu este ano?</label><input id="recebido" type="text" inputmode="decimal" value="R$ 0,00" autocomplete="off" spellcheck="false" aria-describedby="input-help"><p id="input-help" class="field-note">Some o que entrou pelo CNPJ, com ou sem nota.</p></div>
+<p class="field-note" id="sim-limit"></p></form>
+<div class="sim-result" data-band="ok"><svg class="gauge sim-gauge" viewBox="0 0 280 166" aria-hidden="true"><path class="gauge-track" d="M28 142a112 112 0 0 1 224 0" pathLength="100"/><path id="sim-fill" class="gauge-fill" d="M28 142a112 112 0 0 1 224 0" pathLength="100" stroke-dasharray="0 100"/><g id="sim-needle"><path class="gauge-needle" d="m140 136-78 6 78 6Z"/></g><circle cx="140" cy="142" r="8" fill="#fafafa"/></svg><div aria-live="polite" aria-atomic="true"><p class="sim-percent" id="sim-percent">Você já usou 0% do limite</p><h3 id="sim-remaining">Ainda pode faturar R$ 251.600,00</h3><p id="sim-average"></p><p id="sim-warning"></p></div></div></div>
+<div class="sim-bottom"><p>Simulação. Nada do que você digita sai do seu celular.</p><a class="button" href="#" data-app="cadastro">Acompanhar no app <span aria-hidden="true">↗</span></a></div>
+</section>
+<section class="section container revenue-section" id="faturamento" aria-labelledby="revenue-title"><div class="section-heading"><p class="eyebrow">Cada entrada conta</p><h2 id="revenue-title">O que conta<br>no faturamento</h2></div><div class="two-columns"><article class="plain-card"><h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>Conta</h3><p>Tudo que entra pelo CNPJ:</p><ul><li>Pix e dinheiro</li><li>Cartão e transferência</li><li>Com nota ou sem nota</li></ul></article><article class="plain-card"><h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>Não conta</h3><p>O que você recebe como pessoa física:</p><ul><li>Salário de carteira e aposentadoria</li><li>Aluguel</li><li>Outros ganhos da pessoa física</li></ul></article></div><p class="section-footnote">Com ou sem nota, o que vale é a data em que o dinheiro entrou.</p></section>
+<section class="section container das-section" id="das" aria-labelledby="das-title"><div class="section-heading"><p class="eyebrow">Um compromisso por mês</p><h2 id="das-title">DAS de 2026</h2><p class="section-description">Vence todo dia 20.<br>O app te lembra antes do vencimento.</p><p class="field-note">Fim de semana ou feriado? Próximo dia útil.</p></div><div class="two-columns"><article class="plain-card highlighted"><h3>MEI Caminhoneiro</h3><dl><div><dt>Frete entre cidades ou estados</dt><dd>R$ 195,52</dd></div><div><dt>Só na mesma cidade</dt><dd>R$ 199,52</dd></div><div><dt>Os dois</dt><dd>R$ 200,52</dd></div></dl></article><article class="plain-card"><h3>MEI comum</h3><dl><div><dt>Comércio ou indústria</dt><dd>R$ 82,05</dd></div><div><dt>Serviços</dt><dd>R$ 86,05</dd></div><div><dt>Comércio e serviços</dt><dd>R$ 87,05</dd></div></dl></article></div><p class="section-footnote">Declaração anual (DASN-SIMEI): até 31 de maio.</p><p class="field-note">Valores de 2026. Fonte: regras do MEI e salário mínimo de 2026.</p></section>
+<section class="section container" id="instalar" aria-labelledby="install-title"><div class="section-heading"><p class="eyebrow">Sempre à mão</p><h2 id="install-title">Instale em 10 segundos</h2><p class="section-description">Direto pelo navegador. Sem loja de aplicativos.</p></div><div class="two-columns"><article class="plain-card install-card" id="install-ios"><svg class="install-icon" viewBox="0 0 32 32" aria-hidden="true"><rect x="8" y="2" width="16" height="28" rx="4"/><path d="M14 26h4M12 6h8"/></svg><h3>iPhone</h3><ol><li>Abra o app no Safari.</li><li>Toque em Compartilhar <svg class="inline-icon" viewBox="0 0 24 24" aria-label="ícone de compartilhar" role="img"><path d="M12 15V2m-4 4 4-4 4 4M7 10H4v12h16V10h-3"/></svg>.</li><li>Adicionar à Tela de Início.</li></ol><p class="device-note" hidden>Este é o seu aparelho.</p></article><article class="plain-card install-card" id="install-android"><svg class="install-icon" viewBox="0 0 32 32" aria-hidden="true"><rect x="8" y="2" width="16" height="28" rx="3"/><path d="M13 6h6M15 26h2M16 11v9m-4-4 4 4 4-4"/></svg><h3>Android</h3><ol><li>Abra o app no Chrome.</li><li>Toque no menu ⋮.</li><li>Escolha Instalar app.</li></ol><p class="device-note" hidden>Este é o seu aparelho.</p></article></div><a class="text-link" data-app="login" href="#">Abrir o app <span aria-hidden="true">↗</span></a></section>
       <section class="section container" aria-labelledby="features-title">
         <div class="section-heading"><p class="eyebrow">Menos dúvida. Mais controle.</p><h2 id="features-title">Seu trabalho é rodar.<br>Suas contas ficam claras.</h2></div>
         <div class="features-grid">
@@ -117,11 +140,11 @@
 
       <section class="isa-section" id="isa" aria-labelledby="isa-title">
         <div class="container isa-grid">
-          <div class="isa-copy"><p class="eyebrow">Conheça a Isa</p><h2 id="isa-title">Dúvida de MEI?<br>Pergunte à Isa.</h2><p class="section-description">Assistente com inteligência artificial que responde na hora, aqui no app.</p><a class="text-link" href="https://meu-tacerto-app.vercel.app/cadastro">Conhecer o app <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a><p class="isa-disclaimer">A Isa é uma assistente virtual com IA, não é contadora.</p></div>
+          <div class="isa-copy"><p class="eyebrow">Conheça a Isa</p><h2 id="isa-title">Dúvida de MEI?<br>Pergunte à Isa.</h2><p class="section-description">Sua assistente virtual com IA para dúvidas de MEI, aqui no app.</p><a class="text-link" href="#" data-app="cadastro">Conhecer o app <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a><p class="isa-disclaimer">A Isa é uma assistente virtual com IA, não é contadora.</p></div>
           <div class="conversation" aria-label="Exemplo de conversa com a Isa">
             <div class="conversation-heading"><span class="isa-monogram" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z"/></svg></span><div><strong>Isa</strong><span>Assistente do TaCerto!</span></div><span class="example-label">Exemplo</span></div>
             <div class="bubble bubble-person"><span class="speaker">Você</span><p>Se eu passar do limite, perco o CNPJ?</p></div>
-            <div class="bubble bubble-isa"><span class="speaker">Isa</span><p>Não. Até 20% acima você continua MEI até dezembro e paga uma guia complementar. Em janeiro vira Microempresa.</p></div>
+            <div class="bubble bubble-isa"><span class="speaker">Isa</span><p>Não perde o CNPJ. Até 20% acima, continua MEI até dezembro e paga uma guia extra. Em janeiro vira Microempresa. Acima de 20%, os impostos voltam ao início do ano ou à abertura: procure um contador.</p></div>
             <div class="conversation-footnote"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14v11H9l-4 4Z"/></svg> Suas dúvidas, aqui no app.</div>
           </div>
         </div>
@@ -147,13 +170,19 @@
           <details><summary>O TaCerto é um contador?<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Não. É um app de gestão. A Isa orienta, mas não substitui um contador.</p></details>
           <details><summary>Serve para MEI comum?<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Sim, mas foi pensado primeiro para o MEI Caminhoneiro.</p></details>
           <details><summary>Meus dados ficam seguros?<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Não pedimos senha do banco, do cartão nem do gov.br. Nada entra no seu faturamento sem você confirmar.</p></details>
-          <details><summary>Quanto custa?<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p class="price-placeholder">[PREÇO A DEFINIR]</p></details>
+          <details><summary>Quanto custa?<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Nada. O TaCerto é grátis.</p></details>
+<details><summary>Preciso de contador para usar?<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Não. Você pode usar o TaCerto sozinho para organizar seu MEI. Se passar do limite, procure orientação de um contador.</p></details>
+<details><summary>Funciona no Android e no iPhone?<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Sim. Abra no navegador e adicione à tela de início. Não precisa baixar em uma loja.</p></details>
+<details><summary>Passei do limite. E agora?<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Até 20% acima, você continua MEI até 31/12 e paga uma guia extra (DAS complementar) sobre o que passou. Em 1º de janeiro vira Microempresa. Mais de 20% acima, deixa de ser MEI desde 1º de janeiro do mesmo ano ou, no ano da abertura, desde a abertura. Os impostos são recalculados com multa e juros. Procure um contador o quanto antes.</p></details>
+<details><summary>O app emite nota fiscal?<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Por enquanto, o app mostra o passo a passo no gov.br e guarda suas notas. A Isa tira suas dúvidas.</p></details>
+<details><summary>O que é a Isa?<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>É a assistente virtual com IA do TaCerto. Ela tira dúvidas de MEI dentro do app. Não é uma pessoa nem uma contadora.</p></details>
         </div>
       </section>
 
-      <section class="final-cta container" aria-labelledby="cta-title"><p class="eyebrow">Seu próximo passo</p><h2 id="cta-title">Comece hoje.<br>Leva poucos minutos.</h2><a class="button" href="https://meu-tacerto-app.vercel.app/cadastro">Criar conta <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></section>
+      <section class="final-cta container" aria-labelledby="cta-title"><p class="eyebrow">Seu próximo passo</p><h2 id="cta-title">Comece hoje.<br>Leva poucos minutos.</h2><a class="button" href="#" data-app="cadastro">Criar conta <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></section>
     </main>
 
-    <footer class="site-footer"><div class="container footer-inner"><a class="brand" href="#topo" aria-label="TaCerto! — voltar ao topo"><img src="./icone.png" width="34" height="34" alt=""><span>TaCerto!</span></a><nav aria-label="Informações legais"><a href="https://meu-tacerto-app.vercel.app/termos-de-uso">Termos</a><a href="https://meu-tacerto-app.vercel.app/privacidade">Privacidade</a></nav><p>© 2026 TaCerto!</p></div></footer>
+    <footer class="site-footer"><div class="container footer-inner"><a class="brand" href="#topo" aria-label="TaCerto! — voltar ao topo"><img src="./icone.png" width="34" height="34" alt=""><span>TaCerto!</span></a><nav aria-label="Informações legais"><a href="#" data-app="termos-de-uso">Termos</a><a href="#" data-app="privacidade">Privacidade</a></nav><p>© 2026 TaCerto!</p></div></footer>
+<div class="mobile-cta" hidden><a class="button" data-app="cadastro" href="#">Criar conta <span aria-hidden="true">↗</span></a></div>
   </body>
 </html>
