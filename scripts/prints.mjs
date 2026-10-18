@@ -1,4 +1,4 @@
-/* PRINTS v2 — avisa quando a prévia pede login da Vercel (v1: robô de prints) da Central: abre cada rota da prévia no
+/* PRINTS v3 — tela inteira 390 x 844 e cabeçalhos só para a prévia (v2: avisa login da Vercel; v1: robô de prints) da Central: abre cada rota da prévia no
    tamanho do iPhone (390 x 844) e salva PNG + info.json.
    Uso: node prints.mjs <arquivo-de-rotas> <pasta-de-saida>
    Variáveis: URL (obrigatória), BRANCH, SHA, VERCEL_BYPASS (opcional). */
@@ -32,9 +32,16 @@ if (process.env.VERCEL_BYPASS) {
 const navegador = await chromium.launch();
 const contexto = await navegador.newContext({
   ...devices["iPhone 13"],
+  viewport: { width: 390, height: 844 }, // tela inteira do iPhone (o padrão desconta a barra do Safari)
   locale: "pt-BR",
   timezoneId: "America/Sao_Paulo",
-  extraHTTPHeaders: cabecalhos,
+});
+// Cabeçalhos extras só nos pedidos à própria prévia (em fontes de fora dá erro de CORS).
+const hostPrevia = new URL(base).host;
+await contexto.route("**/*", (rota) => {
+  const pedido = rota.request();
+  if (new URL(pedido.url()).host !== hostPrevia) return rota.continue();
+  return rota.continue({ headers: { ...pedido.headers(), ...cabecalhos } });
 });
 
 const feitos = [];
