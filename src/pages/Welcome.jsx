@@ -1,4 +1,4 @@
-/* WELCOME v21 — mini-Início volta à altura medida do bloco 6; nota com cinco opções juntas (v20: Últimos lançamentos e quatro opções) */
+/* WELCOME v22 — molduras menores e proporcionais, sem sobra interna; nota encaixada sem alterar a escala comum (v21: mini-Início medido e nota com cinco opções) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -132,68 +132,78 @@ const VIDRO = {
    iPhone), com altura maxima MOLDURA_MAX. Em tela baixa continua
    encolhendo como antes.
    =================================================================== */
-const ZOOM_SLIDES = 1.1;
-const MOLDURA_MAX = 390;
+const ZOOM_SLIDES = 1.0;
+const MOLDURA_MAX = 340;
+const LARGURA_MOLDURA = 272;
 
-function useEscalaComum(molduraRef, caixasRef, quantos) {
-  const [ajuste, setAjuste] = useState({ escala: 1, altura: null });
+function useEscalaComum(areaRef, caixasRef, quantos) {
+  const [ajuste, setAjuste] = useState({ escala: 1, altura: null, escalaFora: 1 });
 
   useLayoutEffect(() => {
-    const moldura = molduraRef.current;
-    if (!moldura) return undefined;
+    const area = areaRef.current;
+    if (!area) return undefined;
 
     const medir = () => {
-      const disponivel = moldura.clientHeight;
+      // A área livre independe da moldura: redimensioná-la não muda a medida.
+      const estilo = getComputedStyle(area);
+      const disponivel = area.clientHeight - parseFloat(estilo.paddingTop) - parseFloat(estilo.paddingBottom);
+      const larguraDisponivel = area.clientWidth - parseFloat(estilo.paddingLeft) - parseFloat(estilo.paddingRight);
       // v10: o slide da nota (foraDaEscala) nao entra na conta — ver MiniNota
       const caixas = caixasRef.current
         .slice(0, quantos)
         .filter((c) => c && !c.dataset.foraDaEscala);
-      if (!disponivel || !caixas.length) return;
-      // Altura natural de cada desenho: com altura solta e na largura de
-      // desenho (a moldura dividida pelo zoom)
-      let maior = 0;
-      for (const caixa of caixas) {
+      if (disponivel <= 0 || larguraDisponivel <= 0 || !caixas.length) return;
+      // Largura natural fixa, descontando as duas bordas de 1,5 px.
+      // Moldura e conteúdo encolhem juntos, sem mudar as quebras de linha.
+      const alturaNatural = (caixa) => {
         const antes = { h: caixa.style.height, w: caixa.style.width };
         caixa.style.height = "auto";
-        caixa.style.width = `${100 / ZOOM_SLIDES}%`;
-        maior = Math.max(maior, caixa.scrollHeight);
+        caixa.style.width = `${LARGURA_MOLDURA - 3}px`;
+        const altura = caixa.scrollHeight;
         caixa.style.height = antes.h;
         caixa.style.width = antes.w;
-      }
-      // v11: amplia ate ZOOM_SLIDES; encolhe se nao couber
-      const escala = Math.min(ZOOM_SLIDES, disponivel / maior);
-      const altura = disponivel / escala;
+        return altura;
+      };
+      const maior = Math.max(...caixas.map(alturaNatural));
+      if (!maior) return;
+      // Mesma redução de 390 para 340 nas duas dimensões da moldura.
+      const escala = Math.min(ZOOM_SLIDES, MOLDURA_MAX / 390, MOLDURA_MAX / maior, disponivel / maior, larguraDisponivel / LARGURA_MOLDURA);
+      const altura = maior;
+      // A nota continua fora da escala comum. Só ela se ajusta por dentro,
+      // caso suas cinco opções precisem de mais altura que os demais slides.
+      const caixasFora = caixasRef.current.slice(0, quantos).filter((c) => c?.dataset.foraDaEscala);
+      const maiorFora = Math.max(1, ...caixasFora.map(alturaNatural));
+      const escalaFora = Math.min(1, (altura - 1.5) / maiorFora);
       setAjuste((a) =>
-        a.altura && Math.abs(a.altura - altura) < 0.5 && Math.abs(a.escala - escala) < 0.002
+        a.altura && Math.abs(a.altura - altura) < 0.5 && Math.abs(a.escala - escala) < 0.002 && Math.abs(a.escalaFora - escalaFora) < 0.002
           ? a
-          : { escala, altura },
+          : { escala, altura, escalaFora },
       );
     };
 
     medir();
     const ro = new ResizeObserver(medir);
-    ro.observe(moldura);
+    ro.observe(area);
     document.fonts?.ready?.then(medir).catch(() => {});
     return () => ro.disconnect();
-  }, [molduraRef, caixasRef, quantos]);
+  }, [areaRef, caixasRef, quantos]);
 
   return ajuste;
 }
 
-/* O desenho dentro da moldura, com a escala comum (ver acima). */
+/* A transformação fica na moldura inteira, incluindo largura e bordas. */
 function MiniNaMoldura({ ajuste, caixaRef, foraDaEscala = false, children }) {
-  // v11: a escala pode ser maior que 1 (zoom das letras)
-  const encolhe = ajuste.escala !== 1;
+  const escalaFora = foraDaEscala ? ajuste.escalaFora : 1;
   return (
     <div
       ref={caixaRef}
       data-fora-da-escala={foraDaEscala ? "1" : undefined}
-      className="flex flex-col"
+      className="flex flex-col shrink-0"
       style={{
-        height: ajuste.altura ?? "100%",
-        width: encolhe ? `${100 / ajuste.escala}%` : "100%",
-        transform: encolhe ? `scale(${ajuste.escala})` : undefined,
-        transformOrigin: "top left",
+        height: `${100 / escalaFora}%`,
+        width: "100%",
+        transform: escalaFora < 1 ? `scale(${escalaFora})` : undefined,
+        transformOrigin: "top center",
       }}
     >
       {children}
@@ -763,9 +773,9 @@ export default function Welcome() {
   const scrollerRef = useRef(null);
   const [active, setActive] = useState(0);
   /* v6: uma escala so para todos os desenhos (ver useEscalaComum) */
-  const molduraRef = useRef(null);
+  const areaMolduraRef = useRef(null);
   const caixasRef = useRef([]);
-  const ajuste = useEscalaComum(molduraRef, caixasRef, SLIDES.length);
+  const ajuste = useEscalaComum(areaMolduraRef, caixasRef, SLIDES.length);
 
   /* v17: o app instalado na Tela de Inicio sempre abre em "/" (manifesto).
      Quem ja entrou nele vai direto para o Inicio, sem ver os slides de
@@ -803,22 +813,21 @@ export default function Welcome() {
         </span>
       </div>
 
-      {/* v11: a moldura ocupa o espaco entre o logo e o card de baixo
-          (flex-1), ate MOLDURA_MAX, encostada no card. Mais larga (272)
-          para as letras ampliadas (ZOOM_SLIDES) quebrarem linha igual. */}
+      {/* v22: só a altura natural escalada ocupa a moldura. A sobra da
+          área fica igualmente acima e abaixo, por fora do celular. */}
       <div ref={scrollerRef} className="flex-1 min-h-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar" style={{ touchAction: "pan-x" }}>
         {SLIDES.map(({ Mini, foraDaEscala }, i) => (
           <div key={i} className="min-w-full snap-center flex flex-col min-h-0">
-            <div className="flex-1 min-h-0 flex justify-center px-6 pt-2">
-              <div className="w-full flex flex-col justify-end min-h-0" style={{ maxWidth: 272 }}>
+            <div ref={i === 0 ? areaMolduraRef : undefined} className="flex-1 min-h-0 flex items-center justify-center px-6 py-2">
+              <div className="relative shrink-0" style={{ width: LARGURA_MOLDURA * ajuste.escala, height: (ajuste.altura ?? MOLDURA_MAX) * ajuste.escala, maxHeight: MOLDURA_MAX }}>
                 <div
-                  ref={i === 0 ? molduraRef : undefined}
                   data-moldura-slide=""
-                  className="relative w-full flex flex-col"
+                  className="absolute top-0 left-0 flex flex-col"
                   style={{
-                    flex: "1 1 auto",
-                    minHeight: 0,
-                    maxHeight: MOLDURA_MAX,
+                    width: LARGURA_MOLDURA,
+                    height: ajuste.altura ?? MOLDURA_MAX,
+                    transform: `scale(${ajuste.escala})`,
+                    transformOrigin: "top left",
                     borderTopLeftRadius: 34,
                     borderTopRightRadius: 34,
                     borderLeft: "1.5px solid rgba(34,197,94,0.55)",
