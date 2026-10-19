@@ -1,4 +1,4 @@
-/* MAIN v5 — redução de movimento também limpa a digitação (v4: narrativa e animações) */
+/* MAIN v6 — ponteiro acompanha a rolagem, movimento só nos instrumentos (v5: redução de movimento) */
 const APP_URL = "https://meu-tacerto-app.vercel.app";
 
 document.querySelectorAll("a[data-app]").forEach(link => {
@@ -62,47 +62,31 @@ document.querySelectorAll("a[data-app]").forEach(link => {
     card.querySelector(".device-note").hidden = false;
   }
 
-  const reveals = document.querySelectorAll(".section-heading, .bento-card, .timeline-item, .sim-card, .isa-copy, .conversation, .security-grid article, .plan-card, .install-card, .faq-list");
-  const bubbles = document.querySelectorAll(".chat-messages .bubble");
-  const motionAnimations = [];
-  const timers = new Set();
-  function pause(ms) {
-    return new Promise(resolve => {
-      const id = setTimeout(() => { timers.delete(id); resolve(); }, ms);
-      timers.add(id);
-    });
+  // O painel vai de 0 a 58 quando o celular entra na área de leitura.
+  const panel = document.querySelector(".hero-instrument");
+  const phone = document.querySelector(".product-stage > .phone");
+  const needle = document.querySelector("#road-needle");
+  const fill = document.querySelector("#road-fill");
+  const value = document.querySelector("#road-value");
+  let frame = 0;
+  function drawRoadGauge() {
+    frame = 0;
+    const destination = Math.max(1, phone.getBoundingClientRect().top + scrollY - innerHeight * .78);
+    const progress = Math.max(0, Math.min(1, scrollY / destination));
+    const percentage = reduced.matches ? 58 : progress * 58;
+    needle.style.transform = `rotate(${percentage * 1.8}deg)`;
+    fill.setAttribute("stroke-dasharray", `${percentage} 100`);
+    fill.style.opacity = percentage > 0 ? "1" : "0";
+    value.textContent = String(Math.round(percentage)).padStart(2, "0");
+    panel.dataset.percent = String(Math.round(percentage));
   }
-  function showAll() {
-    reveals.forEach(el => el.classList.remove("reveal-pending"));
-    document.querySelector(".conversation").classList.remove("chat-ready");
-    bubbles.forEach(el => { el.classList.remove("pending-answer"); el.classList.add("is-visible"); });
-    document.querySelectorAll(".answer-dots").forEach(el => el.remove());
-    motionAnimations.forEach(animation => animation.finish());
-  }
+  function scheduleRoadGauge() { if (!frame) frame = requestAnimationFrame(drawRoadGauge); }
+  addEventListener("scroll", scheduleRoadGauge, { passive: true });
+  addEventListener("resize", scheduleRoadGauge, { passive: true });
+  reduced.addEventListener("change", scheduleRoadGauge);
+  document.fonts?.ready.then(scheduleRoadGauge);
+  drawRoadGauge();
   if ("IntersectionObserver" in window) {
-    const revealObserver = new IntersectionObserver(entries => entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.remove("reveal-pending");
-        revealObserver.unobserve(entry.target);
-      }
-    }), { threshold: 0.07 });
-    if (!reduced.matches) reveals.forEach(el => {
-      el.classList.add("reveal", "reveal-pending");
-      revealObserver.observe(el);
-    });
-
-    const gaugeObserver = new IntersectionObserver(entries => entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      if (!reduced.matches) {
-        motionAnimations.push(entry.target.animate(
-          [{ transform: "rotate(0deg)" }, { transform: "rotate(104.4deg)" }],
-          { duration: 1250, easing: "cubic-bezier(.2,.7,.2,1)" }
-        ));
-      }
-      gaugeObserver.unobserve(entry.target);
-    }), { threshold: 0.4 });
-    document.querySelectorAll(".animated-needle").forEach(el => gaugeObserver.observe(el));
-
     const countObserver = new IntersectionObserver(entries => entries.forEach(entry => {
       if (!entry.isIntersecting) return;
       countObserver.unobserve(entry.target);
@@ -134,32 +118,6 @@ document.querySelectorAll("a[data-app]").forEach(link => {
     }, { rootMargin: "-30% 0px -40% 0px", threshold: 0 });
     document.querySelectorAll(".timeline-item").forEach(el => timelineObserver.observe(el));
 
-    if (!reduced.matches) {
-      document.querySelector(".conversation").classList.add("chat-ready");
-      let queue = Promise.resolve();
-      const chatObserver = new IntersectionObserver(entries => {
-        entries.filter(entry => entry.isIntersecting).sort((a,b) => Number(a.target.dataset.message) - Number(b.target.dataset.message)).forEach(entry => {
-          chatObserver.unobserve(entry.target);
-          queue = queue.then(async () => {
-            const bubble = entry.target;
-            if (reduced.matches) { bubble.classList.add("is-visible"); return; }
-            if (bubble.classList.contains("bubble-isa")) {
-              const dots = document.createElement("span");
-              dots.className = "answer-dots";
-              dots.setAttribute("aria-hidden", "true");
-              dots.textContent = "••• digitando...";
-              bubble.append(dots);
-              bubble.classList.add("pending-answer");
-              await pause(600);
-              dots.remove();
-              bubble.classList.remove("pending-answer");
-            } else await pause(120);
-            bubble.classList.add("is-visible");
-          });
-        });
-      }, { threshold: 0.15 });
-      bubbles.forEach(el => chatObserver.observe(el));
-    }
     const bar = document.querySelector(".mobile-cta");
     const hero = document.querySelector(".hero");
     const final = document.querySelector(".final-cta");
@@ -172,7 +130,6 @@ document.querySelectorAll("a[data-app]").forEach(link => {
     addEventListener("resize", updateBar, { passive: true });
     updateBar();
   }
-  reduced.addEventListener("change", () => { if (reduced.matches) showAll(); });
 })();
 (() => {
   const button = document.querySelector(".menu-toggle");
