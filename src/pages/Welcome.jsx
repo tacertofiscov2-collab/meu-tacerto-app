@@ -133,7 +133,7 @@ const VIDRO = {
    encolhendo como antes.
    =================================================================== */
 const ZOOM_SLIDES = 1.1;
-const MOLDURA_MAX = 390;
+const MOLDURA_MAX = 300;
 
 function useEscalaComum(molduraRef, caixasRef, quantos) {
   const [ajuste, setAjuste] = useState({ escala: 1, altura: null });
