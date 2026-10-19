@@ -1,4 +1,4 @@
-/* WELCOME v21 — mini-Início volta à altura medida do bloco 6; nota com cinco opções juntas (v20: Últimos lançamentos e quatro opções) */
+/* WELCOME v22 — celular até 70% da tela, proporcional e bloco centralizado (v21: mini-Início e cinco opções da nota) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -134,9 +134,10 @@ const VIDRO = {
    =================================================================== */
 const ZOOM_SLIDES = 1.1;
 const MOLDURA_MAX = 300;
+const LARGURA_MOLDURA = 272;
 
 function useEscalaComum(molduraRef, caixasRef, quantos) {
-  const [ajuste, setAjuste] = useState({ escala: 1, altura: null });
+  const [ajuste, setAjuste] = useState({ escala: 1, altura: null, escalaNota: 1, alturaNota: null });
 
   useLayoutEffect(() => {
     const moldura = molduraRef.current;
@@ -163,10 +164,22 @@ function useEscalaComum(molduraRef, caixasRef, quantos) {
       // v11: amplia ate ZOOM_SLIDES; encolhe se nao couber
       const escala = Math.min(ZOOM_SLIDES, disponivel / maior);
       const altura = disponivel / escala;
+      // A nota fica fora da escala comum, mas também precisa caber inteira.
+      let maiorNota = 0;
+      caixasRef.current.slice(0, quantos).filter((c) => c?.dataset.foraDaEscala).forEach((caixa) => {
+        const antes = { h: caixa.style.height, w: caixa.style.width };
+        caixa.style.height = "auto";
+        caixa.style.width = `${100 / escala}%`;
+        maiorNota = Math.max(maiorNota, caixa.scrollHeight);
+        caixa.style.height = antes.h;
+        caixa.style.width = antes.w;
+      });
+      const escalaNota = maiorNota ? Math.min(escala, disponivel / maiorNota) : escala;
+      const alturaNota = disponivel / escalaNota;
       setAjuste((a) =>
-        a.altura && Math.abs(a.altura - altura) < 0.5 && Math.abs(a.escala - escala) < 0.002
+        a.altura && Math.abs(a.altura - altura) < 0.5 && Math.abs(a.escala - escala) < 0.002 && Math.abs(a.escalaNota - escalaNota) < 0.002
           ? a
-          : { escala, altura },
+          : { escala, altura, escalaNota, alturaNota },
       );
     };
 
@@ -183,16 +196,18 @@ function useEscalaComum(molduraRef, caixasRef, quantos) {
 /* O desenho dentro da moldura, com a escala comum (ver acima). */
 function MiniNaMoldura({ ajuste, caixaRef, foraDaEscala = false, children }) {
   // v11: a escala pode ser maior que 1 (zoom das letras)
-  const encolhe = ajuste.escala !== 1;
+  const escala = foraDaEscala ? ajuste.escalaNota : ajuste.escala;
+  const altura = foraDaEscala ? ajuste.alturaNota : ajuste.altura;
+  const encolhe = escala !== 1;
   return (
     <div
       ref={caixaRef}
       data-fora-da-escala={foraDaEscala ? "1" : undefined}
       className="flex flex-col"
       style={{
-        height: ajuste.altura ?? "100%",
-        width: encolhe ? `${100 / ajuste.escala}%` : "100%",
-        transform: encolhe ? `scale(${ajuste.escala})` : undefined,
+        height: altura ?? "100%",
+        width: encolhe ? `${100 / escala}%` : "100%",
+        transform: encolhe ? `scale(${escala})` : undefined,
         transformOrigin: "top left",
       }}
     >
@@ -762,10 +777,33 @@ export default function Welcome() {
   const navigate = useNavigate();
   const scrollerRef = useRef(null);
   const [active, setActive] = useState(0);
+  const telaRef = useRef(null);
+  const logoRef = useRef(null);
+  const rodapeRef = useRef(null);
+  const [escalaMoldura, setEscalaMoldura] = useState(1);
   /* v6: uma escala so para todos os desenhos (ver useEscalaComum) */
   const molduraRef = useRef(null);
   const caixasRef = useRef([]);
   const ajuste = useEscalaComum(molduraRef, caixasRef, SLIDES.length);
+
+  // Reduz a moldura inteira: a largura do desenho e suas quebras não mudam.
+  // Logo, celular e card usam só a altura necessária; a sobra fica nas pontas.
+  useLayoutEffect(() => {
+    const tela = telaRef.current;
+    const logo = logoRef.current;
+    const rodape = rodapeRef.current;
+    if (!tela || !logo || !rodape) return undefined;
+    const medir = () => {
+      const alturaLivre = Math.max(0, tela.clientHeight - logo.offsetHeight - rodape.offsetHeight - 8);
+      const escala = Math.min(1, 260 / LARGURA_MOLDURA, tela.clientWidth * 0.7 / LARGURA_MOLDURA, alturaLivre / MOLDURA_MAX);
+      setEscalaMoldura((atual) => Math.abs(atual - escala) < 0.001 ? atual : escala);
+    };
+    medir();
+    const ro = new ResizeObserver(medir);
+    [tela, logo, rodape].forEach((el) => ro.observe(el));
+    document.fonts?.ready?.then(medir).catch(() => {});
+    return () => ro.disconnect();
+  }, []);
 
   /* v17: o app instalado na Tela de Inicio sempre abre em "/" (manifesto).
      Quem ja entrou nele vai direto para o Inicio, sem ver os slides de
@@ -795,30 +833,29 @@ export default function Welcome() {
   };
 
   return (
-    <div className="tela-fixa w-full flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
-      <div className="flex items-center justify-center gap-1.5 pt-6 pb-3 shrink-0">
+    <div ref={telaRef} className="tela-fixa w-full flex flex-col justify-center" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
+      <div ref={logoRef} className="flex items-center justify-center gap-1.5 pt-1 pb-3 shrink-0">
         <Gauge size={22} strokeWidth={2.5} style={{ color: VERDE }} />
         <span className="text-xl font-bold" style={{ color: "var(--text)" }}>
           Ta<span style={{ color: VERDE }}>Certo!</span>
         </span>
       </div>
 
-      {/* v11: a moldura ocupa o espaco entre o logo e o card de baixo
-          (flex-1), ate MOLDURA_MAX, encostada no card. Mais larga (272)
-          para as letras ampliadas (ZOOM_SLIDES) quebrarem linha igual. */}
-      <div ref={scrollerRef} className="flex-1 min-h-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar" style={{ touchAction: "pan-x" }}>
+      {/* A escala externa afina o celular inteiro sem abrir espaço até o card. */}
+      <div ref={scrollerRef} className="shrink-0 min-h-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar" style={{ touchAction: "pan-x", height: MOLDURA_MAX * escalaMoldura + 8 }}>
         {SLIDES.map(({ Mini, foraDaEscala }, i) => (
           <div key={i} className="min-w-full snap-center flex flex-col min-h-0">
             <div className="flex-1 min-h-0 flex justify-center px-6 pt-2">
-              <div className="w-full flex flex-col justify-end min-h-0" style={{ maxWidth: 272 }}>
+              <div className="relative shrink-0" style={{ width: LARGURA_MOLDURA * escalaMoldura, height: MOLDURA_MAX * escalaMoldura }}>
                 <div
                   ref={i === 0 ? molduraRef : undefined}
                   data-moldura-slide=""
-                  className="relative w-full flex flex-col"
+                  className="absolute top-0 left-0 flex flex-col"
                   style={{
-                    flex: "1 1 auto",
-                    minHeight: 0,
-                    maxHeight: MOLDURA_MAX,
+                    width: LARGURA_MOLDURA,
+                    height: MOLDURA_MAX,
+                    transform: `scale(${escalaMoldura})`,
+                    transformOrigin: "top left",
                     borderTopLeftRadius: 34,
                     borderTopRightRadius: 34,
                     borderLeft: "1.5px solid rgba(34,197,94,0.55)",
@@ -843,7 +880,7 @@ export default function Welcome() {
       {/* Card inferior único: preto translúcido, sem reflexo, com apenas
           uma linha verde discreta em volta. Contém o texto do slide
           ativo + dots + botões. */}
-      <div className="shrink-0" style={{ padding: "0 10px", paddingBottom: "calc(10px + env(safe-area-inset-bottom))" }}>
+      <div ref={rodapeRef} className="shrink-0" style={{ padding: "0 10px", paddingBottom: "calc(10px + env(safe-area-inset-bottom))" }}>
         <div
           style={{
             background: "var(--vidro-bg)",
