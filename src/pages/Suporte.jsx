@@ -1,4 +1,4 @@
-/* SUPORTE v9 — suporte responde no app e encaminha dúvidas à aba Isa (v8: versão anterior) */
+/* SUPORTE v10 — retira pergunta sobre certificado do suporte (v9: versão anterior) */
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import TopoRolavel from "../components/TopoRolavel.jsx";
@@ -76,10 +76,6 @@ const ASSUNTOS = [
       {
         p: "Como emito?",
         r: "Na aba Notas. Lá diz quando você precisa emitir e como: com orientação da Isa aqui no app ou pelo passo a passo no gov.br.",
-      },
-      {
-        p: "O que é o Certificado A1?",
-        r: "A identidade digital do seu CNPJ. Com ele, a nota sai automática e você só confirma. Custa R$ 100,34 por 1 ano, preço de custo: o TaCerto não ganha nada.",
       },
       {
         p: "NFS-e ou CT-e?",
