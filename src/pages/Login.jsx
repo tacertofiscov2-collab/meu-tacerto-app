@@ -1,4 +1,4 @@
-/* LOGIN v5 — setinha de voltar maior (bolinha 46, seta 24; sem bolinha, seta 26) (v4: vira o plano B em /entrar-email: "Esqueceu sua senha?" e "Nao tem conta?" so com MOSTRAR_LOGIN_EMAIL; "ou" + Google so com MOSTRAR_LOGIN_GOOGLE) */
+/* LOGIN v6 — campos com 16px para evitar zoom no Safari (v5: setinha de voltar maior) */
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { ArrowLeft, Eye, EyeOff, Gauge } from "lucide-react";
@@ -151,8 +151,8 @@ export default function Login() {
                   placeholder="E-mail"
                   value={contato}
                   onChange={(e) => setContato(e.target.value)}
-                  className="campo-tacerto w-full px-4 py-3.5 rounded-xl text-sm focus:outline-none placeholder:opacity-70"
-                  style={fieldStyle}
+                  className="campo-tacerto w-full px-4 py-3.5 rounded-xl focus:outline-none placeholder:opacity-70"
+                  style={{ ...fieldStyle, fontSize: 16 }}
                 />
 
                 {/* Senha na mesma tela do e-mail */}
@@ -163,8 +163,8 @@ export default function Login() {
                       value={senha}
                       onChange={(e) => setSenha(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter" && !loading) handleEntrar(); }}
-                      className="campo-tacerto w-full px-4 py-3.5 pr-11 rounded-xl text-sm focus:outline-none placeholder:opacity-70"
-                      style={fieldStyle}
+                      className="campo-tacerto w-full px-4 py-3.5 pr-11 rounded-xl focus:outline-none placeholder:opacity-70"
+                      style={{ ...fieldStyle, fontSize: 16 }}
                     />
                     <button
                       type="button"
