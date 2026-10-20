@@ -1,3 +1,4 @@
+/* CHATHISTORICO v1 — modo somente local preserva conversas sem enviá-las ao banco */
 /* ===================================================================
    HISTÓRICO DE CONVERSAS DO CHAT DO FISCO
    ===================================================================
@@ -109,7 +110,8 @@
     * É assíncrona — retorna a lista já pronta, mas o chat NÃO depende de
     * esperar por ela: enquanto isso, lerConversas() já devolve o cache local.
     */
-   export async function carregarConversasDoBanco() {
+   export async function carregarConversasDoBanco({ somenteLocal = false } = {}) {
+     if (somenteLocal) return lerConversas();
      const user = await usuarioLogado();
      if (!user) {
        // Visitante: cache é só o que estiver no local.
@@ -123,7 +125,9 @@
          .order("atualizada_em", { ascending: false });
    
        if (Array.isArray(data)) {
-         return setCache(data.map(doBanco));
+         const locais = garantirCache().filter((c) => c.somenteLocal);
+         const idsLocais = new Set(locais.map((c) => c.id));
+         return setCache([...locais, ...data.filter((c) => !idsLocais.has(c.id)).map(doBanco)]);
        }
      } catch {
        /* falha de rede — mantém o cache local */
@@ -146,7 +150,7 @@
     * Atualiza o cache na hora e espelha no banco em segundo plano.
     * O título sai da primeira mensagem do usuário, cortado.
     */
-   export function salvarConversa(id, mensagens) {
+   export function salvarConversa(id, mensagens, { somenteLocal = false } = {}) {
      if (!Array.isArray(mensagens) || mensagens.length === 0) return null;
    
      const primeiraDoUsuario = mensagens.find((m) => m.autor === "user");
@@ -164,9 +168,11 @@
        mensagens,
        criadaEm: existente?.criadaEm || agora,
        atualizadaEm: agora,
+       somenteLocal: somenteLocal || Boolean(existente?.somenteLocal),
      };
    
      setCache([conversa, ...lista.filter((c) => c.id !== id)]);
+     if (conversa.somenteLocal) return conversa;
    
      // Espelha no banco em segundo plano (só se logado).
      (async () => {

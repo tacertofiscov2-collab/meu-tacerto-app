@@ -1,6 +1,9 @@
-/* PILOTO v32 — atalhos antigos abrem a Isa no app; nenhum link externo de WhatsApp (v31: versão anterior) */
+/* PILOTO v33 — Isa com IA preparada e desligada; frase de dúvida pendente (v32: atalhos antigos abrem a Isa no app) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 import { formatarCnpj, soDigitosCnpj } from "@/lib/cnpj";
+
+export const ISA_IA_ATIVA = false;
+export const FRASE_ISA_NAO_SEI = "Boa pergunta! Ainda não tenho essa resposta certinha. Vou passar sua dúvida para a equipe e te aviso aqui no app.";
 
 /* ===================================================================
    POR QUE ESTE ARQUIVO EXISTE (04/10/2026)
