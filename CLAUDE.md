@@ -1,4 +1,4 @@
-# CLAUDE.md — TaCerto! (v2, 17/10/2026)
+# CLAUDE.md — TaCerto! (v3, 18/10/2026)
 
 Lido no começo de cada sessão. Curto de propósito: cada linha aqui é
 relida o tempo todo e gasta crédito. Regras de código e mapa de pastas:
@@ -31,6 +31,12 @@ Histórico antigo (só quando precisar): `docs/historico/`.
 - Prévia de cada branch na Vercel:
   `https://meu-tacerto-app-git-<branch-com-hifen>-tacertofiscov2-collab.vercel.app`
   (login com a conta GitHub **tacertofiscov2-collab**).
+
+- **Papéis de cada ferramenta:** `docs/PAPEIS.md`. O Claude é chamado
+  só em caso grave: leia primeiro as últimas linhas do `docs/DIARIO.md`.
+- **Central** (PWA no iPhone, pasta `central/` na branch `central`):
+  pedidos são issues com a etiqueta `pedido`; aprovar = merge normal
+  para a `piloto-simplificado` (nunca `main`). Prints: `prints.yml`.
 
 ## Supabase (projeto `tacerto-fiscov2`)
 

@@ -1,0 +1,8 @@
+# Telas que o robô de prints fotografa em cada prévia (390 x 844).
+# Formato: /caminho | Nome que aparece na Central
+# Só telas que abrem sem login.
+/ | Boas-vindas
+/login | Entrar
+/cadastro | Cadastro
+/termos-de-uso | Termos de uso
+/privacidade | Privacidade

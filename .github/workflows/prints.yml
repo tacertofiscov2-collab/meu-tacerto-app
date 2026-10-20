@@ -1,0 +1,102 @@
+# prints.yml v2 — usa o endereço fixo da branch (abre sem login) (v1: robô de prints).
+# Robô de prints: tira print no tamanho do iPhone (390 x 844)
+# de cada prévia do app na Vercel e guarda como artefato por 14 dias.
+# A Central (pasta central/) lista e mostra esses prints.
+# Roda sozinho quando a Vercel termina uma prévia, ou pela Central
+# ("Pedir print novo"), que manda a url.
+name: prints
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Endereço da prévia"
+        required: true
+      branch:
+        description: "Nome da branch (só para o título)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: prints-${{ github.event.deployment.sha || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  prints:
+    # Só prévias do app (projeto meu-tacerto-app), e só quando deu certo.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+       contains(github.event.deployment.environment, 'meu-tacerto-app'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/prints-rotas.txt
+            scripts/prints.mjs
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar o navegador
+        run: |
+          mkdir -p /tmp/robo && cd /tmp/robo
+          npm init -y > /dev/null
+          npm i --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Descobrir url e branch
+        id: alvo
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL_MANUAL: ${{ github.event.inputs.url }}
+          BRANCH_MANUAL: ${{ github.event.inputs.branch }}
+          URL_VERCEL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
+          SHA: ${{ github.event.deployment.sha || github.sha }}
+        run: |
+          BRANCH="$BRANCH_MANUAL"
+          if [ -z "$BRANCH" ]; then
+            BRANCH=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${SHA}/branches-where-head" --jq '.[0].name' 2>/dev/null || true)
+          fi
+          # Endereço fixo da branch (o endereço único de cada deploy pede login da Vercel).
+          URL="$URL_MANUAL"
+          if [ -z "$URL" ] && [ -n "$BRANCH" ]; then
+            SLUG=$(echo "$BRANCH" | tr 'A-Z' 'a-z' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//g')
+            CANDIDATA="https://meu-tacerto-app-git-${SLUG}-tacerto1.vercel.app"
+            SUB="${CANDIDATA#https://}"; SUB="${SUB%%.*}"
+            [ ${#SUB} -le 63 ] && URL="$CANDIDATA"
+          fi
+          [ -z "$URL" ] && URL="$URL_VERCEL"
+          [ -z "$BRANCH" ] && BRANCH="sem-branch"
+          NOME=$(echo "$BRANCH" | tr -c 'A-Za-z0-9._-' '-' | sed 's/-*$//')
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "nome=prints__${NOME}__${SHA:0:7}" >> "$GITHUB_OUTPUT"
+
+      - name: Tirar os prints
+        env:
+          URL: ${{ steps.alvo.outputs.url }}
+          BRANCH: ${{ steps.alvo.outputs.branch }}
+          SHA: ${{ github.event.deployment.sha || github.sha }}
+          VERCEL_BYPASS: ${{ secrets.VERCEL_BYPASS }}
+          NODE_PATH: /tmp/robo/node_modules
+        run: |
+          mkdir -p /tmp/prints
+          cp scripts/prints.mjs /tmp/robo/prints.mjs
+          node /tmp/robo/prints.mjs .github/prints-rotas.txt /tmp/prints
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.alvo.outputs.nome }}
+          path: /tmp/prints
+          retention-days: 14
+          if-no-files-found: error
