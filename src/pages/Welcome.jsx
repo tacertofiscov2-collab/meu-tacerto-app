@@ -795,7 +795,7 @@ export default function Welcome() {
     if (!tela || !logo || !rodape) return undefined;
     const medir = () => {
       const alturaLivre = Math.max(0, tela.clientHeight - logo.offsetHeight - rodape.offsetHeight - 8);
-      const escala = Math.min(1, 260 / LARGURA_MOLDURA, tela.clientWidth * 0.7 / LARGURA_MOLDURA, alturaLivre / MOLDURA_MAX);
+      const escala = Math.min(1, 210 / LARGURA_MOLDURA, tela.clientWidth * 0.56 / LARGURA_MOLDURA, alturaLivre / MOLDURA_MAX);
       setEscalaMoldura((atual) => Math.abs(atual - escala) < 0.001 ? atual : escala);
     };
     medir();
