@@ -1,4 +1,4 @@
-/* FAQFISCO v6 — resposta sobre CT-e sem mencionar certificado (v5: versão anterior) */
+/* FAQFISCO v7 — 2027: nota para pessoa fisica continua dispensada (Decreto 13.140/2026) (v6: resposta sobre CT-e sem mencionar certificado (v5: versão anterior) */
 import { LIMITES_ANUAIS, limiteAte20Percent } from "./fiscal.js";
 
 const fmt = (v) =>
@@ -304,8 +304,8 @@ const GERAIS = [
       ehCaminhoneiro(c) ? "Preciso emitir CT-e em todo frete?" : "Preciso emitir nota fiscal?",
     resposta: (c) =>
       ehCaminhoneiro(c)
-        ? `Depende do frete. Na mesma cidade: nota de serviço (NFS-e). Entre cidades, contratado direto por você: CT-e (precisa de Inscrição Estadual). Agregado de transportadora em MG, sem Inscrição Estadual: hoje quem emite é a transportadora. A partir de 2027, o MEI vai ter que emitir nota em todo serviço.\n\nE atenção: emitir ou não documento não muda o seu limite — o que conta é o valor que você recebeu.`
-        : `Pra empresa (pessoa jurídica), sim, é obrigatório emitir. Pra pessoa física (cliente comum), hoje não é obrigatório — só se ele pedir. A partir de 2027, o MEI vai ter que emitir nota em toda venda e serviço.\n\nMas atenção: emitir ou não nota não muda o seu limite. O que conta é o valor que você recebeu.`,
+        ? `Depende do frete. Na mesma cidade: nota de serviço (NFS-e). Entre cidades, contratado direto por você: CT-e (precisa de Inscrição Estadual). Agregado de transportadora em MG, sem Inscrição Estadual: hoje quem emite é a transportadora. Em 2027 continua assim: para empresa é obrigatória, para pessoa física não.\n\nE atenção: emitir ou não documento não muda o seu limite — o que conta é o valor que você recebeu.`
+        : `Pra empresa (pessoa jurídica), sim, é obrigatório emitir. Pra pessoa física (cliente comum), hoje não é obrigatório — só se ele pedir. Em 2027 continua assim (decreto publicado em 21/10/2026).\n\nMas atenção: emitir ou não nota não muda o seu limite. O que conta é o valor que você recebeu.`,
   },
   {
     id: "g4",

@@ -1,4 +1,4 @@
-/* CHATFISCOPAGINA v7 — nota emitida pela Isa entra sozinha em Notas e no velocímetro (v6: espera a Isa até 50s (check-up do CNPJ faz duas consultas) (v5: a Isa monta a nota fiscal pelo chat (texto ou ditado): a IA devolve os dados, aparece um cartão para conferir e só emite no toque "Emitir" (/api/nfse/emitir); nada é emitido sem a pessoa confirmar (v4: IA opcional desligada, fallback e dúvidas locais; sem saída para WhatsApp (v3: aba Isa)) */
+/* CHATFISCOPAGINA v8 — atalhos da conversa viram pedidos (Emitir nota fiscal, Check-up do CNPJ...) quando a Isa com IA esta ligada (v7: nota emitida pela Isa entra sozinha em Notas e no velocímetro (v6: espera a Isa até 50s (check-up do CNPJ faz duas consultas) (v5: a Isa monta a nota fiscal pelo chat (texto ou ditado): a IA devolve os dados, aparece um cartão para conferir e só emite no toque "Emitir" (/api/nfse/emitir); nada é emitido sem a pessoa confirmar (v4: IA opcional desligada, fallback e dúvidas locais; sem saída para WhatsApp (v3: aba Isa)) */
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ChatFiscoUI from "../components/ChatFiscoUI.jsx";
@@ -60,7 +60,19 @@ export default function ChatFiscoPagina({ aba = false }) {
   }
   /* v1: perguntas comuns, na conversa que ainda nao comecou */
   const ctxAgora = contextoFaq({ tipoMEI: app.tipoMEI, limite: app.limiteAtual, faturado: app.faturamentoAtual });
-  const perguntasProntas = perguntasGerais().map((item) => textoPergunta(item, ctxAgora));
+  /* v8: com a IA ligada, os atalhos sao coisas que a Isa FAZ (ela pede o
+     que faltar). Sem IA, continuam as perguntas com resposta pronta. */
+  const caminhoneiro = app.tipoMEI === "MEI_CAMINHONEIRO";
+  const perguntasProntas = ISA_IA_ATIVA
+    ? [
+        ...(MOSTRAR_EMISSAO_PROPRIA ? ["Emitir nota fiscal"] : []),
+        "Fazer check-up do meu CNPJ",
+        "Quanto é o meu DAS e quando vence?",
+        "Quanto falta para o meu limite?",
+        "O que muda para o MEI em 2027?",
+        caminhoneiro ? "Posso ter um ajudante?" : "Posso ter funcionário?",
+      ]
+    : perguntasGerais().map((item) => textoPergunta(item, ctxAgora));
 
   const [mensagens, setMensagens] = useState([]);
   const [digitando, setDigitando] = useState(false);
