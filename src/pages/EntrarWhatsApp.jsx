@@ -1,4 +1,4 @@
-/* ENTRARWHATSAPP v6 — código recebe foco pelo toque, sem autoFocus após envio assíncrono (v5: quadradinhos e botões do login) */
+/* ENTRARWHATSAPP v7 — toque nos botões preserva foco até o clique, sem deslocar o formulário (v6: código recebe foco pelo toque) */
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { Gauge } from "lucide-react";
@@ -318,6 +318,11 @@ export default function EntrarWhatsApp() {
     <div
       className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
+      onMouseDown={(e) => {
+        // O blur recolhe a folga de focus-within antes do clique no Safari.
+        // Mantém o campo em foco até a ação do botão, sem mover seu alvo.
+        if (e.target.closest("button")) e.preventDefault();
+      }}
     >
       <div className="conteudo-rolavel hide-scrollbar flex flex-col px-6 pb-6">
         <TopoRolavel titulo="" simples onVoltar={voltar} />

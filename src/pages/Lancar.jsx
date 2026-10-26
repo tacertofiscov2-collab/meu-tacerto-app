@@ -1,4 +1,4 @@
-/* LANCAR v13 — recebimento pergunta nota e pagador; aviso sem bloquear e tem_nota salvo (v12: comprovante vindo do chat) */
+/* LANCAR v14 — campos flexíveis cabem na largura do iPhone (v13: recebimento pergunta nota e pagador) */
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { ArrowLeft, Calendar as CalendarIcon, TrendingUp, Camera, FileText, X, Loader2 } from "lucide-react";
@@ -607,7 +607,7 @@ export default function Lancar() {
                 value={digitando ? valorFmt : ""}
                 onChange={handleValor}
                 placeholder="0,00"
-                className="flex-1 bg-transparent font-bold focus:outline-none placeholder:opacity-40"
+                className="flex-1 min-w-0 bg-transparent font-bold focus:outline-none placeholder:opacity-40"
                 style={{
                   color: "var(--text)",
                   fontSize: 27,
@@ -686,7 +686,7 @@ export default function Lancar() {
                 onChange={(e) => setDataBR(mascararData(e.target.value))}
                 placeholder="dd/mm/aaaa"
                 maxLength={10}
-                className="flex-1 bg-transparent focus:outline-none placeholder:opacity-70"
+                className="flex-1 min-w-0 bg-transparent focus:outline-none placeholder:opacity-70"
                 style={{ color: "var(--text)", fontSize: 16 }}
               />
               <button
