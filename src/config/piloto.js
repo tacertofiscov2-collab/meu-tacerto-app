@@ -2,7 +2,7 @@
 import { LABEL_TIPO } from "@/lib/fiscal";
 import { formatarCnpj, soDigitosCnpj } from "@/lib/cnpj";
 
-export const ISA_IA_ATIVA = false;
+export const ISA_IA_ATIVA = true;
 export const FRASE_ISA_NAO_SEI = "Boa pergunta! Ainda não tenho essa resposta certinha. Vou passar sua dúvida para a equipe e te aviso aqui no app.";
 
 /* ===================================================================
