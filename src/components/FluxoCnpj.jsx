@@ -1,4 +1,4 @@
-/* FLUXOCNPJ v3 — aviso do "Achei você" sem "Receita" (decisao do Fernando, 12/10): "Não aparece como MEI nos dados públicos" (curto para caber em 1 linha no iPhone; antes "Esse CNPJ não aparece como MEI na Receita") (v2: PassoDigitarCnpj com semTitulo (a pagina do CNPJ do Perfil mostra as vantagens no lugar do titulo) (v1: "Qual o CNPJ do seu MEI?" (digitar com mascara, validar e buscar os dados publicos na BrasilAPI) e "Achei você" (nome, tipo de MEI e "MEI desde"); usado no Onboarding e no Perfil (/perfil/cnpj))) */
+/* FLUXOCNPJ v4 — "Achei você" sem "Parece": diz com certeza "MEI Caminhoneiro" ou "MEI" e mostra a atividade principal do CNPJ (pedido do Fernando, 26/10) (v3: aviso do "Achei você" sem "Receita" (decisao do Fernando, 12/10): "Não aparece como MEI nos dados públicos" (curto para caber em 1 linha no iPhone; antes "Esse CNPJ não aparece como MEI na Receita") (v2: PassoDigitarCnpj com semTitulo (a pagina do CNPJ do Perfil mostra as vantagens no lugar do titulo) (v1: "Qual o CNPJ do seu MEI?" (digitar com mascara, validar e buscar os dados publicos na BrasilAPI) e "Achei você" (nome, tipo de MEI e "MEI desde"); usado no Onboarding e no Perfil (/perfil/cnpj)))) */
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Loader2, AlertTriangle } from "lucide-react";
 import {
@@ -174,8 +174,8 @@ export function PassoAcheiVoce({
 }) {
   const desde = mesAnoTexto(dados?.dataOpcaoMei);
   const nome = dados?.nome || dados?.razaoSocial || "";
-  const rotuloTipo = LABEL_PERFIL[tipo] || "MEI";
-  const ehODetectado = tipo === tipoDetectado;
+  const rotuloTipo = tipo === "MEI_CAMINHONEIRO" ? "MEI Caminhoneiro" : "MEI";
+  const atividade = dados?.cnaePrincipalDescricao || "";
   const tipoDiferenteDoApp = tipoNoApp && tipoNoApp !== tipoDetectado;
 
   return (
@@ -204,9 +204,12 @@ export function PassoAcheiVoce({
           className="flex items-center"
           style={{ gap: 10, marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border)" }}
         >
-          <p className="flex-1 min-w-0 font-semibold" style={{ color: "var(--text)", fontSize: 15.5 }}>
-            {ehODetectado ? `Parece ${rotuloTipo}` : rotuloTipo}
-          </p>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold" style={{ color: "var(--text)", fontSize: 15.5 }}>{rotuloTipo}</p>
+            {atividade && (
+              <p style={{ color: "var(--text-tertiary)", fontSize: 13, marginTop: 2, lineHeight: 1.4 }}>{atividade}</p>
+            )}
+          </div>
           {onTrocarTipo && (
             <button
               type="button"

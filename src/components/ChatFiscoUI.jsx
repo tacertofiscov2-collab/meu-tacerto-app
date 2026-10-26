@@ -1,4 +1,4 @@
-/* CHATFISCOUI v9 — microfone: fica verde enquanto ouve, aviso "Pode falar", texto aparece enquanto a pessoa fala e aviso certo para cada erro (Ditado desligado, microfone bloqueado, nao ouviu) (v8: teclado do iPhone: rodape some e a tela fica enquadrada acima do teclado (a conta antiga com offsetTop achava o teclado fechado) (v7: ditado pt-BR com conferência; sem botão de WhatsApp; limite 300 (v6: rodapé de cinco itens))) */
+/* CHATFISCOUI v11 — barra segue o teclado no iPhone: confere de novo quando a animacao do teclado termina, uma conta por quadro e a pagina de tras nao rola (v10: cartão da nota fiscal montada pela Isa (conferir e Emitir; depois, Baixar PDF) (v9: microfone: fica verde enquanto ouve, aviso "Pode falar", texto aparece enquanto a pessoa fala e aviso certo para cada erro (Ditado desligado, microfone bloqueado, nao ouviu) (v8: teclado do iPhone: rodape some e a tela fica enquadrada acima do teclado (a conta antiga com offsetTop achava o teclado fechado) (v7: ditado pt-BR com conferência; sem botão de WhatsApp; limite 300 (v6: rodapé de cinco itens)))) */
 import { useRef, useState, useEffect } from "react";
 import {
   Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList,
@@ -149,6 +149,40 @@ export function BordaLuminosa({ raio = 28, cor = "34,197,94", corClara = "74,222
         }}
       />
     </>
+  );
+}
+
+const reais = (v) => Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+/* v10: nota que a Isa montou. Nada é emitido sem o toque em "Emitir". */
+function CartaoNota({ nota, onEmitir }) {
+  const emitida = nota.estado === "emitida";
+  function baixar() {
+    const a = document.createElement("a");
+    a.href = `data:application/pdf;base64,${nota.pdfBase64}`;
+    a.download = `nota-${String(nota.chaveAcesso || "").slice(-8)}.pdf`;
+    a.click();
+  }
+  return (
+    <div className="rounded-2xl" style={{ maxWidth: "80%", padding: "14px 16px", border: "1px solid var(--border)", background: "var(--surface)" }}>
+      <p style={{ fontSize: 13, color: "var(--text-tertiary)" }}>{emitida ? "Nota emitida" : "Nota fiscal"}{emitida && nota.teste ? " · teste, sem valor fiscal" : ""}</p>
+      <p className="font-bold" style={{ fontSize: 22, color: "var(--text)", marginTop: 4 }}>{reais(nota.valor)}</p>
+      <p style={{ fontSize: 15, color: "var(--text-secondary)", marginTop: 4, lineHeight: 1.4 }}>{nota.descricao}</p>
+      {nota.tomadorNome || nota.tomadorDocumento ? (
+        <p style={{ fontSize: 13.5, color: "var(--text-tertiary)", marginTop: 4 }}>Para: {nota.tomadorNome || nota.tomadorDocumento}</p>
+      ) : null}
+      {emitida ? (
+        <button type="button" onClick={baixar} className="toque w-full rounded-xl font-semibold"
+          style={{ marginTop: 12, padding: "11px 0", fontSize: 15, background: "var(--primary)", color: "var(--primary-contrast)" }}>
+          Baixar PDF
+        </button>
+      ) : (
+        <button type="button" onClick={onEmitir} disabled={nota.estado === "emitindo"} className="toque w-full rounded-xl font-semibold"
+          style={{ marginTop: 12, padding: "11px 0", fontSize: 15, background: "var(--primary)", color: "var(--primary-contrast)", opacity: nota.estado === "emitindo" ? 0.5 : 1 }}>
+          {nota.estado === "emitindo" ? "Emitindo..." : "Emitir"}
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -486,6 +520,7 @@ export default function ChatFiscoUI({
   /* v5: anexos — onAnexo("foto" | "galeria" | "documento", arquivo),
      e onAnexo("extrato"); o microfone apenas preenche o campo */
   onAnexo,
+  onEmitirNota,
   /* v6: aba "Isa" do rodape: o rodape de 5 itens fica embaixo da barra
      de digitar (some so com o teclado aberto, que cobre essa area) */
   comRodape = false,
@@ -637,6 +672,13 @@ export default function ChatFiscoUI({
        saia do enquadramento. Agora mede so innerHeight - height e, no
        celular (toque), campo focado ja conta como teclado aberto. */
     const toque = window.matchMedia?.("(pointer: coarse)")?.matches;
+    /* v11: uma conta por quadro (o iPhone dispara dezenas de eventos
+       durante a animacao do teclado) */
+    let quadro = 0;
+    const seguirNoQuadro = () => {
+      if (quadro) return;
+      quadro = requestAnimationFrame(() => { quadro = 0; seguir(); });
+    };
     const seguir = () => {
       const a = document.activeElement;
       const campoFocado = !!a && raiz.contains(a) && (a.tagName === "INPUT" || a.tagName === "TEXTAREA");
@@ -666,16 +708,24 @@ export default function ChatFiscoUI({
     const ligarSeguidor = () => {
       if (seguindo) return;
       seguindo = true;
-      vv.addEventListener("resize", seguir);
-      vv.addEventListener("scroll", seguir);
+      vv.addEventListener("resize", seguirNoQuadro);
+      vv.addEventListener("scroll", seguirNoQuadro);
       seguir();
     };
 
     const desligarSeguidor = () => {
       if (!seguindo) return;
       seguindo = false;
-      vv.removeEventListener("resize", seguir);
-      vv.removeEventListener("scroll", seguir);
+      vv.removeEventListener("resize", seguirNoQuadro);
+      vv.removeEventListener("scroll", seguirNoQuadro);
+    };
+    /* v11: o Safari nem sempre avisa quando o teclado TERMINA de subir
+       (ou quando a barra de sugestoes/ditado muda a altura). Confere de
+       novo depois da animacao. */
+    let conferencias = [];
+    const conferirDepois = () => {
+      conferencias.forEach(clearTimeout);
+      conferencias = [120, 320, 650].map((ms) => setTimeout(() => { if (seguindo) seguir(); }, ms));
     };
 
     // O usuario tocou num campo desta pagina: a partir daqui, acompanha.
@@ -683,6 +733,7 @@ export default function ChatFiscoUI({
       const t = e.target;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) {
         ligarSeguidor();
+        conferirDepois();
       }
     };
 
@@ -703,8 +754,18 @@ export default function ChatFiscoUI({
 
     document.addEventListener("focusin", aoFocar);
     document.addEventListener("focusout", aoSair);
+    /* v11: a pagina de tras nao rola enquanto o chat esta aberto (era ela
+       que o Safari empurrava junto com o teclado, deslocando a barra) */
+    const html = document.documentElement;
+    const antes = [html.style.overflow, document.body.style.overflow, document.body.style.overscrollBehavior];
+    html.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
 
     return () => {
+      [html.style.overflow, document.body.style.overflow, document.body.style.overscrollBehavior] = antes;
+      conferencias.forEach(clearTimeout);
+      if (quadro) cancelAnimationFrame(quadro);
       desligarSeguidor();
       document.removeEventListener("focusin", aoFocar);
       document.removeEventListener("focusout", aoSair);
@@ -875,6 +936,7 @@ export default function ChatFiscoUI({
               temaClaro={temaClaro}
               onSegurar={() => setMsgMenu(m)}
             />
+            {m.nota && onEmitirNota && <CartaoNota nota={m.nota} onEmitir={() => onEmitirNota(m)} />}
           </div>
         ))}
         {/* v4: conversa que ainda nao comecou: perguntas comuns */}

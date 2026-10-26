@@ -1,7 +1,9 @@
-/* CHATFISCOPAGINA v4 — IA opcional desligada, fallback e dúvidas locais; sem saída para WhatsApp (v3: aba Isa) */
+/* CHATFISCOPAGINA v5 — a Isa monta a nota fiscal pelo chat (texto ou ditado): a IA devolve os dados, aparece um cartão para conferir e só emite no toque "Emitir" (/api/nfse/emitir); nada é emitido sem a pessoa confirmar (v4: IA opcional desligada, fallback e dúvidas locais; sem saída para WhatsApp (v3: aba Isa)) */
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ChatFiscoUI from "../components/ChatFiscoUI.jsx";
+import { MOSTRAR_EMISSAO_PROPRIA, CODIGO_SERVICO_NOTA } from "@/config/piloto";
+import { toast } from "sonner";
 import { deixarArquivoPendente } from "@/lib/arquivoPendente";
 import { useAppState } from "@/context/AppStateContext";
 import { contextoFaq, responderPergunta, perguntasGerais, textoPergunta } from "@/lib/faqFisco";
@@ -137,6 +139,7 @@ export default function ChatFiscoPagina({ aba = false }) {
     try {
       const a = appRef.current;
       let resposta = null;
+      let notaProposta = null;
       if (ISA_IA_ATIVA) {
         const controle = new AbortController();
         abortarRef.current = controle;
@@ -150,10 +153,11 @@ export default function ChatFiscoPagina({ aba = false }) {
             body: { pergunta, historico, contexto: {
               tipoMEI: a.tipoMEI, faturado: a.faturamentoAtual, limite: a.limiteAtual,
               valorDas: valorDasMensal(a.tipoMEI, cnaes), cnaes,
-            } },
+            }, recursos: { emitirNota: MOSTRAR_EMISSAO_PROPRIA } },
           });
           if (!error && !data?.erro && typeof data?.resposta === "string" && data.resposta.trim()) {
             resposta = data.resposta;
+            if (data.nota && MOSTRAR_EMISSAO_PROPRIA) notaProposta = { ...data.nota, estado: "conferir" };
           }
         } catch { /* sem função, rede ou chave: usa a resposta pronta */ }
         finally { clearTimeout(tempo); }
@@ -167,7 +171,7 @@ export default function ChatFiscoPagina({ aba = false }) {
         resposta = pronta.achou ? pronta.texto : FRASE_ISA_NAO_SEI;
         if (!pronta.achou) guardarDuvidaLocal(pergunta, a.email);
       }
-      setMensagens((m) => [...m, { id: Date.now() + 1, autor: "fisco", texto: resposta }]);
+      setMensagens((m) => [...m, { id: Date.now() + 1, autor: "fisco", texto: resposta, ...(notaProposta ? { nota: notaProposta } : {}) }]);
     } finally {
       if (requisicao === requisicaoRef.current) {
         ocupadaRef.current = false;
@@ -223,6 +227,38 @@ export default function ChatFiscoPagina({ aba = false }) {
     }
   }
 
+  /* Nota montada pela Isa: só emite quando a pessoa toca "Emitir". */
+  function mudarNota(id, mudanca) {
+    setMensagens((lista) => lista.map((m) => (m.id === id ? { ...m, nota: { ...m.nota, ...mudanca } } : m)));
+  }
+  async function emitirNotaDaConversa(msg) {
+    const n = msg.nota;
+    if (!n || n.estado === "emitindo" || n.estado === "emitida") return;
+    mudarNota(msg.id, { estado: "emitindo" });
+    try {
+      const { data } = await supabase.auth.getSession();
+      const token = data?.session?.access_token;
+      const r = await fetch("/api/nfse/emitir", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          valor: n.valor, descricao: n.descricao, cTribNac: CODIGO_SERVICO_NOTA,
+          ...(n.tomadorDocumento ? { tomador: { documento: n.tomadorDocumento, nome: n.tomadorNome || "" } } : {}),
+        }),
+      });
+      const resp = await r.json().catch(() => null);
+      if (resp?.ok) {
+        mudarNota(msg.id, { estado: "emitida", chaveAcesso: resp.chaveAcesso, pdfBase64: resp.pdfBase64, teste: resp.ambiente !== "producao" });
+      } else {
+        mudarNota(msg.id, { estado: "conferir" });
+        toast(resp?.mensagem || "Não deu para emitir agora. Tente de novo.");
+      }
+    } catch {
+      mudarNota(msg.id, { estado: "conferir" });
+      toast("Sem conexão. Tente de novo.");
+    }
+  }
+
   /* Arquivos seguem para o lançamento; ditado é tratado no ChatFiscoUI. */
   function receberAnexo(tipo, arquivo) {
     if (tipo === "extrato") return navigate("/enviar-extrato", { state: { de: "fisco" } });
@@ -247,6 +283,7 @@ export default function ChatFiscoPagina({ aba = false }) {
       perguntasProntas={mensagens.some((m) => m.autor === "user") ? [] : perguntasProntas}
       onPerguntaPronta={(texto) => enviarMensagem(texto)}
       onAnexo={receberAnexo}
+      onEmitirNota={emitirNotaDaConversa}
     />
   );
 }
