@@ -1,4 +1,4 @@
-/* CHATFISCOUI v6 — aba "Isa" (comRodape): o rodape de 5 itens embaixo da barra de digitar (sai com o teclado aberto) e sem o X (v5: "+" de anexos e microfone de volta, agora funcionando (MOSTRAR_ANEXOS_CHAT): Foto (camera), Galeria e Documento escolhem o arquivo aqui e chamam onAnexo(tipo, arquivo); Extrato e o microfone chamam onAnexo("extrato" | "audio") (v4: chat da Isa: botao "Falar com a Isa no WhatsApp" abaixo da resposta que a Isa nao soube (fora da bolha, por causa do segurar = menu); perguntas comuns em botoes na conversa que nao comecou; "+" de anexos e microfone escondidos (MOSTRAR_ANEXOS_CHAT: nunca fizeram nada); campo com 16px (o iPhone nao da zoom) (v3: Fisco vira Isa: foto da Isa (webp) e nome "Isa" no cabecalho, "assistente virtual" no lugar de "Online" (v2: "Fisco.ia" vira "Fisco" nos textos da tela (so a Apresentacao do Fisco.ia mantem o nome) (v1: "Fisco" vira "Fisco.ia" nos textos da tela (05/10/2026)))))) */
+/* CHATFISCOUI v13 — áudio igual ao WhatsApp: segura o microfone e fala, soltou envia; arrasta para a esquerda cancela, para cima trava (v12: barra encosta no teclado (tirado o respiro da faixa do iPhone com teclado aberto) (v11: barra segue o teclado no iPhone: confere de novo quando a animacao do teclado termina, uma conta por quadro e a pagina de tras nao rola (v10: cartão da nota fiscal montada pela Isa (conferir e Emitir; depois, Baixar PDF) (v9: microfone: fica verde enquanto ouve, aviso "Pode falar", texto aparece enquanto a pessoa fala e aviso certo para cada erro (Ditado desligado, microfone bloqueado, nao ouviu) (v8: teclado do iPhone: rodape some e a tela fica enquadrada acima do teclado (a conta antiga com offsetTop achava o teclado fechado) (v7: ditado pt-BR com conferência; sem botão de WhatsApp; limite 300 (v6: rodapé de cinco itens)))) */
 import { useRef, useState, useEffect } from "react";
 import {
   Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList,
@@ -6,7 +6,8 @@ import {
 } from "lucide-react";
 import { rotuloData } from "@/lib/chatHistorico";
 import { FOTO_ISA_256 } from "./FotoIsa.jsx";
-import IconeWhatsApp from "./IconeWhatsApp.jsx";
+import { toast } from "sonner";
+import { LIMITE_PERGUNTA_CHAT } from "@/lib/fiscal";
 import { MOSTRAR_ANEXOS_CHAT } from "@/config/piloto";
 import BottomNav, { ALTURA_RODAPE } from "./BottomNav.jsx";
 
@@ -148,6 +149,40 @@ export function BordaLuminosa({ raio = 28, cor = "34,197,94", corClara = "74,222
         }}
       />
     </>
+  );
+}
+
+const reais = (v) => Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+/* v10: nota que a Isa montou. Nada é emitido sem o toque em "Emitir". */
+function CartaoNota({ nota, onEmitir }) {
+  const emitida = nota.estado === "emitida";
+  function baixar() {
+    const a = document.createElement("a");
+    a.href = `data:application/pdf;base64,${nota.pdfBase64}`;
+    a.download = `nota-${String(nota.chaveAcesso || "").slice(-8)}.pdf`;
+    a.click();
+  }
+  return (
+    <div className="rounded-2xl" style={{ maxWidth: "80%", padding: "14px 16px", border: "1px solid var(--border)", background: "var(--surface)" }}>
+      <p style={{ fontSize: 13, color: "var(--text-tertiary)" }}>{emitida ? "Nota emitida" : "Nota fiscal"}{emitida && nota.teste ? " · teste, sem valor fiscal" : ""}</p>
+      <p className="font-bold" style={{ fontSize: 22, color: "var(--text)", marginTop: 4 }}>{reais(nota.valor)}</p>
+      <p style={{ fontSize: 15, color: "var(--text-secondary)", marginTop: 4, lineHeight: 1.4 }}>{nota.descricao}</p>
+      {nota.tomadorNome || nota.tomadorDocumento ? (
+        <p style={{ fontSize: 13.5, color: "var(--text-tertiary)", marginTop: 4 }}>Para: {nota.tomadorNome || nota.tomadorDocumento}</p>
+      ) : null}
+      {emitida ? (
+        <button type="button" onClick={baixar} className="toque w-full rounded-xl font-semibold"
+          style={{ marginTop: 12, padding: "11px 0", fontSize: 15, background: "var(--primary)", color: "var(--primary-contrast)" }}>
+          Baixar PDF
+        </button>
+      ) : (
+        <button type="button" onClick={onEmitir} disabled={nota.estado === "emitindo"} className="toque w-full rounded-xl font-semibold"
+          style={{ marginTop: 12, padding: "11px 0", fontSize: 15, background: "var(--primary)", color: "var(--primary-contrast)", opacity: nota.estado === "emitindo" ? 0.5 : 1 }}>
+          {nota.estado === "emitindo" ? "Emitindo..." : "Emitir"}
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -321,6 +356,7 @@ function FiscoDigitando() {
   return (
     <div className="flex w-full" style={{ justifyContent: "flex-start" }}>
       <div
+        role="status"
         className="rounded-2xl flex items-center"
         style={{
           padding: "10px 14px",
@@ -341,6 +377,7 @@ function FiscoDigitando() {
             }}
           />
         ))}
+        <span style={{ fontSize: 13, color: "var(--text-tertiary)", marginLeft: 5 }}>Isa está digitando...</span>
       </div>
     </div>
   );
@@ -479,11 +516,11 @@ function PainelHistorico({ aberto, onFechar, conversas, idAtual, onAbrir, onNova
 export default function ChatFiscoUI({
   mensagens, digitando, onEnviar, onEditarMensagem, onFechar,
   conversas, idAtual, onAbrirConversa, onNovaConversa, onApagarConversa,
-  /* v4: botao do WhatsApp (resposta sem resposta pronta) e perguntas comuns */
-  onWhatsApp, perguntasProntas = [], onPerguntaPronta,
+  perguntasProntas = [], onPerguntaPronta,
   /* v5: anexos — onAnexo("foto" | "galeria" | "documento", arquivo),
-     onAnexo("extrato") e onAnexo("audio") */
+     e onAnexo("extrato"); o microfone apenas preenche o campo */
   onAnexo,
+  onEmitirNota,
   /* v6: aba "Isa" do rodape: o rodape de 5 itens fica embaixo da barra
      de digitar (some so com o teclado aberto, que cobre essa area) */
   comRodape = false,
@@ -510,6 +547,139 @@ export default function ChatFiscoUI({
   /* v6: com o teclado aberto o rodape sai (o teclado cobre essa area) */
   const [tecladoVisivel, setTecladoVisivel] = useState(false);
   const rodapeNaTela = comRodape && !tecladoVisivel;
+  const reconhecimentoRef = useRef(null);
+  useEffect(() => () => {
+    const reconhecimento = reconhecimentoRef.current;
+    if (reconhecimento) {
+      reconhecimento.onresult = null;
+      reconhecimento.onerror = null;
+      reconhecimento.onend = null;
+      reconhecimento.abort();
+    }
+  }, []);
+
+  /* v13: AUDIO IGUAL AO WHATSAPP. Segura o microfone e fala; soltou,
+     envia sozinho. Arrastar para a esquerda cancela; arrastar para cima
+     trava (fala sem segurar e toca na setinha para enviar). Toque rapido
+     so avisa "Segure para gravar". A fala vira texto pelo Ditado do
+     iPhone (o texto e o que a Isa le). */
+  const [gravacao, setGravacao] = useState(null); // null | { travada, cancelando, segundos }
+  const ouvindo = !!gravacao;
+  const gravRef = useRef({ texto: "", interino: "", inicio: 0, x: 0, y: 0, cancelar: false, enviar: false, travada: false, timer: null });
+
+  function avisoErroMic(erro) {
+    if (erro === "not-allowed") return toast("Libere o microfone: toque no \"aA\" da barra do Safari > Ajustes do Site > Microfone.");
+    if (erro === "service-not-allowed") return toast("Ligue o Ditado do iPhone: Ajustes > Geral > Teclado > Ativar Ditado.");
+    if (erro === "no-speech" || erro === "aborted") return null;
+    toast("Seu celular não deixou usar o microfone aqui. Digite sua pergunta.");
+  }
+
+  function terminarGravacao(enviar) {
+    const g = gravRef.current;
+    g.enviar = enviar;
+    g.cancelar = !enviar;
+    clearInterval(g.timer);
+    const r = reconhecimentoRef.current;
+    if (!r) { setGravacao(null); return; }
+    try { enviar ? r.stop() : r.abort(); } catch { /* ja parou */ }
+  }
+
+  function comecarGravacao(e) {
+    if (digitando) return;
+    const Reconhecimento = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Reconhecimento) return avisoErroMic();
+    if (reconhecimentoRef.current) return;
+    try { e.currentTarget.setPointerCapture?.(e.pointerId); } catch { /* sem captura */ }
+    const g = gravRef.current;
+    Object.assign(g, { texto: "", interino: "", inicio: Date.now(), x: e.clientX, y: e.clientY, cancelar: false, enviar: false, travada: false });
+    try { navigator.vibrate?.(15); } catch { /* sem vibrar */ }
+    g.base = "";
+    /* O iPhone as vezes encerra o ditado numa pausa da fala. Se a pessoa
+       ainda esta segurando (ou travou), liga de novo e continua juntando o
+       texto; se nao der para religar, envia o que ja ouviu. */
+    const ligar = () => {
+      const r = new Reconhecimento();
+      reconhecimentoRef.current = r;
+      r.lang = "pt-BR";
+      r.continuous = true;
+      r.interimResults = true;
+      r.onresult = (ev) => {
+        let finais = "";
+        let interino = "";
+        for (let i = 0; i < ev.results.length; i++) {
+          const t = ev.results[i][0].transcript;
+          if (ev.results[i].isFinal) finais += ` ${t}`; else interino += ` ${t}`;
+        }
+        g.texto = `${g.base} ${finais}`.trim();
+        g.interino = interino.trim();
+      };
+      r.onerror = (ev) => {
+        if (g.cancelar) return;
+        const erro = ev?.error;
+        if (erro !== "not-allowed" && erro !== "service-not-allowed") return;
+        if (g.base) g.enviar = true; // nao deixou religar: envia o que ja ouviu
+        else { g.cancelar = true; avisoErroMic(erro); }
+      };
+      r.onend = () => {
+        const ouvido = `${g.texto} ${g.interino}`.trim();
+        if (!g.cancelar && !g.enviar) {
+          g.base = ouvido; g.texto = ouvido; g.interino = "";
+          try { ligar(); return; } catch { g.enviar = true; }
+        }
+        reconhecimentoRef.current = null;
+        clearInterval(g.timer);
+        setGravacao(null);
+        if (g.cancelar) return;
+        const texto = ouvido.slice(0, LIMITE_PERGUNTA_CHAT);
+        if (!texto) return toast("Não entendi o áudio. Segure o microfone e fale de novo.");
+        onEnviar(texto, respondendo);
+        setRespondendo(null);
+      };
+      r.start();
+    };
+    try {
+      ligar();
+      setGravacao({ travada: false, cancelando: false, segundos: 0 });
+      g.timer = setInterval(() => {
+        setGravacao((v) => (v ? { ...v, segundos: Math.floor((Date.now() - g.inicio) / 1000) } : v));
+        if (Date.now() - g.inicio > 60000) terminarGravacao(true); // 1 minuto, como limite de seguranca
+      }, 250);
+    } catch {
+      reconhecimentoRef.current = null;
+      setGravacao(null);
+      avisoErroMic();
+    }
+  }
+
+  function moverGravacao(e) {
+    const g = gravRef.current;
+    if (!reconhecimentoRef.current || g.travada) return;
+    const dx = e.clientX - g.x;
+    const dy = e.clientY - g.y;
+    if (dx < -110) return terminarGravacao(false); // arrastou para a esquerda: cancela
+    if (dy < -70) { // arrastou para cima: trava
+      g.travada = true;
+      try { navigator.vibrate?.(10); } catch { /* sem vibrar */ }
+      setGravacao((v) => (v ? { ...v, travada: true, cancelando: false } : v));
+      return;
+    }
+    setGravacao((v) => (v ? { ...v, cancelando: dx < -40 } : v));
+  }
+
+  function soltarGravacao() {
+    const g = gravRef.current;
+    if (!reconhecimentoRef.current || g.travada) return;
+    if (Date.now() - g.inicio < 400) {
+      terminarGravacao(false);
+      toast("Segure o microfone para gravar e solte para enviar.");
+      return;
+    }
+    terminarGravacao(true);
+  }
+
+  const tempoGravacao = gravacao
+    ? `${Math.floor(gravacao.segundos / 60)}:${String(gravacao.segundos % 60).padStart(2, "0")}`
+    : "";
 
   /* Veu e borda da barra de digitar e do "+". No escuro e um veu branco
      sobre fundo escuro; no claro precisa ser o contrario, senao o campo
@@ -566,13 +736,29 @@ export default function ChatFiscoUI({
     // TROCA de estado — e nao a cada micro-evento da viewport.
     let tecladoAberto = false;
 
+    /* v8: no iPhone, ao abrir o teclado o Safari ROLA a pagina (offsetTop
+       cresce do tamanho do teclado), e a conta antiga
+       (innerHeight - height - offsetTop) dava ~0: o app achava que o
+       teclado estava fechado, o rodape ficava em cima do teclado e a tela
+       saia do enquadramento. Agora mede so innerHeight - height e, no
+       celular (toque), campo focado ja conta como teclado aberto. */
+    const toque = window.matchMedia?.("(pointer: coarse)")?.matches;
+    /* v11: uma conta por quadro (o iPhone dispara dezenas de eventos
+       durante a animacao do teclado) */
+    let quadro = 0;
+    const seguirNoQuadro = () => {
+      if (quadro) return;
+      quadro = requestAnimationFrame(() => { quadro = 0; seguir(); });
+    };
     const seguir = () => {
-      const teclado = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      const aberto = teclado > 60;
+      const a = document.activeElement;
+      const campoFocado = !!a && raiz.contains(a) && (a.tagName === "INPUT" || a.tagName === "TEXTAREA");
+      const teclado = Math.max(0, window.innerHeight - vv.height);
+      const aberto = teclado > 60 || (toque && campoFocado);
       // O scroll pro fim NAO fica aqui: se ficasse, disparava a cada
       // micro-evento da viewport e a tela "desfixava e reenquadrava".
       // O scroll acontece so quando chega mensagem nova (efeito abaixo).
-      aplicar(aberto ? teclado : 0);
+      aplicar(aberto ? Math.max(teclado, 1) : 0);
       if (aberto !== tecladoAberto) {
         tecladoAberto = aberto;
         setTecladoVisivel(aberto);
@@ -593,16 +779,24 @@ export default function ChatFiscoUI({
     const ligarSeguidor = () => {
       if (seguindo) return;
       seguindo = true;
-      vv.addEventListener("resize", seguir);
-      vv.addEventListener("scroll", seguir);
+      vv.addEventListener("resize", seguirNoQuadro);
+      vv.addEventListener("scroll", seguirNoQuadro);
       seguir();
     };
 
     const desligarSeguidor = () => {
       if (!seguindo) return;
       seguindo = false;
-      vv.removeEventListener("resize", seguir);
-      vv.removeEventListener("scroll", seguir);
+      vv.removeEventListener("resize", seguirNoQuadro);
+      vv.removeEventListener("scroll", seguirNoQuadro);
+    };
+    /* v11: o Safari nem sempre avisa quando o teclado TERMINA de subir
+       (ou quando a barra de sugestoes/ditado muda a altura). Confere de
+       novo depois da animacao. */
+    let conferencias = [];
+    const conferirDepois = () => {
+      conferencias.forEach(clearTimeout);
+      conferencias = [120, 320, 650].map((ms) => setTimeout(() => { if (seguindo) seguir(); }, ms));
     };
 
     // O usuario tocou num campo desta pagina: a partir daqui, acompanha.
@@ -610,6 +804,7 @@ export default function ChatFiscoUI({
       const t = e.target;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) {
         ligarSeguidor();
+        conferirDepois();
       }
     };
 
@@ -630,8 +825,18 @@ export default function ChatFiscoUI({
 
     document.addEventListener("focusin", aoFocar);
     document.addEventListener("focusout", aoSair);
+    /* v11: a pagina de tras nao rola enquanto o chat esta aberto (era ela
+       que o Safari empurrava junto com o teclado, deslocando a barra) */
+    const html = document.documentElement;
+    const antes = [html.style.overflow, document.body.style.overflow, document.body.style.overscrollBehavior];
+    html.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
 
     return () => {
+      [html.style.overflow, document.body.style.overflow, document.body.style.overscrollBehavior] = antes;
+      conferencias.forEach(clearTimeout);
+      if (quadro) cancelAnimationFrame(quadro);
       desligarSeguidor();
       document.removeEventListener("focusin", aoFocar);
       document.removeEventListener("focusout", aoSair);
@@ -655,7 +860,7 @@ export default function ChatFiscoUI({
   function submeter(e) {
     e.preventDefault();
     const texto = rascunho.trim();
-    if (!texto) return;
+    if (!texto || digitando) return;
     if (editando) {
       onEditarMensagem?.(editando.id, texto);
       setEditando(null);
@@ -787,7 +992,7 @@ export default function ChatFiscoUI({
           // ultima mensagem role acima dela em vez de ficar escondida.
           paddingBottom: rodapeNaTela
             ? `calc(env(safe-area-inset-bottom, 0px) + ${ALTURA_RODAPE + 80}px)`
-            : "calc(env(safe-area-inset-bottom, 0px) + 88px)",
+            : tecladoVisivel ? 80 : "calc(env(safe-area-inset-bottom, 0px) + 88px)",
           display: "flex",
           flexDirection: "column",
           gap: 10,
@@ -802,26 +1007,7 @@ export default function ChatFiscoUI({
               temaClaro={temaClaro}
               onSegurar={() => setMsgMenu(m)}
             />
-            {/* v4: a Isa nao soube: botao do WhatsApp FORA da bolha (o
-                segurar da bolha abre o menu). Abre dentro do toque. */}
-            {m.acao === "whatsapp" && onWhatsApp && (
-              <button
-                type="button"
-                onClick={() => onWhatsApp(m)}
-                className="toque self-start rounded-full font-semibold flex items-center"
-                style={{
-                  gap: 8,
-                  padding: "10px 16px",
-                  fontSize: 15,
-                  color: "var(--text)",
-                  background: "none",
-                  border: "1px solid rgba(34,197,94,0.45)",
-                }}
-              >
-                <IconeWhatsApp size={18} style={{ color: "var(--primary)" }} />
-                Falar com a Isa no WhatsApp
-              </button>
-            )}
+            {m.nota && onEmitirNota && <CartaoNota nota={m.nota} onEmitir={() => onEmitirNota(m)} />}
           </div>
         ))}
         {/* v4: conversa que ainda nao comecou: perguntas comuns */}
@@ -864,7 +1050,8 @@ export default function ChatFiscoUI({
           right: 0,
           bottom: rodapeNaTela ? `calc(env(safe-area-inset-bottom, 0px) + ${ALTURA_RODAPE}px)` : 0,
           padding: 12,
-          paddingBottom: rodapeNaTela ? 8 : "calc(env(safe-area-inset-bottom, 0px) + 12px)",
+          /* v12: com o teclado aberto nao existe faixa do iPhone embaixo: sem o respiro de seguranca, a barra encosta no teclado */
+          paddingBottom: rodapeNaTela || tecladoVisivel ? 8 : "calc(env(safe-area-inset-bottom, 0px) + 12px)",
           background: "transparent",
         }}
       >
@@ -964,7 +1151,7 @@ export default function ChatFiscoUI({
 
         <form onSubmit={submeter} className="flex items-center gap-2">
           {/* "+" FORA da barra, a esquerda (v4: escondido, nunca fez nada) */}
-          {MOSTRAR_ANEXOS_CHAT && (
+          {MOSTRAR_ANEXOS_CHAT && !gravacao && (
           <button
             type="button"
             onClick={() => setMenuAnexo((v) => !v)}
@@ -989,7 +1176,7 @@ export default function ChatFiscoUI({
           {/* Barra que CRESCE conforme o texto, ate um limite (igual WhatsApp) */}
           <div
             className="flex-1 min-w-0 flex items-end rounded-3xl"
-            onClick={() => inputChatRef.current?.focus()}
+            onClick={() => { if (!gravacao) inputChatRef.current?.focus(); }}
             style={{
               minHeight: 52,
               paddingLeft: 18,
@@ -1006,9 +1193,38 @@ export default function ChatFiscoUI({
               border: bordaCampo,
             }}
           >
+            {gravacao && (
+              <div
+                className="flex-1 min-w-0 flex items-center"
+                style={{ minHeight: 40, gap: 10, fontSize: 16, color: "var(--text)" }}
+                aria-live="polite"
+              >
+                <span className="gravando-ponto" style={{ width: 10, height: 10, borderRadius: 99, background: "#ef4444", flexShrink: 0 }} />
+                <span style={{ fontVariantNumeric: "tabular-nums", minWidth: 36 }}>{tempoGravacao}</span>
+                {gravacao.travada ? (
+                  <button
+                    type="button"
+                    onClick={() => terminarGravacao(false)}
+                    className="toque"
+                    style={{ marginLeft: "auto", marginRight: 4, color: "#ef4444", fontSize: 15, fontWeight: 600 }}
+                  >
+                    Cancelar
+                  </button>
+                ) : (
+                  <span style={{ marginLeft: "auto", marginRight: 4, opacity: gravacao.cancelando ? 1 : 0.6, color: gravacao.cancelando ? "#ef4444" : "var(--text)", fontSize: 14, whiteSpace: "nowrap" }}>
+                    ‹ Deslize para cancelar
+                  </span>
+                )}
+                <style>{`
+                  @keyframes gravandoPisca { 0%,100% { opacity: 1 } 50% { opacity: 0.25 } }
+                  .gravando-ponto { animation: gravandoPisca 1s ease-in-out infinite; }
+                `}</style>
+              </div>
+            )}
             <textarea
               ref={inputChatRef}
               value={rascunho}
+              maxLength={LIMITE_PERGUNTA_CHAT}
               rows={1}
               onChange={(e) => {
                 setRascunho(e.target.value);
@@ -1020,6 +1236,7 @@ export default function ChatFiscoUI({
               }}
               className="flex-1 min-w-0 resize-none"
               style={{
+                display: gravacao ? "none" : undefined,
                 background: "none",
                 border: "none",
                 outline: "none",
@@ -1035,7 +1252,7 @@ export default function ChatFiscoUI({
               }}
             />
 
-            {rascunho.trim() || !MOSTRAR_ANEXOS_CHAT ? (
+            {(rascunho.trim() && !ouvindo) || !MOSTRAR_ANEXOS_CHAT ? (
               <button
                 type="submit"
                 aria-label="Enviar"
@@ -1054,12 +1271,31 @@ export default function ChatFiscoUI({
             ) : (
               <button
                 type="button"
-                aria-label="Mandar áudio para a Isa no WhatsApp"
-                onClick={() => onAnexo?.("audio")}
-                className="toque rounded-full flex items-center justify-center shrink-0"
-                style={{ width: 40, height: 40 }}
+                aria-label={gravacao?.travada ? "Enviar áudio" : "Segure para gravar áudio"}
+                disabled={digitando}
+                onPointerDown={(e) => { if (!gravacao) { e.preventDefault(); comecarGravacao(e); } }}
+                onPointerMove={moverGravacao}
+                onPointerUp={soltarGravacao}
+                onPointerCancel={() => { if (!gravRef.current.travada) terminarGravacao(false); }}
+                onClick={(e) => { e.stopPropagation(); if (gravacao?.travada) terminarGravacao(true); }}
+                onContextMenu={(e) => e.preventDefault()}
+                className="rounded-full flex items-center justify-center shrink-0"
+                style={{
+                  width: gravacao && !gravacao.travada ? 52 : 40,
+                  height: gravacao && !gravacao.travada ? 52 : 40,
+                  marginTop: gravacao && !gravacao.travada ? -6 : 0,
+                  marginBottom: gravacao && !gravacao.travada ? -6 : 0,
+                  background: gravacao ? "var(--primary)" : "transparent",
+                  transition: "width 160ms, height 160ms, background 160ms",
+                  touchAction: "none",
+                  WebkitUserSelect: "none",
+                  userSelect: "none",
+                  WebkitTouchCallout: "none",
+                }}
               >
-                <Mic size={20} strokeWidth={2.1} style={{ color: "var(--text)" }} />
+                {gravacao?.travada
+                  ? <Send size={20} strokeWidth={2.1} style={{ color: "#fff" }} />
+                  : <Mic size={gravacao ? 24 : 20} strokeWidth={2.1} style={{ color: gravacao ? "#fff" : "var(--text)" }} />}
               </button>
             )}
           </div>

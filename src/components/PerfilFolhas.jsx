@@ -1,4 +1,4 @@
-/* PERFILFOLHAS v2 — menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v1: linha com campo (Nome), aviso "fale com a gente" e a folha "Seu tipo de MEI", agora usados pelo Perfil e pelo Editar perfil (vieram do EditarPerfil.jsx, sem mudar o visual)) */
+/* PERFILFOLHAS v3 — botao "Falar com a Isa" (abria a Isa mas dizia WhatsApp) (v2: menos cor: janelas com fundo preto, sem barras cinza, item escolhido so mais claro (sem verde nem cinza); verde so no confirmar (v1: linha com campo (Nome), aviso "fale com a gente" e a folha "Seu tipo de MEI", agora usados pelo Perfil e pelo Editar perfil (vieram do EditarPerfil.jsx, sem mudar o visual))) */
 import { useState } from "react";
 import { ChevronRight, ChevronLeft, X } from "lucide-react";
 import Valor from "./Valor.jsx";
@@ -40,7 +40,7 @@ export function AvisoFaleConosco({ texto, onWhatsApp, onFechar, cardStyle }) {
           className="botao-confirmar w-full py-3 rounded-xl font-semibold transition active:scale-[0.99]"
           style={{ marginTop: 18, backgroundColor: "var(--primary)", color: "var(--primary-contrast)", fontSize: 15 }}
         >
-          Falar no WhatsApp
+          Falar com a Isa
         </button>
         <button
           onClick={onFechar}

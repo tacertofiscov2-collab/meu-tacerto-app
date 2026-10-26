@@ -1,6 +1,9 @@
-/* PILOTO v32 — atalhos antigos abrem a Isa no app; nenhum link externo de WhatsApp (v31: versão anterior) */
+/* PILOTO v34 — remove mensagem pronta de interesse no certificado (v33: versão anterior) */
 import { LABEL_TIPO } from "@/lib/fiscal";
 import { formatarCnpj, soDigitosCnpj } from "@/lib/cnpj";
+
+export const ISA_IA_ATIVA = true;
+export const FRASE_ISA_NAO_SEI = "Boa pergunta! Ainda não tenho essa resposta certinha. Vou passar sua dúvida para a equipe e te aviso aqui no app.";
 
 /* ===================================================================
    POR QUE ESTE ARQUIVO EXISTE (04/10/2026)
@@ -399,6 +402,16 @@ export const LINK_PGMEI =
    ------------------------------------------------------------------- */
 export const MOSTRAR_TUTORIAL_NOTA = true;
 
+/* Nota fiscal PROPRIA (NFS-e Nacional, server/nfse + /api/nfse/emitir).
+   true (26/10, para o Fernando testar): a Isa monta a nota pelo chat e a
+   tela /emitir-nota funciona. Sem certificado A1 o servidor esta no modo
+   SIMULADO (nota de teste, sem valor fiscal). DECIDIR antes do piloto real.
+   CODIGO_SERVICO_NOTA: codigo nacional do servico (cTribNac). 140101 =
+   conserto/manutencao de maquinas e aparelhos (usado no teste do MEI do
+   Fernando); o frete municipal do caminhoneiro tera outro codigo. */
+export const MOSTRAR_EMISSAO_PROPRIA = true;
+export const CODIGO_SERVICO_NOTA = "140101";
+
 /* v31 (12/10/2026, pedido do Fernando): o botao "Como emitir nota" SAI
    do topo do Inicio (fica so o sininho). As notas ficam no Perfil >
    Meu MEI > Notas fiscais. true volta com ele. */
@@ -523,12 +536,6 @@ export const MENSAGENS_WHATSAPP = {
     caminhoneiro
       ? `Oi Isa! Quero ajuda pra emitir uma nota fiscal. ${quemSou(d)}. Valor do frete: R$ ___. Para quem (empresa/CNPJ): ___`
       : `Oi Isa! Quero ajuda pra emitir uma nota fiscal. ${quemSou(d)}. Valor do servico: R$ ___. Para quem (empresa/CNPJ ou CPF): ___`,
-
-  /* Janela "Notas fiscais" (/notas-fiscais) e /como-emitir-nota,
-     botao "Tenho interesse no certificado". v20: preco de custo
-     R$ 100,34 (Tecnosign/Soluti); o agendamento e feito pelo WhatsApp. */
-  certificadoA1: (d) =>
-    `Oi Isa! Tenho interesse no Certificado Digital A1 (R$ 100,34, preco de custo) pra emitir nota automatica. Quero agendar a videochamada. ${quemSouComCnpj(d)}`,
 
   /* Inicio, painel da media limite: "Falar com a Isa no WhatsApp" */
   mediaLimite: (d) =>

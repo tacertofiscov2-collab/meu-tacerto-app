@@ -1,4 +1,4 @@
-/* NOTAS v3 — comprimirImagem exportada (o comprovante do "+" usa a mesma reducao da foto) (v2: nota ligada ao lancamento do velocimetro (ligarNotaAoLancamento, lancamentoDaNota; notas_fiscais.lancamento_id, com copia no aparelho ate o SQL de 10-10) e descricaoDoLancamentoDaNota ("Nota fiscal nº 12 · Cliente") (v1: notas fiscais lancadas a mao (e, no futuro, as emitidas pelo app))) */
+/* NOTAS v4 — registrarNotaEmitida: nota emitida pelo app entra sozinha em Notas (com o PDF) e soma no velocímetro (v3: comprimirImagem exportada (o comprovante do "+" usa a mesma reducao da foto) (v2: nota ligada ao lancamento do velocimetro (ligarNotaAoLancamento, lancamentoDaNota; notas_fiscais.lancamento_id, com copia no aparelho ate o SQL de 10-10) e descricaoDoLancamentoDaNota ("Nota fiscal nº 12 · Cliente") (v1: notas fiscais lancadas a mao (e, no futuro, as emitidas pelo app))) */
 import { supabase } from "@/lib/supabase";
 
 /* ===================================================================
@@ -201,4 +201,38 @@ export async function ligarNotaAoLancamento(userId, notaId, lancamentoId) {
 export function lancamentoDaNota(nota) {
   if (!nota) return null;
   return nota.lancamento_id || lerLigadas()[nota.id] || null;
+}
+
+/* v4: NOTA EMITIDA PELO APP (Isa ou tela Emitir nota). Ja guarda em Notas,
+   com o PDF, e soma no velocimetro (nota emitida = dinheiro do CNPJ).
+   Nota de teste aparece com "(teste)" para ser apagada depois.
+   Devolve { notaId, lancamentoId }; erro em uma parte nao derruba a outra. */
+export async function registrarNotaEmitida(userId, adicionarLancamento, n) {
+  const data = new Date().toISOString();
+  const numero = n.numero ? String(n.numero) : String(n.chaveAcesso || "").slice(-9) || null;
+  let arquivo = null;
+  if (n.pdfBase64) {
+    try {
+      const bytes = Uint8Array.from(atob(n.pdfBase64), (c) => c.charCodeAt(0));
+      arquivo = new File([bytes], `nota-${numero || "emitida"}.pdf`, { type: "application/pdf" });
+    } catch { arquivo = null; }
+  }
+  let notaId = null;
+  if (userId) {
+    try {
+      const linha = await lancarNota(userId, {
+        numero, data, valor: n.valor,
+        tomadorNome: n.tomadorNome || "", tomadorDocumento: n.tomadorDocumento || "",
+        descricao: `${n.descricao}${n.teste ? " (teste, sem valor fiscal)" : ""}`, arquivo,
+      });
+      notaId = linha?.id || null;
+    } catch { notaId = null; }
+  }
+  let lancamentoId = null;
+  try {
+    const desc = descricaoDoLancamentoDaNota({ numero, tomador_nome: n.tomadorNome }) + (n.teste ? " (teste)" : "");
+    lancamentoId = await adicionarLancamento({ descricao: desc, valor: n.valor, data, tem_nota: true });
+  } catch { lancamentoId = null; }
+  if (notaId && lancamentoId) await ligarNotaAoLancamento(userId, notaId, lancamentoId);
+  return { notaId, lancamentoId };
 }

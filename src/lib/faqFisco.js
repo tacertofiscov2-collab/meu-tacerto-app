@@ -1,4 +1,4 @@
-/* FAQFISCO v5 — "Perfil > Calcular" vira "Mais > Calcular" (Bloco 3) (v4: nada fala "Receita" (decisao do Fernando, 12/10): "pro limite do MEI, o que conta é o valor recebido", "Preciso avisar o governo?", "você passa a ser tratado como Microempresa o ano inteiro", "Posso levar multa?" e "Se o governo descobrir antes de você comunicar"; as perguntas trocadas guardam o texto antigo em "antes" e responderPergunta continua achando a MESMA resposta por ele (v3: chat da Isa no app: responderPergunta (pergunta pronta exata ou palavra-chave; sem resposta = achou false, o chat mostra o botao do WhatsApp) e FRASE_NAO_SEI; respostas alinhadas as regras de 08-10 e 10-10 (nota fiscal do caminhoneiro, prazo da DASN desde o comeco do ano ate 31 de maio, Calcular no Perfil) (v2: vencimento do DAS certo: dia 20, prorroga para o proximo dia util (antes dizia "antecipa"))) */
+/* FAQFISCO v7 — 2027: nota para pessoa fisica continua dispensada (Decreto 13.140/2026) (v6: resposta sobre CT-e sem mencionar certificado (v5: versão anterior) */
 import { LIMITES_ANUAIS, limiteAte20Percent } from "./fiscal.js";
 
 const fmt = (v) =>
@@ -304,8 +304,8 @@ const GERAIS = [
       ehCaminhoneiro(c) ? "Preciso emitir CT-e em todo frete?" : "Preciso emitir nota fiscal?",
     resposta: (c) =>
       ehCaminhoneiro(c)
-        ? `Depende do frete. Na mesma cidade: nota de serviço (NFS-e). Entre cidades, contratado direto por você: CT-e (precisa de Inscrição Estadual e certificado digital). Agregado de transportadora em MG, sem Inscrição Estadual: hoje quem emite é a transportadora. A partir de 2027, o MEI vai ter que emitir nota em todo serviço.\n\nE atenção: emitir ou não documento não muda o seu limite — o que conta é o valor que você recebeu.`
-        : `Pra empresa (pessoa jurídica), sim, é obrigatório emitir. Pra pessoa física (cliente comum), hoje não é obrigatório — só se ele pedir. A partir de 2027, o MEI vai ter que emitir nota em toda venda e serviço.\n\nMas atenção: emitir ou não nota não muda o seu limite. O que conta é o valor que você recebeu.`,
+        ? `Depende do frete. Na mesma cidade: nota de serviço (NFS-e). Entre cidades, contratado direto por você: CT-e (precisa de Inscrição Estadual). Agregado de transportadora em MG, sem Inscrição Estadual: hoje quem emite é a transportadora. Em 2027 continua assim: para empresa é obrigatória, para pessoa física não.\n\nE atenção: emitir ou não documento não muda o seu limite — o que conta é o valor que você recebeu.`
+        : `Pra empresa (pessoa jurídica), sim, é obrigatório emitir. Pra pessoa física (cliente comum), hoje não é obrigatório — só se ele pedir. Em 2027 continua assim (decreto publicado em 21/10/2026).\n\nMas atenção: emitir ou não nota não muda o seu limite. O que conta é o valor que você recebeu.`,
   },
   {
     id: "g4",

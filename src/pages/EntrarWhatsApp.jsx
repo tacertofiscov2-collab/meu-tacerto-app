@@ -1,4 +1,4 @@
-/* ENTRARWHATSAPP v5 — igual ao onboarding novo: quadradinhos do codigo sem verde (so mais claros), botoes maiores, letras maiores, links dos Termos sem verde (v4: testes sem limite: qualquer 37 00000-0001 a 9999 e qualquer codigo de 6 numeros (ehTelefoneTeste) (v3: ponte do modo teste: numeros de teste entram sem o login por telefone do painel (contaDoNumeroTeste) (v2: aceita TELEFONES_TESTE e aviso no rodape; v1: login so pelo WhatsApp)) */
+/* ENTRARWHATSAPP v7 — toque nos botões preserva foco até o clique, sem deslocar o formulário (v6: código recebe foco pelo toque) */
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { Gauge } from "lucide-react";
@@ -318,6 +318,11 @@ export default function EntrarWhatsApp() {
     <div
       className="tela-rolavel w-full flex flex-col"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
+      onMouseDown={(e) => {
+        // O blur recolhe a folga de focus-within antes do clique no Safari.
+        // Mantém o campo em foco até a ação do botão, sem mover seu alvo.
+        if (e.target.closest("button")) e.preventDefault();
+      }}
     >
       <div className="conteudo-rolavel hide-scrollbar flex flex-col px-6 pb-6">
         <TopoRolavel titulo="" simples onVoltar={voltar} />
@@ -392,7 +397,7 @@ export default function EntrarWhatsApp() {
                     inputMode="numeric"
                     autoComplete="one-time-code"
                     value={codigo}
-                    autoFocus
+                    // No iPhone, foco após await pode não abrir o teclado; aguarda o toque.
                     onFocus={aoFocarCodigo}
                     onChange={aoDigitarCodigo}
                     onKeyDown={(e) => { if (e.key === "Enter") conferirCodigo(); }}

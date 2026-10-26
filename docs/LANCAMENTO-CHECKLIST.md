@@ -1,4 +1,4 @@
-<!-- /* LANCAMENTO-CHECKLIST v1 — pendências antes do piloto; nenhuma mudança remota executada */ -->
+<!-- /* LANCAMENTO-CHECKLIST v2 — passos para ligar a Isa com IA (v1: pendências do piloto) */ -->
 # Antes de começar o piloto
 
 Esta lista registra o que falta. Não autoriza executar SQL, publicar funções,
@@ -9,8 +9,7 @@ no repositório e precisam ser publicadas depois da revisão.
   ainda faltar, com autorização do Fernando e cópia de segurança. O SQL de
   08-10 já consta como executado no HANDOFF; conferir antes de repetir.
   O `SQL-PENDENTE-BLOCO4.sql` ainda não foi executado.
-- [ ] Preparar/revisar o Bloco 6 e publicar a função `isa-chat`. Se o código
-  ainda não existir nesta branch, ele precisa ser concluído antes de publicar.
+- [ ] Revisar o Bloco 6 e seguir os passos de ativação da Isa abaixo.
 - [ ] Publicar `ler-comprovante`, com padrão `claude-haiku-5-5`. Conferir se
   `MODELO_COMPROVANTE` já está definido: esse segredo prevalece sobre o padrão.
 - [ ] Publicar `aviso-semanal` e conferir o agendamento e a entrega dos avisos.
@@ -29,8 +28,8 @@ no repositório e precisam ser publicadas depois da revisão.
 - [ ] Religar o **Require Log In** da Vercel.
 - [ ] Deixar o repositório do GitHub **PRIVADO**: há senhas de teste no
   `CLAUDE.md`. Trocar essas senhas antes de usar contas com dados reais.
-- [ ] Revisar os Blocos 4, 5, 6 e 7, incluindo os textos e ações do chat
-  (`ChatFiscoPagina.jsx` e `ChatFiscoUI.jsx` ficaram para o Bloco 6).
+- [ ] Revisar os Blocos 4, 5, 6 e 7. O chat do Bloco 6 já foi preparado,
+  com IA desligada, sem saída para WhatsApp e com ditado para conferir.
 - [ ] Conferir as telas no iPhone (390 × 844) e o Console. Essa conferência
   foi adiada a pedido do Fernando; nenhum servidor foi iniciado nesta sessão.
 - [ ] Levar as alterações aprovadas das branches `codex/bloco-*` para
@@ -42,3 +41,32 @@ Cuidados da exclusão: erro na limpeza preserva a conta para nova tentativa;
 arquivos que já tiverem sido apagados não são restaurados automaticamente.
 A integração Pluggy continua desligada; antes de religá-la, concluir também
 a desconexão dos bancos ao excluir a conta.
+
+## Para ligar a Isa com IA
+
+Tudo abaixo continua pendente. Fazer somente com autorização do Fernando.
+
+1. Rodar `docs/SQL-PENDENTE-BLOCO6.sql`, seguindo a rotina de cópia e
+   conferência do `CLAUDE.md`. Registrar depois em `src/supabase/migrations.sql`.
+2. Rodar `node scripts/gerar-base-mei.mjs` antes de publicar, especialmente se
+   a apostila tiver mudado. Publicar a função `isa-chat` com `index.ts` e
+   `base-mei.ts`. A apostila `base-mei.md` não precisa ser lida pelo servidor.
+3. Conferir `ANTHROPIC_API_KEY` (já criada) nos segredos; `MODELO_ISA` é
+   opcional e substitui o padrão `claude-haiku-5-5`. Nunca usar a chave
+   `service_role` no app; ela é usada somente na função, após conferir o login.
+4. Testar uma pergunta com token de uma conta de teste. Conferir a resposta,
+   o contador em `isa_uso` e uma dúvida fora da apostila em
+   `isa_duvidas_pendentes`. Conferir também falha de chave/tabela e limite diário.
+5. Só depois mudar `ISA_IA_ATIVA` de `false` para `true` em
+   `src/config/piloto.js`, fazer build, checar WhatsApp e enviar a mudança
+   quando autorizado. Para desligar, voltar a chave para `false`.
+
+O limite é de 30 tentativas de IA por pessoa por dia de Brasília. A tentativa
+é reservada antes da chamada: falha da IA também consome uma posição, evitando
+gastos repetidos. Sem a chave ou as tabelas, a IA não é chamada. Erro na IA
+faz o app usar a resposta pronta; se não houver, guarda a dúvida no aparelho.
+Com a chave desligada, as conversas novas e dúvidas ficam somente no aparelho,
+sem envio automático à equipe. Não há importação automática dessas dúvidas.
+Reconhecimento de voz depende do navegador; ele apenas escreve no campo e
+nunca envia a pergunta sozinho. A conferência no iPhone e o teste real da função
+continuam pendentes; nenhum servidor foi iniciado nem função publicada.

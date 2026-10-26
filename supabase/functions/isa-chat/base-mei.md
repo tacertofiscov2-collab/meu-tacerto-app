@@ -1,4 +1,4 @@
-# BASE-MEI v1 — apostila da Isa (atualizada em 16/10/2026)
+# BASE-MEI v4 — apostila da Isa (atualizada em 26/10/2026: LC 238, Decreto 13.140, check-up, nota)
 
 Este texto é tudo o que a Isa sabe sobre MEI. Ela responde SÓ com o que
 está aqui e com os dados da pessoa que o app mandar junto (tipo de MEI,
@@ -29,7 +29,12 @@ faturado no ano, limite, CNAEs, valor do DAS).
   anunciada e que **ainda não vale**.
 - Não é assunto de MEI (receita de bolo, política, outra empresa):
   diga com gentileza que só ajuda com o MEI e o app.
-- Dúvida sobre o app (onde fica algo): use a seção 10.
+- Dúvida sobre o app (onde fica algo ou como fazer): use a seção 13.
+- **Você não mexe nos dados da pessoa** (não apaga, não lança, não muda nada).
+  Se ela pedir para você FAZER algo no app, diga isso em uma frase e ensine
+  o passo a passo da seção 13 para ela mesma fazer. Exceções: check-up do
+  CNPJ e montar nota fiscal (seção 14), que você faz aqui no chat. Só use "Vou passar sua
+  dúvida para a equipe" quando a resposta não estiver nesta apostila.
 
 ---
 
@@ -44,8 +49,11 @@ faturado no ano, limite, CNAEs, valor do DAS).
 - **Ano em que abriu o MEI:** o limite é proporcional aos meses (conta o
   mês da abertura inteiro): R$ 6.750 por mês no MEI comum e
   R$ 20.966,67 por mês no Caminhoneiro.
-- Hoje o limite **continua R$ 81 mil** (ver seção 9 sobre o aumento
-  anunciado).
+- **2026: continua R$ 81 mil.** A Lei Complementar 238/2026 (publicada
+  em 21/10/2026) sobe o limite do MEI comum para **R$ 110 mil em 2027**
+  (R$ 9.166,67 por mês no ano da abertura) e **R$ 140 mil a partir de
+  2028** (R$ 11.666,67 por mês). Para o MEI Caminhoneiro a lei não falou
+  de limite novo: continua R$ 251.600 até sair regra diferente.
 
 ## 3. Se passar do limite
 
@@ -123,15 +131,20 @@ faturado no ano, limite, CNAEs, valor do DAS).
   transportadora em MG, sem Inscrição Estadual: hoje quem emite é a
   transportadora.
 - Emitir ou não nota **não muda o limite**: conta o valor recebido.
+- Mesmo quando não é obrigatória, a nota ajuda a provar o faturamento.
+  No TaCerto!, nota emitida pelo app já entra em Notas e soma no
+  velocímetro.
 
 **O que muda em 2027:**
 - A Resolução CGSN 190/2026 previa nota em **todas** as vendas e serviços
   do MEI a partir de 1º de janeiro de 2027.
-- Em **13/10/2026** o governo **anunciou um decreto** mantendo o MEI
-  **dispensado de nota para pessoa física**. Até 16/10/2026 o texto
-  **ainda não tinha sido publicado**. Diga que foi anunciado e que a
-  regra final depende da publicação.
-- Para **empresa**, a nota continua **obrigatória**.
+- Mas o **Decreto 13.140/2026** (publicado em 21/10/2026), junto com a
+  Resolução CGSN 195/2026, deixou o MEI usar a **declaração anual
+  (DASN-SIMEI) como documento fiscal** nas vendas e serviços para
+  **pessoa física**. Resumo para 2027: para **pessoa física**, a nota
+  continua **dispensada**; para **empresa**, continua **obrigatória**.
+- A partir de 2027 a nota do MEI ganha os campos de CBS e IBS (o
+  emissor preenche; o MEI não calcula nada separado).
 
 ## 8. Reforma tributária (IBS e CBS) para o MEI
 
@@ -145,17 +158,24 @@ faturado no ano, limite, CNAEs, valor do DAS).
   do MEI (R$ 40.500 por ano) e que não é MEI não paga IBS/CBS. Não é o
   caso de quem já tem MEI.
 
-## 9. Anunciado em 13/10/2026 e que AINDA NÃO VALE
+## 9. Lei Complementar 238/2026 e o que ainda não vale
 
-O governo anunciou um pacote para o MEI. Nada disso vale ainda:
-- **Perdão de dívidas** do MEI com o governo: depende de lei aprovada
-  no Congresso. **Até lá, as dívidas continuam sendo cobradas**: vale
-  continuar pagando ou parcelando.
-- **Limite maior:** R$ 110 mil em 2027 e R$ 140 mil em 2028. Depende de
-  lei no Congresso. **Hoje continua R$ 81 mil.**
+A LC 238/2026 foi publicada em 21/10/2026 (já é lei):
+- **Perdão de dívidas:** perdoa as dívidas do MEI com o governo federal
+  (DAS, com juros e multas) de até 13/10/2026, inclusive parceladas ou
+  na Justiça. Vale a partir de **1º de janeiro de 2027**. Condição:
+  pagar em dia os DAS que vencerem nos 6 meses seguintes; atrasando,
+  pode perder o perdão. Quem já pagou não recebe de volta. Como pedir
+  ainda vai ser regulamentado.
+- **Limite maior:** R$ 110 mil em 2027 e R$ 140 mil em 2028 (MEI comum).
+  **Em 2026 continua R$ 81 mil.**
+- **Empregados:** até 2 para MEI de indústria, comércio ou serviço no
+  meio rural; os demais continuam com 1. Início ainda vai ser
+  regulamentado.
+
+Ainda NÃO vale (só anunciado):
 - **Pix MEI** de até R$ 5 mil para equipamentos: regras ainda não
   divulgadas.
-- **Decreto da nota fiscal** para pessoa física: ver seção 7.
 - **Negociação de dívidas com bancos e lojas** (Desenrola): depende de
   edital.
 
@@ -191,17 +211,38 @@ O governo anunciou um pacote para o MEI. Nada disso vale ainda:
   com controle de entradas e saídas.
 - No app, a tela **Mais > Calcular** faz essa conta.
 
-## 13. Onde fica cada coisa no app TaCerto!
+## 13. Onde fica cada coisa no app TaCerto! (passo a passo)
 
-- **Velocímetro (Início):** mostra quanto do limite do ano já foi usado.
-- **"+" (meio do rodapé):** lançar um recebimento (pergunta se teve nota)
-  ou um gasto.
-- **Notas (rodapé):** notas fiscais guardadas e como emitir.
-- **Isa (rodapé):** este chat.
-- **Mais (rodapé):** Meu MEI (DAS, declaração, Calcular), Minha conta,
-  Ajuda, Sair e Excluir conta.
-- **Enviar extrato:** o app lê o extrato do banco e pergunta o que é
+O rodapé do app tem 5 botões: **Início**, **Notas**, **+** (verde, no meio),
+**Isa** e **Mais**.
+
+- **Ver o limite:** Início > velocímetro (quanto do limite do ano já usou).
+- **Lançar um recebimento:** toque no **+** verde > escolha recebimento >
+  responda se teve nota fiscal > valor, data e quem pagou > confirmar.
+- **Lançar um gasto:** toque no **+** verde > gasto.
+- **Ver todos os lançamentos:** Início > em "Últimos lançamentos" toque em
+  **Ver todos** (ou Mais > Histórico de lançamentos).
+- **Editar um lançamento:** na lista de lançamentos, toque no **lápis** ao
+  lado do valor, corrija e salve.
+- **Apagar um lançamento:** na lista de lançamentos, toque na **lixeira**
+  ao lado do valor e confirme. É um de cada vez: o app não tem botão para
+  apagar todos de uma vez.
+- **Começar do zero (apagar tudo):** só excluindo a conta e criando outra
+  (Mais > Excluir conta). Isso apaga tudo e não volta.
+- **Enviar extrato do banco:** o app lê o extrato e pergunta o que é
   faturamento. Nada entra no faturamento sem a pessoa confirmar.
+- **DAS:** Mais > DAS (valor, vencimento e como pagar).
+- **Declaração anual:** Mais > Declaração anual.
+- **Calcular (IR e lucro):** Mais > Calcular. Simulador: Mais > Simulador.
+- **Emitir nota fiscal:** peça aqui para a Isa (ela monta e aparece o botão
+  Emitir no chat). A nota emitida entra sozinha em **Notas** e soma no
+  velocímetro.
+- **Notas fiscais:** botão **Notas** (todas as notas guardadas).
+- **Nome, WhatsApp, abertura:** Mais > toque no item para editar.
+- **Tipo de MEI** (comum ou caminhoneiro): aparece em Mais; se precisar
+  mudar, peça ajuda pelo Suporte.
+- **Ajuda:** Mais > Suporte. **Rever o tutorial:** Mais > Rever tutorial.
+- **Sair:** Mais > Sair da conta. **Excluir conta:** Mais > Excluir conta.
 
 ---
 
@@ -216,10 +257,18 @@ O governo anunciou um pacote para o MEI. Nada disso vale ainda:
   inadimplente).
 - Lei 8.213/1991 e EC 103/2019 (benefícios e carências do INSS).
 - Decreto 12.797/2025 (salário mínimo de 2026).
-- Anúncio do governo de 13/10/2026 (pacote do MEI): decreto e projetos
-  ainda não publicados até 16/10/2026.
+- Lei Complementar 238/2026 (21/10/2026): perdão das dívidas, limite de
+  R$ 110 mil (2027) e R$ 140 mil (2028), até 2 empregados no meio rural.
+- Decreto 13.140/2026 e Resolução CGSN 195/2026 (21/10/2026): DASN-SIMEI
+  como documento fiscal para pessoa física; nanoempreendedor sem CNPJ.
 
-**A CONFERIR quando publicar:** o texto do decreto da nota fiscal e o
-número do projeto de lei do perdão das dívidas e do limite novo. Ao sair o
+**A CONFERIR:** regulamentação do perdão (como pedir) e limite do MEI
+Caminhoneiro em 2027. Ao sair o
 salário mínimo de 2027, trocar os valores do DAS (seção 4) e o
 `DAS_2026` em `src/lib/fiscal.js`.
+
+## 14. O que a Isa consegue fazer sozinha
+
+- **Check-up do CNPJ:** consulta na hora os dados públicos do CNPJ da pessoa (situação, se continua no MEI e no Simples, atividades, cidade). Não mostra DAS em atraso nem declaração pendente: isso só no app MEI ou no Portal do Empreendedor.
+- **Montar nota fiscal de serviço:** quando a pessoa pede, a Isa pergunta o que faltar (valor e o que foi feito; para empresa, o CNPJ de quem pagou) e monta a nota para ela conferir e tocar Emitir.
+- **Data e hora:** a Isa sabe o dia e a hora de agora; use para prazos (ex.: quantos dias faltam para o dia 20).

@@ -1,4 +1,4 @@
-/* WELCOME v18 — slides mostram avisos do DAS e check-up do CNPJ; dúvidas ficam no app (v17: versão anterior) */
+/* WELCOME v22 — celular até 70% da tela, proporcional e bloco centralizado (v21: mini-Início e cinco opções da nota) */
 /* ===================================================================
    TELA DE BOAS-VINDAS (antes do login/cadastro)
 
@@ -75,18 +75,19 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import {
-  Gauge, ArrowLeft, ChevronRight, ChevronDown, Send, Mic,
+  Gauge, ArrowLeft, ChevronRight, ChevronDown,
   ArrowDownLeft, ArrowUpRight, CalendarCheck, FileText, Check, CheckCheck,
-  MessageCircle, Headphones, ListChecks, Globe, Zap, CheckCircle2,
+  MessageCircle, Headphones, ListChecks, Globe, CheckCircle2,
 } from "lucide-react";
 import useTemaEscuroForcado from "@/hooks/useTemaEscuroForcado";
 import { supabase } from "@/lib/supabase";
 import { estaInstalado } from "@/lib/notificacoesCelular";
 import { FOTO_ISA_256 } from "@/components/FotoIsa";
 import SimboloPluggy from "@/components/SimboloPluggy";
+import { UltimosLancamentos, MEDIDAS_INICIO } from "@/components/InicioPartes";
 import {
   MOSTRAR_OPEN_FINANCE, MOSTRAR_SAIDAS, MOSTRAR_HISTORICO_DAS, MOSTRAR_NOTAS_FISCAIS,
-  MOSTRAR_CHAT_FISCO, MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA,
+  MOSTRAR_CARD_DAS, MOSTRAR_TUTORIAL_NOTA,
 } from "@/config/piloto";
 
 const VERDE = "var(--primary)";
@@ -132,10 +133,11 @@ const VIDRO = {
    encolhendo como antes.
    =================================================================== */
 const ZOOM_SLIDES = 1.1;
-const MOLDURA_MAX = 390;
+const MOLDURA_MAX = 300;
+const LARGURA_MOLDURA = 272;
 
 function useEscalaComum(molduraRef, caixasRef, quantos) {
-  const [ajuste, setAjuste] = useState({ escala: 1, altura: null });
+  const [ajuste, setAjuste] = useState({ escala: 1, altura: null, escalaNota: 1, alturaNota: null });
 
   useLayoutEffect(() => {
     const moldura = molduraRef.current;
@@ -162,10 +164,22 @@ function useEscalaComum(molduraRef, caixasRef, quantos) {
       // v11: amplia ate ZOOM_SLIDES; encolhe se nao couber
       const escala = Math.min(ZOOM_SLIDES, disponivel / maior);
       const altura = disponivel / escala;
+      // A nota fica fora da escala comum, mas também precisa caber inteira.
+      let maiorNota = 0;
+      caixasRef.current.slice(0, quantos).filter((c) => c?.dataset.foraDaEscala).forEach((caixa) => {
+        const antes = { h: caixa.style.height, w: caixa.style.width };
+        caixa.style.height = "auto";
+        caixa.style.width = `${100 / escala}%`;
+        maiorNota = Math.max(maiorNota, caixa.scrollHeight);
+        caixa.style.height = antes.h;
+        caixa.style.width = antes.w;
+      });
+      const escalaNota = maiorNota ? Math.min(escala, disponivel / maiorNota) : escala;
+      const alturaNota = disponivel / escalaNota;
       setAjuste((a) =>
-        a.altura && Math.abs(a.altura - altura) < 0.5 && Math.abs(a.escala - escala) < 0.002
+        a.altura && Math.abs(a.altura - altura) < 0.5 && Math.abs(a.escala - escala) < 0.002 && Math.abs(a.escalaNota - escalaNota) < 0.002
           ? a
-          : { escala, altura },
+          : { escala, altura, escalaNota, alturaNota },
       );
     };
 
@@ -182,16 +196,18 @@ function useEscalaComum(molduraRef, caixasRef, quantos) {
 /* O desenho dentro da moldura, com a escala comum (ver acima). */
 function MiniNaMoldura({ ajuste, caixaRef, foraDaEscala = false, children }) {
   // v11: a escala pode ser maior que 1 (zoom das letras)
-  const encolhe = ajuste.escala !== 1;
+  const escala = foraDaEscala ? ajuste.escalaNota : ajuste.escala;
+  const altura = foraDaEscala ? ajuste.alturaNota : ajuste.altura;
+  const encolhe = escala !== 1;
   return (
     <div
       ref={caixaRef}
       data-fora-da-escala={foraDaEscala ? "1" : undefined}
       className="flex flex-col"
       style={{
-        height: ajuste.altura ?? "100%",
-        width: encolhe ? `${100 / ajuste.escala}%` : "100%",
-        transform: encolhe ? `scale(${ajuste.escala})` : undefined,
+        height: altura ?? "100%",
+        width: encolhe ? `${100 / escala}%` : "100%",
+        transform: encolhe ? `scale(${escala})` : undefined,
         transformOrigin: "top left",
       }}
     >
@@ -328,6 +344,11 @@ function LinhaMov({ entrada, quando }) {
 
 /* ------------------------------ 1. LIMITE ------------------------------ */
 function MiniInicio() {
+  // A peça real é reduzida por inteiro, sem alterar suas medidas compartilhadas.
+  const m = MEDIDAS_INICIO.ultimos;
+  // A barra antiga ocupava 44 px + 12 px: preserva a altura natural de 314 px.
+  const alturaUltimos = 56;
+  const escalaUltimos = alturaUltimos / (m.titulo + m.linha + m.margemCima + m.margemBaixo);
   return (
     <MiniTela>
       <div className="flex items-center justify-between shrink-0" style={{ marginBottom: 12 }}>
@@ -366,22 +387,18 @@ function MiniInicio() {
         </div>
       </div>
 
-      {/* Isa + barra do chat, no pé */}
-      <div className="flex items-center gap-2 shrink-0" style={{ marginTop: "auto", paddingTop: 12 }}>
-        <FotoFisco tamanho={44} />
-        <span
-          className="flex-1 min-w-0 rounded-full flex items-center gap-2"
-          style={{ ...VIDRO, border: "1px solid rgba(34,197,94,0.35)", height: 30, padding: "0 10px" }}
+      {/* Mesma peça do Início, só ilustrativa; a moldura mantém sua altura. */}
+      <div className="welcome-ultimos-mini relative shrink-0 overflow-hidden" style={{ marginTop: "auto", height: alturaUltimos }}>
+        <style>{`
+          .welcome-ultimos-mini [data-alvo="ultimos"] { height: ${m.titulo + m.linha}px !important; }
+          .welcome-ultimos-mini [data-alvo="ultimos"] > span:nth-of-type(n + 2) { display: none; }
+        `}</style>
+        <div
+          className="absolute top-0 left-0 flex flex-col"
+          style={{ width: `${100 / escalaUltimos}%`, transform: `scale(${escalaUltimos})`, transformOrigin: "top left" }}
         >
-          <span
-            className="flex-1 truncate"
-            style={{ color: "var(--text-tertiary)", fontSize: 10.5, fontStyle: "italic", fontFamily: '"Comic Neue", "Chalkboard SE", "Comic Sans MS", cursive' }}
-          >
-            {/* Sem o chat no app, a Isa atende pelo WhatsApp */}
-            {MOSTRAR_CHAT_FISCO ? "Pergunte à Isa..." : "Isa no app"}
-          </span>
-          <Send size={12} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
-        </span>
+          <UltimosLancamentos exemplo />
+        </div>
       </div>
     </MiniTela>
   );
@@ -532,42 +549,16 @@ function MiniDas() {
   );
 }
 
-/* --------------------------- 3. NOTA (v9) ---------------------------
-   A tela "Como emitir sua nota": o Fisco.ia ajuda pelo WhatsApp ou a
-   pessoa faz sozinha. Sem a nota automatica (Certificado A1): no piloto
-   ela e so "em breve" e o slide nao pode prometer.
-
-   v9 (05/10/2026) — pedido do Fernando: sobrava muito espaco preto entre
-   o "Fazer sozinho" e o botao do pe. Agora:
-   - o botao "Chamar o Fisco.ia" fica DENTRO do card do Fisco.ia (como
-     na pagina real /como-emitir-nota) e saiu o selo "Gratis";
-   - o "Fazer sozinho" aparece aberto, com 3 passos curtos, e e ele que
-     CRESCE para ocupar a sobra (flexGrow): os passos se espalham por
-     igual, sem vao preto.
-
-   v10 (05/10/2026) — CORRECAO: no iPhone (letra um pouco maior que no
-   PC) a v9 virou o desenho MAIS ALTO, e como a escala e uma so para
-   todos (useEscalaComum), os 5 slides encolheram. Agora este slide fica
-   FORA da conta da escala (foraDaEscala em SLIDES): os slides 1, 2, 4 e
-   5 voltam a ser exatamente como antes. Ele so usa a escala que os
-   outros definirem e se ajusta ao espaco: o "Fazer sozinho" cresce
-   quando sobra e encolhe (minHeight 0) quando falta. Passos curtos, sem
-   quebrar linha.
-
-   v12 (05/10/2026) — pedido do Fernando: o "Fazer sozinho" estava mal
-   explicado, e o slide tem que mostrar que o Fisco.ia EMITE a nota do
-   jeito que a pessoa quiser (audio, mensagem, automatica). Agora sao 4
-   opcoes do mesmo tamanho, cada uma com titulo + uma frase curta
-   (destaque discreto so na primeira, DESTAQUE_BORDA), e no pe o
-   resultado: "Nota emitida / Guarde o PDF na aba Notas". A lista
-   cresce para ocupar a sobra (flexGrow) e continua FORA da escala
-   comum (foraDaEscala): os outros slides nao mudam por causa dela. */
+/* MiniNota: cinco opcoes e o card do pe, com gap fixo de 6 px.
+   foraDaEscala permanece: usa a escala comum sem altera-la.
+   Espaco extra fica ao redor do grupo, sem afastar as opcoes. */
 function MiniNota() {
   const opcoes = [
-    { Icon: Mic, t: "Por áudio", d: "Você fala, a Isa emite" },
-    { Icon: MessageCircle, t: "Por mensagem", d: "Só o valor e para quem foi" },
-    { Icon: Zap, t: "Automática", d: "Todo mês, sem digitar nada" },
-    { Icon: ListChecks, t: "Sozinho", d: "Passo a passo no gov.br" },
+    { Icon: ListChecks, t: "Passo a passo", d: "Emita pelo gov.br sem se perder" },
+    { Icon: MessageCircle, t: "Tire dúvidas com a Isa", d: "Ela responde aqui no app" },
+    { Icon: FileText, t: "Guarde suas notas", d: "Foto ou PDF, tudo num lugar" },
+    { Icon: CheckCircle2, t: "Selo com nota", d: "Saiba o que já tem nota" },
+    { Icon: CalendarCheck, t: "Histórico de notas", d: "Veja quanto já emitiu no ano" },
   ];
   return (
     <MiniTela>
@@ -577,30 +568,32 @@ function MiniNota() {
         Do jeito que você quiser
       </p>
 
-      {/* opcoes: mesmo tamanho; a lista cresce para ocupar a sobra */}
-      <div className="flex flex-col" style={{ gap: 5, flexGrow: 1, justifyContent: "space-evenly", minHeight: 0 }}>
-        {opcoes.map(({ Icon, t, d }, i) => (
-          <div
-            key={t}
-            className="rounded-xl flex items-center gap-2.5 shrink-0"
-            style={{ padding: "6px 9px", border: `1px solid ${i === 0 ? DESTAQUE_BORDA : "var(--card-borda)"}` }}
-          >
-            <Icon size={14} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
-            <span className="flex-1 min-w-0">
-              <span className="block font-bold truncate" style={{ color: "var(--text)", fontSize: 11, lineHeight: 1.25 }}>{t}</span>
-              <span className="block truncate" style={{ color: "var(--text-secondary)", fontSize: 9.5, lineHeight: 1.3 }}>{d}</span>
-            </span>
-          </div>
-        ))}
-      </div>
+      {/* A sobra fica ao redor do grupo, nunca entre as opções. */}
+      <div style={{ marginBlock: "auto" }}>
+        <div className="flex flex-col" style={{ gap: 6 }}>
+          {opcoes.map(({ Icon, t, d }, i) => (
+            <div
+              key={t}
+              className="rounded-xl flex items-center gap-2.5 shrink-0"
+              style={{ padding: "4px 9px", border: `1px solid ${i === 0 ? DESTAQUE_BORDA : "var(--card-borda)"}` }}
+            >
+              <Icon size={14} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
+              <span className="flex-1 min-w-0">
+                <span className="block font-bold truncate" style={{ color: "var(--text)", fontSize: 11, lineHeight: 1.25 }}>{t}</span>
+                <span className="block truncate" style={{ color: "var(--text-secondary)", fontSize: 9.5, lineHeight: 1.3 }}>{d}</span>
+              </span>
+            </div>
+          ))}
+        </div>
 
-      {/* no pe: o resultado */}
-      <div className="rounded-xl flex items-center gap-2.5 shrink-0" style={{ ...CARD, marginTop: 8, padding: "7px 9px" }}>
-        <CheckCircle2 size={16} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
-        <span className="flex-1 min-w-0">
-          <span className="block font-bold" style={{ color: "var(--text)", fontSize: 11, lineHeight: 1.25 }}>Nota emitida</span>
-          <span className="block truncate" style={{ color: "var(--text-secondary)", fontSize: 9.5, lineHeight: 1.3 }}>PDF direto no seu WhatsApp</span>
-        </span>
+        {/* no pe: o resultado */}
+        <div className="rounded-xl flex items-center gap-2.5 shrink-0" style={{ ...CARD, marginTop: 6, padding: "5px 9px" }}>
+          <CheckCircle2 size={16} strokeWidth={2.2} style={{ color: VERDE }} className="shrink-0" />
+          <span className="flex-1 min-w-0">
+            <span className="block font-bold" style={{ color: "var(--text)", fontSize: 11, lineHeight: 1.25 }}>Notas organizadas</span>
+            <span className="block truncate" style={{ color: "var(--text-secondary)", fontSize: 9.5, lineHeight: 1.3 }}>Guarde o PDF na aba Notas</span>
+          </span>
+        </div>
       </div>
     </MiniTela>
   );
@@ -765,7 +758,7 @@ const SLIDES = [
   { Mini: MiniInicio, titulo: "Limite sob controle 24h", subtitulo: "Veja na hora quanto já faturou e quanto ainda pode faturar no ano." },
   { Mini: MiniBanco, mostrar: MOSTRAR_OPEN_FINANCE, titulo: "Tudo chega sozinho", subtitulo: "Conecte o banco do seu MEI e as entradas e os gastos aparecem no app." },
   { Mini: MiniDas, mostrar: MOSTRAR_CARD_DAS, titulo: "DAS no automático", subtitulo: "Todo mês a Isa te lembra e manda o boleto do DAS no WhatsApp." },
-  { Mini: MiniNota, foraDaEscala: true, mostrar: MOSTRAR_TUTORIAL_NOTA, titulo: "Nota fiscal do seu jeito", subtitulo: "Mande um áudio ou uma mensagem e a Isa emite sua nota. Automática com o A1." },
+  { Mini: MiniNota, foraDaEscala: true, mostrar: MOSTRAR_TUTORIAL_NOTA, titulo: "Nota fiscal do seu jeito", subtitulo: "Veja o passo a passo do gov.br ou tire suas dúvidas com a Isa aqui no app." },
   /* Conferencia "É faturamento?": fora dos slides do piloto (a
      "propaganda" foi reprovada em 04/10). Troque para true para voltar. */
   { Mini: MiniConferir, mostrar: false, titulo: "A Isa organiza pra você", subtitulo: "Você diz uma vez se é faturamento. Da próxima, ela já sabe." },
@@ -784,10 +777,33 @@ export default function Welcome() {
   const navigate = useNavigate();
   const scrollerRef = useRef(null);
   const [active, setActive] = useState(0);
+  const telaRef = useRef(null);
+  const logoRef = useRef(null);
+  const rodapeRef = useRef(null);
+  const [escalaMoldura, setEscalaMoldura] = useState(1);
   /* v6: uma escala so para todos os desenhos (ver useEscalaComum) */
   const molduraRef = useRef(null);
   const caixasRef = useRef([]);
   const ajuste = useEscalaComum(molduraRef, caixasRef, SLIDES.length);
+
+  // Reduz a moldura inteira: a largura do desenho e suas quebras não mudam.
+  // Logo, celular e card usam só a altura necessária; a sobra fica nas pontas.
+  useLayoutEffect(() => {
+    const tela = telaRef.current;
+    const logo = logoRef.current;
+    const rodape = rodapeRef.current;
+    if (!tela || !logo || !rodape) return undefined;
+    const medir = () => {
+      const alturaLivre = Math.max(0, tela.clientHeight - logo.offsetHeight - rodape.offsetHeight - 8);
+      const escala = Math.min(1, 210 / LARGURA_MOLDURA, tela.clientWidth * 0.56 / LARGURA_MOLDURA, alturaLivre / MOLDURA_MAX);
+      setEscalaMoldura((atual) => Math.abs(atual - escala) < 0.001 ? atual : escala);
+    };
+    medir();
+    const ro = new ResizeObserver(medir);
+    [tela, logo, rodape].forEach((el) => ro.observe(el));
+    document.fonts?.ready?.then(medir).catch(() => {});
+    return () => ro.disconnect();
+  }, []);
 
   /* v17: o app instalado na Tela de Inicio sempre abre em "/" (manifesto).
      Quem ja entrou nele vai direto para o Inicio, sem ver os slides de
@@ -817,30 +833,29 @@ export default function Welcome() {
   };
 
   return (
-    <div className="tela-fixa w-full flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
-      <div className="flex items-center justify-center gap-1.5 pt-6 pb-3 shrink-0">
+    <div ref={telaRef} className="tela-fixa w-full flex flex-col justify-center" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
+      <div ref={logoRef} className="flex items-center justify-center gap-1.5 pt-1 pb-3 shrink-0">
         <Gauge size={22} strokeWidth={2.5} style={{ color: VERDE }} />
         <span className="text-xl font-bold" style={{ color: "var(--text)" }}>
           Ta<span style={{ color: VERDE }}>Certo!</span>
         </span>
       </div>
 
-      {/* v11: a moldura ocupa o espaco entre o logo e o card de baixo
-          (flex-1), ate MOLDURA_MAX, encostada no card. Mais larga (272)
-          para as letras ampliadas (ZOOM_SLIDES) quebrarem linha igual. */}
-      <div ref={scrollerRef} className="flex-1 min-h-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar" style={{ touchAction: "pan-x" }}>
+      {/* A escala externa afina o celular inteiro sem abrir espaço até o card. */}
+      <div ref={scrollerRef} className="shrink-0 min-h-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar" style={{ touchAction: "pan-x", height: MOLDURA_MAX * escalaMoldura + 8 }}>
         {SLIDES.map(({ Mini, foraDaEscala }, i) => (
           <div key={i} className="min-w-full snap-center flex flex-col min-h-0">
             <div className="flex-1 min-h-0 flex justify-center px-6 pt-2">
-              <div className="w-full flex flex-col justify-end min-h-0" style={{ maxWidth: 272 }}>
+              <div className="relative shrink-0" style={{ width: LARGURA_MOLDURA * escalaMoldura, height: MOLDURA_MAX * escalaMoldura }}>
                 <div
                   ref={i === 0 ? molduraRef : undefined}
                   data-moldura-slide=""
-                  className="relative w-full flex flex-col"
+                  className="absolute top-0 left-0 flex flex-col"
                   style={{
-                    flex: "1 1 auto",
-                    minHeight: 0,
-                    maxHeight: MOLDURA_MAX,
+                    width: LARGURA_MOLDURA,
+                    height: MOLDURA_MAX,
+                    transform: `scale(${escalaMoldura})`,
+                    transformOrigin: "top left",
                     borderTopLeftRadius: 34,
                     borderTopRightRadius: 34,
                     borderLeft: "1.5px solid rgba(34,197,94,0.55)",
@@ -865,7 +880,7 @@ export default function Welcome() {
       {/* Card inferior único: preto translúcido, sem reflexo, com apenas
           uma linha verde discreta em volta. Contém o texto do slide
           ativo + dots + botões. */}
-      <div className="shrink-0" style={{ padding: "0 10px", paddingBottom: "calc(10px + env(safe-area-inset-bottom))" }}>
+      <div ref={rodapeRef} className="shrink-0" style={{ padding: "0 10px", paddingBottom: "calc(10px + env(safe-area-inset-bottom))" }}>
         <div
           style={{
             background: "var(--vidro-bg)",
