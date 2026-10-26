@@ -1,4 +1,4 @@
-/* CHATFISCOUI v12 — barra encosta no teclado (tirado o respiro da faixa do iPhone com teclado aberto) (v11: barra segue o teclado no iPhone: confere de novo quando a animacao do teclado termina, uma conta por quadro e a pagina de tras nao rola (v10: cartão da nota fiscal montada pela Isa (conferir e Emitir; depois, Baixar PDF) (v9: microfone: fica verde enquanto ouve, aviso "Pode falar", texto aparece enquanto a pessoa fala e aviso certo para cada erro (Ditado desligado, microfone bloqueado, nao ouviu) (v8: teclado do iPhone: rodape some e a tela fica enquadrada acima do teclado (a conta antiga com offsetTop achava o teclado fechado) (v7: ditado pt-BR com conferência; sem botão de WhatsApp; limite 300 (v6: rodapé de cinco itens)))) */
+/* CHATFISCOUI v13 — áudio igual ao WhatsApp: segura o microfone e fala, soltou envia; arrasta para a esquerda cancela, para cima trava (v12: barra encosta no teclado (tirado o respiro da faixa do iPhone com teclado aberto) (v11: barra segue o teclado no iPhone: confere de novo quando a animacao do teclado termina, uma conta por quadro e a pagina de tras nao rola (v10: cartão da nota fiscal montada pela Isa (conferir e Emitir; depois, Baixar PDF) (v9: microfone: fica verde enquanto ouve, aviso "Pode falar", texto aparece enquanto a pessoa fala e aviso certo para cada erro (Ditado desligado, microfone bloqueado, nao ouviu) (v8: teclado do iPhone: rodape some e a tela fica enquadrada acima do teclado (a conta antiga com offsetTop achava o teclado fechado) (v7: ditado pt-BR com conferência; sem botão de WhatsApp; limite 300 (v6: rodapé de cinco itens)))) */
 import { useRef, useState, useEffect } from "react";
 import {
   Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList,
@@ -558,57 +558,128 @@ export default function ChatFiscoUI({
     }
   }, []);
 
-  /* v9: ditado com sinal de "ouvindo" (o microfone fica verde e o campo
-     mostra "Ouvindo..."), texto aparecendo enquanto fala e aviso certo
-     para cada erro do iPhone. O ditado do Safari depende do "Ditado" do
-     iPhone ligado (Ajustes > Geral > Teclado > Ativar Ditado). */
-  const [ouvindo, setOuvindo] = useState(false);
-  function ditarPergunta() {
-    const aviso = "Seu celular não deixou usar o microfone aqui. Digite sua pergunta.";
+  /* v13: AUDIO IGUAL AO WHATSAPP. Segura o microfone e fala; soltou,
+     envia sozinho. Arrastar para a esquerda cancela; arrastar para cima
+     trava (fala sem segurar e toca na setinha para enviar). Toque rapido
+     so avisa "Segure para gravar". A fala vira texto pelo Ditado do
+     iPhone (o texto e o que a Isa le). */
+  const [gravacao, setGravacao] = useState(null); // null | { travada, cancelando, segundos }
+  const ouvindo = !!gravacao;
+  const gravRef = useRef({ texto: "", interino: "", inicio: 0, x: 0, y: 0, cancelar: false, enviar: false, travada: false, timer: null });
+
+  function avisoErroMic(erro) {
+    if (erro === "not-allowed") return toast("Libere o microfone: toque no \"aA\" da barra do Safari > Ajustes do Site > Microfone.");
+    if (erro === "service-not-allowed") return toast("Ligue o Ditado do iPhone: Ajustes > Geral > Teclado > Ativar Ditado.");
+    if (erro === "no-speech" || erro === "aborted") return null;
+    toast("Seu celular não deixou usar o microfone aqui. Digite sua pergunta.");
+  }
+
+  function terminarGravacao(enviar) {
+    const g = gravRef.current;
+    g.enviar = enviar;
+    g.cancelar = !enviar;
+    clearInterval(g.timer);
+    const r = reconhecimentoRef.current;
+    if (!r) { setGravacao(null); return; }
+    try { enviar ? r.stop() : r.abort(); } catch { /* ja parou */ }
+  }
+
+  function comecarGravacao(e) {
+    if (digitando) return;
     const Reconhecimento = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!Reconhecimento) return toast(aviso);
-    if (reconhecimentoRef.current) {
-      reconhecimentoRef.current.stop();
-      return;
-    }
-    const base = rascunho.trim();
-    try {
-      const reconhecimento = new Reconhecimento();
-      reconhecimentoRef.current = reconhecimento;
-      reconhecimento.lang = "pt-BR";
-      reconhecimento.continuous = false;
-      reconhecimento.interimResults = true;
-      reconhecimento.onstart = () => { setOuvindo(true); toast("Pode falar... toque no microfone de novo para parar."); };
-      reconhecimento.onresult = (evento) => {
-        const texto = Array.from(evento.results).map((r) => r[0].transcript).join(" ").trim();
-        if (!texto) return;
-        setRascunho(`${base} ${texto}`.trim().slice(0, LIMITE_PERGUNTA_CHAT));
+    if (!Reconhecimento) return avisoErroMic();
+    if (reconhecimentoRef.current) return;
+    try { e.currentTarget.setPointerCapture?.(e.pointerId); } catch { /* sem captura */ }
+    const g = gravRef.current;
+    Object.assign(g, { texto: "", interino: "", inicio: Date.now(), x: e.clientX, y: e.clientY, cancelar: false, enviar: false, travada: false });
+    try { navigator.vibrate?.(15); } catch { /* sem vibrar */ }
+    g.base = "";
+    /* O iPhone as vezes encerra o ditado numa pausa da fala. Se a pessoa
+       ainda esta segurando (ou travou), liga de novo e continua juntando o
+       texto; se nao der para religar, envia o que ja ouviu. */
+    const ligar = () => {
+      const r = new Reconhecimento();
+      reconhecimentoRef.current = r;
+      r.lang = "pt-BR";
+      r.continuous = true;
+      r.interimResults = true;
+      r.onresult = (ev) => {
+        let finais = "";
+        let interino = "";
+        for (let i = 0; i < ev.results.length; i++) {
+          const t = ev.results[i][0].transcript;
+          if (ev.results[i].isFinal) finais += ` ${t}`; else interino += ` ${t}`;
+        }
+        g.texto = `${g.base} ${finais}`.trim();
+        g.interino = interino.trim();
       };
-      reconhecimento.onerror = (evento) => {
-        const erro = evento?.error;
-        if (erro === "no-speech" || erro === "aborted") return toast("Não ouvi nada. Toque no microfone e fale de novo.");
-        if (erro === "not-allowed") return toast("Libere o microfone para este site: toque no \"aA\" da barra do Safari > Ajustes do Site > Microfone.");
-        if (erro === "service-not-allowed") return toast("Ligue o Ditado do iPhone: Ajustes > Geral > Teclado > Ativar Ditado.");
-        toast(aviso);
+      r.onerror = (ev) => {
+        if (g.cancelar) return;
+        const erro = ev?.error;
+        if (erro !== "not-allowed" && erro !== "service-not-allowed") return;
+        if (g.base) g.enviar = true; // nao deixou religar: envia o que ja ouviu
+        else { g.cancelar = true; avisoErroMic(erro); }
       };
-      reconhecimento.onend = () => {
+      r.onend = () => {
+        const ouvido = `${g.texto} ${g.interino}`.trim();
+        if (!g.cancelar && !g.enviar) {
+          g.base = ouvido; g.texto = ouvido; g.interino = "";
+          try { ligar(); return; } catch { g.enviar = true; }
+        }
         reconhecimentoRef.current = null;
-        setOuvindo(false);
-        requestAnimationFrame(() => {
-          const campo = inputChatRef.current;
-          if (campo) {
-            campo.style.height = "auto";
-            campo.style.height = `${Math.min(campo.scrollHeight, MAX_ALTURA_CAMPO)}px`;
-          }
-        });
+        clearInterval(g.timer);
+        setGravacao(null);
+        if (g.cancelar) return;
+        const texto = ouvido.slice(0, LIMITE_PERGUNTA_CHAT);
+        if (!texto) return toast("Não entendi o áudio. Segure o microfone e fale de novo.");
+        onEnviar(texto, respondendo);
+        setRespondendo(null);
       };
-      reconhecimento.start();
+      r.start();
+    };
+    try {
+      ligar();
+      setGravacao({ travada: false, cancelando: false, segundos: 0 });
+      g.timer = setInterval(() => {
+        setGravacao((v) => (v ? { ...v, segundos: Math.floor((Date.now() - g.inicio) / 1000) } : v));
+        if (Date.now() - g.inicio > 60000) terminarGravacao(true); // 1 minuto, como limite de seguranca
+      }, 250);
     } catch {
       reconhecimentoRef.current = null;
-      setOuvindo(false);
-      toast(aviso);
+      setGravacao(null);
+      avisoErroMic();
     }
   }
+
+  function moverGravacao(e) {
+    const g = gravRef.current;
+    if (!reconhecimentoRef.current || g.travada) return;
+    const dx = e.clientX - g.x;
+    const dy = e.clientY - g.y;
+    if (dx < -110) return terminarGravacao(false); // arrastou para a esquerda: cancela
+    if (dy < -70) { // arrastou para cima: trava
+      g.travada = true;
+      try { navigator.vibrate?.(10); } catch { /* sem vibrar */ }
+      setGravacao((v) => (v ? { ...v, travada: true, cancelando: false } : v));
+      return;
+    }
+    setGravacao((v) => (v ? { ...v, cancelando: dx < -40 } : v));
+  }
+
+  function soltarGravacao() {
+    const g = gravRef.current;
+    if (!reconhecimentoRef.current || g.travada) return;
+    if (Date.now() - g.inicio < 400) {
+      terminarGravacao(false);
+      toast("Segure o microfone para gravar e solte para enviar.");
+      return;
+    }
+    terminarGravacao(true);
+  }
+
+  const tempoGravacao = gravacao
+    ? `${Math.floor(gravacao.segundos / 60)}:${String(gravacao.segundos % 60).padStart(2, "0")}`
+    : "";
 
   /* Veu e borda da barra de digitar e do "+". No escuro e um veu branco
      sobre fundo escuro; no claro precisa ser o contrario, senao o campo
@@ -1080,7 +1151,7 @@ export default function ChatFiscoUI({
 
         <form onSubmit={submeter} className="flex items-center gap-2">
           {/* "+" FORA da barra, a esquerda (v4: escondido, nunca fez nada) */}
-          {MOSTRAR_ANEXOS_CHAT && (
+          {MOSTRAR_ANEXOS_CHAT && !gravacao && (
           <button
             type="button"
             onClick={() => setMenuAnexo((v) => !v)}
@@ -1105,7 +1176,7 @@ export default function ChatFiscoUI({
           {/* Barra que CRESCE conforme o texto, ate um limite (igual WhatsApp) */}
           <div
             className="flex-1 min-w-0 flex items-end rounded-3xl"
-            onClick={() => inputChatRef.current?.focus()}
+            onClick={() => { if (!gravacao) inputChatRef.current?.focus(); }}
             style={{
               minHeight: 52,
               paddingLeft: 18,
@@ -1122,6 +1193,34 @@ export default function ChatFiscoUI({
               border: bordaCampo,
             }}
           >
+            {gravacao && (
+              <div
+                className="flex-1 min-w-0 flex items-center"
+                style={{ minHeight: 40, gap: 10, fontSize: 16, color: "var(--text)" }}
+                aria-live="polite"
+              >
+                <span className="gravando-ponto" style={{ width: 10, height: 10, borderRadius: 99, background: "#ef4444", flexShrink: 0 }} />
+                <span style={{ fontVariantNumeric: "tabular-nums", minWidth: 36 }}>{tempoGravacao}</span>
+                {gravacao.travada ? (
+                  <button
+                    type="button"
+                    onClick={() => terminarGravacao(false)}
+                    className="toque"
+                    style={{ marginLeft: "auto", marginRight: 4, color: "#ef4444", fontSize: 15, fontWeight: 600 }}
+                  >
+                    Cancelar
+                  </button>
+                ) : (
+                  <span style={{ marginLeft: "auto", marginRight: 4, opacity: gravacao.cancelando ? 1 : 0.6, color: gravacao.cancelando ? "#ef4444" : "var(--text)", fontSize: 14, whiteSpace: "nowrap" }}>
+                    ‹ Deslize para cancelar
+                  </span>
+                )}
+                <style>{`
+                  @keyframes gravandoPisca { 0%,100% { opacity: 1 } 50% { opacity: 0.25 } }
+                  .gravando-ponto { animation: gravandoPisca 1s ease-in-out infinite; }
+                `}</style>
+              </div>
+            )}
             <textarea
               ref={inputChatRef}
               value={rascunho}
@@ -1137,6 +1236,7 @@ export default function ChatFiscoUI({
               }}
               className="flex-1 min-w-0 resize-none"
               style={{
+                display: gravacao ? "none" : undefined,
                 background: "none",
                 border: "none",
                 outline: "none",
@@ -1171,13 +1271,31 @@ export default function ChatFiscoUI({
             ) : (
               <button
                 type="button"
-                aria-label="Ditar pergunta para conferir antes de enviar"
-                onClick={ditarPergunta}
+                aria-label={gravacao?.travada ? "Enviar áudio" : "Segure para gravar áudio"}
                 disabled={digitando}
-                className="toque rounded-full flex items-center justify-center shrink-0"
-                style={{ width: 40, height: 40 }}
+                onPointerDown={(e) => { if (!gravacao) { e.preventDefault(); comecarGravacao(e); } }}
+                onPointerMove={moverGravacao}
+                onPointerUp={soltarGravacao}
+                onPointerCancel={() => { if (!gravRef.current.travada) terminarGravacao(false); }}
+                onClick={(e) => { e.stopPropagation(); if (gravacao?.travada) terminarGravacao(true); }}
+                onContextMenu={(e) => e.preventDefault()}
+                className="rounded-full flex items-center justify-center shrink-0"
+                style={{
+                  width: gravacao && !gravacao.travada ? 52 : 40,
+                  height: gravacao && !gravacao.travada ? 52 : 40,
+                  marginTop: gravacao && !gravacao.travada ? -6 : 0,
+                  marginBottom: gravacao && !gravacao.travada ? -6 : 0,
+                  background: gravacao ? "var(--primary)" : "transparent",
+                  transition: "width 160ms, height 160ms, background 160ms",
+                  touchAction: "none",
+                  WebkitUserSelect: "none",
+                  userSelect: "none",
+                  WebkitTouchCallout: "none",
+                }}
               >
-                <Mic size={20} strokeWidth={2.1} style={{ color: ouvindo ? "var(--primary)" : "var(--text)" }} />
+                {gravacao?.travada
+                  ? <Send size={20} strokeWidth={2.1} style={{ color: "#fff" }} />
+                  : <Mic size={gravacao ? 24 : 20} strokeWidth={2.1} style={{ color: gravacao ? "#fff" : "var(--text)" }} />}
               </button>
             )}
           </div>
