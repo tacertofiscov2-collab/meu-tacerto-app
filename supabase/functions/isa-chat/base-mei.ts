@@ -247,4 +247,10 @@ O rodapé do app tem 5 botões: **Início**, **Notas**, **+** (verde, no meio),
 número do projeto de lei do perdão das dívidas e do limite novo. Ao sair o
 salário mínimo de 2027, trocar os valores do DAS (seção 4) e o
 \`DAS_2026\` em \`src/lib/fiscal.js\`.
+
+## 14. O que a Isa consegue fazer sozinha
+
+- **Check-up do CNPJ:** consulta na hora os dados públicos do CNPJ da pessoa (situação, se continua no MEI e no Simples, atividades, cidade). Não mostra DAS em atraso nem declaração pendente: isso só no app MEI ou no Portal do Empreendedor.
+- **Montar nota fiscal de serviço:** quando a pessoa pede, a Isa pergunta o que faltar (valor e o que foi feito; para empresa, o CNPJ de quem pagou) e monta a nota para ela conferir e tocar Emitir.
+- **Data e hora:** a Isa sabe o dia e a hora de agora; use para prazos (ex.: quantos dias faltam para o dia 20).
 `;

@@ -1,4 +1,4 @@
-/* CHATFISCOPAGINA v5 — a Isa monta a nota fiscal pelo chat (texto ou ditado): a IA devolve os dados, aparece um cartão para conferir e só emite no toque "Emitir" (/api/nfse/emitir); nada é emitido sem a pessoa confirmar (v4: IA opcional desligada, fallback e dúvidas locais; sem saída para WhatsApp (v3: aba Isa)) */
+/* CHATFISCOPAGINA v6 — espera a Isa até 50s (check-up do CNPJ faz duas consultas) (v5: a Isa monta a nota fiscal pelo chat (texto ou ditado): a IA devolve os dados, aparece um cartão para conferir e só emite no toque "Emitir" (/api/nfse/emitir); nada é emitido sem a pessoa confirmar (v4: IA opcional desligada, fallback e dúvidas locais; sem saída para WhatsApp (v3: aba Isa)) */
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ChatFiscoUI from "../components/ChatFiscoUI.jsx";
@@ -143,7 +143,7 @@ export default function ChatFiscoPagina({ aba = false }) {
       if (ISA_IA_ATIVA) {
         const controle = new AbortController();
         abortarRef.current = controle;
-        const tempo = setTimeout(() => controle.abort(), 35000);
+        const tempo = setTimeout(() => controle.abort(), 50000);
         try {
           const cnaes = [a.cnae, ...(Array.isArray(a.cnaesSecundarios) ? a.cnaesSecundarios : [])].filter(Boolean);
           const historico = mensagens.filter((m) => m.autor === "user" || m.autor === "fisco").slice(-6)
