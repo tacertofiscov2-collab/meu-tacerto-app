@@ -1,4 +1,4 @@
-/* EMITIRNOTA v1 — emitir a nota fiscal de servico (NFS-e Nacional) direto no app: valor, o que foi feito e para quem; chama /api/nfse/emitir (servidor da Vercel) e mostra a nota com o PDF. Enquanto nao houver certificado A1, o servidor esta no modo simulado e a nota sai marcada como TESTE. Rota /emitir-nota; fora dos menus enquanto MOSTRAR_EMISSAO_PROPRIA = false. */
+/* EMITIRNOTA v2 — nota emitida entra sozinha em Notas e no velocímetro (EMITIRNOTA v1 — emitir a nota fiscal de servico (NFS-e Nacional) direto no app: valor, o que foi feito e para quem; chama /api/nfse/emitir (servidor da Vercel) e mostra a nota com o PDF. Enquanto nao houver certificado A1, o servidor esta no modo simulado e a nota sai marcada como TESTE. Rota /emitir-nota; fora dos menus enquanto MOSTRAR_EMISSAO_PROPRIA = false.) */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle2, FileDown } from "lucide-react";
@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import TopoRolavel from "../components/TopoRolavel.jsx";
 import { supabase } from "@/lib/supabase";
 import { CODIGO_SERVICO_NOTA } from "@/config/piloto";
+import { useAppState } from "@/context/AppStateContext";
+import { registrarNotaEmitida } from "@/lib/notas";
 
 const campo = {
   backgroundColor: "transparent",
@@ -26,6 +28,7 @@ function mascaraValor(v) {
 
 export default function EmitirNota() {
   const navigate = useNavigate();
+  const { adicionarLancamento } = useAppState();
   const [valor, setValor] = useState("");
   const [descricao, setDescricao] = useState("");
   const [documento, setDocumento] = useState("");
@@ -58,6 +61,11 @@ export default function EmitirNota() {
       const resp = await r.json().catch(() => null);
       if (resp?.ok) {
         setNota(resp);
+        const r2 = await registrarNotaEmitida(data?.session?.user?.id, adicionarLancamento, {
+          valor: numeroValor, descricao: descricao.trim(), tomadorDocumento: doc, tomadorNome: nome.trim(),
+          chaveAcesso: resp.chaveAcesso, pdfBase64: resp.pdfBase64, teste: resp.ambiente !== "producao",
+        });
+        if (r2.lancamentoId) toast.success("Guardada em Notas e somada no velocímetro");
       } else if (resp?.motivo === "desligada") {
         toast("A emissão de nota ainda não está liberada.");
       } else {

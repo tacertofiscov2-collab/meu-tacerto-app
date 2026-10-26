@@ -1,4 +1,4 @@
-/* CHATFISCOPAGINA v6 — espera a Isa até 50s (check-up do CNPJ faz duas consultas) (v5: a Isa monta a nota fiscal pelo chat (texto ou ditado): a IA devolve os dados, aparece um cartão para conferir e só emite no toque "Emitir" (/api/nfse/emitir); nada é emitido sem a pessoa confirmar (v4: IA opcional desligada, fallback e dúvidas locais; sem saída para WhatsApp (v3: aba Isa)) */
+/* CHATFISCOPAGINA v7 — nota emitida pela Isa entra sozinha em Notas e no velocímetro (v6: espera a Isa até 50s (check-up do CNPJ faz duas consultas) (v5: a Isa monta a nota fiscal pelo chat (texto ou ditado): a IA devolve os dados, aparece um cartão para conferir e só emite no toque "Emitir" (/api/nfse/emitir); nada é emitido sem a pessoa confirmar (v4: IA opcional desligada, fallback e dúvidas locais; sem saída para WhatsApp (v3: aba Isa)) */
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ChatFiscoUI from "../components/ChatFiscoUI.jsx";
@@ -6,6 +6,7 @@ import { MOSTRAR_EMISSAO_PROPRIA, CODIGO_SERVICO_NOTA } from "@/config/piloto";
 import { toast } from "sonner";
 import { deixarArquivoPendente } from "@/lib/arquivoPendente";
 import { useAppState } from "@/context/AppStateContext";
+import { registrarNotaEmitida } from "@/lib/notas";
 import { contextoFaq, responderPergunta, perguntasGerais, textoPergunta } from "@/lib/faqFisco";
 import { supabase } from "@/lib/supabase";
 import { LIMITE_PERGUNTA_CHAT, valorDasMensal } from "@/lib/fiscal";
@@ -248,7 +249,12 @@ export default function ChatFiscoPagina({ aba = false }) {
       });
       const resp = await r.json().catch(() => null);
       if (resp?.ok) {
-        mudarNota(msg.id, { estado: "emitida", chaveAcesso: resp.chaveAcesso, pdfBase64: resp.pdfBase64, teste: resp.ambiente !== "producao" });
+        const teste = resp.ambiente !== "producao";
+        mudarNota(msg.id, { estado: "emitida", chaveAcesso: resp.chaveAcesso, pdfBase64: resp.pdfBase64, teste });
+        const { notaId, lancamentoId } = await registrarNotaEmitida(data?.session?.user?.id, app.adicionarLancamento, {
+          ...n, chaveAcesso: resp.chaveAcesso, pdfBase64: resp.pdfBase64, teste,
+        });
+        if (lancamentoId) toast.success(`Nota emitida${notaId ? ", guardada em Notas" : ""} e somada no velocímetro`);
       } else {
         mudarNota(msg.id, { estado: "conferir" });
         toast(resp?.mensagem || "Não deu para emitir agora. Tente de novo.");

@@ -1,4 +1,4 @@
-/* ISA-CHAT v4 — Isa sabe data e hora (Brasília); ferramenta consultar_cnpj faz o check-up cadastral do CNPJ da pessoa (dados públicos, BrasilAPI); respostas sem markdown (v3.1: max_tokens 1200; v3: ferramenta preparar_nota — a Isa nunca emite sozinha) */
+/* ISA-CHAT v5 — nota: chama preparar_nota assim que tem valor e serviço (não manda para o botão Notas) (v4: Isa sabe data e hora (Brasília); ferramenta consultar_cnpj faz o check-up cadastral do CNPJ da pessoa (dados públicos, BrasilAPI); respostas sem markdown (v3.1: max_tokens 1200; v3: ferramenta preparar_nota — a Isa nunca emite sozinha) */
 import Anthropic from "npm:@anthropic-ai/sdk@0.133.0";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { BASE_MEI } from "./base-mei.ts";
@@ -25,7 +25,7 @@ const FERRAMENTA_NOTA = {
     required: ["valor", "descricao"],
   },
 };
-const REGRA_NOTA = "O app permite emitir nota fiscal de serviço pelo chat. Se a pessoa pedir para emitir uma nota: se faltar o valor ou o que foi feito, pergunte; com os dois, chame a ferramenta preparar_nota e escreva só uma frase curta pedindo para ela conferir e tocar Emitir. Nunca diga que a nota já foi emitida. O CNPJ da própria pessoa é o do emitente, não o de quem pagou.";
+const REGRA_NOTA = "O app emite nota fiscal de serviço aqui mesmo no chat. Se a pessoa pedir uma nota: assim que souber o valor e o que foi feito, chame a ferramenta preparar_nota NA MESMA resposta (o cartão com o botão Emitir aparece aqui no chat) e escreva só uma frase curta pedindo para conferir e tocar Emitir. Se faltar o valor ou o que foi feito, pergunte só isso. Não pergunte se quem pagou é pessoa física: se ela não disser, monte sem cliente; se ela disser que foi empresa e não deu o CNPJ, peça o CNPJ. Nunca mande abrir o botão Notas para emitir e nunca diga que a nota já foi emitida. O CNPJ da própria pessoa é o do emitente, não o de quem pagou.";
 const FERRAMENTA_CNPJ = {
   name: "consultar_cnpj",
   description: "Consulta agora, nos dados públicos do CNPJ, o cadastro do MEI da própria pessoa: situação (ativa, suspensa, inapta, baixada), se continua no MEI e no Simples, atividades (CNAEs), endereço e data de abertura. Use quando ela pedir check-up, situação ou dados do CNPJ dela.",

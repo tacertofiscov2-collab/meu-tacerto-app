@@ -1,4 +1,4 @@
-/* CHATFISCOUI v11 — barra segue o teclado no iPhone: confere de novo quando a animacao do teclado termina, uma conta por quadro e a pagina de tras nao rola (v10: cartão da nota fiscal montada pela Isa (conferir e Emitir; depois, Baixar PDF) (v9: microfone: fica verde enquanto ouve, aviso "Pode falar", texto aparece enquanto a pessoa fala e aviso certo para cada erro (Ditado desligado, microfone bloqueado, nao ouviu) (v8: teclado do iPhone: rodape some e a tela fica enquadrada acima do teclado (a conta antiga com offsetTop achava o teclado fechado) (v7: ditado pt-BR com conferência; sem botão de WhatsApp; limite 300 (v6: rodapé de cinco itens)))) */
+/* CHATFISCOUI v12 — barra encosta no teclado (tirado o respiro da faixa do iPhone com teclado aberto) (v11: barra segue o teclado no iPhone: confere de novo quando a animacao do teclado termina, uma conta por quadro e a pagina de tras nao rola (v10: cartão da nota fiscal montada pela Isa (conferir e Emitir; depois, Baixar PDF) (v9: microfone: fica verde enquanto ouve, aviso "Pode falar", texto aparece enquanto a pessoa fala e aviso certo para cada erro (Ditado desligado, microfone bloqueado, nao ouviu) (v8: teclado do iPhone: rodape some e a tela fica enquadrada acima do teclado (a conta antiga com offsetTop achava o teclado fechado) (v7: ditado pt-BR com conferência; sem botão de WhatsApp; limite 300 (v6: rodapé de cinco itens)))) */
 import { useRef, useState, useEffect } from "react";
 import {
   Send, X, Mic, Image as ImageIcon, Plus, Camera, FileText, ClipboardList,
@@ -921,7 +921,7 @@ export default function ChatFiscoUI({
           // ultima mensagem role acima dela em vez de ficar escondida.
           paddingBottom: rodapeNaTela
             ? `calc(env(safe-area-inset-bottom, 0px) + ${ALTURA_RODAPE + 80}px)`
-            : "calc(env(safe-area-inset-bottom, 0px) + 88px)",
+            : tecladoVisivel ? 80 : "calc(env(safe-area-inset-bottom, 0px) + 88px)",
           display: "flex",
           flexDirection: "column",
           gap: 10,
@@ -979,7 +979,8 @@ export default function ChatFiscoUI({
           right: 0,
           bottom: rodapeNaTela ? `calc(env(safe-area-inset-bottom, 0px) + ${ALTURA_RODAPE}px)` : 0,
           padding: 12,
-          paddingBottom: rodapeNaTela ? 8 : "calc(env(safe-area-inset-bottom, 0px) + 12px)",
+          /* v12: com o teclado aberto nao existe faixa do iPhone embaixo: sem o respiro de seguranca, a barra encosta no teclado */
+          paddingBottom: rodapeNaTela || tecladoVisivel ? 8 : "calc(env(safe-area-inset-bottom, 0px) + 12px)",
           background: "transparent",
         }}
       >
