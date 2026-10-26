@@ -402,6 +402,15 @@ export const LINK_PGMEI =
    ------------------------------------------------------------------- */
 export const MOSTRAR_TUTORIAL_NOTA = true;
 
+/* Nota fiscal PROPRIA (NFS-e Nacional, server/nfse + /api/nfse/emitir).
+   false: a tela /emitir-nota existe (para teste pelo endereco direto), mas
+   nao aparece em nenhum menu. Ligar so depois do teste com certificado A1.
+   CODIGO_SERVICO_NOTA: codigo nacional do servico (cTribNac). 140101 =
+   conserto/manutencao de maquinas e aparelhos (usado no teste do MEI do
+   Fernando); o frete municipal do caminhoneiro tera outro codigo. */
+export const MOSTRAR_EMISSAO_PROPRIA = false;
+export const CODIGO_SERVICO_NOTA = "140101";
+
 /* v31 (12/10/2026, pedido do Fernando): o botao "Como emitir nota" SAI
    do topo do Inicio (fica so o sininho). As notas ficam no Perfil >
    Meu MEI > Notas fiscais. true volta com ele. */

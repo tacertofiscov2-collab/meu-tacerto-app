@@ -1,6 +1,6 @@
-/* API /api/nfse/emitir v1 — função da Vercel (Node). Recebe a nota do app,
+/* API /api/nfse/emitir v2 — no ambiente "simulado" (padrao) responde sempre, com nota de TESTE; ambientes reais so com NFSE_LIGADA=true (v1: função da Vercel (Node). Recebe a nota do app,
    confere quem está logado no Supabase, lê o perfil e emite pela NFS-e Nacional.
-   Desligada para o público: só responde se NFSE_LIGADA=true.
+   Ambientes reais (producao-restrita/producao) só com NFSE_LIGADA=true).
    Corpo: { valor, descricao, cTribNac, tomador?: { documento, nome, email } } */
 import { emitirNota } from "../../server/nfse/emissao.js";
 
@@ -34,7 +34,10 @@ async function codigoIbgeDoCnpj(cnpj) {
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ ok: false, motivo: "metodo" });
-  if (process.env.NFSE_LIGADA !== "true") return res.status(503).json({ ok: false, motivo: "desligada" });
+  const ambiente = process.env.NFSE_AMBIENTE || "simulado";
+  if (ambiente !== "simulado" && process.env.NFSE_LIGADA !== "true") {
+    return res.status(503).json({ ok: false, motivo: "desligada" });
+  }
   try {
     const token = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "");
     const user = token && await pessoaLogada(token);
